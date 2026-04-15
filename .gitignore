@@ -1,0 +1,8 @@
+vs_BuildTools.exe
+
+# Rust build output
+extansion/wasm/visit-graph-engine/target/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero-Latency Web</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+
+      body {
+        margin: 0;
+        min-width: 360px;
+        padding: 16px 16px 14px;
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(180deg, #f7f8fb 0%, #eef2f8 100%);
+        color: #132033;
+      }
+
+      main {
+        display: grid;
+        gap: 14px;
+      }
+
+      h1,
+      h2,
+      p,
+      ul,
+      pre {
+        margin: 0;
+      }
+
+      header {
+        display: grid;
+        gap: 6px;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      .subtitle {
+        color: #4d5c70;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .stat-card,
+      .panel {
+        border: 1px solid #d5ddea;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.84);
+        box-shadow: 0 10px 30px rgba(18, 31, 51, 0.06);
+      }
+
+      .stat-card {
+        padding: 12px;
+      }
+
+      .stat-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #5c6b7c;
+        font-size: 12px;
+      }
+
+      .stat-value {
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .panel {
+        padding: 12px;
+      }
+
+      .panel-title {
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+
+      .list {
+        display: grid;
+        gap: 8px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .list-item {
+        display: grid;
+        gap: 4px;
+        padding: 10px;
+        border-radius: 10px;
+        background: #f3f6fb;
+      }
+
+      .item-title {
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .item-meta {
+        color: #5c6b7c;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      button {
+        appearance: none;
+        border: 0;
+        border-radius: 10px;
+        background: #1557ff;
+        color: #fff;
+        cursor: pointer;
+        font: inherit;
+        padding: 10px 12px;
+      }
+
+      button.secondary {
+        background: #dbe5f6;
+        color: #17345d;
+      }
+
+      button:disabled {
+        cursor: wait;
+        opacity: 0.7;
+      }
+
+      .empty {
+        color: #5c6b7c;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .footer {
+        color: #5c6b7c;
+        font-size: 12px;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Zero-Latency Web</h1>
+        <p class="subtitle" id="page-label">Current page</p>
+      </header>
+
+      <section class="stats">
+        <article class="stat-card">
+          <span class="stat-label">Nodes</span>
+          <span class="stat-value" id="node-count">0</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Edges</span>
+          <span class="stat-value" id="edge-count">0</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Updated</span>
+          <span class="stat-value" id="updated-at">-</span>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Top</h2>
+        <ul class="list" id="top-edges"></ul>
+        <p class="empty hidden" id="top-edges-empty">No recorded outbound jumps from this page yet.</p>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Preload</h2>
+        <ul class="list" id="preload-list"></ul>
+        <p class="empty hidden" id="preload-list-empty">No preload targets prepared for this page.</p>
+      </section>
+
+      <section class="actions">
+        <button id="refresh-button" type="button">Refresh</button>
+        <button class="secondary" id="settings-button" type="button">Settings</button>
+      </section>
+
+      <p class="footer" id="status-text">Waiting for data.</p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

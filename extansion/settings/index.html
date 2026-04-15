@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero-Latency Web Settings</title>
+    <link rel="stylesheet" href="settings.css" />
+  </head>
+  <body>
+    <div class="settings-shell">
+      <aside class="settings-nav">
+        <div class="settings-brand">
+          <p class="settings-eyebrow">Zero-Latency Web</p>
+          <h1>Settings</h1>
+        </div>
+
+        <nav class="settings-nav-list" aria-label="Settings sections">
+          <button class="settings-nav-item active" data-section-target="overview">
+            <span class="settings-nav-title">Overview</span>
+            <span class="settings-nav-sub">Runtime profile and auto-tuning</span>
+          </button>
+          <button class="settings-nav-item" data-section-target="tracking">
+            <span class="settings-nav-title">Tracking</span>
+            <span class="settings-nav-sub">Directional graph and search-page handling</span>
+          </button>
+          <button class="settings-nav-item" data-section-target="preload">
+            <span class="settings-nav-title">Preload</span>
+            <span class="settings-nav-sub">Window policy, cadence, and tab budget</span>
+          </button>
+          <button class="settings-nav-item" data-section-target="ordering">
+            <span class="settings-nav-title">Ordering</span>
+            <span class="settings-nav-sub">Draggable cards with live controls inside</span>
+          </button>
+          <button class="settings-nav-item" data-section-target="experiments">
+            <span class="settings-nav-title">Experiments</span>
+            <span class="settings-nav-sub">Disabled by default, stored for later use</span>
+          </button>
+        </nav>
+
+        <div class="settings-nav-footer">
+          <p>Stored in local extension storage.</p>
+          <p id="nav-status-text">Loading settings...</p>
+        </div>
+      </aside>
+
+      <main class="settings-content">
+        <section class="hero-card" id="overview">
+          <div class="hero-copy">
+            <p class="hero-kicker">Device-aware configuration</p>
+            <h2>Adaptive preload policy with manual override</h2>
+            <p>
+              The extension can cap preload pressure based on detected hardware, while still
+              letting you define the ceiling and experimental switches.
+            </p>
+          </div>
+          <div class="hero-metrics">
+            <article class="metric-card is-placeholder" aria-hidden="true">
+              <span class="metric-label">Device Profile</span>
+              <strong class="metric-value" id="device-profile-label">-</strong>
+              <span class="metric-meta" id="device-profile-meta">Detecting hardware...</span>
+            </article>
+            <article class="metric-card is-placeholder" aria-hidden="true">
+              <span class="metric-label">Effective Preload Cap</span>
+              <strong class="metric-value" id="effective-preload-cap">-</strong>
+              <span class="metric-meta" id="effective-preload-meta">Waiting for settings...</span>
+            </article>
+            <article class="metric-card is-placeholder" aria-hidden="true">
+              <span class="metric-label">Watchdog</span>
+              <strong class="metric-value" id="watchdog-summary">-</strong>
+              <span class="metric-meta" id="watchdog-meta">Waiting for settings...</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="settings-section" id="overview-panel">
+          <header class="settings-section-header">
+            <p class="settings-section-title">Overview</p>
+            <p class="settings-section-meta">
+              High-level controls that influence how aggressively the extension adapts to the
+              current machine.
+            </p>
+          </header>
+
+          <div class="settings-list">
+            <article class="settings-item" data-runtime-placeholder="true">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="automatic-device-tuning">
+                  Automatic device tuning
+                </label>
+                <p class="settings-item-desc">
+                  Reserved toggle for future hardware-aware scheduling. It is saved now, but it does
+                  not change runtime behavior yet.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="automatic-device-tuning" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+
+            <article class="settings-item is-wide" data-runtime-placeholder="true">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="preloading-mode">Preload mode</label>
+                <p class="settings-item-desc">
+                  Reserved selector for future strategy tiers. It is saved now, but it does not
+                  change runtime behavior yet.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <div class="segmented-control" role="radiogroup" aria-label="Preload mode">
+                  <label class="segment">
+                    <input id="mode-conservative" name="preload-mode" type="radio" value="conservative" />
+                    <span>Conservative</span>
+                  </label>
+                  <label class="segment">
+                    <input id="mode-balanced" name="preload-mode" type="radio" value="balanced" />
+                    <span>Balanced</span>
+                  </label>
+                  <label class="segment">
+                    <input id="mode-aggressive" name="preload-mode" type="radio" value="aggressive" />
+                    <span>Aggressive</span>
+                  </label>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="settings-section" id="tracking">
+          <header class="settings-section-header">
+            <p class="settings-section-title">Tracking</p>
+            <p class="settings-section-meta">
+              Controls for how navigation nodes are normalized and added into the directional graph.
+            </p>
+          </header>
+
+          <div class="settings-list">
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="track-google-search-pages">
+                  Separate Google search pages
+                </label>
+                <p class="settings-item-desc">
+                  Track `google/search` result pages as their own node so the graph can learn
+                  search-page to destination transitions.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="track-google-search-pages" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="settings-section" id="preload">
+          <header class="settings-section-header">
+            <p class="settings-section-title">Preload</p>
+            <p class="settings-section-meta">
+              Controls for tab priming, watchdog repair, and preload window behavior.
+            </p>
+          </header>
+
+          <div class="settings-list">
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="preloading-enabled">
+                  Enable preloading
+                </label>
+                <p class="settings-item-desc">
+                  Master switch for candidate registration, background tabs, and tab swapping.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="preloading-enabled" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="cross-site-current-tab-swap">
+                  Cross-site current-tab hard swap (Experimental)
+                </label>
+                <p class="settings-item-desc">
+                  Use the hidden real-page swap path for cross-site navigations that stay in the
+                  current tab. It can feel faster, but it may still break history and back-button
+                  behavior. Recommended only if you accept those side effects.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="cross-site-current-tab-swap" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+            <div class="sortable-cards-board" id="preload-rule-cards-list"></div>
+
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="watchdog-enabled">
+                  Window watchdog
+                </label>
+                <p class="settings-item-desc">
+                  Rebuild the preload window and repair missing tabs when the container is lost.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="watchdog-enabled" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+
+            <article class="settings-item" id="watchdog-interval-row">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="watchdog-interval-seconds">
+                  Watchdog interval
+                </label>
+                <p class="settings-item-desc">
+                  How often the extension checks whether the preload window is still present.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <select id="watchdog-interval-seconds" class="select-input">
+                  <option value="1">1 second</option>
+                  <option value="2">2 seconds</option>
+                  <option value="3">3 seconds</option>
+                  <option value="5">5 seconds</option>
+                  <option value="10">10 seconds</option>
+                </select>
+              </div>
+            </article>
+
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="force-minimize">
+                  Force minimize preload window
+                </label>
+                <p class="settings-item-desc">
+                  Immediately minimize the preload window again if it is restored or resized.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="force-minimize" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="settings-section" id="ordering">
+          <header class="settings-section-header">
+            <p class="settings-section-title">Ordering</p>
+            <p class="settings-section-meta">
+              Drag the rule cards below to change screening priority. Rules run from top to bottom,
+              and each one filters only the candidate pool left by the previous rule.
+            </p>
+          </header>
+
+          <div class="sortable-space-shell">
+            <div class="sortable-space-header">
+              <p class="sortable-space-title">Drag Space</p>
+              <p class="sortable-space-copy">
+                Disabling one side turns that rule into a single-sided condition.
+              </p>
+            </div>
+            <div class="sortable-cards-board" id="sortable-cards-list"></div>
+          </div>
+        </section>
+
+        <section class="settings-section" id="experiments">
+          <header class="settings-section-header">
+            <p class="settings-section-title">Experiments</p>
+            <p class="settings-section-meta">
+              Saved for later only. These switches do not change runtime behavior yet, so keep them
+              here as placeholders for future experiments.
+            </p>
+          </header>
+
+          <div class="settings-list">
+            <article class="settings-item" data-runtime-placeholder="true">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="idle-wake-aggressive">
+                  Idle wake on strong devices
+                </label>
+                <p class="settings-item-desc">
+                  Saved only for future use. It does not currently wake extra candidate tabs.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="idle-wake-aggressive" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+
+            <article class="settings-item" data-runtime-placeholder="true">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="pointer-proximity-prediction">
+                  Pointer proximity prediction
+                </label>
+                <p class="settings-item-desc">
+                  Saved only for future use. It does not currently add pointer-based prediction.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="pointer-proximity-prediction" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+
+            <article class="settings-item" data-runtime-placeholder="true">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="auth-state-warmup">
+                  Auth state warmup
+                </label>
+                <p class="settings-item-desc">
+                  Saved only for future use. It does not currently change auth or warmup behavior.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="auth-state-warmup" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <footer class="settings-footer">
+          <div class="settings-footer-copy">
+            <strong id="footer-status-title">Ready</strong>
+            <p id="footer-status-text">No unsaved changes.</p>
+          </div>
+          <div class="settings-footer-actions">
+            <button id="reset-button" class="ghost-button" type="button">Reset Defaults</button>
+            <button id="save-button" class="primary-button" type="button">Save Settings</button>
+          </div>
+        </footer>
+      </main>
+    </div>
+
+    <script src="../shared/settings.js"></script>
+    <script src="settings.js"></script>
+  </body>
+</html>
