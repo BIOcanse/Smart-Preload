@@ -33,7 +33,7 @@
           </button>
           <button class="settings-nav-item" data-section-target="experiments">
             <span class="settings-nav-title">Experiments</span>
-            <span class="settings-nav-sub">Disabled by default, stored for later use</span>
+            <span class="settings-nav-sub">Risky live switches and reserved placeholders</span>
           </button>
         </nav>
 
@@ -60,7 +60,7 @@
               <span class="metric-meta" id="device-profile-meta">Detecting hardware...</span>
             </article>
             <article class="metric-card is-placeholder" aria-hidden="true">
-              <span class="metric-label">Effective Preload Cap</span>
+              <span class="metric-label">Effective Group Caps</span>
               <strong class="metric-value" id="effective-preload-cap">-</strong>
               <span class="metric-meta" id="effective-preload-meta">Waiting for settings...</span>
             </article>
@@ -68,6 +68,11 @@
               <span class="metric-label">Watchdog</span>
               <strong class="metric-value" id="watchdog-summary">-</strong>
               <span class="metric-meta" id="watchdog-meta">Waiting for settings...</span>
+            </article>
+            <article class="metric-card is-placeholder" aria-hidden="true">
+              <span class="metric-label">Native App</span>
+              <strong class="metric-value" id="native-app-status">-</strong>
+              <span class="metric-meta" id="native-app-meta">Checking connection...</span>
             </article>
           </div>
         </section>
@@ -154,6 +159,24 @@
                 </label>
               </div>
             </article>
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="exclude-google-internal-pages">
+                  Skip Google internal pages
+                </label>
+                <p class="settings-item-desc">
+                  Don't track or preload on the Chrome Web Store, Google account and password
+                  manager, Chrome sync, chromestatus, and similar Google administrative pages.
+                  Gemini and regular Google products stay tracked.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="exclude-google-internal-pages" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
           </div>
         </section>
 
@@ -184,18 +207,76 @@
             </article>
             <article class="settings-item">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="cross-site-current-tab-swap">
-                  Cross-site current-tab hard swap (Experimental)
+                <label class="settings-item-label" for="ignore-waterfall-dynamic-links">
+                  Ignore waterfall dynamic links
                 </label>
                 <p class="settings-item-desc">
-                  Use the hidden real-page swap path for cross-site navigations that stay in the
-                  current tab. It can feel faster, but it may still break history and back-button
-                  behavior. Recommended only if you accept those side effects.
+                  On infinite-scroll or waterfall pages, keep prediction on the first stable link
+                  set and ignore links appended later by stream loading.
                 </p>
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="cross-site-current-tab-swap" type="checkbox" />
+                  <input id="ignore-waterfall-dynamic-links" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+            <article class="settings-item" id="transition-window-scope-row">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="transition-window-scope">
+                  Transition frequency window
+                </label>
+                <p class="settings-item-desc">
+                  When enabled, preload ordering rules use the selected time window instead of the
+                  all-time total.
+                </p>
+              </div>
+              <div class="settings-item-control compound-setting-control">
+                <select id="transition-window-scope" class="select-input"></select>
+                <label class="switch">
+                  <input id="transition-window-scope-enabled" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="ai-prediction-model">
+                  AI prediction assistant
+                </label>
+                <p class="settings-item-desc">
+                  Choose which local model assists preload scoring. The model has to be downloaded
+                  in the section below first. When the selected model is missing, AI scoring stays
+                  off automatically.
+                </p>
+                <p class="settings-item-warning is-hidden" id="ai-prediction-mismatch-warning"></p>
+              </div>
+              <div class="settings-item-control compound-setting-control">
+                <select id="ai-prediction-model" class="select-input"></select>
+                <label class="switch">
+                  <input id="ai-prediction-enabled" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="manage-ai-model">
+                  Manage model
+                </label>
+                <p class="settings-item-desc">
+                  The switch reflects whether the selected model is downloaded. Turning it on marks
+                  the model as installed; turning it off removes it and releases the portable
+                  runtime if no managed model still needs it. Models and runtime stay inside the
+                  local app directory.
+                </p>
+                <p class="settings-item-warning is-hidden" id="ai-manage-platform-warning"></p>
+              </div>
+              <div class="settings-item-control compound-setting-control">
+                <select id="manage-ai-model" class="select-input"></select>
+                <label class="switch">
+                  <input id="manage-ai-model-downloaded" type="checkbox" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -262,8 +343,9 @@
           <header class="settings-section-header">
             <p class="settings-section-title">Ordering</p>
             <p class="settings-section-meta">
-              Drag the rule cards below to change screening priority. Rules run from top to bottom,
-              and each one filters only the candidate pool left by the previous rule.
+              Drag the rule cards below to change how the scoring pipeline narrows candidates.
+              Weight-range rules filter page candidates directly, while the two site-count cards feed
+              the native-preload group and the real-tab preload group separately.
             </p>
           </header>
 
@@ -271,7 +353,7 @@
             <div class="sortable-space-header">
               <p class="sortable-space-title">Drag Space</p>
               <p class="sortable-space-copy">
-                Disabling one side turns that rule into a single-sided condition.
+                Disabling one side turns that card into a single-sided condition.
               </p>
             </div>
             <div class="sortable-cards-board" id="sortable-cards-list"></div>
@@ -282,12 +364,30 @@
           <header class="settings-section-header">
             <p class="settings-section-title">Experiments</p>
             <p class="settings-section-meta">
-              Saved for later only. These switches do not change runtime behavior yet, so keep them
-              here as placeholders for future experiments.
+              Risky live switches belong here. Placeholder switches stay here too, but they remain
+              stored-only until they are actually wired into runtime behavior.
             </p>
           </header>
 
           <div class="settings-list">
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="cross-site-current-tab-swap">
+                  Cross-site current-tab hard swap
+                </label>
+                <p class="settings-item-desc">
+                  Use the hidden real-page swap path for cross-site navigations that stay in the
+                  current tab. Faster when it works, but it can still damage history and back-button
+                  behavior. Enable only if you accept those side effects.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="cross-site-current-tab-swap" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
             <article class="settings-item" data-runtime-placeholder="true">
               <div class="settings-item-info">
                 <label class="settings-item-label" for="idle-wake-aggressive">
@@ -353,6 +453,23 @@
         </footer>
       </main>
     </div>
+
+    <aside class="ai-progress-toast is-hidden" id="ai-progress-toast" role="status" aria-live="polite">
+      <header class="ai-progress-toast-header">
+        <span class="ai-progress-toast-title" id="ai-progress-toast-title">AI model task</span>
+        <button
+          type="button"
+          class="ai-progress-toast-dismiss is-hidden"
+          id="ai-progress-toast-dismiss"
+          aria-label="Dismiss"
+        >×</button>
+      </header>
+      <p class="ai-progress-toast-message" id="ai-progress-toast-message">Working...</p>
+      <div class="ai-progress-toast-bar" aria-hidden="true">
+        <div class="ai-progress-toast-bar-fill" id="ai-progress-toast-bar-fill"></div>
+      </div>
+      <p class="ai-progress-toast-meta" id="ai-progress-toast-meta"></p>
+    </aside>
 
     <script src="../shared/settings.js"></script>
     <script src="settings.js"></script>

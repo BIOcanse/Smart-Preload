@@ -2,8 +2,15 @@
   "manifest_version": 3,
   "name": "Zero-Latency Web",
   "description": "Zero-Latency Web extension MVP for visit graph tracking.",
-  "version": "0.1.0",
-  "permissions": ["alarms", "storage", "tabs", "windows", "webNavigation"],
+  "version": "1.0.0",
+  "permissions": [
+    "alarms",
+    "storage",
+    "tabs",
+    "windows",
+    "webNavigation",
+    "unlimitedStorage"
+  ],
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
   },

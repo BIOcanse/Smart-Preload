@@ -1,0 +1,61 @@
+(function () {
+  async function handleGetServiceState() {
+    return {
+      ok: true,
+      serviceState: await loadServiceState(),
+    };
+  }
+
+  async function handleSetServicePaused(message) {
+    const serviceState = normalizeServiceState({
+      paused: message?.paused === true,
+      updatedAt: new Date().toISOString(),
+    });
+
+    await saveServiceState(serviceState);
+
+    if (serviceState.paused) {
+      await globalThis.ZeroLatencyPreloadWindowPolicy.ensurePreloadWindowWatchdog();
+      await clearSpeculationRulesForOpenTabs();
+      await resetPreloads();
+    } else {
+      await globalThis.ZeroLatencyRuntimeActions.applyRuntimeSettingsAction();
+    }
+
+    globalThis.ZeroLatencyDebugEvents?.record?.("service-control.paused-changed", {
+      paused: serviceState.paused,
+      updatedAt: serviceState.updatedAt,
+    });
+
+    return {
+      ok: true,
+      serviceState,
+    };
+  }
+
+  async function clearSpeculationRulesForOpenTabs() {
+    if (
+      globalThis.ZeroLatencySupport?.hasChromeNamespaceMethod?.("tabs", "query") !== true ||
+      globalThis.ZeroLatencySupport?.hasChromeNamespaceMethod?.("tabs", "sendMessage") !== true
+    ) {
+      return;
+    }
+
+    const tabs = await chrome.tabs.query({});
+
+    await Promise.allSettled(
+      tabs
+        .filter((tab) => Number.isFinite(tab?.id))
+        .map((tab) =>
+          chrome.tabs.sendMessage(tab.id, {
+            type: "preload:clear-speculation-rules",
+          })
+        )
+    );
+  }
+
+  globalThis.ZeroLatencyCoreServiceControlMessages = {
+    handleGetServiceState,
+    handleSetServicePaused,
+  };
+})();

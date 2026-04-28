@@ -6,7 +6,15 @@ const formElements = {
   modeBalanced: document.getElementById("mode-balanced"),
   modeAggressive: document.getElementById("mode-aggressive"),
   trackGoogleSearchPages: document.getElementById("track-google-search-pages"),
+  excludeGoogleInternalPages: document.getElementById("exclude-google-internal-pages"),
   preloadingEnabled: document.getElementById("preloading-enabled"),
+  ignoreWaterfallDynamicLinks: document.getElementById("ignore-waterfall-dynamic-links"),
+  transitionWindowScope: document.getElementById("transition-window-scope"),
+  transitionWindowScopeEnabled: document.getElementById("transition-window-scope-enabled"),
+  aiPredictionModel: document.getElementById("ai-prediction-model"),
+  aiPredictionEnabled: document.getElementById("ai-prediction-enabled"),
+  manageAiModel: document.getElementById("manage-ai-model"),
+  manageAiModelDownloaded: document.getElementById("manage-ai-model-downloaded"),
   crossSiteCurrentTabSwap: document.getElementById("cross-site-current-tab-swap"),
   watchdogEnabled: document.getElementById("watchdog-enabled"),
   watchdogIntervalSeconds: document.getElementById("watchdog-interval-seconds"),
@@ -19,7 +27,17 @@ const formElements = {
 const saveButton = document.getElementById("save-button");
 const resetButton = document.getElementById("reset-button");
 const navButtons = Array.from(document.querySelectorAll(".settings-nav-item"));
-const PRELOAD_RULE_CARD_IDS = settingsApi.PRELOAD_RULE_CARD_IDS ?? ["perPagePreloadLimit"];
+const aiProgressToastElement = document.getElementById("ai-progress-toast");
+const aiProgressToastTitleElement = document.getElementById("ai-progress-toast-title");
+const aiProgressToastMessageElement = document.getElementById("ai-progress-toast-message");
+const aiProgressToastBarElement = aiProgressToastElement?.querySelector(".ai-progress-toast-bar");
+const aiProgressToastBarFillElement = document.getElementById("ai-progress-toast-bar-fill");
+const aiProgressToastMetaElement = document.getElementById("ai-progress-toast-meta");
+const aiProgressToastDismissElement = document.getElementById("ai-progress-toast-dismiss");
+const aiPredictionMismatchWarningElement = document.getElementById("ai-prediction-mismatch-warning");
+const aiManagePlatformWarningElement = document.getElementById("ai-manage-platform-warning");
+const PRELOAD_RULE_CARD_IDS =
+  settingsApi.PRELOAD_RULE_CARD_IDS ?? ["nativePerPagePreloadLimit", "perPagePreloadLimit"];
 const NAV_SECTION_IDS = ["overview", "tracking", "preload", "ordering", "experiments"];
 const NAV_SECTION_GROUPS = {
   overview: ["overview", "overview-panel"],
@@ -37,7 +55,10 @@ const effectivePreloadCapElement = document.getElementById("effective-preload-ca
 const effectivePreloadMetaElement = document.getElementById("effective-preload-meta");
 const watchdogSummaryElement = document.getElementById("watchdog-summary");
 const watchdogMetaElement = document.getElementById("watchdog-meta");
+const nativeAppStatusElement = document.getElementById("native-app-status");
+const nativeAppMetaElement = document.getElementById("native-app-meta");
 const watchdogIntervalRowElement = document.getElementById("watchdog-interval-row");
+const transitionWindowScopeRowElement = document.getElementById("transition-window-scope-row");
 const footerStatusTitleElement = document.getElementById("footer-status-title");
 const footerStatusTextElement = document.getElementById("footer-status-text");
 const navStatusTextElement = document.getElementById("nav-status-text");
@@ -49,10 +70,22 @@ let armedDragCardId = null;
 let activeDragCardId = null;
 let activeDropTarget = null;
 let pendingNavSyncFrame = null;
+let nativeAiModelStatus = null;
+let manageAiModelActionInFlight = false;
+let currentFeatureSupport = {};
+let aiProgressPollHandle = null;
+let aiStatusPollHandle = null;
+let lastDisplayedAiProgress = null;
+let aiProgressToastDismissed = false;
+const AI_PROGRESS_POLL_INTERVAL_MS = 500;
+const AI_STATUS_POLL_INTERVAL_MS = 1000;
+const AI_PROGRESS_STALE_AFTER_MS = 5 * 60 * 1000;
 
 void initializeSettingsPage();
 
 async function initializeSettingsPage() {
+  populateTransitionWindowOptions();
+  populateAiModelOptions();
   bindUiEvents();
   setStatus("Loading", "Reading local extension settings.");
 
@@ -62,9 +95,45 @@ async function initializeSettingsPage() {
     renderForm(draftSettings);
     queueNavScrollSync();
     setStatus("Ready", "No unsaved changes.");
+    await fetchAndRenderFeatureSupport();
+    await fetchAndSyncAiModelStatus();
+    await checkInitialAiProgress();
+    startAiStatusBackgroundPolling();
   } catch (error) {
     console.error(error);
     setStatus("Failed", "Could not load settings from storage.");
+  }
+}
+
+function populateTransitionWindowOptions() {
+  const options = Array.isArray(settingsApi.TRANSITION_WINDOW_OPTIONS)
+    ? settingsApi.TRANSITION_WINDOW_OPTIONS
+    : [];
+
+  formElements.transitionWindowScope.textContent = "";
+
+  for (const optionSpec of options) {
+    const option = document.createElement("option");
+    option.value = String(optionSpec.value);
+    option.textContent = optionSpec.label;
+    formElements.transitionWindowScope.append(option);
+  }
+}
+
+function populateAiModelOptions() {
+  const options = Array.isArray(settingsApi.AI_MODEL_OPTIONS)
+    ? settingsApi.AI_MODEL_OPTIONS
+    : [];
+
+  for (const selectElement of [formElements.aiPredictionModel, formElements.manageAiModel]) {
+    selectElement.textContent = "";
+
+    for (const optionSpec of options) {
+      const option = document.createElement("option");
+      option.value = String(optionSpec.value);
+      option.textContent = optionSpec.label;
+      selectElement.append(option);
+    }
   }
 }
 
@@ -125,12 +194,42 @@ function bindUiEvents() {
     passive: true,
   });
   window.addEventListener("resize", queueNavScrollSync);
+
+  aiProgressToastDismissElement?.addEventListener("click", () => {
+    aiProgressToastDismissed = true;
+    hideAiProgressToast();
+  });
+
+  document.addEventListener("visibilitychange", handleSettingsVisibilityChange);
 }
 
-function handleFormChange() {
+function handleSettingsVisibilityChange() {
+  if (document.visibilityState === "visible") {
+    startAiStatusBackgroundPolling();
+  } else {
+    stopAiStatusBackgroundPolling();
+  }
+}
+
+async function handleFormChange(event) {
+  if (event?.target === formElements.manageAiModelDownloaded) {
+    if (manageAiModelActionInFlight) {
+      event.preventDefault();
+      syncManageAiModelDownloadedToggle();
+      return;
+    }
+    await handleManageAiModelToggle();
+    return;
+  }
+
+  if (event?.target === formElements.manageAiModel) {
+    syncManageAiModelDownloadedToggle();
+  }
+
   draftSettings = readFormSettings();
   renderRuleCards(draftSettings);
   updateComputedState(draftSettings);
+  syncAiPredictionMismatchWarning();
   queueNavScrollSync();
 
   if (isDirty()) {
@@ -153,12 +252,31 @@ function readFormSettings() {
     automaticDeviceTuning: formElements.automaticDeviceTuning.checked,
     tracking: {
       trackGoogleSearchPages: formElements.trackGoogleSearchPages.checked,
+      excludeGoogleInternalPages: formElements.excludeGoogleInternalPages.checked,
     },
     preloading: {
       enabled: formElements.preloadingEnabled.checked,
       mode,
+      nativeMaxPreloadsPerSource: draftSettings.preloading.nativeMaxPreloadsPerSource,
       maxTabsPerSource: draftSettings.preloading.maxTabsPerSource,
-      crossSiteCurrentTabSwap: formElements.crossSiteCurrentTabSwap.checked,
+      siteSelectionLimit: draftSettings.preloading.siteSelectionLimit,
+      tabSiteSelectionLimit: draftSettings.preloading.tabSiteSelectionLimit,
+      ignoreWaterfallDynamicLinks: formElements.ignoreWaterfallDynamicLinks.checked,
+      transitionWindowScope: {
+        enabled: formElements.transitionWindowScopeEnabled.checked,
+        windowKey: formElements.transitionWindowScope.value,
+      },
+      aiPrediction: {
+        enabled: formElements.aiPredictionEnabled.checked,
+        modelId: formElements.aiPredictionModel.value,
+      },
+      modelManager: {
+        selectedModelId: formElements.manageAiModel.value,
+        downloadedModels: {
+          ...(draftSettings.preloading?.modelManager?.downloadedModels ?? {}),
+          [formElements.manageAiModel.value]: formElements.manageAiModelDownloaded.checked,
+        },
+      },
     },
     preloadWindow: {
       watchdogEnabled: formElements.watchdogEnabled.checked,
@@ -166,6 +284,7 @@ function readFormSettings() {
       forceMinimize: formElements.forceMinimize.checked,
     },
     experiments: {
+      crossSiteCurrentTabSwap: formElements.crossSiteCurrentTabSwap.checked,
       idleWakeAggressive: formElements.idleWakeAggressive.checked,
       pointerProximityPrediction: formElements.pointerProximityPrediction.checked,
       authStateWarmup: formElements.authStateWarmup.checked,
@@ -183,6 +302,7 @@ function renderForm(settings) {
   syncBaseControlsFromSettings(settings);
   renderRuleCards(settings);
   updateComputedState(settings);
+  syncAiPredictionMismatchWarning();
   queueNavScrollSync();
 }
 
@@ -192,8 +312,18 @@ function syncBaseControlsFromSettings(settings) {
   formElements.modeBalanced.checked = settings.preloading.mode === "balanced";
   formElements.modeAggressive.checked = settings.preloading.mode === "aggressive";
   formElements.trackGoogleSearchPages.checked = settings.tracking.trackGoogleSearchPages;
+  formElements.excludeGoogleInternalPages.checked = settings.tracking.excludeGoogleInternalPages;
   formElements.preloadingEnabled.checked = settings.preloading.enabled;
-  formElements.crossSiteCurrentTabSwap.checked = settings.preloading.crossSiteCurrentTabSwap;
+  formElements.ignoreWaterfallDynamicLinks.checked =
+    settings.preloading.ignoreWaterfallDynamicLinks;
+  formElements.transitionWindowScopeEnabled.checked =
+    settings.preloading.transitionWindowScope.enabled;
+  formElements.transitionWindowScope.value = settings.preloading.transitionWindowScope.windowKey;
+  formElements.aiPredictionEnabled.checked = settings.preloading.aiPrediction.enabled;
+  formElements.aiPredictionModel.value = settings.preloading.aiPrediction.modelId;
+  formElements.manageAiModel.value = settings.preloading.modelManager.selectedModelId;
+  syncManageAiModelDownloadedToggle(settings);
+  formElements.crossSiteCurrentTabSwap.checked = settings.experiments.crossSiteCurrentTabSwap;
   formElements.watchdogEnabled.checked = settings.preloadWindow.watchdogEnabled;
   formElements.watchdogIntervalSeconds.value = String(
     settings.preloadWindow.watchdogIntervalSeconds
@@ -213,9 +343,14 @@ function updateComputedState(settings) {
     deviceProfile.deviceMemory || "?"
   } GB memory hint`;
   effectivePreloadCapElement.textContent = String(
-    effectiveSettings.preloading.effectiveMaxTabsPerSource
+    `${effectiveSettings.preloading.effectiveNativeMaxPreloadsPerSource} / ${effectiveSettings.preloading.effectiveTabMaxPreloadsPerSource}`
   );
-  effectivePreloadMetaElement.textContent = "Reserved summary card.";
+  const selectedTransitionWindowLabel =
+    settingsApi.TRANSITION_WINDOW_OPTIONS?.find(
+      (option) => option.value === effectiveSettings.preloading.effectiveTransitionWindowKey
+    )?.label ?? "总量";
+  effectivePreloadMetaElement.textContent =
+    `Native / tab slot caps. Rules use ${selectedTransitionWindowLabel}.`;
   watchdogSummaryElement.textContent = effectiveSettings.preloadWindow.watchdogEnabled
     ? "On"
     : "Off";
@@ -226,6 +361,12 @@ function updateComputedState(settings) {
     "is-disabled",
     !effectiveSettings.preloadWindow.watchdogEnabled
   );
+  transitionWindowScopeRowElement.classList.toggle(
+    "has-disabled-select",
+    !effectiveSettings.preloading.transitionWindowScope.enabled
+  );
+  formElements.transitionWindowScope.disabled =
+    !effectiveSettings.preloading.transitionWindowScope.enabled;
 }
 
 async function saveCurrentSettings() {
@@ -241,6 +382,87 @@ async function saveCurrentSettings() {
   } catch (error) {
     console.error(error);
     setStatus("Failed", "Could not save settings.");
+  }
+}
+
+async function handleManageAiModelToggle() {
+  if (manageAiModelActionInFlight) {
+    return;
+  }
+
+  const selectedModelId = String(formElements.manageAiModel.value || "");
+  const shouldInstall = formElements.manageAiModelDownloaded.checked === true;
+
+  manageAiModelActionInFlight = true;
+  syncManageAiModelControlAvailability(false);
+  aiProgressToastDismissed = false;
+  showAiProgressToast({
+    model_id: selectedModelId,
+    action: shouldInstall ? "install" : "uninstall",
+    stage: shouldInstall ? "ensuring-runtime" : "removing",
+    message: shouldInstall
+      ? "Preparing portable runtime if needed."
+      : "Removing the selected model.",
+    completed_bytes: 0,
+    total_bytes: 0,
+    finished: false,
+  });
+  startAiProgressPolling();
+  setStatus(
+    shouldInstall ? "Downloading" : "Removing",
+    shouldInstall
+      ? "Installing runtime if needed, then downloading the selected model."
+      : "Removing the selected model and pruning the portable runtime if unused."
+  );
+
+  try {
+    const response = await chrome.runtime.sendMessage({
+      type: "ai-models:set-installed",
+      modelId: selectedModelId,
+      installed: shouldInstall,
+    });
+
+    if (!response?.ok) {
+      throw new Error(response?.error || "AI model action failed.");
+    }
+
+    applyNativeAiModelStatus(response.status, response.settings);
+    if (isDirty()) {
+      setDirtyStatus("Model state updated. Other unsaved changes are still pending.");
+    } else {
+      setStatus(
+        shouldInstall ? "Downloaded" : "Removed",
+        "Portable runtime and model state updated."
+      );
+    }
+    showAiProgressToast({
+      model_id: selectedModelId,
+      action: shouldInstall ? "install" : "uninstall",
+      stage: "complete",
+      message: shouldInstall ? "Model downloaded." : "Model removed.",
+      completed_bytes: 0,
+      total_bytes: 0,
+      finished: true,
+    });
+  } catch (error) {
+    console.error(error);
+    syncManageAiModelDownloadedToggle();
+    setStatus("Failed", "Could not update the selected model.");
+    showAiProgressToast({
+      model_id: selectedModelId,
+      action: shouldInstall ? "install" : "uninstall",
+      stage: "failed",
+      message: error instanceof Error ? error.message : String(error),
+      completed_bytes: 0,
+      total_bytes: 0,
+      finished: true,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  } finally {
+    manageAiModelActionInFlight = false;
+    syncManageAiModelControlAvailability(isManageAiModelControlUsable());
+    stopAiProgressPolling();
+    void fetchAndSyncAiModelStatus();
   }
 }
 
@@ -707,4 +929,441 @@ function clearSortableCardDragState() {
   for (const card of sortableCardsListElement.querySelectorAll(".sortable-space-item")) {
     card.classList.remove("is-dragging");
   }
+}
+
+async function fetchAndRenderFeatureSupport() {
+  try {
+    const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const snapshot = await chrome.runtime.sendMessage({
+      type: "visit-graph:get-debug-snapshot",
+      tabId: activeTab?.id,
+      pageUrl: activeTab?.url,
+    });
+
+    currentFeatureSupport = snapshot?.featureSupport ?? {};
+    renderNativeAppStatus(currentFeatureSupport);
+    syncManagePlatformWarning(currentFeatureSupport);
+    syncManageAiModelControlAvailability(isManageAiModelControlUsable());
+  } catch (_error) {
+    currentFeatureSupport = {};
+    renderNativeAppStatus({});
+    syncManagePlatformWarning({});
+    syncManageAiModelControlAvailability(isManageAiModelControlUsable());
+  }
+}
+
+async function fetchAndSyncAiModelStatus() {
+  try {
+    const response = await chrome.runtime.sendMessage({
+      type: "ai-models:get-status",
+    });
+
+    if (!response?.ok) {
+      throw new Error(response?.error || "Could not load AI model status.");
+    }
+
+    currentFeatureSupport = {
+      ...currentFeatureSupport,
+      aiModelManagement: true,
+      aiModelManagementUsable: true,
+    };
+    applyNativeAiModelStatus(response.status, response.settings);
+    syncManageAiModelControlAvailability(isManageAiModelControlUsable());
+  } catch (error) {
+    console.error(error);
+    syncManageAiModelControlAvailability(isManageAiModelControlUsable());
+  }
+}
+
+function applyNativeAiModelStatus(status, serverSettings) {
+  nativeAiModelStatus = status ?? null;
+  savedSettings = mergeNativeAiStatusIntoSettings(
+    serverSettings ? settingsApi.normalizeStoredSettings(serverSettings) : savedSettings,
+    nativeAiModelStatus
+  );
+  draftSettings = mergeNativeAiStatusIntoSettings(draftSettings, nativeAiModelStatus);
+  renderForm(draftSettings);
+}
+
+function mergeNativeAiStatusIntoSettings(sourceSettings, nativeStatus) {
+  if (!nativeStatus) {
+    return settingsApi.normalizeStoredSettings(sourceSettings);
+  }
+
+  const downloadedModels = {};
+
+  for (const optionSpec of settingsApi.AI_MODEL_OPTIONS ?? []) {
+    downloadedModels[optionSpec.value] = false;
+  }
+
+  for (const modelStatus of nativeStatus.models ?? []) {
+    if (typeof modelStatus?.id === "string") {
+      downloadedModels[modelStatus.id] = modelStatus.downloaded === true;
+    }
+  }
+
+  const installedRuntimeIds = (nativeStatus.runtimes ?? [])
+    .filter((runtimeStatus) => runtimeStatus?.installed === true && typeof runtimeStatus?.id === "string")
+    .map((runtimeStatus) => runtimeStatus.id);
+
+  return settingsApi.normalizeStoredSettings({
+    ...sourceSettings,
+    preloading: {
+      ...sourceSettings.preloading,
+      modelManager: {
+        ...sourceSettings.preloading.modelManager,
+        downloadedModels,
+        installedRuntimeIds,
+      },
+    },
+  });
+}
+
+function syncManageAiModelDownloadedToggle(settings = draftSettings) {
+  const selectedModelId = String(formElements.manageAiModel.value || "");
+  const downloadedStateFromNative = nativeAiModelStatus?.models?.find(
+    (modelStatus) => modelStatus?.id === selectedModelId
+  )?.downloaded;
+  const downloadedStateFromSettings = Boolean(
+    settings.preloading?.modelManager?.downloadedModels?.[selectedModelId]
+  );
+
+  formElements.manageAiModelDownloaded.checked =
+    typeof downloadedStateFromNative === "boolean"
+      ? downloadedStateFromNative
+      : downloadedStateFromSettings;
+}
+
+function syncManageAiModelControlAvailability(enabled) {
+  const interactive = enabled === true && !manageAiModelActionInFlight;
+  formElements.manageAiModel.disabled = !interactive;
+  formElements.manageAiModelDownloaded.disabled = !interactive;
+}
+
+function isManageAiModelControlUsable() {
+  if (nativeAiModelStatus) {
+    return true;
+  }
+
+  return (
+    currentFeatureSupport.aiModelManagement === true ||
+    currentFeatureSupport.aiModelManagementUsable === true ||
+    isLikelyWindowsPlatform()
+  );
+}
+
+function isLikelyWindowsPlatform() {
+  const platform = currentFeatureSupport?.platform ?? {};
+
+  if (platform.windows === true) {
+    return true;
+  }
+
+  if (platform.mac === true || platform.linux === true) {
+    return false;
+  }
+
+  return /\bwindows\b/i.test(globalThis.navigator?.userAgent || "");
+}
+
+function renderNativeAppStatus(featureSupport) {
+  const supported = featureSupport.systemLevelWindowHiding === true;
+  const usable = featureSupport.systemLevelWindowHidingUsable === true;
+  const platform = featureSupport.platform ?? {};
+
+  if (!supported) {
+    nativeAppStatusElement.textContent = "N/A";
+    const platformName = platform.mac ? "macOS" : platform.linux ? "Linux" : "this platform";
+    nativeAppMetaElement.textContent = `System-level hiding not supported on ${platformName}.`;
+    return;
+  }
+
+  if (usable) {
+    nativeAppStatusElement.textContent = "Connected";
+    nativeAppMetaElement.textContent = "System-level window hiding is active.";
+  } else {
+    nativeAppStatusElement.textContent = "Offline";
+    nativeAppMetaElement.textContent = "Native app not detected. Using minimize fallback.";
+  }
+}
+
+function showAiProgressToast(progress) {
+  if (!aiProgressToastElement || aiProgressToastDismissed) {
+    return;
+  }
+
+  lastDisplayedAiProgress = progress;
+  aiProgressToastElement.classList.remove("is-hidden", "is-complete", "is-failed");
+
+  const stage = String(progress?.stage || "");
+  const action = String(progress?.action || "");
+  const modelLabel = getAiModelLabel(progress?.model_id);
+  const actionVerb = action === "uninstall" ? "Removing" : "Installing";
+  let titleText;
+
+  if (stage === "complete") {
+    titleText = action === "uninstall" ? "Model removed" : "Model ready";
+    aiProgressToastElement.classList.add("is-complete");
+  } else if (stage === "failed") {
+    titleText = action === "uninstall" ? "Uninstall failed" : "Install failed";
+    aiProgressToastElement.classList.add("is-failed");
+  } else {
+    titleText = `${actionVerb} ${modelLabel}`;
+  }
+
+  aiProgressToastTitleElement.textContent = titleText;
+  aiProgressToastMessageElement.textContent = progress?.message
+    ? String(progress.message)
+    : stage === "complete"
+      ? "Done."
+      : stage === "failed"
+        ? "The task did not finish."
+        : "Working...";
+
+  updateAiProgressBar(progress);
+  aiProgressToastMetaElement.textContent = buildAiProgressMeta(progress);
+
+  if (aiProgressToastDismissElement) {
+    aiProgressToastDismissElement.classList.toggle("is-hidden", progress?.finished !== true);
+  }
+
+  if (progress?.finished === true) {
+    stopAiProgressPolling();
+  }
+}
+
+function updateAiProgressBar(progress) {
+  if (!aiProgressToastBarElement || !aiProgressToastBarFillElement) {
+    return;
+  }
+
+  const total = Number(progress?.total_bytes) || 0;
+  const completed = Number(progress?.completed_bytes) || 0;
+  const finished = progress?.finished === true;
+  const failed = progress?.stage === "failed";
+
+  aiProgressToastBarElement.classList.remove("is-indeterminate");
+
+  if (finished && !failed) {
+    aiProgressToastBarFillElement.style.width = "100%";
+    return;
+  }
+
+  if (failed) {
+    aiProgressToastBarFillElement.style.width = "0%";
+    return;
+  }
+
+  if (total > 0) {
+    const pct = Math.min(100, Math.max(0, (completed / total) * 100));
+    aiProgressToastBarFillElement.style.width = `${pct.toFixed(1)}%`;
+    return;
+  }
+
+  aiProgressToastBarElement.classList.add("is-indeterminate");
+  aiProgressToastBarFillElement.style.width = "40%";
+}
+
+function buildAiProgressMeta(progress) {
+  const total = Number(progress?.total_bytes) || 0;
+  const completed = Number(progress?.completed_bytes) || 0;
+
+  if (total > 0) {
+    const pct = Math.min(100, Math.max(0, (completed / total) * 100));
+    return `${formatBytes(completed)} / ${formatBytes(total)} (${pct.toFixed(1)}%)`;
+  }
+
+  if (progress?.stage === "failed" && progress?.error) {
+    return String(progress.error);
+  }
+
+  return "";
+}
+
+function formatBytes(bytes) {
+  const value = Number(bytes) || 0;
+
+  if (value < 1024) {
+    return `${value} B`;
+  }
+
+  const units = ["KB", "MB", "GB", "TB"];
+  let size = value / 1024;
+  let unitIndex = 0;
+
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex += 1;
+  }
+
+  return `${size.toFixed(size >= 10 ? 1 : 2)} ${units[unitIndex]}`;
+}
+
+function getAiModelLabel(modelId) {
+  const option = (settingsApi.AI_MODEL_OPTIONS ?? []).find(
+    (spec) => String(spec.value) === String(modelId || "")
+  );
+  return option?.label ?? (modelId ? String(modelId) : "model");
+}
+
+function hideAiProgressToast() {
+  if (!aiProgressToastElement) {
+    return;
+  }
+  aiProgressToastElement.classList.add("is-hidden");
+}
+
+function startAiProgressPolling() {
+  if (aiProgressPollHandle != null) {
+    return;
+  }
+
+  aiProgressPollHandle = setInterval(() => {
+    void pollAiProgressOnce();
+  }, AI_PROGRESS_POLL_INTERVAL_MS);
+}
+
+function stopAiProgressPolling() {
+  if (aiProgressPollHandle == null) {
+    return;
+  }
+  clearInterval(aiProgressPollHandle);
+  aiProgressPollHandle = null;
+}
+
+async function pollAiProgressOnce() {
+  try {
+    const response = await chrome.runtime.sendMessage({
+      type: "ai-models:get-progress",
+    });
+
+    if (!response?.ok) {
+      return;
+    }
+
+    const progress = response.progress;
+
+    if (!progress) {
+      return;
+    }
+
+    if (aiProgressToastDismissed) {
+      if (progress.finished === true) {
+        stopAiProgressPolling();
+      }
+      return;
+    }
+
+    showAiProgressToast(progress);
+  } catch (_error) {
+    // Ignore transient polling errors.
+  }
+}
+
+async function checkInitialAiProgress() {
+  try {
+    const response = await chrome.runtime.sendMessage({
+      type: "ai-models:get-progress",
+    });
+
+    if (!response?.ok || !response.progress) {
+      return;
+    }
+
+    const progress = response.progress;
+    const updatedAt = Number(progress.updated_at_ms) || 0;
+    const stale = updatedAt > 0 && Date.now() - updatedAt > AI_PROGRESS_STALE_AFTER_MS;
+
+    if (progress.finished === true || stale) {
+      return;
+    }
+
+    aiProgressToastDismissed = false;
+    showAiProgressToast(progress);
+    startAiProgressPolling();
+  } catch (_error) {
+    // Ignore — nothing to resume.
+  }
+}
+
+function startAiStatusBackgroundPolling() {
+  if (aiStatusPollHandle != null || document.visibilityState !== "visible") {
+    return;
+  }
+
+  aiStatusPollHandle = setInterval(() => {
+    if (document.visibilityState !== "visible") {
+      return;
+    }
+    if (manageAiModelActionInFlight) {
+      return;
+    }
+    void fetchAndSyncAiModelStatus();
+  }, AI_STATUS_POLL_INTERVAL_MS);
+}
+
+function stopAiStatusBackgroundPolling() {
+  if (aiStatusPollHandle == null) {
+    return;
+  }
+  clearInterval(aiStatusPollHandle);
+  aiStatusPollHandle = null;
+}
+
+function syncAiPredictionMismatchWarning() {
+  if (!aiPredictionMismatchWarningElement) {
+    return;
+  }
+
+  const aiPredictionEnabled = formElements.aiPredictionEnabled.checked === true;
+  const selectedPredictionModelId = String(formElements.aiPredictionModel.value || "");
+  const downloadedMap =
+    draftSettings.preloading?.modelManager?.downloadedModels ?? {};
+  const isDownloaded = downloadedMap[selectedPredictionModelId] === true;
+  const manageSelectedModelId = String(formElements.manageAiModel.value || "");
+  const mismatchesManageSelection =
+    manageSelectedModelId !== "" && manageSelectedModelId !== selectedPredictionModelId;
+
+  if (!aiPredictionEnabled) {
+    aiPredictionMismatchWarningElement.classList.add("is-hidden");
+    aiPredictionMismatchWarningElement.textContent = "";
+    return;
+  }
+
+  if (!isDownloaded) {
+    const label = getAiModelLabel(selectedPredictionModelId);
+    const managerHint = mismatchesManageSelection
+      ? `「管理模型」当前选中的是 ${getAiModelLabel(manageSelectedModelId)}，请先切换到 ${label} 再下载。`
+      : `请在下方「管理模型」里先下载 ${label}。`;
+    aiPredictionMismatchWarningElement.textContent = `当前选择的 AI 预测模型 ${label} 尚未下载，AI 评分暂不会启用。${managerHint}`;
+    aiPredictionMismatchWarningElement.classList.remove("is-hidden");
+    return;
+  }
+
+  aiPredictionMismatchWarningElement.classList.add("is-hidden");
+  aiPredictionMismatchWarningElement.textContent = "";
+}
+
+function syncManagePlatformWarning(featureSupport) {
+  if (!aiManagePlatformWarningElement) {
+    return;
+  }
+
+  const supported =
+    featureSupport?.aiModelManagement === true || isLikelyWindowsPlatform();
+
+  if (supported) {
+    aiManagePlatformWarningElement.classList.add("is-hidden");
+    aiManagePlatformWarningElement.textContent = "";
+    return;
+  }
+
+  const platform = featureSupport?.platform ?? {};
+  const platformName = platform.mac
+    ? "macOS"
+    : platform.linux
+      ? "Linux"
+      : "当前平台";
+  aiManagePlatformWarningElement.textContent = `模型下载与运行目前仅在 Windows 上可用，${platformName}暂不支持管理本地模型。`;
+  aiManagePlatformWarningElement.classList.remove("is-hidden");
 }

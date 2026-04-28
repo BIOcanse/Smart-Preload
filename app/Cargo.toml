@@ -1,0 +1,36 @@
+[package]
+name = "zero-latency-web-app"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+axum = "0.8"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+single-instance = "0.3"
+sysinfo = "0.37"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "sync", "time"] }
+tower-http = { version = "0.6", features = ["cors"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+tray-icon = "0.21"
+winit = "0.30"
+wmi = "0.18"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+walkdir = "2"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+
+serde_json = "1"
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_Threading",
+    "Win32_UI_Accessibility",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_Graphics_Dwm",
+] }

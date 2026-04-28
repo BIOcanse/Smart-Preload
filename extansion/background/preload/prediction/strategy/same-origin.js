@@ -1,0 +1,4 @@
+function determineSameOriginPreloadStrategy() {
+  return "prerender";
+}
+
