@@ -1,0 +1,100 @@
+function allocateSelectedWithMinOne(a, scores, caps, transform = x => Math.sqrt(x)) {
+  if (!Number.isInteger(a) || a < 0) {
+    throw new Error("a must be a non-negative integer");
+  }
+
+  if (
+    !Array.isArray(scores) ||
+    !Array.isArray(caps) ||
+    scores.length === 0 ||
+    scores.length !== caps.length
+  ) {
+    throw new Error("scores and caps must be arrays of the same non-zero length");
+  }
+
+  const n = scores.length;
+
+  for (let i = 0; i < n; i++) {
+    if (typeof scores[i] !== "number" || !Number.isFinite(scores[i]) || scores[i] <= 0) {
+      throw new Error(`scores[${i}] must be a positive finite number`);
+    }
+    if (!Number.isInteger(caps[i]) || caps[i] < 1) {
+      throw new Error(`caps[${i}] must be an integer >= 1`);
+    }
+  }
+
+  if (a < n) {
+    throw new Error("No feasible solution: a is smaller than number of selected items");
+  }
+
+  const totalCap = caps.reduce((s, x) => s + x, 0);
+  if (a > totalCap) {
+    throw new Error("No feasible solution: a is greater than total capacity");
+  }
+
+  const baseline = new Array(n).fill(1);
+  const remain = a - n;
+
+  if (remain === 0) {
+    return baseline;
+  }
+
+  const extraCaps = caps.map((c) => c - 1);
+  const weights = scores.map(transform);
+
+  for (let i = 0; i < n; i++) {
+    if (!(weights[i] >= 0) || !Number.isFinite(weights[i])) {
+      throw new Error(`transform(scores[${i}]) must produce a finite non-negative number`);
+    }
+  }
+
+  const totalWeight = weights.reduce((s, x) => s + x, 0);
+  if (totalWeight <= 0) {
+    throw new Error("Total transformed weight must be positive");
+  }
+
+  const targets = weights.map((w) => (remain * w) / totalWeight);
+
+  const INF = Number.POSITIVE_INFINITY;
+  let prev = new Array(remain + 1).fill(INF);
+  prev[0] = 0;
+
+  const choice = Array.from({ length: n }, () => new Array(remain + 1).fill(-1));
+  const parentSum = Array.from({ length: n }, () => new Array(remain + 1).fill(-1));
+
+  for (let i = 0; i < n; i++) {
+    const curr = new Array(remain + 1).fill(INF);
+    const maxEi = Math.min(extraCaps[i], remain);
+
+    for (let s = 0; s <= remain; s++) {
+      if (!Number.isFinite(prev[s])) continue;
+
+      for (let ei = 0; ei <= maxEi && s + ei <= remain; ei++) {
+        const ns = s + ei;
+        const cost = prev[s] + (ei - targets[i]) * (ei - targets[i]);
+
+        if (cost < curr[ns]) {
+          curr[ns] = cost;
+          choice[i][ns] = ei;
+          parentSum[i][ns] = s;
+        }
+      }
+    }
+
+    prev = curr;
+  }
+
+  if (!Number.isFinite(prev[remain])) {
+    throw new Error("No feasible solution exists under the constraints");
+  }
+
+  const extra = new Array(n).fill(0);
+  let s = remain;
+
+  for (let i = n - 1; i >= 0; i--) {
+    extra[i] = choice[i][s];
+    s = parentSum[i][s];
+  }
+
+  return baseline.map((b, i) => b + extra[i]);
+}

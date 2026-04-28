@@ -1,7 +1,16 @@
 vs_BuildTools.exe
 
 # Rust build output
+app/.cargo/
+app/target/
+app/target-codex/
 extansion/wasm/visit-graph-engine/target/
+
+# Local debug/output scratch space
+output/
+dist/
+.claude/
+scripts/debug-consent/
 
 # OS/editor noise
 .DS_Store

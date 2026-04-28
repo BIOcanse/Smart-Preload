@@ -243,42 +243,10 @@ body {
 
 .settings-item[data-runtime-placeholder="true"] {
   background: #fbfcfa;
+  cursor: not-allowed;
 }
 
-.settings-item[data-runtime-placeholder="true"]::before,
-.settings-item[data-runtime-placeholder="true"]::after {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.18s ease;
-}
-
-.settings-item[data-runtime-placeholder="true"]::before {
-  content: "";
-  width: 18px;
-  height: 18px;
-  border: 1.5px solid #bac4be;
-  border-radius: 50%;
-}
-
-.settings-item[data-runtime-placeholder="true"]::after {
-  content: "";
-  width: 10px;
-  height: 1.5px;
-  top: 27px;
-  right: 22px;
-  background: #bac4be;
-  transform: rotate(-45deg);
-}
-
-.settings-item[data-runtime-placeholder="true"]:hover::before,
-.settings-item[data-runtime-placeholder="true"]:hover::after {
-  opacity: 1;
-}
-
-.settings-item[data-runtime-placeholder="true"] .settings-item-info {
+.settings-item[data-runtime-placeholder="true"] * {
   cursor: not-allowed;
 }
 
@@ -302,6 +270,19 @@ body {
   justify-content: flex-end;
   gap: 10px;
   min-width: 220px;
+}
+
+.compound-setting-control {
+  min-width: 320px;
+}
+
+.compound-setting-control .select-input {
+  width: 160px;
+}
+
+.settings-item.has-disabled-select .compound-setting-control .select-input {
+  color: var(--muted);
+  background: var(--surface-muted);
 }
 
 .sortable-space-shell {
@@ -558,6 +539,147 @@ body {
   pointer-events: none;
 }
 
+.settings-item-warning {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid #e5cf9e;
+  border-radius: 12px;
+  background: #fbf3df;
+  color: #6f5524;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.settings-item-warning.is-info {
+  border-color: #c0d7d0;
+  background: #ecf3f1;
+  color: #3a574e;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+.ai-progress-toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+  display: grid;
+  gap: 10px;
+  width: min(360px, calc(100vw - 40px));
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface-strong);
+  box-shadow: 0 16px 36px rgba(24, 42, 37, 0.18);
+}
+
+.ai-progress-toast.is-failed {
+  border-color: #e5b0a0;
+  background: #fdf2ee;
+}
+
+.ai-progress-toast.is-complete {
+  border-color: #b6d2bf;
+  background: #ecf5ee;
+}
+
+.ai-progress-toast-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ai-progress-toast-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+.ai-progress-toast.is-failed .ai-progress-toast-title {
+  color: #a84826;
+}
+
+.ai-progress-toast.is-complete .ai-progress-toast-title {
+  color: #336747;
+}
+
+.ai-progress-toast-dismiss {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+.ai-progress-toast-dismiss:hover {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+.ai-progress-toast-message {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.ai-progress-toast-bar {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  overflow: hidden;
+}
+
+.ai-progress-toast-bar-fill {
+  position: absolute;
+  inset: 0;
+  width: 0%;
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
+
+.ai-progress-toast-bar.is-indeterminate .ai-progress-toast-bar-fill {
+  width: 35%;
+  animation: ai-progress-toast-indeterminate 1.4s linear infinite;
+}
+
+.ai-progress-toast.is-failed .ai-progress-toast-bar-fill {
+  background: #c25c3c;
+}
+
+.ai-progress-toast.is-complete .ai-progress-toast-bar-fill {
+  background: #4d8a64;
+  width: 100%;
+}
+
+.ai-progress-toast-meta {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+@keyframes ai-progress-toast-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
 .settings-footer {
   position: sticky;
   bottom: 18px;
@@ -653,10 +775,19 @@ body {
   }
 
   .settings-item-control,
+  .compound-setting-control,
   .segmented-control,
   .sortable-space-item-control,
   .sortable-space-control {
     min-width: 0;
+    width: 100%;
+  }
+
+  .compound-setting-control {
+    justify-content: space-between;
+  }
+
+  .compound-setting-control .select-input {
     width: 100%;
   }
 

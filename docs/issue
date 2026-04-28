@@ -1,0 +1,32 @@
+发现的问题
+P1 · 卸载路径在 ollama API 启动失败时无法清理残留
+model/infer.rs:17-21：uninstall_managed_model 当 runtime 已安装时一定会调 ensure_portable_ollama_api_available（最长等 45s 启 serve）。如果运行时损坏/端口被占，整个卸载就 bail，prune 也不会执行 — 用户想"清理"反而清理不掉。应在 API 起不来时 fallback 到"直接 kill 进程 + 删目录"。
+
+P1 · "AI prediction model" 与 "Manage model" 是两个独立下拉，无防呆
+比如用户在"AI prediction"选 qwen3-1.7b，但"Manage model"只下载了 qwen3-0.6b。effectiveAiPredictionModelDownloaded shared/settings.js:617-621 看的是 aiPrediction.modelId 是否在 downloadedModels 里 — 结果就是 false，AI 静默不工作，UI 没任何提示。建议要么合并为一个下拉，要么 AI prediction 切换时联动检查并给出提示。
+
+P2 · 下载无进度反馈
+model/infer.rs:99-119 ollama pull 用的是 stream: false，前端就只能干等到全部下完（timeout 1 小时）。Qwen3-4B / Gemma 4 都是几 GB，UI 上看就是"卡死"。考虑改成 stream: true + SSE 转发到前端。
+
+P2 · 启动期模型状态同步是 fire-and-forget
+actions/runtime.js:46-60 maybeSyncAiModelStatusInBackground 不阻塞、不重试。如果 service worker 启动那一刻 native app 还没起，probeNativeAppAvailability 返回 false → aiModelManagementUsable 是 false → 跳过同步。后续 native app 起来了，但只有用户改 storage 或 SW 重启才会再触发一次。中间这段时间 AI 视为"不可用"，但模型可能其实在本地已就绪。Codex 那条 P2 在 Codex-Review-Findings-2026-04-18.md:84-99 已记录。
+
+P2 · manageAiModelActionInFlight 期间用户操作被静默吞掉
+settings.js:339-345：下载途中再点开关被 return 掉。但 checkbox 视觉状态已经被翻了（user click 默认行为），与 inFlight 内的动作意图不一致。失败回滚 syncManageAiModelDownloadedToggle() 用的是缓存的 nativeAiModelStatus，不一定反映最新真实状态。建议至少 event.preventDefault() 阻止 checkbox 视觉变化。
+
+P3 · 卸载时 ollama_delete 错误被吞
+model/infer.rs:19 let _ = ollama_delete_model(...).await — 删模型失败也继续 prune。如果 prune 触发了"全部为 false"误判（其实 disk 上还在），下次启动会发现 runtime 没了但模型文件残留。
+
+P3 · 平台门槛
+support/features.js:31-33：supportsAiModelManagement 只在 Windows 返回 true。Mac/Linux 用户看到的是 toggle 但永远 disabled，没有任何"为啥不能用"的说明。Catalog 里 model/catalog.rs:14-20 也只有 Windows zip URL，所以这是真不支持。建议至少在 UI 上注明。
+
+P3 · AI prediction 下拉的 modelId 和 manage selectedModelId 都默认 qwen3-0.6b
+shared/settings.js:111-119 默认时一致，但用户改任一边都会拆开。
+
+待你实测验证
+
+真实下载/卸载 Qwen3 0.6B 走通端到端
+拔掉网络中途取消能否恢复
+强制 kill ollama.exe 后再切换模型（runtime 损坏路径）
+同时启用 AI prediction + 一个未下载的模型，看打分链是否真的静默 fallback 而不报错
+总结：链路本身完整，自动安装/卸载运行时设计齐全。主要风险在错误恢复路径（API 起不来时卸载卡住）和 UX 防呆（两下拉无关联、无下载进度）。

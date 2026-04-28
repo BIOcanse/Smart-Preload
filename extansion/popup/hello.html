@@ -132,6 +132,14 @@
         color: #17345d;
       }
 
+      button.danger {
+        background: #c9342f;
+      }
+
+      button.success {
+        background: #1f7a4d;
+      }
+
       button:disabled {
         cursor: wait;
         opacity: 0.7;
@@ -178,17 +186,12 @@
       <section class="panel">
         <h2 class="panel-title">Top</h2>
         <ul class="list" id="top-edges"></ul>
-        <p class="empty hidden" id="top-edges-empty">No recorded outbound jumps from this page yet.</p>
-      </section>
-
-      <section class="panel">
-        <h2 class="panel-title">Preload</h2>
-        <ul class="list" id="preload-list"></ul>
-        <p class="empty hidden" id="preload-list-empty">No preload targets prepared for this page.</p>
+        <p class="empty hidden" id="top-edges-empty">No preload-qualified links on this page yet.</p>
       </section>
 
       <section class="actions">
         <button id="refresh-button" type="button">Refresh</button>
+        <button class="danger" id="service-toggle-button" type="button">停止</button>
         <button class="secondary" id="settings-button" type="button">Settings</button>
       </section>
 

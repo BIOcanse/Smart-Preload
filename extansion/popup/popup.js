@@ -2,34 +2,36 @@ const pageLabelElement = document.getElementById("page-label");
 const nodeCountElement = document.getElementById("node-count");
 const edgeCountElement = document.getElementById("edge-count");
 const updatedAtElement = document.getElementById("updated-at");
-const topDestinationsElement = document.getElementById("top-edges");
-const topDestinationsEmptyElement = document.getElementById("top-edges-empty");
-const preloadListElement = document.getElementById("preload-list");
-const preloadListEmptyElement = document.getElementById("preload-list-empty");
+const topTargetsElement = document.getElementById("top-edges");
+const topTargetsEmptyElement = document.getElementById("top-edges-empty");
 const refreshButton = document.getElementById("refresh-button");
+const serviceToggleButton = document.getElementById("service-toggle-button");
 const settingsButton = document.getElementById("settings-button");
 const statusTextElement = document.getElementById("status-text");
+let servicePaused = false;
 
 refreshButton.addEventListener("click", () => {
   void loadSnapshot();
 });
 
+serviceToggleButton.addEventListener("click", () => {
+  void toggleServicePaused();
+});
+
 settingsButton.addEventListener("click", async () => {
   try {
-    await chrome.tabs.create({
-      url: chrome.runtime.getURL("settings/index.html"),
+    const response = await chrome.runtime.sendMessage({
+      type: "extension:open-settings",
     });
+
+    if (response?.ok === false) {
+      throw new Error(response.error || "Failed to open settings page.");
+    }
+
     window.close();
   } catch (error) {
     console.error(error);
-
-    try {
-      await chrome.runtime.openOptionsPage();
-      window.close();
-    } catch (fallbackError) {
-      console.error(fallbackError);
-      statusTextElement.textContent = "Failed to open settings page.";
-    }
+    statusTextElement.textContent = "Failed to open settings page.";
   }
 });
 
@@ -54,7 +56,12 @@ async function loadSnapshot() {
     }
 
     renderSnapshot(snapshot);
-    setBusy(false, "Visit graph loaded.");
+    setBusy(
+      false,
+      snapshot?.serviceState?.paused === true
+        ? "插件已停止：预测和预加载已关闭。"
+        : "Visit graph loaded."
+    );
   } catch (error) {
     console.error(error);
     setBusy(false, "Failed to load visit graph.");
@@ -62,6 +69,7 @@ async function loadSnapshot() {
 }
 
 function renderSnapshot(snapshot) {
+  renderServiceState(snapshot?.serviceState);
   nodeCountElement.textContent = String(snapshot?.summary?.nodeCount ?? 0);
   edgeCountElement.textContent = String(snapshot?.summary?.edgeCount ?? 0);
   updatedAtElement.textContent = formatUpdatedAt(snapshot?.summary?.updatedAt);
@@ -69,75 +77,97 @@ function renderSnapshot(snapshot) {
     ? snapshot?.pageContext?.pageLabel || "Current page"
     : "Current page is not tracked";
 
-  renderTopDestinations(snapshot?.currentTopDestinations ?? []);
-  renderPreloadList(snapshot?.currentPreloads ?? [], snapshot?.pageContext);
+  renderTopTargets(snapshot?.currentTopTargets ?? [], snapshot?.pageContext, snapshot?.serviceState);
 }
 
-function renderTopDestinations(topDestinations) {
-  topDestinationsElement.textContent = "";
+function renderTopTargets(topTargets, pageContext, serviceState) {
+  topTargetsElement.textContent = "";
 
-  if (!topDestinations.length) {
-    topDestinationsEmptyElement.classList.remove("hidden");
+  if (serviceState?.paused === true) {
+    topTargetsEmptyElement.classList.remove("hidden");
+    topTargetsEmptyElement.textContent = "插件已停止：预测和预加载已关闭。";
     return;
   }
 
-  topDestinationsEmptyElement.classList.add("hidden");
+  if (!topTargets.length) {
+    topTargetsEmptyElement.classList.remove("hidden");
+    topTargetsEmptyElement.textContent = pageContext?.trackable
+      ? "No preload-qualified links on this page yet."
+      : "Current page is not trackable.";
+    return;
+  }
 
-  for (const destination of topDestinations.slice(0, 3)) {
+  topTargetsEmptyElement.classList.add("hidden");
+
+  for (const target of topTargets.slice(0, 3)) {
     const item = document.createElement("li");
     item.className = "list-item";
 
     const title = document.createElement("p");
     title.className = "item-title";
-    title.textContent =
-      destination.destinationLabel || destination.destinationHost || "Unknown";
+    title.textContent = target.nodeLabel || truncateUrl(target.loadedUrl || target.requestedUrl);
 
     const meta = document.createElement("p");
     meta.className = "item-meta";
-    meta.textContent = `From this page: ${destination.count} | Last: ${formatTimestamp(
-      destination.lastSeenAt
-    )} | Type: ${destination.lastTransitionType}`;
+    const siteMeta = formatSiteSelectionMeta(target.siteSelection);
+    const frequencyMeta = formatTransitionMetricMeta(target.transitionMetrics);
+    meta.textContent = [
+      `Weight: ${formatWeight(target.score)}`,
+      frequencyMeta,
+      siteMeta,
+      target.strategy || "hidden-tab",
+      target.status || "unknown",
+      truncateUrl(target.loadedUrl || target.requestedUrl),
+    ]
+      .filter(Boolean)
+      .join(" | ");
 
     item.append(title, meta);
-    topDestinationsElement.append(item);
-  }
-}
-
-function renderPreloadList(preloads, pageContext) {
-  preloadListElement.textContent = "";
-
-  if (!preloads.length) {
-    preloadListEmptyElement.classList.remove("hidden");
-    preloadListEmptyElement.textContent = pageContext?.hasPreloadWindow
-      ? "No preload targets prepared for this page."
-      : "No preload window yet.";
-    return;
-  }
-
-  preloadListEmptyElement.classList.add("hidden");
-
-  for (const preload of preloads.slice(0, 3)) {
-    const item = document.createElement("li");
-    item.className = "list-item";
-
-    const title = document.createElement("p");
-    title.className = "item-title";
-    title.textContent = preload.nodeLabel;
-
-    const meta = document.createElement("p");
-    meta.className = "item-meta";
-    meta.textContent = `${preload.strategy || "hidden-tab"} | ${preload.status} | Score: ${preload.score} | ${truncateUrl(
-      preload.loadedUrl || preload.requestedUrl
-    )}`;
-
-    item.append(title, meta);
-    preloadListElement.append(item);
+    topTargetsElement.append(item);
   }
 }
 
 function setBusy(isBusy, message) {
   refreshButton.disabled = isBusy;
   statusTextElement.textContent = message;
+}
+
+async function toggleServicePaused() {
+  const nextPaused = !servicePaused;
+
+  serviceToggleButton.disabled = true;
+  statusTextElement.textContent = nextPaused
+    ? "Stopping prediction and preloading..."
+    : "Starting prediction and preloading...";
+
+  try {
+    const response = await chrome.runtime.sendMessage({
+      type: "extension:set-service-paused",
+      paused: nextPaused,
+    });
+
+    if (response?.ok === false) {
+      throw new Error(response.error || "Failed to update plugin state.");
+    }
+
+    renderServiceState(response?.serviceState);
+    await loadSnapshot();
+  } catch (error) {
+    console.error(error);
+    statusTextElement.textContent = "Failed to update plugin state.";
+  } finally {
+    serviceToggleButton.disabled = false;
+  }
+}
+
+function renderServiceState(serviceState) {
+  servicePaused = serviceState?.paused === true;
+  serviceToggleButton.textContent = servicePaused ? "开启" : "停止";
+  serviceToggleButton.title = servicePaused
+    ? "恢复预测和预加载"
+    : "停止预测和预加载，并关闭后台预加载窗口";
+  serviceToggleButton.classList.toggle("danger", !servicePaused);
+  serviceToggleButton.classList.toggle("success", servicePaused);
 }
 
 function formatUpdatedAt(timestamp) {
@@ -173,4 +203,38 @@ function truncateUrl(url) {
   }
 
   return url.length > 60 ? `${url.slice(0, 57)}...` : url;
+}
+
+function formatWeight(score) {
+  const numericScore = Number(score);
+
+  if (!Number.isFinite(numericScore)) {
+    return "-";
+  }
+
+  return numericScore.toFixed(3);
+}
+
+function formatSiteSelectionMeta(siteSelection) {
+  if (!siteSelection || !Number.isFinite(Number(siteSelection.siteWeight))) {
+    return "";
+  }
+
+  return `Site: ${formatWeight(siteSelection.siteWeight)} (#${siteSelection.siteRank || 0}, ${siteSelection.allocatedSlots || 0}/${siteSelection.cap || 0})`;
+}
+
+function formatTransitionMetricMeta(transitionMetrics) {
+  if (!transitionMetrics) {
+    return "";
+  }
+
+  const siteCount = Number(transitionMetrics.siteTransitionCount) || 0;
+  const outboundPageCount = Number(transitionMetrics.outboundPageTransitionCount) || 0;
+  const intraSitePageCount = Number(transitionMetrics.intraSitePageTransitionCount) || 0;
+
+  if (siteCount === 0 && outboundPageCount === 0 && intraSitePageCount === 0) {
+    return "";
+  }
+
+  return `Freq: site ${siteCount}, out ${outboundPageCount}, in ${intraSitePageCount}`;
 }
