@@ -6,15 +6,17 @@ mod model;
 mod query;
 mod responses;
 pub mod scoring;
+mod selection;
 
 use ffi::{read_input, store_result};
 use filter::{FilterCandidatesInput, FilterCandidatesResult, filter_candidates};
 use model::{EngineEvent, EngineQuery, TrackingState};
 use responses::{
     ApplyEventResponse, FilterCandidatesResponse, QueryStateResponse, ScoreWeightsBatchResponse,
-    ScoreWeightsResponse, serialize_response,
+    ScoreWeightsResponse, SelectPreloadCandidateGroupResponse, serialize_response,
 };
 use scoring::{ScoreWeightsBatchInput, ScoreWeightsInput, score_weights, score_weights_batch};
+use selection::{SelectPreloadCandidateGroupInput, select_preload_candidate_group};
 use serde_json::Value;
 
 use events::apply_event;
@@ -126,6 +128,27 @@ pub extern "C" fn filter_candidate_metrics_json(input_ptr: *const u8, input_len:
     store_result(serialize_response(&response))
 }
 
+#[unsafe(no_mangle)]
+pub extern "C" fn select_preload_candidate_group_json(
+    input_ptr: *const u8,
+    input_len: usize,
+) -> *mut u8 {
+    let response = match select_preload_candidate_group_json_inner(input_ptr, input_len) {
+        Ok(result) => SelectPreloadCandidateGroupResponse {
+            ok: true,
+            result: Some(result),
+            error: None,
+        },
+        Err(error) => SelectPreloadCandidateGroupResponse {
+            ok: false,
+            result: None,
+            error: Some(error),
+        },
+    };
+
+    store_result(serialize_response(&response))
+}
+
 fn apply_event_json_inner(
     state_ptr: *const u8,
     state_len: usize,
@@ -195,4 +218,16 @@ fn filter_candidate_metrics_json_inner(
         .map_err(|error| format!("failed to parse filter JSON: {error}"))?;
 
     Ok(filter_candidates(input))
+}
+
+fn select_preload_candidate_group_json_inner(
+    input_ptr: *const u8,
+    input_len: usize,
+) -> Result<selection::SelectPreloadCandidateGroupResult, String> {
+    let input = serde_json::from_slice::<SelectPreloadCandidateGroupInput>(read_input(
+        input_ptr, input_len,
+    )?)
+    .map_err(|error| format!("failed to parse preload site selection JSON: {error}"))?;
+
+    select_preload_candidate_group(input)
 }

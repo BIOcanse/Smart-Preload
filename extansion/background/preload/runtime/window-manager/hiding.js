@@ -54,6 +54,35 @@ async function keepPreloadWindowHidden(windowId, options = {}) {
   }
 
   if (globalThis.ZeroLatencySupport?.isSystemLevelWindowHidingUsable?.() === true) {
+    const hideBackoff = getPreloadWindowSystemHideBackoff(
+      options?.normalWindowRuntime?.preloadWindow
+    );
+
+    if (hideBackoff.active) {
+      globalThis.ZeroLatencyDebugEvents?.record?.("preload-window.hide.system-refresh-skip", {
+        windowId,
+        reason: "system-hide-backoff",
+        disabledUntil: hideBackoff.disabledUntil,
+        remainingMs: hideBackoff.remainingMs,
+        trigger: options?.trigger || null,
+      });
+      return false;
+    }
+
+    const knownSystemHidden =
+      options?.hiddenBySystem === true &&
+      normalizePositiveFiniteNumber(options?.hwnd, null) !== null;
+
+    if (knownSystemHidden && options?.forceRefresh !== true) {
+      globalThis.ZeroLatencyDebugEvents?.record?.("preload-window.hide.system-refresh-skip", {
+        windowId,
+        hwnd: normalizePositiveFiniteNumber(options?.hwnd, null),
+        reason: "already-hidden",
+        trigger: options?.trigger || null,
+      });
+      return true;
+    }
+
     const hideResult = await refreshSystemHiddenPreloadWindow(windowId, options);
 
     if (hideResult.ok) {
@@ -61,12 +90,21 @@ async function keepPreloadWindowHidden(windowId, options = {}) {
         options.normalWindowRuntime.preloadWindow.hiddenBySystem = true;
         options.normalWindowRuntime.preloadWindow.hwnd =
           hideResult.hwnd ?? normalizePositiveFiniteNumber(options?.hwnd, null);
+        recordPreloadWindowSystemHideSuccess(
+          options.normalWindowRuntime.preloadWindow,
+          options.normalWindowRuntime.preloadWindow.hwnd
+        );
         options.normalWindowRuntime.preloadWindow.updatedAt = new Date().toISOString();
         options.normalWindowRuntime.updatedAt =
           options.normalWindowRuntime.preloadWindow.updatedAt;
       }
       return true;
     }
+
+    recordPreloadWindowSystemHideFailure(
+      options?.normalWindowRuntime?.preloadWindow,
+      hideResult.error || hideResult.reason || "native-hide-refresh-failed"
+    );
   }
 
   if (!getEffectiveExtensionSettings().preloadWindow.forceMinimize) {

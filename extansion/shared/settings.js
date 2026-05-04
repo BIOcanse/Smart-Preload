@@ -1,6 +1,63 @@
 (() => {
+  function localize(key, fallback, substitutions = []) {
+    if (globalThis.ZeroLatencyI18n?.t) {
+      return globalThis.ZeroLatencyI18n.t(key, substitutions, fallback);
+    }
+
+    try {
+      const message = globalThis.chrome?.i18n?.getMessage?.(key) || "";
+      const template = message || fallback || key;
+      const values = Array.isArray(substitutions) ? substitutions : [substitutions];
+      return String(template).replace(/\{(\d+)\}/g, (match, indexText) => {
+        const value = values[Number(indexText)];
+        return value == null ? match : String(value);
+      });
+    } catch (_error) {
+      return fallback || key;
+    }
+  }
+
+  function createRuleFields(tokenText) {
+    return [
+      {
+        key: "valueA",
+        type: "number",
+        min: 0,
+        max: 9999,
+        label: localize("ruleFieldValueA", "Value A"),
+      },
+      {
+        key: "operatorA",
+        type: "select",
+        options: RULE_OPERATOR_OPTIONS,
+        label: localize("ruleFieldCompareA", "Compare A"),
+      },
+      { key: "tokenX", type: "token", text: tokenText, label: tokenText },
+      {
+        key: "operatorB",
+        type: "select",
+        options: RULE_OPERATOR_OPTIONS,
+        label: localize("ruleFieldCompareB", "Compare B"),
+      },
+      {
+        key: "valueC",
+        type: "number",
+        min: 0,
+        max: 9999,
+        label: localize("ruleFieldValueC", "Value C"),
+      },
+      {
+        key: "status",
+        type: "status-toggle",
+        label: localize("ruleFieldStatus", "Status"),
+      },
+    ];
+  }
+
   const SETTINGS_STORAGE_KEY = "userSettingsV1";
-  const SETTINGS_STORAGE_VERSION = 10;
+  const AI_TEST_CONFIG_STORAGE_KEY = "aiTestConfigV1";
+  const SETTINGS_STORAGE_VERSION = 14;
+  const AI_MODEL_CATALOG = globalThis.ZeroLatencyAiModelCatalog ?? null;
   const PRELOAD_RULE_CARD_IDS = ["nativePerPagePreloadLimit", "perPagePreloadLimit"];
   const SORTABLE_CARD_IDS = [
     "highWeightRank",
@@ -12,25 +69,85 @@
   const SORTABLE_STATUS_VALUES = ["enabled", "disabled"];
   const TRANSITION_WINDOW_VALUES = ["total", "last365d", "last30d", "last7d", "last1d"];
   const TRANSITION_WINDOW_OPTIONS = [
-    { value: "total", label: "总量" },
-    { value: "last365d", label: "一年内" },
-    { value: "last30d", label: "一个月内" },
-    { value: "last7d", label: "7天内" },
-    { value: "last1d", label: "1天内" },
+    { value: "total", label: localize("transitionWindowTotal", "Total") },
+    { value: "last365d", label: localize("transitionWindow365d", "Last year") },
+    { value: "last30d", label: localize("transitionWindow30d", "Last month") },
+    { value: "last7d", label: localize("transitionWindow7d", "Last 7 days") },
+    { value: "last1d", label: localize("transitionWindow1d", "Last day") },
   ];
-  const AI_MODEL_OPTIONS = [
-    { value: "qwen3-0.6b", label: "Qwen3 0.6B", runtimeId: "ollama-runtime" },
-    { value: "qwen3-1.7b", label: "Qwen3 1.7B", runtimeId: "ollama-runtime" },
-    { value: "qwen3-4b", label: "Qwen3 4B", runtimeId: "ollama-runtime" },
-    { value: "gemma4-e2b", label: "Gemma 4 E2B", runtimeId: "ollama-runtime" },
-    { value: "gemma4-e4b", label: "Gemma 4 E4B", runtimeId: "ollama-runtime" },
+  const FALLBACK_AI_PROVIDER_OPTIONS = [
+    {
+      value: "openai",
+      label: "ChatGPT / OpenAI",
+      defaultModelId: "gpt-4.1-mini",
+      endpointUrl: "https://api.openai.com/v1/chat/completions",
+    },
+    {
+      value: "gemini",
+      label: "Gemini",
+      defaultModelId: "gemini-2.5-flash",
+      endpointUrl:
+        "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+    },
+    {
+      value: "claude",
+      label: "Claude",
+      defaultModelId: "claude-3-5-haiku-latest",
+      endpointUrl: "https://api.anthropic.com/v1/messages",
+    },
+    {
+      value: "grok",
+      label: "Grok",
+      defaultModelId: "grok-3-mini",
+      endpointUrl: "https://api.x.ai/v1/chat/completions",
+    },
+    {
+      value: "deepseek",
+      label: "DeepSeek",
+      defaultModelId: "deepseek-v4-flash",
+      endpointUrl: "https://api.deepseek.com/chat/completions",
+    },
+    {
+      value: "qwen",
+      label: "Qwen",
+      defaultModelId: "qwen-plus",
+      endpointUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+    },
+    {
+      value: "glm",
+      label: "GLM",
+      defaultModelId: "glm-4.5-flash",
+      endpointUrl: "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+    },
+    {
+      value: "kimi",
+      label: "Kimi",
+      defaultModelId: "kimi-k2.5",
+      endpointUrl: "https://api.moonshot.ai/v1/chat/completions",
+    },
+    {
+      value: "openrouter",
+      label: "OpenRouter",
+      defaultModelId: "deepseek/deepseek-v4-flash",
+      endpointUrl: "https://openrouter.ai/api/v1/chat/completions",
+    },
+    {
+      value: "lmstudio",
+      label: "LM Studio",
+      defaultModelId: "local-model",
+      endpointUrl: "http://127.0.0.1:1234/v1/chat/completions",
+      apiKeyOptional: true,
+    },
   ];
-  const AI_MODEL_VALUES = AI_MODEL_OPTIONS.map((option) => option.value);
-  const AI_MODEL_RUNTIME_BY_ID = Object.fromEntries(
-    AI_MODEL_OPTIONS.map((option) => [option.value, option.runtimeId])
+  const AI_PROVIDER_OPTIONS = Array.isArray(AI_MODEL_CATALOG?.providerOptions)
+    ? AI_MODEL_CATALOG.providerOptions
+    : FALLBACK_AI_PROVIDER_OPTIONS;
+  const AI_PROVIDER_VALUES = AI_PROVIDER_OPTIONS.map((option) => option.value);
+  const AI_PROVIDER_BY_ID = Object.fromEntries(
+    AI_PROVIDER_OPTIONS.map((option) => [option.value, option])
   );
   const RULE_OPERATOR_OPTIONS = [
-    { value: "disabled", label: "禁用" },
+    { value: "disabled", label: localize("ruleOperatorDisabled", "Disabled") },
     { value: "gt", label: ">" },
     { value: "gte", label: ">=" },
     { value: "eq", label: "=" },
@@ -39,68 +156,44 @@
   ];
   const RULE_CARD_SCHEMA = {
     nativePerPagePreloadLimit: {
-      title: "原生预加载组的页面槽位上限 a",
-      description:
-        "适用于原生 `prefetch` / `prerender` 指令候选。它决定这一组最多能留下多少个页面候选进入最终执行。",
-      fields: [
-        { key: "valueA", type: "number", min: 0, max: 9999, label: "值 A" },
-        { key: "operatorA", type: "select", options: RULE_OPERATOR_OPTIONS, label: "比较 A" },
-        { key: "tokenX", type: "token", text: "a", label: "a" },
-        { key: "operatorB", type: "select", options: RULE_OPERATOR_OPTIONS, label: "比较 B" },
-        { key: "valueC", type: "number", min: 0, max: 9999, label: "值 C" },
-        { key: "status", type: "status-toggle", label: "状态" },
-      ],
+      title: localize("ruleNativePerPageTitle", "Native preload group page slot cap a"),
+      description: localize(
+        "ruleNativePerPageDesc",
+        "Applies to native `prefetch` / `prerender` candidates. It decides how many page candidates this group can keep for final execution."
+      ),
+      fields: createRuleFields("a"),
     },
     perPagePreloadLimit: {
-      title: "真实标签页预加载组的页面槽位上限 a",
-      description:
-        "适用于需要真实后台标签页的候选。它决定这一组最多能留下多少个页面候选进入最终执行。",
-      fields: [
-        { key: "valueA", type: "number", min: 0, max: 9999, label: "值 A" },
-        { key: "operatorA", type: "select", options: RULE_OPERATOR_OPTIONS, label: "比较 A" },
-        { key: "tokenX", type: "token", text: "a", label: "a" },
-        { key: "operatorB", type: "select", options: RULE_OPERATOR_OPTIONS, label: "比较 B" },
-        { key: "valueC", type: "number", min: 0, max: 9999, label: "值 C" },
-        { key: "status", type: "status-toggle", label: "状态" },
-      ],
+      title: localize("ruleTabPerPageTitle", "Real-tab preload group page slot cap a"),
+      description: localize(
+        "ruleTabPerPageDesc",
+        "Applies to candidates that need real background tabs. It decides how many page candidates this group can keep for final execution."
+      ),
+      fields: createRuleFields("a"),
     },
     highWeightRank: {
-      title: "原生预加载组的高权重站点数量 x",
-      description:
-        "适用于原生 `prefetch` / `prerender` 指令候选。它决定这一组最多有多少个高权重站点进入站点分槽阶段。",
-      fields: [
-        { key: "valueA", type: "number", min: 0, max: 9999, label: "值 A" },
-        { key: "operatorA", type: "select", options: RULE_OPERATOR_OPTIONS, label: "比较 A" },
-        { key: "tokenX", type: "token", text: "x", label: "x" },
-        { key: "operatorB", type: "select", options: RULE_OPERATOR_OPTIONS, label: "比较 B" },
-        { key: "valueC", type: "number", min: 0, max: 9999, label: "值 C" },
-        { key: "status", type: "status-toggle", label: "状态" },
-      ],
+      title: localize("ruleNativeSiteTitle", "Native preload group high-weight site count x"),
+      description: localize(
+        "ruleNativeSiteDesc",
+        "Applies to native `prefetch` / `prerender` candidates. It decides how many high-weight sites enter the site slot allocation stage."
+      ),
+      fields: createRuleFields("x"),
     },
     highWeightRankTab: {
-      title: "真实标签页预加载组的高权重站点数量 x",
-      description:
-        "适用于需要真实后台标签页的候选，包括跨站新标签预加载，以及开启当前标签页硬替换后改走 hidden-tab 的跨站候选。",
-      fields: [
-        { key: "valueA", type: "number", min: 0, max: 9999, label: "值 A" },
-        { key: "operatorA", type: "select", options: RULE_OPERATOR_OPTIONS, label: "比较 A" },
-        { key: "tokenX", type: "token", text: "x", label: "x" },
-        { key: "operatorB", type: "select", options: RULE_OPERATOR_OPTIONS, label: "比较 B" },
-        { key: "valueC", type: "number", min: 0, max: 9999, label: "值 C" },
-        { key: "status", type: "status-toggle", label: "状态" },
-      ],
+      title: localize("ruleTabSiteTitle", "Real-tab preload group high-weight site count x"),
+      description: localize(
+        "ruleTabSiteDesc",
+        "Applies to candidates that need real background tabs, including cross-site new-tab preload and current-tab hard-swap cross-site candidates routed to hidden-tab."
+      ),
+      fields: createRuleFields("x"),
     },
     weightRange: {
-      title: "预加载权重位于 x 的网页",
-      description: "用于表达按最终候选权重区间筛选候选网页的规则条件。",
-      fields: [
-        { key: "valueA", type: "number", min: 0, max: 9999, label: "值 A" },
-        { key: "operatorA", type: "select", options: RULE_OPERATOR_OPTIONS, label: "比较 A" },
-        { key: "tokenX", type: "token", text: "x", label: "x" },
-        { key: "operatorB", type: "select", options: RULE_OPERATOR_OPTIONS, label: "比较 B" },
-        { key: "valueC", type: "number", min: 0, max: 9999, label: "值 C" },
-        { key: "status", type: "status-toggle", label: "状态" },
-      ],
+      title: localize("ruleWeightRangeTitle", "Pages with preload weight at x"),
+      description: localize(
+        "ruleWeightRangeDesc",
+        "Expresses a rule condition that filters page candidates by final candidate weight range."
+      ),
+      fields: createRuleFields("x"),
     },
   };
   const LEGACY_RULE_CARD_DEFAULTS = {
@@ -143,12 +236,11 @@
       },
       aiPrediction: {
         enabled: false,
-        modelId: "qwen3-0.6b",
-      },
-      modelManager: {
-        selectedModelId: "qwen3-0.6b",
-        downloadedModels: createDefaultAiDownloadedModels(),
-        installedRuntimeIds: [],
+        providerId: "deepseek",
+        modelId: "deepseek-v4-flash",
+        apiKeys: createDefaultAiProviderMap(""),
+        modelIds: createDefaultAiProviderModelIds(),
+        endpointUrls: createDefaultAiProviderEndpointUrls(),
       },
     },
     preloadWindow: {
@@ -169,6 +261,9 @@
       idleWakeAggressive: false,
       pointerProximityPrediction: false,
       authStateWarmup: false,
+    },
+    diagnostics: {
+      enabled: false,
     },
     layout: {
       sortableCards: {
@@ -276,9 +371,8 @@
     normalized.preloading.aiPrediction = normalizeAiPredictionSettings(
       normalized.preloading.aiPrediction
     );
-    normalized.preloading.modelManager = normalizeAiModelManagerSettings(
-      normalized.preloading.modelManager
-    );
+    migrateAiProviderCatalogDefaults(normalized, value);
+    delete normalized.preloading.modelManager;
     normalized.preloading.ignoreWaterfallDynamicLinks =
       normalized.preloading.ignoreWaterfallDynamicLinks !== false;
     delete normalized.preloading.crossSiteCurrentTabSwap;
@@ -294,6 +388,9 @@
         : typeof legacyCrossSiteCurrentTabSwap === "boolean"
           ? legacyCrossSiteCurrentTabSwap
           : DEFAULT_SETTINGS.experiments.crossSiteCurrentTabSwap;
+    normalized.diagnostics = {
+      enabled: normalized.diagnostics?.enabled === true,
+    };
     normalized.layout = normalizeLayoutSettings(normalized.layout);
     migrateLegacyRuleCardDefaults(normalized, value);
     migrateSplitSiteSelectionRuleCard(normalized, value);
@@ -561,69 +658,227 @@
     };
   }
 
-  function createDefaultAiDownloadedModels() {
-    return Object.fromEntries(AI_MODEL_VALUES.map((modelId) => [modelId, false]));
+  function createDefaultAiProviderMap(defaultValue) {
+    return Object.fromEntries(AI_PROVIDER_VALUES.map((providerId) => [providerId, defaultValue]));
   }
 
-  function normalizeAiModelId(
-    value,
-    fallback = DEFAULT_SETTINGS.preloading.aiPrediction.modelId
-  ) {
-    return AI_MODEL_VALUES.includes(value) ? value : fallback;
+  function createDefaultAiProviderModelIds() {
+    return Object.fromEntries(
+      AI_PROVIDER_OPTIONS.map((provider) => [provider.value, provider.defaultModelId])
+    );
   }
 
-  function normalizeAiDownloadedModels(value) {
-    const downloadedModels = createDefaultAiDownloadedModels();
+  function createDefaultAiProviderEndpointUrls() {
+    return Object.fromEntries(
+      AI_PROVIDER_OPTIONS.map((provider) => [provider.value, provider.endpointUrl])
+    );
+  }
+
+  function normalizeAiProviderId(value, fallback = DEFAULT_SETTINGS.preloading.aiPrediction.providerId) {
+    return AI_PROVIDER_VALUES.includes(value) ? value : fallback;
+  }
+
+  function normalizeAiProviderStringMap(value, fallbackMap) {
+    const normalizedMap = cloneSettings(fallbackMap);
 
     if (!isPlainObject(value)) {
-      return downloadedModels;
+      return normalizedMap;
     }
 
-    for (const modelId of AI_MODEL_VALUES) {
-      if (typeof value[modelId] === "boolean") {
-        downloadedModels[modelId] = value[modelId];
+    for (const providerId of AI_PROVIDER_VALUES) {
+      const rawValue = value[providerId];
+
+      if (typeof rawValue === "string") {
+        normalizedMap[providerId] = rawValue.trim();
       }
     }
 
-    return downloadedModels;
+    return normalizedMap;
   }
 
-  function deriveInstalledAiRuntimeIds(downloadedModels) {
-    const runtimeIds = new Set();
+  function getAiModelInfo(providerId, modelId) {
+    const modelInfo = AI_MODEL_CATALOG?.getModel?.(providerId, modelId);
+    return isPlainObject(modelInfo) ? cloneSettings(modelInfo) : null;
+  }
 
-    for (const modelId of AI_MODEL_VALUES) {
-      if (!downloadedModels[modelId]) {
-        continue;
-      }
+  function getAiProviderModels(providerId) {
+    const provider = AI_MODEL_CATALOG?.getProvider?.(providerId);
+    return Array.isArray(provider?.models) ? cloneSettings(provider.models) : [];
+  }
 
-      const runtimeId = AI_MODEL_RUNTIME_BY_ID[modelId];
+  function getAiRequestParams(providerId, modelId) {
+    const requestParams = AI_MODEL_CATALOG?.getRequestParams?.(providerId, modelId);
 
-      if (runtimeId) {
-        runtimeIds.add(runtimeId);
-      }
-    }
-
-    return Array.from(runtimeIds);
+    return isPlainObject(requestParams)
+      ? cloneSettings(requestParams)
+      : {
+          temperature: 0.1,
+          maxTokens: 512,
+          responseFormatJson: true,
+        };
   }
 
   function normalizeAiPredictionSettings(value) {
     const mergedValue = mergeSettings(DEFAULT_SETTINGS.preloading.aiPrediction, value);
+    const providerId = normalizeAiProviderId(mergedValue.providerId);
+    const modelIds = normalizeAiProviderStringMap(
+      mergedValue.modelIds,
+      DEFAULT_SETTINGS.preloading.aiPrediction.modelIds
+    );
+    const endpointUrls = normalizeAiProviderStringMap(
+      mergedValue.endpointUrls,
+      DEFAULT_SETTINGS.preloading.aiPrediction.endpointUrls
+    );
+    const apiKeys = normalizeAiProviderStringMap(
+      mergedValue.apiKeys,
+      DEFAULT_SETTINGS.preloading.aiPrediction.apiKeys
+    );
+    const legacyModelId =
+      typeof mergedValue.modelId === "string" ? mergedValue.modelId.trim() : "";
+
+    if (legacyModelId && !modelIds[providerId]) {
+      modelIds[providerId] = legacyModelId;
+    }
 
     return {
       enabled: Boolean(mergedValue.enabled),
-      modelId: normalizeAiModelId(mergedValue.modelId),
+      providerId,
+      modelId: modelIds[providerId] || AI_PROVIDER_BY_ID[providerId]?.defaultModelId || "",
+      apiKeys,
+      modelIds,
+      endpointUrls,
     };
   }
 
-  function normalizeAiModelManagerSettings(value) {
-    const mergedValue = mergeSettings(DEFAULT_SETTINGS.preloading.modelManager, value);
-    const downloadedModels = normalizeAiDownloadedModels(mergedValue.downloadedModels);
+  function migrateAiProviderCatalogDefaults(normalizedSettings, rawValue) {
+    const rawVersion = Number(rawValue?.version);
+
+    if (Number.isFinite(rawVersion) && rawVersion >= SETTINGS_STORAGE_VERSION) {
+      return;
+    }
+
+    const aiPrediction = normalizedSettings.preloading.aiPrediction;
+    const kimiModelChanged = replaceStringMapValue(
+      aiPrediction.modelIds,
+      "kimi",
+      "moonshot-v1-8k",
+      AI_PROVIDER_BY_ID.kimi?.defaultModelId
+    );
+    const kimiEndpointChanged = replaceStringMapValue(
+      aiPrediction.endpointUrls,
+      "kimi",
+      "https://api.moonshot.cn/v1/chat/completions",
+      AI_PROVIDER_BY_ID.kimi?.endpointUrl
+    );
+    const glmModelChanged = replaceStringMapValue(
+      aiPrediction.modelIds,
+      "glm",
+      "glm-4-flash",
+      AI_PROVIDER_BY_ID.glm?.defaultModelId
+    );
+    const openRouterModelChanged = replaceStringMapValue(
+      aiPrediction.modelIds,
+      "openrouter",
+      "deepseek/deepseek-chat-v3-0324:free",
+      AI_PROVIDER_BY_ID.openrouter?.defaultModelId
+    );
+    const deepSeekModelChanged = replaceStringMapValue(
+      aiPrediction.modelIds,
+      "deepseek",
+      "deepseek-chat",
+      AI_PROVIDER_BY_ID.deepseek?.defaultModelId
+    );
+
+    if (aiPrediction.providerId === "kimi") {
+      if (kimiModelChanged && aiPrediction.modelId === "moonshot-v1-8k") {
+        aiPrediction.modelId = aiPrediction.modelIds.kimi;
+      }
+
+      if (kimiEndpointChanged && !aiPrediction.endpointUrls.kimi) {
+        aiPrediction.endpointUrls.kimi = AI_PROVIDER_BY_ID.kimi?.endpointUrl || "";
+      }
+    }
+
+    if (aiPrediction.providerId === "glm" && glmModelChanged && aiPrediction.modelId === "glm-4-flash") {
+      aiPrediction.modelId = aiPrediction.modelIds.glm;
+    }
+
+    if (
+      aiPrediction.providerId === "openrouter" &&
+      openRouterModelChanged &&
+      aiPrediction.modelId === "deepseek/deepseek-chat-v3-0324:free"
+    ) {
+      aiPrediction.modelId = aiPrediction.modelIds.openrouter;
+    }
+
+    if (
+      aiPrediction.providerId === "deepseek" &&
+      deepSeekModelChanged &&
+      aiPrediction.modelId === "deepseek-chat"
+    ) {
+      aiPrediction.modelId = aiPrediction.modelIds.deepseek;
+    }
+  }
+
+  function replaceStringMapValue(targetMap, key, oldValue, newValue) {
+    if (!isPlainObject(targetMap) || !newValue || targetMap[key] !== oldValue) {
+      return false;
+    }
+
+    targetMap[key] = newValue;
+    return true;
+  }
+
+  function normalizeAiTestConfig(value) {
+    if (!isPlainObject(value)) {
+      return null;
+    }
+
+    const providerId = normalizeAiProviderId(value.providerId);
+    const provider = AI_PROVIDER_BY_ID[providerId];
+    const modelId =
+      typeof value.modelId === "string" && value.modelId.trim()
+        ? value.modelId.trim()
+        : provider?.defaultModelId || "";
+    const endpointUrl =
+      typeof value.endpointUrl === "string" && value.endpointUrl.trim()
+        ? value.endpointUrl.trim()
+        : provider?.endpointUrl || "";
+    const apiKey = typeof value.apiKey === "string" ? value.apiKey.trim() : "";
+
+    if (!provider || !modelId || !endpointUrl) {
+      return null;
+    }
 
     return {
-      selectedModelId: normalizeAiModelId(mergedValue.selectedModelId),
-      downloadedModels,
-      installedRuntimeIds: deriveInstalledAiRuntimeIds(downloadedModels),
+      enabled: value.enabled !== false,
+      providerId,
+      modelId,
+      endpointUrl,
+      apiKey,
     };
+  }
+
+  function applyAiTestConfig(settings, rawTestConfig) {
+    const testConfig = normalizeAiTestConfig(rawTestConfig);
+
+    if (!testConfig) {
+      return settings;
+    }
+
+    const nextSettings = cloneSettings(settings);
+    const aiPrediction = nextSettings.preloading.aiPrediction;
+    aiPrediction.enabled = testConfig.enabled;
+    aiPrediction.providerId = testConfig.providerId;
+    aiPrediction.modelId = testConfig.modelId;
+    aiPrediction.modelIds[testConfig.providerId] = testConfig.modelId;
+    aiPrediction.endpointUrls[testConfig.providerId] = testConfig.endpointUrl;
+
+    if (testConfig.apiKey) {
+      aiPrediction.apiKeys[testConfig.providerId] = testConfig.apiKey;
+    }
+
+    return normalizeStoredSettings(nextSettings);
   }
 
   function isRuleCardEnabled(cardState) {
@@ -764,20 +1019,20 @@
     const hardwareConcurrency = Number(snapshot.hardwareConcurrency) || 0;
     const deviceMemory = Number(snapshot.deviceMemory) || 0;
     let id = "balanced";
-    let label = "Balanced";
+    let label = localize("deviceProfileBalanced", "Balanced");
     let preloadCap = 3;
 
     if (hardwareConcurrency >= 12 || deviceMemory >= 16) {
       id = "high-end";
-      label = "High-end";
+      label = localize("deviceProfileHighEnd", "High-end");
       preloadCap = 5;
     } else if (hardwareConcurrency >= 8 || deviceMemory >= 8) {
       id = "strong";
-      label = "Strong";
+      label = localize("deviceProfileStrong", "Strong");
       preloadCap = 4;
     } else if (hardwareConcurrency > 0 && hardwareConcurrency <= 4) {
       id = "constrained";
-      label = "Constrained";
+      label = localize("deviceProfileConstrained", "Constrained");
       preloadCap = 2;
     }
 
@@ -822,13 +1077,34 @@
             normalized.preloading.siteSelectionLimit
         ),
         effectiveTransitionWindowKey,
-        effectiveAiPredictionModelDownloaded: Boolean(
-          normalized.preloading.modelManager.downloadedModels?.[
-            normalized.preloading.aiPrediction.modelId
-          ]
+        effectiveAiPredictionConfigured: isAiPredictionConfigured(
+          normalized.preloading.aiPrediction
         ),
       },
     };
+  }
+
+  function isAiPredictionConfigured(aiPredictionSettings) {
+    const providerId = normalizeAiProviderId(aiPredictionSettings?.providerId);
+    const provider = AI_PROVIDER_BY_ID[providerId];
+    const modelId =
+      typeof aiPredictionSettings?.modelId === "string"
+        ? aiPredictionSettings.modelId.trim()
+        : "";
+    const apiKey =
+      typeof aiPredictionSettings?.apiKeys?.[providerId] === "string"
+        ? aiPredictionSettings.apiKeys[providerId].trim()
+        : "";
+    const endpointUrl =
+      typeof aiPredictionSettings?.endpointUrls?.[providerId] === "string"
+        ? aiPredictionSettings.endpointUrls[providerId].trim()
+        : "";
+
+    if (!provider || !modelId || !endpointUrl) {
+      return false;
+    }
+
+    return provider.apiKeyOptional === true || Boolean(apiKey);
   }
 
   function getNavigatorSnapshot() {
@@ -844,9 +1120,13 @@
   async function loadSettings(storageArea) {
     const stored = await storageArea.get({
       [SETTINGS_STORAGE_KEY]: DEFAULT_SETTINGS,
+      [AI_TEST_CONFIG_STORAGE_KEY]: null,
     });
 
-    return normalizeStoredSettings(stored[SETTINGS_STORAGE_KEY]);
+    return applyAiTestConfig(
+      normalizeStoredSettings(stored[SETTINGS_STORAGE_KEY]),
+      globalThis.ZeroLatencyLocalAiTestConfig ?? stored[AI_TEST_CONFIG_STORAGE_KEY]
+    );
   }
 
   async function saveSettings(storageArea, settings) {
@@ -859,6 +1139,7 @@
 
   globalThis.ZeroLatencySettings = {
     SETTINGS_STORAGE_KEY,
+    AI_TEST_CONFIG_STORAGE_KEY,
     SETTINGS_STORAGE_VERSION,
     PRELOAD_RULE_CARD_IDS,
     SORTABLE_CARD_IDS,
@@ -867,7 +1148,10 @@
     SORTABLE_STATUS_VALUES,
     TRANSITION_WINDOW_VALUES,
     TRANSITION_WINDOW_OPTIONS,
-    AI_MODEL_OPTIONS,
+    AI_PROVIDER_OPTIONS,
+    AI_PROVIDER_VALUES,
+    AI_PROVIDER_BY_ID,
+    AI_MODEL_CATALOG,
     RULE_OPERATOR_OPTIONS,
     RULE_CARD_SCHEMA,
     DEFAULT_SETTINGS,
@@ -879,6 +1163,10 @@
     compareRuleValues,
     evaluateRuleCardMetric,
     normalizeTransitionWindowKey,
+    getAiModelInfo,
+    getAiProviderModels,
+    getAiRequestParams,
+    isAiPredictionConfigured,
     detectDeviceProfile,
     resolveEffectiveSettings,
     getNavigatorSnapshot,

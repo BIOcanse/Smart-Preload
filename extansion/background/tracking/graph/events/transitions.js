@@ -90,5 +90,4 @@ function upsertEdgeFallback(graph, fromNodeId, toNodeId, occurredAt, transitionT
   const dayKey = buildUtcDayKey(occurredAt);
   edge.dailyCounts[dayKey] = clampNonNegativeInt(edge.dailyCounts[dayKey], 0) + 1;
   recalculateEdgeTransitionStats(edge, occurredAt);
-  registerEdgeInTransitionBuckets(graph, edge);
 }

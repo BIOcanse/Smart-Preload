@@ -18,6 +18,8 @@
         return envelope.context.hasTabStatus
           ? allowNavigationDecision("update-preloaded-tab-status")
           : ignoreNavigationDecision("tab-updated");
+      case "tab-activated":
+        return allowNavigationDecision("handle-activated-tab");
       case "window-removed":
         return allowNavigationDecision("handle-removed-window");
       case "window-bounds-changed":
@@ -45,6 +47,10 @@
         return allowNavigationDecision("run-preload-watchdog");
       case PRELOAD_WINDOW_CLEANUP_ALARM:
         return allowNavigationDecision("run-preload-cleanup");
+      case globalThis.ZeroLatencyAiProviders?.LM_STUDIO_LIFECYCLE_ALARM:
+        return allowNavigationDecision("run-lmstudio-lifecycle-watchdog");
+      case globalThis.ZeroLatencyNativeAppHeartbeat?.alarmName:
+        return allowNavigationDecision("send-native-app-heartbeat");
       default:
         return ignoreNavigationDecision("alarm");
     }

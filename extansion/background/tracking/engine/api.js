@@ -76,6 +76,21 @@ async function filterPreloadCandidateMetrics(input) {
   }
 }
 
+async function selectPreloadCandidateGroup(input) {
+  const engine = await getVisitGraphEngine();
+
+  if (!engine || typeof engine.selectPreloadCandidateGroup !== "function") {
+    return null;
+  }
+
+  try {
+    return engine.selectPreloadCandidateGroup(input);
+  } catch (error) {
+    console.error("Wasm preload site selection failed, falling back to JS.", error);
+    return null;
+  }
+}
+
 function scoreWeightsFallback(baseScore, multipliers = []) {
   const sanitizedBaseScore = sanitizeScoreWeight(baseScore, 0);
   const sanitizedMultipliers = Array.isArray(multipliers)

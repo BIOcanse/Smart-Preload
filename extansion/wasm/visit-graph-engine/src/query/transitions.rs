@@ -137,7 +137,12 @@ pub(crate) fn query_candidate_transition_metrics_batch(
         "candidates": candidates.into_iter().map(|candidate| {
             let is_same_origin_candidate =
                 page_transition_is_same_origin(source_page_url, &candidate.target_page_url);
-            let site_transition_count = if source_node_id.is_empty() || candidate.target_node_id.is_empty() {
+            let is_same_site_candidate =
+                !source_node_id.is_empty() && source_node_id == candidate.target_node_id;
+            let site_transition_count = if source_node_id.is_empty()
+                || candidate.target_node_id.is_empty()
+                || is_same_site_candidate
+            {
                 0
             } else {
                 crate::db::get_transition_count(
@@ -147,14 +152,15 @@ pub(crate) fn query_candidate_transition_metrics_batch(
                     &candidate.target_node_id,
                 )
             };
-            let page_transition_count = if source_node_id.is_empty()
+            let outbound_page_transition_count = if source_node_id.is_empty()
                 || source_page_url.is_empty()
                 || candidate.target_node_id.is_empty()
                 || candidate.target_page_url.is_empty()
+                || is_same_site_candidate
             {
                 0
             } else {
-                crate::db::get_page_transition_count(
+                crate::db::get_external_page_transition_count(
                     graph,
                     normalized_window_key,
                     source_node_id,
@@ -163,15 +169,27 @@ pub(crate) fn query_candidate_transition_metrics_batch(
                     &candidate.target_page_url,
                 )
             };
-            let outbound_page_transition_count = if is_same_origin_candidate {
+            let intra_site_page_transition_count = if source_node_id.is_empty()
+                || source_page_url.is_empty()
+                || candidate.target_node_id.is_empty()
+                || candidate.target_page_url.is_empty()
+                || !is_same_site_candidate
+            {
                 0
             } else {
-                page_transition_count
+                crate::db::get_intra_site_page_transition_count(
+                    graph,
+                    normalized_window_key,
+                    source_node_id,
+                    source_page_url,
+                    &candidate.target_node_id,
+                    &candidate.target_page_url,
+                )
             };
-            let intra_site_page_transition_count = if is_same_origin_candidate {
-                page_transition_count
+            let page_transition_count = if is_same_site_candidate {
+                intra_site_page_transition_count
             } else {
-                0
+                outbound_page_transition_count
             };
 
             json!({
@@ -179,11 +197,12 @@ pub(crate) fn query_candidate_transition_metrics_batch(
                 "targetNodeId": candidate.target_node_id,
                 "targetPageUrl": candidate.target_page_url,
                 "isSameOriginCandidate": is_same_origin_candidate,
+                "isSameSiteCandidate": is_same_site_candidate,
                 "siteTransitionCount": site_transition_count,
                 "pageTransitionCount": page_transition_count,
                 "outboundPageTransitionCount": outbound_page_transition_count,
                 "intraSitePageTransitionCount": intra_site_page_transition_count,
-                "transitionCount": if is_same_origin_candidate {
+                "transitionCount": if is_same_site_candidate {
                     intra_site_page_transition_count
                 } else {
                     outbound_page_transition_count

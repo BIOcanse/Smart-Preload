@@ -28,10 +28,6 @@ function supportsSystemLevelWindowHiding() {
   );
 }
 
-function supportsAiModelManagement() {
-  return detectPlatformSupport().windows === true;
-}
-
 function getBackgroundFeatureSupport() {
   const platform = detectPlatformSupport();
   return {
@@ -39,10 +35,6 @@ function getBackgroundFeatureSupport() {
     preloadWindowWatchdog: supportsPreloadWindowWatchdog(),
     systemLevelWindowHiding: supportsSystemLevelWindowHiding(),
     systemLevelWindowHidingUsable: isSystemLevelWindowHidingUsable(),
-    aiModelManagement: supportsAiModelManagement(),
-    aiModelManagementUsable:
-      globalThis.isNativeAppAvailableCached?.() === true &&
-      supportsAiModelManagement(),
     platform,
   };
 }

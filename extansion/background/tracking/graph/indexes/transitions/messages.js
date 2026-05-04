@@ -33,12 +33,17 @@ function registerTransitionMessageInDayGroups(graph, transitionMessage) {
 
 function registerTransitionMessageInPageIndexes(graph, transitionMessage) {
   registerTransitionCountBuckets(graph, transitionMessage);
-  registerPageTransitionCountBuckets(graph, transitionMessage);
+  registerExternalPageTransitionCountBuckets(graph, transitionMessage);
+  registerIntraSitePageTransitionCountBuckets(graph, transitionMessage);
   registerPageTransitionMessageBuckets(graph, transitionMessage);
 }
 
 function registerTransitionCountBuckets(graph, transitionMessage) {
   if (!transitionMessage?.fromNodeId || !transitionMessage?.toNodeId) {
+    return;
+  }
+
+  if (!isExternalSiteTransitionMessage(transitionMessage)) {
     return;
   }
 
@@ -59,7 +64,38 @@ function registerTransitionCountBuckets(graph, transitionMessage) {
   );
 }
 
-function registerPageTransitionCountBuckets(graph, transitionMessage) {
+function registerExternalPageTransitionCountBuckets(graph, transitionMessage) {
+  if (!isExternalSiteTransitionMessage(transitionMessage)) {
+    return;
+  }
+
+  registerPageTransitionCountInBuckets(
+    graph,
+    transitionMessage,
+    "externalPageTransitionBuckets",
+    getExternalPageTransitionBucketDayLayer
+  );
+}
+
+function registerIntraSitePageTransitionCountBuckets(graph, transitionMessage) {
+  if (!isIntraSiteTransitionMessage(transitionMessage)) {
+    return;
+  }
+
+  registerPageTransitionCountInBuckets(
+    graph,
+    transitionMessage,
+    "intraSitePageTransitionBuckets",
+    getIntraSitePageTransitionBucketDayLayer
+  );
+}
+
+function registerPageTransitionCountInBuckets(
+  graph,
+  transitionMessage,
+  bucketProperty,
+  getDayLayer
+) {
   if (
     !transitionMessage?.fromNodeId ||
     !transitionMessage?.fromPageUrl ||
@@ -69,8 +105,10 @@ function registerPageTransitionCountBuckets(graph, transitionMessage) {
     return;
   }
 
+  graph[bucketProperty] = ensurePageTransitionBuckets(graph[bucketProperty]);
+
   incrementPageTransitionBucketCount(
-    graph.pageTransitionBuckets.total,
+    graph[bucketProperty].total,
     graph,
     transitionMessage.fromNodeId,
     transitionMessage.fromPageUrl,
@@ -80,13 +118,33 @@ function registerPageTransitionCountBuckets(graph, transitionMessage) {
   );
 
   incrementPageTransitionBucketCount(
-    getPageTransitionBucketDayLayer(graph, buildUtcDayKey(transitionMessage.occurredAt)),
+    getDayLayer(graph, buildUtcDayKey(transitionMessage.occurredAt)),
     graph,
     transitionMessage.fromNodeId,
     transitionMessage.fromPageUrl,
     transitionMessage.toNodeId,
     transitionMessage.toPageUrl,
     1
+  );
+}
+
+function isExternalSiteTransitionMessage(transitionMessage) {
+  return (
+    typeof transitionMessage?.fromNodeId === "string" &&
+    typeof transitionMessage?.toNodeId === "string" &&
+    transitionMessage.fromNodeId.length > 0 &&
+    transitionMessage.toNodeId.length > 0 &&
+    transitionMessage.fromNodeId !== transitionMessage.toNodeId
+  );
+}
+
+function isIntraSiteTransitionMessage(transitionMessage) {
+  return (
+    typeof transitionMessage?.fromNodeId === "string" &&
+    typeof transitionMessage?.toNodeId === "string" &&
+    transitionMessage.fromNodeId.length > 0 &&
+    transitionMessage.toNodeId.length > 0 &&
+    transitionMessage.fromNodeId === transitionMessage.toNodeId
   );
 }
 
@@ -151,26 +209,17 @@ function replayTransitionMessageIntoEdgeCounts(graph, transitionMessage) {
     return;
   }
 
-  const edgeId = `${transitionMessage.fromNodeId} -> ${transitionMessage.toNodeId}`;
-  const edge = graph.edges[edgeId];
-
-  if (!edge) {
-    return;
-  }
-
-  edge.count = clampNonNegativeInt(edge.count, 0) + 1;
-  edge.lastSeenAt = transitionMessage.occurredAt || edge.lastSeenAt;
-  edge.lastTransitionType = transitionMessage.transitionType || edge.lastTransitionType;
-  const dayKey = buildUtcDayKey(transitionMessage.occurredAt);
-  edge.dailyCounts = normalizeDailyCounts({
-    ...(isPlainObject(edge.dailyCounts) ? edge.dailyCounts : {}),
-    [dayKey]: clampNonNegativeInt(edge.dailyCounts?.[dayKey], 0) + 1,
-  });
-  recalculateEdgeTransitionStats(edge, transitionMessage.occurredAt || new Date().toISOString());
-  applyTransitionMessageToIndexes(graph, transitionMessage);
+  upsertEdgeFallback(
+    graph,
+    transitionMessage.fromNodeId,
+    transitionMessage.toNodeId,
+    transitionMessage.occurredAt || new Date().toISOString(),
+    transitionMessage.transitionType || "unknown"
+  );
 }
 
 function applyTransitionMessageToIndexes(graph, transitionMessage) {
+  replayTransitionMessageIntoEdgeCounts(graph, transitionMessage);
   registerTransitionMessageInDayGroups(graph, transitionMessage);
   registerTransitionMessageInBuckets(graph, transitionMessage);
   registerTransitionMessageInPageIndexes(graph, transitionMessage);

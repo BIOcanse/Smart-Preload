@@ -56,6 +56,13 @@
       });
     }
 
+    async handleTabActivated(activeInfo) {
+      await globalThis.ZeroLatencyRouterNavigation.dispatchNavigationEvent(
+        "tab-activated",
+        activeInfo
+      );
+    }
+
     async handleWindowRemoved(windowId) {
       await globalThis.ZeroLatencyRouterNavigation.dispatchNavigationEvent("window-removed", {
         windowId,

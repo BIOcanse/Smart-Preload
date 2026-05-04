@@ -29,6 +29,10 @@ pub(crate) const CHROME_WINDOW_CLASS: &str = "Chrome_WidgetWin_1";
 #[serde(rename_all = "camelCase")]
 pub struct ChromeWindowInfo {
     pub hwnd: u64,
+    pub process_id: u32,
+    pub process_name: Option<String>,
+    pub executable_path: Option<String>,
+    pub browser_kind: Option<String>,
     pub title: String,
     pub class_name: String,
     pub left: i32,

@@ -27,8 +27,9 @@ const MAX_HISTORY_PAGE_POOL_SIZE: usize = 5;
 pub(crate) use self::buckets::{
     build_day_key, create_empty_bucket_layer, create_empty_message_bucket_layer,
     create_empty_page_bucket_layer, create_empty_page_message_bucket_layer,
-    get_page_transition_count, get_transition_count, get_transition_source_map,
-    page_transition_bucket_day_layer_mut, set_transition_bucket_count,
+    external_page_transition_bucket_day_layer_mut, get_external_page_transition_count,
+    get_intra_site_page_transition_count, get_transition_count, get_transition_source_map,
+    intra_site_page_transition_bucket_day_layer_mut, set_transition_bucket_count,
     set_transition_bucket_count_delta, source_bucket_index, transition_bucket_day_layer_mut,
 };
 pub(crate) use self::learning::{
@@ -40,6 +41,9 @@ pub(crate) fn upsert_node(graph: &mut Graph, target_node: &NodeSeed, occurred_at
     if let Some(node) = graph.nodes.get_mut(&target_node.node_id) {
         node.last_seen_at = occurred_at.to_owned();
         node.sample_url = target_node.sample_url.clone();
+        if node.default_landing_page_url.is_empty() {
+            node.default_landing_page_url = target_node.sample_url.clone();
+        }
         return;
     }
 
@@ -52,6 +56,7 @@ pub(crate) fn upsert_node(graph: &mut Graph, target_node: &NodeSeed, occurred_at
             hostname: target_node.hostname.clone(),
             protocol: target_node.protocol.clone(),
             sample_url: target_node.sample_url.clone(),
+            default_landing_page_url: target_node.sample_url.clone(),
             visit_count: 0,
             first_seen_at: occurred_at.to_owned(),
             last_seen_at: occurred_at.to_owned(),
@@ -95,8 +100,6 @@ pub(crate) fn upsert_edge(
         *edge.daily_counts.entry(day_key).or_insert(0) += 1;
         recalculate_edge_transition_stats(edge, occurred_at);
     }
-
-    register_edge_in_transition_buckets(graph, &edge_id, from_node_id, to_node_id);
 }
 
 pub(crate) fn create_transition_message(
@@ -168,6 +171,10 @@ fn register_edge_in_transition_buckets(
     from_node_id: &str,
     to_node_id: &str,
 ) {
+    if from_node_id == to_node_id {
+        return;
+    }
+
     let Some(edge) = graph.edges.get(edge_id) else {
         return;
     };
@@ -243,7 +250,7 @@ fn register_transition_count_buckets(graph: &mut Graph, transition_message: &Tra
         return;
     };
 
-    if transition_message.to_node_id.is_empty() {
+    if transition_message.to_node_id.is_empty() || from_node_id == transition_message.to_node_id {
         return;
     }
 
@@ -282,9 +289,35 @@ fn register_page_transition_count_buckets(
         return;
     }
 
+    let day_key = build_day_key(&transition_message.occurred_at);
     let bucket_index = source_bucket_index(graph, from_node_id);
+
+    if from_node_id == transition_message.to_node_id {
+        buckets::increment_page_transition_bucket_count(
+            &mut graph.intra_site_page_transition_buckets.total,
+            bucket_index,
+            from_node_id,
+            from_page_url,
+            &transition_message.to_node_id,
+            &transition_message.to_page_url,
+            1,
+        );
+
+        let bucket_layer = intra_site_page_transition_bucket_day_layer_mut(graph, &day_key);
+        buckets::increment_page_transition_bucket_count(
+            bucket_layer,
+            bucket_index,
+            from_node_id,
+            from_page_url,
+            &transition_message.to_node_id,
+            &transition_message.to_page_url,
+            1,
+        );
+        return;
+    }
+
     buckets::increment_page_transition_bucket_count(
-        &mut graph.page_transition_buckets.total,
+        &mut graph.external_page_transition_buckets.total,
         bucket_index,
         from_node_id,
         from_page_url,
@@ -293,8 +326,7 @@ fn register_page_transition_count_buckets(
         1,
     );
 
-    let day_key = build_day_key(&transition_message.occurred_at);
-    let bucket_layer = page_transition_bucket_day_layer_mut(graph, &day_key);
+    let bucket_layer = external_page_transition_bucket_day_layer_mut(graph, &day_key);
     buckets::increment_page_transition_bucket_count(
         bucket_layer,
         bucket_index,

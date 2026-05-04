@@ -64,22 +64,9 @@ function buildContextKeywordPrompt(input) {
       `current_page: ${serializeAiPromptJson(input?.currentPage)}`,
       `open_pages: ${serializeAiPromptJson(input?.openPages ?? [])}`,
       `recent_foreground_pages: ${serializeAiPromptJson(input?.recentForegroundPages ?? [])}`,
+      `history_page_pool: ${serializeAiPromptJson(input?.historyPagePool ?? [])}`,
     ].join("\n")
   );
-}
-
-function buildManagedModelPrompt(modelId, prompt) {
-  const normalizedPrompt = typeof prompt === "string" ? prompt : "";
-
-  if (!normalizedPrompt.trim()) {
-    return "";
-  }
-
-  if (typeof modelId === "string" && modelId.startsWith("qwen3-")) {
-    return `/no_think\n${normalizedPrompt}`;
-  }
-
-  return normalizedPrompt;
 }
 
 function parseAiKeywordInferenceResponse(outputText) {
@@ -549,7 +536,6 @@ function tokenizeKeywordMatchText(value) {
 globalThis.ZeroLatencyAiKeywords = {
   MAX_AI_KEYWORD_COUNT,
   KEYWORD_MATCH_MULTIPLIERS,
-  buildManagedModelPrompt,
   buildPageKeywordPrompt,
   buildContextKeywordPrompt,
   buildHistoryPagePoolRecords,

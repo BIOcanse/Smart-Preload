@@ -18,6 +18,7 @@ async function activatePreloadedPage(message, sender) {
 
   const sourceTab = sender?.tab;
   const openInNewTab = message?.openInNewTab === true;
+  const resolutionExpiresAt = normalizeActivationDeadline(message?.resolutionExpiresAt);
 
   if (!sourceTab?.id || !sourceTab.windowId || !isTrackableAndAllowedUrl(message?.url || "")) {
     globalThis.ZeroLatencyDebugEvents?.record?.("preload-activation.invalid-request", {
@@ -25,6 +26,17 @@ async function activatePreloadedPage(message, sender) {
       sourceWindowId: sourceTab?.windowId ?? null,
       targetUrl: message?.url || null,
       openInNewTab,
+    });
+    return { handled: false };
+  }
+
+  if (isActivationDeadlineExpired(resolutionExpiresAt)) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-activation.deadline-expired", {
+      sourceTabId: sourceTab.id,
+      sourceWindowId: sourceTab.windowId,
+      targetUrl: message.url,
+      openInNewTab,
+      stage: "before-resolution",
     });
     return { handled: false };
   }
@@ -59,6 +71,17 @@ async function activatePreloadedPage(message, sender) {
     return { handled: false };
   }
 
+  if (isActivationDeadlineExpired(resolutionExpiresAt)) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-activation.deadline-expired", {
+      sourceTabId: sourceTab.id,
+      sourceWindowId: sourceTab.windowId,
+      targetUrl: message.url,
+      openInNewTab,
+      stage: "after-resolution",
+    });
+    return { handled: false };
+  }
+
   let preloadState = activationResolution.preloadState;
   const sourceRuntimeEntry = activationResolution.sourceRuntimeEntry;
   const entry = activationResolution.entry;
@@ -88,22 +111,27 @@ async function activatePreloadedPage(message, sender) {
     return { handled: false };
   }
 
-  if (resolvedEntryStatus !== "complete") {
-    await discardIncompletePreloadedEntry(
-      preloadState,
-      sourceRuntimeEntry,
-      sourceTab.windowId,
-      sourceTabId,
-      message.url,
-      entry
-    );
-    globalThis.ZeroLatencyDebugEvents?.record?.("preload-activation.incomplete-discarded", {
+  const activatedWhileLoading = resolvedEntryStatus !== "complete";
+  const trackingTargetUrl = resolveActivatedTrackingTargetUrl(message.url, preloadedTab, entry);
+
+  if (activatedWhileLoading) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-activation.loading-promoted", {
       sourceTabId: sourceTab.id,
       sourceWindowId: sourceTab.windowId,
       targetUrl: message.url,
       preloadedTabId: preloadedTab.id,
       status: resolvedEntryStatus,
       openInNewTab,
+    });
+  }
+
+  if (isActivationDeadlineExpired(resolutionExpiresAt)) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-activation.deadline-expired", {
+      sourceTabId: sourceTab.id,
+      sourceWindowId: sourceTab.windowId,
+      targetUrl: message.url,
+      openInNewTab,
+      stage: "before-move",
     });
     return { handled: false };
   }
@@ -113,7 +141,7 @@ async function activatePreloadedPage(message, sender) {
     trackingState,
     sourceTab,
     activatedTab: preloadedTab,
-    targetUrl: message.url,
+    targetUrl: trackingTargetUrl,
     keepSourceTab: openInNewTab,
   });
 
@@ -126,6 +154,7 @@ async function activatePreloadedPage(message, sender) {
   });
   const activatedTab = Array.isArray(movedTab) ? movedTab[0] : movedTab;
 
+  await ensureActivatedTabHasNavigableUrl(activatedTab, message.url);
   await chrome.tabs.update(activatedTab.id, { active: true });
 
   preloadState = await clearPreloadsForSourceTab(preloadState, sourceTab.windowId, sourceTabId, {
@@ -151,7 +180,10 @@ async function activatePreloadedPage(message, sender) {
     sourceTabId: sourceTab.id,
     sourceWindowId: sourceTab.windowId,
     targetUrl: message.url,
+    trackingTargetUrl,
     activatedTabId: activatedTab.id,
+    activatedWhileLoading,
+    preloadedTabStatus: resolvedEntryStatus,
     openInNewTab,
   });
 
@@ -224,23 +256,38 @@ async function sleepPreloadedActivationPoll() {
   });
 }
 
-async function discardIncompletePreloadedEntry(
-  preloadState,
-  sourceRuntimeEntry,
-  sourceWindowId,
-  sourceTabId,
-  targetUrl,
-  entry
-) {
-  if (!sourceRuntimeEntry?.sourceTabRuntime?.hiddenTabEntriesByUrl?.[targetUrl]) {
+function normalizeActivationDeadline(value) {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) && numericValue > 0 ? numericValue : null;
+}
+
+function isActivationDeadlineExpired(deadline) {
+  return Number.isFinite(deadline) && Date.now() >= deadline;
+}
+
+async function ensureActivatedTabHasNavigableUrl(activatedTab, targetUrl) {
+  if (!activatedTab?.id || !targetUrl) {
     return;
   }
 
-  await closeTabIfExists(entry?.tabId);
-  delete sourceRuntimeEntry.sourceTabRuntime.hiddenTabEntriesByUrl[targetUrl];
-  sourceRuntimeEntry.sourceTabRuntime.updatedAt = new Date().toISOString();
-  sourceRuntimeEntry.normalWindowRuntime.updatedAt = sourceRuntimeEntry.sourceTabRuntime.updatedAt;
-  preloadState.updatedAt = sourceRuntimeEntry.sourceTabRuntime.updatedAt;
-  pruneSourceTabRuntime(preloadState, sourceWindowId, sourceTabId);
-  await savePreloadState(preloadState);
+  const currentUrl = String(activatedTab.url || "");
+  if (currentUrl && currentUrl !== "about:blank") {
+    return;
+  }
+
+  await chrome.tabs.update(activatedTab.id, { url: targetUrl });
+}
+
+function resolveActivatedTrackingTargetUrl(requestedUrl, preloadedTab, entry) {
+  const candidates = [preloadedTab?.url, entry?.loadedUrl, requestedUrl];
+
+  for (const candidateUrl of candidates) {
+    const normalizedCandidateUrl = normalizePageUrlForIndex(candidateUrl || "");
+
+    if (normalizedCandidateUrl && isTrackableAndAllowedUrl(candidateUrl || "")) {
+      return normalizedCandidateUrl;
+    }
+  }
+
+  return requestedUrl;
 }

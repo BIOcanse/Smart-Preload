@@ -22,12 +22,6 @@
         return globalThis.ZeroLatencyCoreMessages.handleSetServicePaused(message);
       case "reset-graph":
         return globalThis.ZeroLatencyCoreMessages.handleReset();
-      case "ai-model-status":
-        return globalThis.ZeroLatencyCoreMessages.handleAiModelStatus();
-      case "ai-model-progress":
-        return globalThis.ZeroLatencyCoreMessages.handleAiModelProgress();
-      case "ai-model-set-installed":
-        return globalThis.ZeroLatencyCoreMessages.handleAiModelSetInstalled(message);
       case "register-preload-candidates":
         return globalThis.ZeroLatencyPreloadRuntimeManager.registerCandidates(message, sender);
       case "report-foreground-page-digest":

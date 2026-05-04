@@ -119,6 +119,29 @@ function wrapVisitGraphEngine(exports) {
         freeInputBuffer(exports, wasmInput);
       }
     },
+    selectPreloadCandidateGroup(input) {
+      if (typeof exports.select_preload_candidate_group_json !== "function") {
+        return null;
+      }
+
+      const wasmInput = writeJsonToWasm(exports, textEncoder, input);
+
+      try {
+        const resultPointer = exports.select_preload_candidate_group_json(
+          wasmInput.pointer,
+          wasmInput.length
+        );
+        const result = readJsonFromWasm(exports, textDecoder, resultPointer);
+
+        if (!result?.ok) {
+          throw new Error(result?.error || "Wasm preload site selection returned an unknown error.");
+        }
+
+        return result.result ?? null;
+      } finally {
+        freeInputBuffer(exports, wasmInput);
+      }
+    },
   };
 }
 

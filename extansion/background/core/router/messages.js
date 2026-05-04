@@ -17,9 +17,6 @@
 
   function resolveMessageQueueMode(actionKey) {
     switch (actionKey) {
-      case "ai-model-status":
-      case "ai-model-progress":
-      case "ai-model-set-installed":
       case "register-preload-candidates":
       case "report-foreground-page-digest":
         return "side-effect";

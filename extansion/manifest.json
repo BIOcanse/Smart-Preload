@@ -1,18 +1,35 @@
 {
   "manifest_version": 3,
-  "name": "Zero-Latency Web",
-  "description": "Zero-Latency Web extension MVP for visit graph tracking.",
+  "name": "__MSG_appName__",
+  "description": "__MSG_appDescription__",
   "version": "1.0.0",
+  "default_locale": "en",
   "permissions": [
     "alarms",
     "storage",
     "tabs",
     "windows",
     "webNavigation",
-    "unlimitedStorage"
+    "unlimitedStorage",
+    "nativeMessaging"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:45831/*",
+    "http://127.0.0.1:1234/*",
+    "http://localhost:1234/*",
+    "https://api.openai.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.anthropic.com/*",
+    "https://api.x.ai/*",
+    "https://api.deepseek.com/*",
+    "https://dashscope.aliyuncs.com/*",
+    "https://open.bigmodel.cn/*",
+    "https://api.moonshot.ai/*",
+    "https://api.moonshot.cn/*",
+    "https://openrouter.ai/*"
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' http://127.0.0.1:45831 http://127.0.0.1:1234 http://localhost:1234 https://api.openai.com https://generativelanguage.googleapis.com https://api.anthropic.com https://api.x.ai https://api.deepseek.com https://dashscope.aliyuncs.com https://open.bigmodel.cn https://api.moonshot.ai https://api.moonshot.cn https://openrouter.ai;"
   },
   "content_scripts": [
     {

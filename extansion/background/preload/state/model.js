@@ -12,6 +12,10 @@
       windowId: null,
       hwnd: null,
       hiddenBySystem: false,
+      systemHideFailureCount: 0,
+      systemHideDisabledUntil: null,
+      lastSystemHideError: null,
+      lastSystemHideFailedAt: null,
       updatedAt: null,
     };
   }
@@ -25,6 +29,10 @@
     targetPreloadWindowState.windowId = null;
     targetPreloadWindowState.hwnd = null;
     targetPreloadWindowState.hiddenBySystem = false;
+    targetPreloadWindowState.systemHideFailureCount = 0;
+    targetPreloadWindowState.systemHideDisabledUntil = null;
+    targetPreloadWindowState.lastSystemHideError = null;
+    targetPreloadWindowState.lastSystemHideFailedAt = null;
     targetPreloadWindowState.updatedAt = null;
     return targetPreloadWindowState;
   }

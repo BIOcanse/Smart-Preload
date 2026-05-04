@@ -32,85 +32,31 @@
   async function applyRuntimeSettingsAction() {
     const runtimeSettings = getEffectiveExtensionSettings();
     const servicePaused = await isExtensionServicePaused();
+    globalThis.ZeroLatencyDiagnostics?.configureFromSettings?.(runtimeSettings);
 
     if (servicePaused || !runtimeSettings.preloading.enabled) {
+      await globalThis.ZeroLatencyNativeAppHeartbeat?.ensureAlarm?.(false);
+      await globalThis.ZeroLatencyAiProviders?.unloadConfiguredLmStudioModel?.(
+        runtimeSettings,
+        servicePaused ? "service-paused" : "preloading-disabled"
+      );
+      await globalThis.ZeroLatencyAiProviders?.ensureLmStudioLifecycleWatchdog?.(runtimeSettings, {
+        forceDisabled: true,
+      });
       await ensurePreloadWindowWatchdog();
       await resetPreloads();
       return;
     }
 
     await globalThis.ZeroLatencySupport.probeNativeAppAvailability();
-    maybeSyncAiModelStatusInBackground();
+    await globalThis.ZeroLatencyNativeAppHeartbeat?.send?.("runtime-settings");
+    await globalThis.ZeroLatencyNativeAppHeartbeat?.ensureAlarm?.(true);
     await ensurePreloadWindowWatchdog();
+    await globalThis.ZeroLatencyAiProviders?.ensureLmStudioLifecycleWatchdog?.(runtimeSettings);
 
+    await globalThis.ZeroLatencyPreloadRuntimeManager.ensureWarmWindows?.();
     await globalThis.ZeroLatencyPreloadRuntimeManager.maintain();
     await requestPreloadCandidateRefreshForOpenTabs();
-  }
-
-  const AI_STATUS_RETRY_DELAYS_MS = [3_000, 8_000, 20_000];
-  let aiStatusRetryPending = false;
-
-  function maybeSyncAiModelStatusInBackground() {
-    const featureSupport = globalThis.ZeroLatencySupport?.getBackgroundFeatureSupport?.() ?? {};
-
-    if (featureSupport.aiModelManagement !== true) {
-      return;
-    }
-
-    if (featureSupport.aiModelManagementUsable === true) {
-      void queueSideEffect(async () => {
-        try {
-          await globalThis.ZeroLatencyCoreAiModelMessages.handleAiModelStatus();
-        } catch (error) {
-          console.debug("Failed to synchronize AI model status during runtime bootstrap.", error);
-        }
-      });
-      return;
-    }
-
-    scheduleAiStatusReprobeRetries();
-  }
-
-  function scheduleAiStatusReprobeRetries() {
-    if (aiStatusRetryPending) {
-      return;
-    }
-
-    aiStatusRetryPending = true;
-
-    for (const delayMs of AI_STATUS_RETRY_DELAYS_MS) {
-      setTimeout(async () => {
-        if (await isExtensionServicePaused()) {
-          aiStatusRetryPending = false;
-          return;
-        }
-
-        const supportApi = globalThis.ZeroLatencySupport;
-
-        if (supportApi?.getBackgroundFeatureSupport?.().aiModelManagementUsable === true) {
-          aiStatusRetryPending = false;
-          return;
-        }
-
-        const becameAvailable = await supportApi?.probeNativeAppAvailability?.();
-
-        if (becameAvailable !== true) {
-          return;
-        }
-
-        aiStatusRetryPending = false;
-
-        try {
-          await globalThis.ZeroLatencyCoreAiModelMessages.handleAiModelStatus();
-        } catch (error) {
-          console.debug("AI status reprobe sync failed.", error);
-        }
-      }, delayMs);
-    }
-
-    setTimeout(() => {
-      aiStatusRetryPending = false;
-    }, AI_STATUS_RETRY_DELAYS_MS[AI_STATUS_RETRY_DELAYS_MS.length - 1] + 1_000);
   }
 
   globalThis.ZeroLatencyRuntimeActions = {

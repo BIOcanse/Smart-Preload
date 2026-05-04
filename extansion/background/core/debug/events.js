@@ -6,6 +6,10 @@
   function record(eventName, payload = {}) {
     const normalizedEventName =
       typeof eventName === "string" && eventName ? eventName : "unknown";
+    if (globalThis.ZeroLatencyDiagnostics?.isFlushInProgress?.() !== true) {
+      globalThis.ZeroLatencyDiagnostics?.record?.(normalizedEventName, payload);
+    }
+
     recentEvents.push({
       sequence: nextSequence++,
       recordedAt: new Date().toISOString(),

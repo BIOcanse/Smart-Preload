@@ -12,7 +12,6 @@ async function enforcePreloadWindowPolicy() {
 
   const preloadState = await loadPreloadState();
   let didMutate = false;
-  const keepWarmPreloadWindow = shouldKeepWarmPreloadWindow();
   const preloadWindowManager = globalThis.ZeroLatencyPreloadWindowManager;
 
   for (const normalWindowId of Object.keys(preloadState.normalWindowsById || {})) {
@@ -22,7 +21,21 @@ async function enforcePreloadWindowPolicy() {
       continue;
     }
 
+    const liveNormalWindow = await getWindowMaybe(Number(normalWindowId));
+
+    if (liveNormalWindow?.type !== "normal") {
+      if (await preloadWindowManager.closeWindowForNormalWindow(preloadState, normalWindowId)) {
+        didMutate = true;
+      }
+
+      pruneNormalWindowRuntime(preloadState, normalWindowId);
+      didMutate = true;
+      continue;
+    }
+
     if (!hasHiddenPreloadEntriesForNormalWindow(normalWindowRuntime)) {
+      const keepWarmPreloadWindow = shouldKeepWarmPreloadWindow(normalWindowRuntime);
+
       if (keepWarmPreloadWindow) {
         const ensuredWindow = await preloadWindowManager.ensureWindow(preloadState, normalWindowId);
 
@@ -131,6 +144,10 @@ async function ensurePreloadWindowWatchdog() {
   });
 }
 
-function shouldKeepWarmPreloadWindow() {
-  return true;
+function shouldKeepWarmPreloadWindow(normalWindowRuntime) {
+  if (globalThis.ZeroLatencySupport?.isSystemLevelWindowHidingUsable?.() !== true) {
+    return false;
+  }
+
+  return !isPreloadWindowSystemHideBackoffActive(normalWindowRuntime?.preloadWindow);
 }

@@ -8,6 +8,8 @@
   const EARLY_LINK_RESCAN_DELAY_MS = 120;
   const LINK_STABILITY_POLL_MS = 120;
   const LINK_STABILITY_MAX_WAIT_MS = 900;
+  const BLANK_CLICK_RESOLUTION_TIMEOUT_MS = 500;
+  const CURRENT_TAB_CLICK_RESOLUTION_TIMEOUT_MS = 2500;
   const WATERFALL_BASELINE_MAX_UNLOCKED_MS = 2500;
   const RESCAN_DELAY_MS = 700;
   const PAGE_DIGEST_DELAY_MS = 1500;
@@ -392,11 +394,19 @@
     event.stopPropagation();
 
     const reservedWindow = clickPlan.reserveBlankWindow ? openReservedBlankWindow() : null;
-    const resolution = await requestClickNavigationResolution({
-      sourcePageUrl: location.href,
-      targetUrl: navigation.targetUrl,
-      targetHint: clickPlan.targetHint,
-    });
+    const resolutionTimeoutMs = reservedWindow
+      ? BLANK_CLICK_RESOLUTION_TIMEOUT_MS
+      : CURRENT_TAB_CLICK_RESOLUTION_TIMEOUT_MS;
+    const resolutionExpiresAt = Date.now() + resolutionTimeoutMs;
+    const resolution = await requestClickNavigationResolutionWithTimeout(
+      {
+        sourcePageUrl: location.href,
+        targetUrl: navigation.targetUrl,
+        targetHint: clickPlan.targetHint,
+        resolutionExpiresAt,
+      },
+      resolutionTimeoutMs
+    );
 
     executeNavigationResolution(resolution, {
       targetUrl: navigation.targetUrl,
@@ -475,6 +485,9 @@
         sourcePageUrl: payload?.sourcePageUrl || location.href,
         targetUrl: payload?.targetUrl || "",
         targetHint: payload?.targetHint === "_blank" ? "_blank" : "_self",
+        resolutionExpiresAt: Number.isFinite(payload?.resolutionExpiresAt)
+          ? payload.resolutionExpiresAt
+          : null,
       });
     } catch (_error) {
       return {
@@ -482,6 +495,26 @@
         action: "skip",
       };
     }
+  }
+
+  async function requestClickNavigationResolutionWithTimeout(payload, timeoutMs) {
+    if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+      return requestClickNavigationResolution(payload);
+    }
+
+    return Promise.race([
+      requestClickNavigationResolution(payload),
+      new Promise((resolve) => {
+        window.setTimeout(() => {
+          resolve({
+            handled: false,
+            action:
+              payload?.targetHint === "_blank" ? "navigate-reserved-tab" : "navigate-current-tab",
+            timedOut: true,
+          });
+        }, timeoutMs);
+      }),
+    ]);
   }
 
   function getPrimaryClickHandlingPlan(event, navigation) {

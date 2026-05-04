@@ -1,4 +1,10 @@
 const settingsApi = globalThis.ZeroLatencySettings;
+const settingsAiModels = globalThis.ZeroLatencySettingsAiModels;
+const i18n = globalThis.ZeroLatencyI18n;
+const t = (key, substitutions = [], fallback = "") =>
+  i18n?.t?.(key, substitutions, fallback) || fallback || key;
+
+i18n?.applyDocument?.(document);
 
 const formElements = {
   automaticDeviceTuning: document.getElementById("automatic-device-tuning"),
@@ -11,10 +17,11 @@ const formElements = {
   ignoreWaterfallDynamicLinks: document.getElementById("ignore-waterfall-dynamic-links"),
   transitionWindowScope: document.getElementById("transition-window-scope"),
   transitionWindowScopeEnabled: document.getElementById("transition-window-scope-enabled"),
+  aiPredictionProvider: document.getElementById("ai-prediction-provider"),
   aiPredictionModel: document.getElementById("ai-prediction-model"),
+  aiProviderApiKey: document.getElementById("ai-provider-api-key"),
+  aiProviderEndpoint: document.getElementById("ai-provider-endpoint"),
   aiPredictionEnabled: document.getElementById("ai-prediction-enabled"),
-  manageAiModel: document.getElementById("manage-ai-model"),
-  manageAiModelDownloaded: document.getElementById("manage-ai-model-downloaded"),
   crossSiteCurrentTabSwap: document.getElementById("cross-site-current-tab-swap"),
   watchdogEnabled: document.getElementById("watchdog-enabled"),
   watchdogIntervalSeconds: document.getElementById("watchdog-interval-seconds"),
@@ -22,20 +29,13 @@ const formElements = {
   idleWakeAggressive: document.getElementById("idle-wake-aggressive"),
   pointerProximityPrediction: document.getElementById("pointer-proximity-prediction"),
   authStateWarmup: document.getElementById("auth-state-warmup"),
+  diagnosticsLoggingEnabled: document.getElementById("diagnostics-logging-enabled"),
 };
 
 const saveButton = document.getElementById("save-button");
 const resetButton = document.getElementById("reset-button");
 const navButtons = Array.from(document.querySelectorAll(".settings-nav-item"));
-const aiProgressToastElement = document.getElementById("ai-progress-toast");
-const aiProgressToastTitleElement = document.getElementById("ai-progress-toast-title");
-const aiProgressToastMessageElement = document.getElementById("ai-progress-toast-message");
-const aiProgressToastBarElement = aiProgressToastElement?.querySelector(".ai-progress-toast-bar");
-const aiProgressToastBarFillElement = document.getElementById("ai-progress-toast-bar-fill");
-const aiProgressToastMetaElement = document.getElementById("ai-progress-toast-meta");
-const aiProgressToastDismissElement = document.getElementById("ai-progress-toast-dismiss");
 const aiPredictionMismatchWarningElement = document.getElementById("ai-prediction-mismatch-warning");
-const aiManagePlatformWarningElement = document.getElementById("ai-manage-platform-warning");
 const PRELOAD_RULE_CARD_IDS =
   settingsApi.PRELOAD_RULE_CARD_IDS ?? ["nativePerPagePreloadLimit", "perPagePreloadLimit"];
 const NAV_SECTION_IDS = ["overview", "tracking", "preload", "ordering", "experiments"];
@@ -70,39 +70,40 @@ let armedDragCardId = null;
 let activeDragCardId = null;
 let activeDropTarget = null;
 let pendingNavSyncFrame = null;
-let nativeAiModelStatus = null;
-let manageAiModelActionInFlight = false;
 let currentFeatureSupport = {};
-let aiProgressPollHandle = null;
-let aiStatusPollHandle = null;
-let lastDisplayedAiProgress = null;
-let aiProgressToastDismissed = false;
-const AI_PROGRESS_POLL_INTERVAL_MS = 500;
-const AI_STATUS_POLL_INTERVAL_MS = 1000;
-const AI_PROGRESS_STALE_AFTER_MS = 5 * 60 * 1000;
+let aiModelOptionsRequestId = 0;
+let pendingLmStudioModelLoadId = "";
 
 void initializeSettingsPage();
 
 async function initializeSettingsPage() {
+  await loadOptionalLocalAiTestConfig();
   populateTransitionWindowOptions();
-  populateAiModelOptions();
+  populateAiProviderOptions();
   bindUiEvents();
-  setStatus("Loading", "Reading local extension settings.");
+  setStatus(t("commonLoading", [], "Loading"), t("settingsReadingLocalSettings", [], "Reading local extension settings."));
 
   try {
     savedSettings = await settingsApi.loadSettings(chrome.storage.local);
     draftSettings = settingsApi.cloneSettings(savedSettings);
     renderForm(draftSettings);
     queueNavScrollSync();
-    setStatus("Ready", "No unsaved changes.");
+    setStatus(t("commonReady", [], "Ready"), t("settingsNoUnsavedChanges", [], "No unsaved changes."));
     await fetchAndRenderFeatureSupport();
-    await fetchAndSyncAiModelStatus();
-    await checkInitialAiProgress();
-    startAiStatusBackgroundPolling();
   } catch (error) {
     console.error(error);
-    setStatus("Failed", "Could not load settings from storage.");
+    setStatus(t("commonFailed", [], "Failed"), t("settingsCouldNotLoad", [], "Could not load settings from storage."));
   }
+}
+
+async function loadOptionalLocalAiTestConfig() {
+  await new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "../shared/local-ai-test-config.js";
+    script.onload = resolve;
+    script.onerror = resolve;
+    document.head.append(script);
+  });
 }
 
 function populateTransitionWindowOptions() {
@@ -120,20 +121,18 @@ function populateTransitionWindowOptions() {
   }
 }
 
-function populateAiModelOptions() {
-  const options = Array.isArray(settingsApi.AI_MODEL_OPTIONS)
-    ? settingsApi.AI_MODEL_OPTIONS
+function populateAiProviderOptions() {
+  const options = Array.isArray(settingsApi.AI_PROVIDER_OPTIONS)
+    ? settingsApi.AI_PROVIDER_OPTIONS
     : [];
 
-  for (const selectElement of [formElements.aiPredictionModel, formElements.manageAiModel]) {
-    selectElement.textContent = "";
+  formElements.aiPredictionProvider.textContent = "";
 
-    for (const optionSpec of options) {
-      const option = document.createElement("option");
-      option.value = String(optionSpec.value);
-      option.textContent = optionSpec.label;
-      selectElement.append(option);
-    }
+  for (const optionSpec of options) {
+    const option = document.createElement("option");
+    option.value = String(optionSpec.value);
+    option.textContent = optionSpec.label;
+    formElements.aiPredictionProvider.append(option);
   }
 }
 
@@ -176,9 +175,9 @@ function bindUiEvents() {
     draftSettings = settingsApi.cloneSettings(settingsApi.DEFAULT_SETTINGS);
     renderForm(draftSettings);
     if (isDirty()) {
-      setDirtyStatus("Defaults restored in the form. Save to apply.");
+      setDirtyStatus(t("settingsDefaultsRestored", [], "Defaults restored in the form. Save to apply."));
     } else {
-      setStatus("Ready", "No unsaved changes.");
+      setStatus(t("commonReady", [], "Ready"), t("settingsNoUnsavedChanges", [], "No unsaved changes."));
     }
   });
 
@@ -195,47 +194,36 @@ function bindUiEvents() {
   });
   window.addEventListener("resize", queueNavScrollSync);
 
-  aiProgressToastDismissElement?.addEventListener("click", () => {
-    aiProgressToastDismissed = true;
-    hideAiProgressToast();
-  });
-
-  document.addEventListener("visibilitychange", handleSettingsVisibilityChange);
-}
-
-function handleSettingsVisibilityChange() {
-  if (document.visibilityState === "visible") {
-    startAiStatusBackgroundPolling();
-  } else {
-    stopAiStatusBackgroundPolling();
-  }
 }
 
 async function handleFormChange(event) {
-  if (event?.target === formElements.manageAiModelDownloaded) {
-    if (manageAiModelActionInFlight) {
-      event.preventDefault();
-      syncManageAiModelDownloadedToggle();
-      return;
-    }
-    await handleManageAiModelToggle();
-    return;
-  }
-
-  if (event?.target === formElements.manageAiModel) {
-    syncManageAiModelDownloadedToggle();
+  if (event?.target === formElements.aiPredictionProvider) {
+    syncAiProviderFieldsFromSettings(draftSettings);
   }
 
   draftSettings = readFormSettings();
+  if (
+    event?.target === formElements.aiPredictionProvider ||
+    event?.target === formElements.aiProviderApiKey ||
+    event?.target === formElements.aiProviderEndpoint
+  ) {
+    void refreshAiModelOptionsForCurrentProvider();
+  }
+  if (
+    event?.target === formElements.aiPredictionModel ||
+    event?.target === formElements.aiPredictionEnabled
+  ) {
+    void ensureSelectedLmStudioModelLoadedFromSettings(draftSettings);
+  }
   renderRuleCards(draftSettings);
   updateComputedState(draftSettings);
   syncAiPredictionMismatchWarning();
   queueNavScrollSync();
 
   if (isDirty()) {
-    setDirtyStatus("Unsaved changes are ready to be applied.");
+    setDirtyStatus(t("settingsUnsavedReady", [], "Unsaved changes are ready to be applied."));
   } else {
-    setStatus("Ready", "No unsaved changes.");
+    setStatus(t("commonReady", [], "Ready"), t("settingsNoUnsavedChanges", [], "No unsaved changes."));
   }
 }
 
@@ -247,6 +235,24 @@ function readFormSettings() {
   } else if (formElements.modeAggressive.checked) {
     mode = "aggressive";
   }
+
+  const aiProviderId = formElements.aiPredictionProvider.value;
+  const aiProvider = settingsApi.AI_PROVIDER_BY_ID?.[aiProviderId] ?? {};
+  const aiProviderIsLmStudio = isLmStudioProvider(aiProviderId);
+  const aiApiKeys = {
+    ...(draftSettings.preloading?.aiPrediction?.apiKeys ?? {}),
+    [aiProviderId]: aiProviderIsLmStudio ? "" : formElements.aiProviderApiKey.value.trim(),
+  };
+  const aiModelIds = {
+    ...(draftSettings.preloading?.aiPrediction?.modelIds ?? {}),
+    [aiProviderId]: formElements.aiPredictionModel.value.trim(),
+  };
+  const aiEndpointUrls = {
+    ...(draftSettings.preloading?.aiPrediction?.endpointUrls ?? {}),
+    [aiProviderId]: aiProviderIsLmStudio
+      ? aiProvider.endpointUrl || globalThis.ZeroLatencyLmStudio?.CHAT_COMPLETIONS_URL || ""
+      : formElements.aiProviderEndpoint.value.trim(),
+  };
 
   return settingsApi.normalizeStoredSettings({
     automaticDeviceTuning: formElements.automaticDeviceTuning.checked,
@@ -268,14 +274,11 @@ function readFormSettings() {
       },
       aiPrediction: {
         enabled: formElements.aiPredictionEnabled.checked,
-        modelId: formElements.aiPredictionModel.value,
-      },
-      modelManager: {
-        selectedModelId: formElements.manageAiModel.value,
-        downloadedModels: {
-          ...(draftSettings.preloading?.modelManager?.downloadedModels ?? {}),
-          [formElements.manageAiModel.value]: formElements.manageAiModelDownloaded.checked,
-        },
+        providerId: aiProviderId,
+        modelId: aiModelIds[aiProviderId],
+        apiKeys: aiApiKeys,
+        modelIds: aiModelIds,
+        endpointUrls: aiEndpointUrls,
       },
     },
     preloadWindow: {
@@ -288,6 +291,9 @@ function readFormSettings() {
       idleWakeAggressive: formElements.idleWakeAggressive.checked,
       pointerProximityPrediction: formElements.pointerProximityPrediction.checked,
       authStateWarmup: formElements.authStateWarmup.checked,
+    },
+    diagnostics: {
+      enabled: formElements.diagnosticsLoggingEnabled.checked,
     },
     layout: {
       sortableCards: {
@@ -320,9 +326,8 @@ function syncBaseControlsFromSettings(settings) {
     settings.preloading.transitionWindowScope.enabled;
   formElements.transitionWindowScope.value = settings.preloading.transitionWindowScope.windowKey;
   formElements.aiPredictionEnabled.checked = settings.preloading.aiPrediction.enabled;
-  formElements.aiPredictionModel.value = settings.preloading.aiPrediction.modelId;
-  formElements.manageAiModel.value = settings.preloading.modelManager.selectedModelId;
-  syncManageAiModelDownloadedToggle(settings);
+  formElements.aiPredictionProvider.value = settings.preloading.aiPrediction.providerId;
+  syncAiProviderFieldsFromSettings(settings);
   formElements.crossSiteCurrentTabSwap.checked = settings.experiments.crossSiteCurrentTabSwap;
   formElements.watchdogEnabled.checked = settings.preloadWindow.watchdogEnabled;
   formElements.watchdogIntervalSeconds.value = String(
@@ -333,30 +338,234 @@ function syncBaseControlsFromSettings(settings) {
   formElements.pointerProximityPrediction.checked =
     settings.experiments.pointerProximityPrediction;
   formElements.authStateWarmup.checked = settings.experiments.authStateWarmup;
+  formElements.diagnosticsLoggingEnabled.checked = settings.diagnostics?.enabled === true;
+}
+
+function syncAiProviderFieldsFromSettings(settings) {
+  const aiPrediction = settings.preloading?.aiPrediction ?? {};
+  const providerId = formElements.aiPredictionProvider.value || aiPrediction.providerId;
+  const provider =
+    settingsApi.AI_PROVIDER_BY_ID?.[providerId] ??
+    settingsApi.AI_PROVIDER_OPTIONS?.[0] ??
+    {};
+  const providerIsLmStudio = isLmStudioProvider(providerId);
+  const modelId =
+    aiPrediction.modelIds?.[providerId] || provider.defaultModelId || aiPrediction.modelId || "";
+  const apiKey = providerIsLmStudio ? "" : aiPrediction.apiKeys?.[providerId] || "";
+  const endpointUrl = providerIsLmStudio
+    ? provider.endpointUrl || globalThis.ZeroLatencyLmStudio?.CHAT_COMPLETIONS_URL || ""
+    : aiPrediction.endpointUrls?.[providerId] || provider.endpointUrl || "";
+  renderAiModelSelectOptions({
+    providerId,
+    selectedModelId: modelId,
+    models: getCuratedAiModelOptions(providerId),
+    disabled: !apiKey && provider.apiKeyOptional !== true,
+    placeholder:
+      !apiKey && provider.apiKeyOptional !== true
+        ? t("settingsAiEnterKeyToLoadModels", [], "Enter an API key to load models")
+        : t("settingsAiLoadingModels", [], "Loading supported models..."),
+  });
+  formElements.aiProviderApiKey.value = apiKey;
+  formElements.aiProviderEndpoint.value = endpointUrl;
+  formElements.aiProviderApiKey.disabled = providerIsLmStudio;
+  formElements.aiProviderEndpoint.disabled = providerIsLmStudio;
+  formElements.aiProviderApiKey.placeholder =
+    providerIsLmStudio
+      ? t("settingsAiLmStudioKeyIgnoredPlaceholder", [], "Ignored for LM Studio")
+      : provider.apiKeyOptional === true
+      ? t("settingsAiKeyOptionalPlaceholder", [], "Optional for local compatible endpoints")
+      : t("settingsAiKeyRequiredPlaceholder", [], "Required");
+  void refreshAiModelOptions({
+    providerId,
+    selectedModelId: modelId,
+    apiKey,
+    endpointUrl,
+  });
+}
+
+function getCuratedAiModelOptions(providerId) {
+  return typeof settingsApi.getAiProviderModels === "function"
+    ? settingsApi.getAiProviderModels(providerId)
+    : [];
+}
+
+async function refreshAiModelOptionsForCurrentProvider() {
+  const providerId = String(formElements.aiPredictionProvider.value || "");
+  const provider = settingsApi.AI_PROVIDER_BY_ID?.[providerId] ?? {};
+  const providerIsLmStudio = isLmStudioProvider(providerId);
+  const selectedModelId = String(formElements.aiPredictionModel.value || "").trim();
+  const apiKey = providerIsLmStudio
+    ? ""
+    : String(formElements.aiProviderApiKey.value || "").trim();
+  const endpointUrl = providerIsLmStudio
+    ? provider.endpointUrl || globalThis.ZeroLatencyLmStudio?.CHAT_COMPLETIONS_URL || ""
+    : String(formElements.aiProviderEndpoint.value || "").trim();
+  await refreshAiModelOptions({
+    providerId,
+    selectedModelId,
+    apiKey,
+    endpointUrl,
+  });
+}
+
+async function refreshAiModelOptions({ providerId, selectedModelId, apiKey, endpointUrl }) {
+  const provider = settingsApi.AI_PROVIDER_BY_ID?.[providerId];
+  const requestId = ++aiModelOptionsRequestId;
+
+  if (!provider) {
+    renderAiModelSelectOptions({
+      providerId,
+      selectedModelId: "",
+      models: [],
+      disabled: true,
+      placeholder: t("settingsAiSelectProviderFirst", [], "Select a provider first"),
+    });
+    return;
+  }
+
+  if (!apiKey && provider.apiKeyOptional !== true) {
+    renderAiModelSelectOptions({
+      providerId,
+      selectedModelId,
+      models: [],
+      disabled: true,
+      placeholder: t("settingsAiEnterKeyToLoadModels", [], "Enter an API key to load models"),
+    });
+    return;
+  }
+
+  renderAiModelSelectOptions({
+    providerId,
+    selectedModelId,
+    models: getCuratedAiModelOptions(providerId),
+    disabled: false,
+    placeholder: t("settingsAiLoadingModels", [], "Loading supported models..."),
+  });
+
+  const result = await settingsAiModels?.loadProviderModelOptions?.({
+    providerId,
+    provider,
+    endpointUrl,
+    apiKey,
+  });
+
+  if (requestId !== aiModelOptionsRequestId) {
+    return;
+  }
+
+  const models = Array.isArray(result?.models) ? result.models : getCuratedAiModelOptions(providerId);
+  const selectedAfterRender = renderAiModelSelectOptions({
+    providerId,
+    selectedModelId,
+    models,
+    disabled: models.length === 0,
+    placeholder:
+      models.length === 0
+        ? t("settingsAiNoSupportedModels", [], "No supported lightweight models found")
+        : "",
+  });
+
+  formElements.aiPredictionModel.title = result?.message || "";
+
+  if (selectedAfterRender !== selectedModelId) {
+    draftSettings = readFormSettings();
+    updateComputedState(draftSettings);
+    syncAiPredictionMismatchWarning();
+  }
+
+  if (isLmStudioProvider(providerId) && formElements.aiPredictionEnabled.checked === true) {
+    void ensureSelectedLmStudioModelLoadedFromSettings(readFormSettings());
+  }
+}
+
+function renderAiModelSelectOptions({
+  providerId,
+  selectedModelId,
+  models,
+  disabled,
+  placeholder,
+}) {
+  const normalizedModels = Array.isArray(models) ? models : [];
+  const modelSelect = formElements.aiPredictionModel;
+  const nextSelectedModelId =
+    normalizedModels.some((model) => model.id === selectedModelId)
+      ? selectedModelId
+      : normalizedModels[0]?.id || "";
+
+  modelSelect.textContent = "";
+
+  if (placeholder) {
+    const placeholderOption = document.createElement("option");
+    placeholderOption.value = "";
+    placeholderOption.textContent = placeholder;
+    placeholderOption.disabled = normalizedModels.length > 0;
+    placeholderOption.selected = !nextSelectedModelId;
+    modelSelect.append(placeholderOption);
+  }
+
+  for (const model of normalizedModels) {
+    const option = document.createElement("option");
+    option.value = String(model.id || "");
+    option.textContent = formatAiModelOptionLabel(model);
+    modelSelect.append(option);
+  }
+
+  modelSelect.value = nextSelectedModelId;
+  modelSelect.disabled = Boolean(disabled);
+  modelSelect.dataset.providerId = providerId || "";
+
+  return nextSelectedModelId;
+}
+
+function formatAiModelOptionLabel(model) {
+  const modelId = String(model?.id || "");
+  const label = String(model?.label || modelId);
+  const suffixes = [];
+
+  if (model?.statusLabel) {
+    suffixes.push(String(model.statusLabel));
+  }
+
+  if (modelId && label !== modelId) {
+    suffixes.push(modelId);
+  }
+
+  return suffixes.length > 0 ? `${label} (${suffixes.join(" / ")})` : label;
 }
 
 function updateComputedState(settings) {
   const effectiveSettings = settingsApi.resolveEffectiveSettings(settings);
   const deviceProfile = effectiveSettings.detectedDeviceProfile;
   deviceProfileLabelElement.textContent = deviceProfile.label;
-  deviceProfileMetaElement.textContent = `${deviceProfile.hardwareConcurrency || "?"} cores | ${
-    deviceProfile.deviceMemory || "?"
-  } GB memory hint`;
+  deviceProfileMetaElement.textContent = t(
+    "settingsHardwareMeta",
+    [deviceProfile.hardwareConcurrency || "?", deviceProfile.deviceMemory || "?"],
+    `${deviceProfile.hardwareConcurrency || "?"} cores | ${
+      deviceProfile.deviceMemory || "?"
+    } GB memory hint`
+  );
   effectivePreloadCapElement.textContent = String(
     `${effectiveSettings.preloading.effectiveNativeMaxPreloadsPerSource} / ${effectiveSettings.preloading.effectiveTabMaxPreloadsPerSource}`
   );
   const selectedTransitionWindowLabel =
     settingsApi.TRANSITION_WINDOW_OPTIONS?.find(
       (option) => option.value === effectiveSettings.preloading.effectiveTransitionWindowKey
-    )?.label ?? "总量";
-  effectivePreloadMetaElement.textContent =
-    `Native / tab slot caps. Rules use ${selectedTransitionWindowLabel}.`;
+    )?.label ?? t("transitionWindowTotal", [], "Total");
+  effectivePreloadMetaElement.textContent = t(
+    "settingsEffectivePreloadMeta",
+    [selectedTransitionWindowLabel],
+    `Native / tab slot caps. Rules use ${selectedTransitionWindowLabel}.`
+  );
   watchdogSummaryElement.textContent = effectiveSettings.preloadWindow.watchdogEnabled
-    ? "On"
-    : "Off";
+    ? t("commonOn", [], "On")
+    : t("commonOff", [], "Off");
   watchdogMetaElement.textContent = effectiveSettings.preloadWindow.watchdogEnabled
-    ? `Checks every ${effectiveSettings.preloadWindow.watchdogIntervalSeconds} second(s).`
-    : "Window repair is disabled.";
+    ? t(
+        "settingsWatchdogChecksEvery",
+        [effectiveSettings.preloadWindow.watchdogIntervalSeconds],
+        `Checks every ${effectiveSettings.preloadWindow.watchdogIntervalSeconds} second(s).`
+      )
+    : t("settingsWindowRepairDisabled", [], "Window repair is disabled.");
   watchdogIntervalRowElement.classList.toggle(
     "is-disabled",
     !effectiveSettings.preloadWindow.watchdogEnabled
@@ -371,99 +580,75 @@ function updateComputedState(settings) {
 
 async function saveCurrentSettings() {
   draftSettings = readFormSettings();
-  setStatus("Saving", "Writing settings to local extension storage.");
+  setStatus(t("commonSaving", [], "Saving"), t("settingsWritingLocalSettings", [], "Writing settings to local extension storage."));
 
   try {
     const storedSettings = await settingsApi.saveSettings(chrome.storage.local, draftSettings);
     savedSettings = storedSettings;
     draftSettings = settingsApi.cloneSettings(storedSettings);
     renderForm(draftSettings);
-    setStatus("Saved", "Settings written successfully.");
+    void ensureSelectedLmStudioModelLoadedFromSettings(draftSettings);
+    setStatus(t("commonSaved", [], "Saved"), t("settingsWrittenSuccessfully", [], "Settings written successfully."));
   } catch (error) {
     console.error(error);
-    setStatus("Failed", "Could not save settings.");
+    setStatus(t("commonFailed", [], "Failed"), t("settingsCouldNotSave", [], "Could not save settings."));
   }
 }
 
-async function handleManageAiModelToggle() {
-  if (manageAiModelActionInFlight) {
+async function ensureSelectedLmStudioModelLoadedFromSettings(settings) {
+  const aiPrediction = settings?.preloading?.aiPrediction ?? {};
+  const modelId = String(aiPrediction.modelId || "").trim();
+
+  if (
+    aiPrediction.enabled !== true ||
+    !isLmStudioProvider(aiPrediction.providerId) ||
+    !modelId ||
+    pendingLmStudioModelLoadId === modelId ||
+    typeof globalThis.ZeroLatencyLmStudio?.loadModel !== "function"
+  ) {
     return;
   }
 
-  const selectedModelId = String(formElements.manageAiModel.value || "");
-  const shouldInstall = formElements.manageAiModelDownloaded.checked === true;
-
-  manageAiModelActionInFlight = true;
-  syncManageAiModelControlAvailability(false);
-  aiProgressToastDismissed = false;
-  showAiProgressToast({
-    model_id: selectedModelId,
-    action: shouldInstall ? "install" : "uninstall",
-    stage: shouldInstall ? "ensuring-runtime" : "removing",
-    message: shouldInstall
-      ? "Preparing portable runtime if needed."
-      : "Removing the selected model.",
-    completed_bytes: 0,
-    total_bytes: 0,
-    finished: false,
-  });
-  startAiProgressPolling();
-  setStatus(
-    shouldInstall ? "Downloading" : "Removing",
-    shouldInstall
-      ? "Installing runtime if needed, then downloading the selected model."
-      : "Removing the selected model and pruning the portable runtime if unused."
+  pendingLmStudioModelLoadId = modelId;
+  formElements.aiPredictionModel.title = t(
+    "settingsAiLmStudioLoadingModel",
+    [modelId],
+    `Loading LM Studio model: ${modelId}`
   );
 
   try {
-    const response = await chrome.runtime.sendMessage({
-      type: "ai-models:set-installed",
-      modelId: selectedModelId,
-      installed: shouldInstall,
-    });
+    const status = await globalThis.ZeroLatencyLmStudio.getModelStatus(modelId).catch(() => null);
+    let didRequestLoad = false;
 
-    if (!response?.ok) {
-      throw new Error(response?.error || "AI model action failed.");
+    if (!status?.loaded) {
+      await globalThis.ZeroLatencyLmStudio.loadModel(modelId);
+      didRequestLoad = true;
+      const loaded = await globalThis.ZeroLatencyLmStudio.waitForModelLoaded(modelId);
+
+      if (loaded?.ok !== true) {
+        throw new Error(loaded?.reason || "model load timed out");
+      }
     }
 
-    applyNativeAiModelStatus(response.status, response.settings);
-    if (isDirty()) {
-      setDirtyStatus("Model state updated. Other unsaved changes are still pending.");
-    } else {
-      setStatus(
-        shouldInstall ? "Downloaded" : "Removed",
-        "Portable runtime and model state updated."
-      );
+    if (didRequestLoad) {
+      await refreshAiModelOptionsForCurrentProvider();
     }
-    showAiProgressToast({
-      model_id: selectedModelId,
-      action: shouldInstall ? "install" : "uninstall",
-      stage: "complete",
-      message: shouldInstall ? "Model downloaded." : "Model removed.",
-      completed_bytes: 0,
-      total_bytes: 0,
-      finished: true,
-    });
   } catch (error) {
-    console.error(error);
-    syncManageAiModelDownloadedToggle();
-    setStatus("Failed", "Could not update the selected model.");
-    showAiProgressToast({
-      model_id: selectedModelId,
-      action: shouldInstall ? "install" : "uninstall",
-      stage: "failed",
-      message: error instanceof Error ? error.message : String(error),
-      completed_bytes: 0,
-      total_bytes: 0,
-      finished: true,
-      error: error instanceof Error ? error.message : String(error),
-    });
+    formElements.aiPredictionModel.title = `LM Studio model load failed: ${
+      error instanceof Error ? error.message : String(error)
+    }`;
   } finally {
-    manageAiModelActionInFlight = false;
-    syncManageAiModelControlAvailability(isManageAiModelControlUsable());
-    stopAiProgressPolling();
-    void fetchAndSyncAiModelStatus();
+    if (pendingLmStudioModelLoadId === modelId) {
+      pendingLmStudioModelLoadId = "";
+    }
   }
+}
+
+function isLmStudioProvider(providerId) {
+  return (
+    globalThis.ZeroLatencyLmStudio?.isLmStudioProvider?.(providerId) === true ||
+    String(providerId || "").toLowerCase() === "lmstudio"
+  );
 }
 
 function activateNavButton(sectionId) {
@@ -477,9 +662,9 @@ function isDirty() {
 }
 
 function setDirtyStatus(message) {
-  footerStatusTitleElement.textContent = "Unsaved";
+  footerStatusTitleElement.textContent = t("commonUnsaved", [], "Unsaved");
   footerStatusTextElement.textContent = message;
-  navStatusTextElement.textContent = "Unsaved changes";
+  navStatusTextElement.textContent = t("commonUnsaved", [], "Unsaved");
   syncActionButtons();
 }
 
@@ -701,7 +886,10 @@ function createSortableControlWidget(cardId, cardSchema, cardState) {
       token.value = field.text;
       token.readOnly = true;
       token.tabIndex = -1;
-      token.setAttribute("aria-label", `${cardSchema.title} 固定占位 ${field.text}`);
+      token.setAttribute(
+        "aria-label",
+        `${cardSchema.title} ${t("ruleTokenFixed", [field.text], `fixed token ${field.text}`)}`
+      );
       fieldShell.append(token);
     }
 
@@ -750,9 +938,9 @@ function handleSortableCardInput(event) {
   }
 
   if (isDirty()) {
-    setDirtyStatus("Unsaved changes are ready to be applied.");
+    setDirtyStatus(t("settingsUnsavedReady", [], "Unsaved changes are ready to be applied."));
   } else {
-    setStatus("Ready", "No unsaved changes.");
+    setStatus(t("commonReady", [], "Ready"), t("settingsNoUnsavedChanges", [], "No unsaved changes."));
   }
 }
 
@@ -842,9 +1030,9 @@ function handleSortableCardDrop(event) {
   clearSortableCardDragState();
 
   if (isDirty()) {
-    setDirtyStatus("Card order changed. Save to apply.");
+    setDirtyStatus(t("settingsCardOrderChanged", [], "Card order changed. Save to apply."));
   } else {
-    setStatus("Ready", "No unsaved changes.");
+    setStatus(t("commonReady", [], "Ready"), t("settingsNoUnsavedChanges", [], "No unsaved changes."));
   }
 }
 
@@ -942,114 +1130,10 @@ async function fetchAndRenderFeatureSupport() {
 
     currentFeatureSupport = snapshot?.featureSupport ?? {};
     renderNativeAppStatus(currentFeatureSupport);
-    syncManagePlatformWarning(currentFeatureSupport);
-    syncManageAiModelControlAvailability(isManageAiModelControlUsable());
   } catch (_error) {
     currentFeatureSupport = {};
     renderNativeAppStatus({});
-    syncManagePlatformWarning({});
-    syncManageAiModelControlAvailability(isManageAiModelControlUsable());
   }
-}
-
-async function fetchAndSyncAiModelStatus() {
-  try {
-    const response = await chrome.runtime.sendMessage({
-      type: "ai-models:get-status",
-    });
-
-    if (!response?.ok) {
-      throw new Error(response?.error || "Could not load AI model status.");
-    }
-
-    currentFeatureSupport = {
-      ...currentFeatureSupport,
-      aiModelManagement: true,
-      aiModelManagementUsable: true,
-    };
-    applyNativeAiModelStatus(response.status, response.settings);
-    syncManageAiModelControlAvailability(isManageAiModelControlUsable());
-  } catch (error) {
-    console.error(error);
-    syncManageAiModelControlAvailability(isManageAiModelControlUsable());
-  }
-}
-
-function applyNativeAiModelStatus(status, serverSettings) {
-  nativeAiModelStatus = status ?? null;
-  savedSettings = mergeNativeAiStatusIntoSettings(
-    serverSettings ? settingsApi.normalizeStoredSettings(serverSettings) : savedSettings,
-    nativeAiModelStatus
-  );
-  draftSettings = mergeNativeAiStatusIntoSettings(draftSettings, nativeAiModelStatus);
-  renderForm(draftSettings);
-}
-
-function mergeNativeAiStatusIntoSettings(sourceSettings, nativeStatus) {
-  if (!nativeStatus) {
-    return settingsApi.normalizeStoredSettings(sourceSettings);
-  }
-
-  const downloadedModels = {};
-
-  for (const optionSpec of settingsApi.AI_MODEL_OPTIONS ?? []) {
-    downloadedModels[optionSpec.value] = false;
-  }
-
-  for (const modelStatus of nativeStatus.models ?? []) {
-    if (typeof modelStatus?.id === "string") {
-      downloadedModels[modelStatus.id] = modelStatus.downloaded === true;
-    }
-  }
-
-  const installedRuntimeIds = (nativeStatus.runtimes ?? [])
-    .filter((runtimeStatus) => runtimeStatus?.installed === true && typeof runtimeStatus?.id === "string")
-    .map((runtimeStatus) => runtimeStatus.id);
-
-  return settingsApi.normalizeStoredSettings({
-    ...sourceSettings,
-    preloading: {
-      ...sourceSettings.preloading,
-      modelManager: {
-        ...sourceSettings.preloading.modelManager,
-        downloadedModels,
-        installedRuntimeIds,
-      },
-    },
-  });
-}
-
-function syncManageAiModelDownloadedToggle(settings = draftSettings) {
-  const selectedModelId = String(formElements.manageAiModel.value || "");
-  const downloadedStateFromNative = nativeAiModelStatus?.models?.find(
-    (modelStatus) => modelStatus?.id === selectedModelId
-  )?.downloaded;
-  const downloadedStateFromSettings = Boolean(
-    settings.preloading?.modelManager?.downloadedModels?.[selectedModelId]
-  );
-
-  formElements.manageAiModelDownloaded.checked =
-    typeof downloadedStateFromNative === "boolean"
-      ? downloadedStateFromNative
-      : downloadedStateFromSettings;
-}
-
-function syncManageAiModelControlAvailability(enabled) {
-  const interactive = enabled === true && !manageAiModelActionInFlight;
-  formElements.manageAiModel.disabled = !interactive;
-  formElements.manageAiModelDownloaded.disabled = !interactive;
-}
-
-function isManageAiModelControlUsable() {
-  if (nativeAiModelStatus) {
-    return true;
-  }
-
-  return (
-    currentFeatureSupport.aiModelManagement === true ||
-    currentFeatureSupport.aiModelManagementUsable === true ||
-    isLikelyWindowsPlatform()
-  );
 }
 
 function isLikelyWindowsPlatform() {
@@ -1073,241 +1157,34 @@ function renderNativeAppStatus(featureSupport) {
 
   if (!supported) {
     nativeAppStatusElement.textContent = "N/A";
-    const platformName = platform.mac ? "macOS" : platform.linux ? "Linux" : "this platform";
-    nativeAppMetaElement.textContent = `System-level hiding not supported on ${platformName}.`;
+    const platformName = platform.mac
+      ? "macOS"
+      : platform.linux
+        ? "Linux"
+        : t("commonThisPlatform", [], "this platform");
+    nativeAppMetaElement.textContent = t(
+      "settingsSystemHidingUnsupported",
+      [platformName],
+      `System-level hiding not supported on ${platformName}.`
+    );
     return;
   }
 
   if (usable) {
-    nativeAppStatusElement.textContent = "Connected";
-    nativeAppMetaElement.textContent = "System-level window hiding is active.";
+    nativeAppStatusElement.textContent = t("settingsConnected", [], "Connected");
+    nativeAppMetaElement.textContent = t(
+      "settingsSystemHidingActive",
+      [],
+      "System-level window hiding is active."
+    );
   } else {
-    nativeAppStatusElement.textContent = "Offline";
-    nativeAppMetaElement.textContent = "Native app not detected. Using minimize fallback.";
+    nativeAppStatusElement.textContent = t("settingsOffline", [], "Offline");
+    nativeAppMetaElement.textContent = t(
+      "settingsNativeAppOffline",
+      [],
+      "Native app not detected. Using minimize fallback."
+    );
   }
-}
-
-function showAiProgressToast(progress) {
-  if (!aiProgressToastElement || aiProgressToastDismissed) {
-    return;
-  }
-
-  lastDisplayedAiProgress = progress;
-  aiProgressToastElement.classList.remove("is-hidden", "is-complete", "is-failed");
-
-  const stage = String(progress?.stage || "");
-  const action = String(progress?.action || "");
-  const modelLabel = getAiModelLabel(progress?.model_id);
-  const actionVerb = action === "uninstall" ? "Removing" : "Installing";
-  let titleText;
-
-  if (stage === "complete") {
-    titleText = action === "uninstall" ? "Model removed" : "Model ready";
-    aiProgressToastElement.classList.add("is-complete");
-  } else if (stage === "failed") {
-    titleText = action === "uninstall" ? "Uninstall failed" : "Install failed";
-    aiProgressToastElement.classList.add("is-failed");
-  } else {
-    titleText = `${actionVerb} ${modelLabel}`;
-  }
-
-  aiProgressToastTitleElement.textContent = titleText;
-  aiProgressToastMessageElement.textContent = progress?.message
-    ? String(progress.message)
-    : stage === "complete"
-      ? "Done."
-      : stage === "failed"
-        ? "The task did not finish."
-        : "Working...";
-
-  updateAiProgressBar(progress);
-  aiProgressToastMetaElement.textContent = buildAiProgressMeta(progress);
-
-  if (aiProgressToastDismissElement) {
-    aiProgressToastDismissElement.classList.toggle("is-hidden", progress?.finished !== true);
-  }
-
-  if (progress?.finished === true) {
-    stopAiProgressPolling();
-  }
-}
-
-function updateAiProgressBar(progress) {
-  if (!aiProgressToastBarElement || !aiProgressToastBarFillElement) {
-    return;
-  }
-
-  const total = Number(progress?.total_bytes) || 0;
-  const completed = Number(progress?.completed_bytes) || 0;
-  const finished = progress?.finished === true;
-  const failed = progress?.stage === "failed";
-
-  aiProgressToastBarElement.classList.remove("is-indeterminate");
-
-  if (finished && !failed) {
-    aiProgressToastBarFillElement.style.width = "100%";
-    return;
-  }
-
-  if (failed) {
-    aiProgressToastBarFillElement.style.width = "0%";
-    return;
-  }
-
-  if (total > 0) {
-    const pct = Math.min(100, Math.max(0, (completed / total) * 100));
-    aiProgressToastBarFillElement.style.width = `${pct.toFixed(1)}%`;
-    return;
-  }
-
-  aiProgressToastBarElement.classList.add("is-indeterminate");
-  aiProgressToastBarFillElement.style.width = "40%";
-}
-
-function buildAiProgressMeta(progress) {
-  const total = Number(progress?.total_bytes) || 0;
-  const completed = Number(progress?.completed_bytes) || 0;
-
-  if (total > 0) {
-    const pct = Math.min(100, Math.max(0, (completed / total) * 100));
-    return `${formatBytes(completed)} / ${formatBytes(total)} (${pct.toFixed(1)}%)`;
-  }
-
-  if (progress?.stage === "failed" && progress?.error) {
-    return String(progress.error);
-  }
-
-  return "";
-}
-
-function formatBytes(bytes) {
-  const value = Number(bytes) || 0;
-
-  if (value < 1024) {
-    return `${value} B`;
-  }
-
-  const units = ["KB", "MB", "GB", "TB"];
-  let size = value / 1024;
-  let unitIndex = 0;
-
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024;
-    unitIndex += 1;
-  }
-
-  return `${size.toFixed(size >= 10 ? 1 : 2)} ${units[unitIndex]}`;
-}
-
-function getAiModelLabel(modelId) {
-  const option = (settingsApi.AI_MODEL_OPTIONS ?? []).find(
-    (spec) => String(spec.value) === String(modelId || "")
-  );
-  return option?.label ?? (modelId ? String(modelId) : "model");
-}
-
-function hideAiProgressToast() {
-  if (!aiProgressToastElement) {
-    return;
-  }
-  aiProgressToastElement.classList.add("is-hidden");
-}
-
-function startAiProgressPolling() {
-  if (aiProgressPollHandle != null) {
-    return;
-  }
-
-  aiProgressPollHandle = setInterval(() => {
-    void pollAiProgressOnce();
-  }, AI_PROGRESS_POLL_INTERVAL_MS);
-}
-
-function stopAiProgressPolling() {
-  if (aiProgressPollHandle == null) {
-    return;
-  }
-  clearInterval(aiProgressPollHandle);
-  aiProgressPollHandle = null;
-}
-
-async function pollAiProgressOnce() {
-  try {
-    const response = await chrome.runtime.sendMessage({
-      type: "ai-models:get-progress",
-    });
-
-    if (!response?.ok) {
-      return;
-    }
-
-    const progress = response.progress;
-
-    if (!progress) {
-      return;
-    }
-
-    if (aiProgressToastDismissed) {
-      if (progress.finished === true) {
-        stopAiProgressPolling();
-      }
-      return;
-    }
-
-    showAiProgressToast(progress);
-  } catch (_error) {
-    // Ignore transient polling errors.
-  }
-}
-
-async function checkInitialAiProgress() {
-  try {
-    const response = await chrome.runtime.sendMessage({
-      type: "ai-models:get-progress",
-    });
-
-    if (!response?.ok || !response.progress) {
-      return;
-    }
-
-    const progress = response.progress;
-    const updatedAt = Number(progress.updated_at_ms) || 0;
-    const stale = updatedAt > 0 && Date.now() - updatedAt > AI_PROGRESS_STALE_AFTER_MS;
-
-    if (progress.finished === true || stale) {
-      return;
-    }
-
-    aiProgressToastDismissed = false;
-    showAiProgressToast(progress);
-    startAiProgressPolling();
-  } catch (_error) {
-    // Ignore — nothing to resume.
-  }
-}
-
-function startAiStatusBackgroundPolling() {
-  if (aiStatusPollHandle != null || document.visibilityState !== "visible") {
-    return;
-  }
-
-  aiStatusPollHandle = setInterval(() => {
-    if (document.visibilityState !== "visible") {
-      return;
-    }
-    if (manageAiModelActionInFlight) {
-      return;
-    }
-    void fetchAndSyncAiModelStatus();
-  }, AI_STATUS_POLL_INTERVAL_MS);
-}
-
-function stopAiStatusBackgroundPolling() {
-  if (aiStatusPollHandle == null) {
-    return;
-  }
-  clearInterval(aiStatusPollHandle);
-  aiStatusPollHandle = null;
 }
 
 function syncAiPredictionMismatchWarning() {
@@ -1316,13 +1193,12 @@ function syncAiPredictionMismatchWarning() {
   }
 
   const aiPredictionEnabled = formElements.aiPredictionEnabled.checked === true;
-  const selectedPredictionModelId = String(formElements.aiPredictionModel.value || "");
-  const downloadedMap =
-    draftSettings.preloading?.modelManager?.downloadedModels ?? {};
-  const isDownloaded = downloadedMap[selectedPredictionModelId] === true;
-  const manageSelectedModelId = String(formElements.manageAiModel.value || "");
-  const mismatchesManageSelection =
-    manageSelectedModelId !== "" && manageSelectedModelId !== selectedPredictionModelId;
+  const providerId = String(formElements.aiPredictionProvider.value || "");
+  const provider = settingsApi.AI_PROVIDER_BY_ID?.[providerId];
+  const providerLabel = provider?.label || providerId || t("commonProvider", [], "provider");
+  const modelId = String(formElements.aiPredictionModel.value || "").trim();
+  const apiKey = String(formElements.aiProviderApiKey.value || "").trim();
+  const endpointUrl = String(formElements.aiProviderEndpoint.value || "").trim();
 
   if (!aiPredictionEnabled) {
     aiPredictionMismatchWarningElement.classList.add("is-hidden");
@@ -1330,40 +1206,16 @@ function syncAiPredictionMismatchWarning() {
     return;
   }
 
-  if (!isDownloaded) {
-    const label = getAiModelLabel(selectedPredictionModelId);
-    const managerHint = mismatchesManageSelection
-      ? `「管理模型」当前选中的是 ${getAiModelLabel(manageSelectedModelId)}，请先切换到 ${label} 再下载。`
-      : `请在下方「管理模型」里先下载 ${label}。`;
-    aiPredictionMismatchWarningElement.textContent = `当前选择的 AI 预测模型 ${label} 尚未下载，AI 评分暂不会启用。${managerHint}`;
+  if (!provider || !modelId || !endpointUrl || (!apiKey && provider.apiKeyOptional !== true)) {
+    aiPredictionMismatchWarningElement.textContent = t(
+      "settingsAiProviderMissingWarning",
+      [providerLabel],
+      `AI scoring will stay disabled until ${providerLabel} has a model, endpoint, and API key.`
+    );
     aiPredictionMismatchWarningElement.classList.remove("is-hidden");
     return;
   }
 
   aiPredictionMismatchWarningElement.classList.add("is-hidden");
   aiPredictionMismatchWarningElement.textContent = "";
-}
-
-function syncManagePlatformWarning(featureSupport) {
-  if (!aiManagePlatformWarningElement) {
-    return;
-  }
-
-  const supported =
-    featureSupport?.aiModelManagement === true || isLikelyWindowsPlatform();
-
-  if (supported) {
-    aiManagePlatformWarningElement.classList.add("is-hidden");
-    aiManagePlatformWarningElement.textContent = "";
-    return;
-  }
-
-  const platform = featureSupport?.platform ?? {};
-  const platformName = platform.mac
-    ? "macOS"
-    : platform.linux
-      ? "Linux"
-      : "当前平台";
-  aiManagePlatformWarningElement.textContent = `模型下载与运行目前仅在 Windows 上可用，${platformName}暂不支持管理本地模型。`;
-  aiManagePlatformWarningElement.classList.remove("is-hidden");
 }

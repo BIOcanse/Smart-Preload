@@ -12,6 +12,7 @@ async function recordActivatedPreloadedTransition({
     (isTrackableAndAllowedUrl(sourceTab.url || "") ? buildNodeSeed(sourceTab.url).nodeId : null);
   const activatedTabId = String(activatedTab.id);
   const occurredAt = new Date().toISOString();
+  const normalizedTargetUrl = normalizePageUrlForIndex(targetUrl);
 
   if (sourceNodeId) {
     nextState.pendingSources[activatedTabId] = {
@@ -28,7 +29,7 @@ async function recordActivatedPreloadedTransition({
     occurredAt,
     eventType: "preloaded-tab-activation",
     transitionType: "link",
-    url: targetUrl,
+    url: normalizedTargetUrl || targetUrl,
   });
 
   if (!keepSourceTab) {

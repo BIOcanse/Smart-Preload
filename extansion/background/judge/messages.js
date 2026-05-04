@@ -10,9 +10,6 @@
         "visit-graph:get-debug-snapshot",
         "extension:open-settings",
         "visit-graph:reset",
-        "ai-models:get-status",
-        "ai-models:get-progress",
-        "ai-models:set-installed",
       ].includes(envelope.messageType)
     ) {
       return ignoreDecision(envelope.messageType, { ok: true, skipped: true });
@@ -29,17 +26,6 @@
         return allowDecision("set-service-paused");
       case "visit-graph:reset":
         return allowDecision("reset-graph");
-      case "ai-models:get-status":
-        return allowDecision("ai-model-status");
-      case "ai-models:get-progress":
-        return allowDecision("ai-model-progress");
-      case "ai-models:set-installed":
-        return envelope.target.modelId
-          ? allowDecision("ai-model-set-installed")
-          : ignoreDecision(envelope.messageType, {
-              ok: false,
-              error: "Missing model id.",
-            });
       case "preload:register-candidates":
         return envelope.source.tabId
           ? allowDecision("register-preload-candidates")
