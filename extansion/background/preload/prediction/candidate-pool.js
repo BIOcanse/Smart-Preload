@@ -48,6 +48,7 @@ async function buildPreloadCandidatePool({
         recordedTargetHint ??
         (candidate?.targetHint === "_blank" ? "_blank" : "_self"),
       isSameOrigin: isSameOriginUrl(sourceUrl, candidateUrl),
+      isSameSite: sourceNodeId === targetNodeId,
       targetPageUrl,
       transitionWindowKey,
       visibilityScore,

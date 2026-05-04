@@ -3,7 +3,6 @@ globalThis.ZeroLatencySupport = {
   supportsHiddenTabPreloadRuntime,
   supportsPreloadWindowWatchdog,
   supportsSystemLevelWindowHiding,
-  supportsAiModelManagement,
   isSystemLevelWindowHidingUsable,
   setSystemLevelWindowHidingUsable,
   probeNativeAppAvailability,

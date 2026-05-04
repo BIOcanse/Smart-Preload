@@ -27,15 +27,19 @@ function enrichPreloadCandidateWithMetrics(candidate, candidateMetricsByUrl, con
   const metricEntry = candidateMetricsByUrl.get(candidate.url) ?? null;
   const siteTransitionCount = clampNonNegativeInt(metricEntry?.siteTransitionCount, 0);
   const pageTransitionCount = clampNonNegativeInt(metricEntry?.pageTransitionCount, 0);
+  const isSameSite =
+    typeof metricEntry?.isSameSiteCandidate === "boolean"
+      ? metricEntry.isSameSiteCandidate
+      : candidate.nodeId === context.sourceNodeId;
   const outboundPageTransitionCount = clampNonNegativeInt(
     metricEntry?.outboundPageTransitionCount,
-    candidate.isSameOrigin ? 0 : pageTransitionCount
+    isSameSite ? 0 : pageTransitionCount
   );
   const intraSitePageTransitionCount = clampNonNegativeInt(
     metricEntry?.intraSitePageTransitionCount,
-    candidate.isSameOrigin ? pageTransitionCount : 0
+    isSameSite ? pageTransitionCount : 0
   );
-  const transitionCount = candidate.isSameOrigin
+  const transitionCount = isSameSite
     ? intraSitePageTransitionCount
     : outboundPageTransitionCount;
   const baseScore = buildPreloadCandidateBaseScore();
@@ -47,11 +51,12 @@ function enrichPreloadCandidateWithMetrics(candidate, candidateMetricsByUrl, con
     scoreMultipliers: buildPreloadCandidateScoreMultipliers({
       siteTransitionCount,
       pageTransitionCount,
-      isSameOrigin: candidate.isSameOrigin,
+      isSameSite,
       outboundPageTransitionCount,
       intraSitePageTransitionCount,
       targetHint: candidate.targetHint,
     }),
+    isSameSite,
     siteTransitionCount,
     pageTransitionCount,
     outboundPageTransitionCount,

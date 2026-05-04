@@ -8,8 +8,9 @@ pub(crate) fn normalize_graph(graph: &mut Graph) {
         .map(|(edge_id, edge)| (edge_id.clone(), Some(edge.last_seen_at.clone())))
         .collect();
     let stored_transition_message_buckets = graph.transition_message_buckets.clone();
+    let stored_page_transition_buckets = graph.page_transition_buckets.clone();
 
-    graph.version = 10;
+    graph.version = 12;
 
     let edge_ids: Vec<String> = graph.edges.keys().cloned().collect();
 
@@ -52,9 +53,17 @@ pub(crate) fn normalize_graph(graph: &mut Graph) {
             .unwrap_or(0),
     );
 
+    for node in graph.nodes.values_mut() {
+        if node.default_landing_page_url.is_empty() {
+            node.default_landing_page_url = node.sample_url.clone();
+        }
+    }
+
     graph.transition_buckets = TransitionBuckets::default();
     graph.transition_message_buckets = TransitionMessageBuckets::default();
     graph.page_transition_buckets = PageTransitionBuckets::default();
+    graph.external_page_transition_buckets = PageTransitionBuckets::default();
+    graph.intra_site_page_transition_buckets = PageTransitionBuckets::default();
     graph.page_transition_message_buckets = PageTransitionMessageBuckets::default();
     learning::normalize_link_behavior_store(&mut graph.link_behavior_store);
     learning::normalize_page_keyword_store(&mut graph.page_keyword_store);
@@ -80,8 +89,11 @@ pub(crate) fn normalize_graph(graph: &mut Graph) {
         })
         .collect();
 
-    for (edge_id, from_node_id, to_node_id) in rebuilt_edges {
-        register_edge_in_transition_buckets(graph, &edge_id, &from_node_id, &to_node_id);
+    if graph.transition_messages.is_empty() {
+        for (edge_id, from_node_id, to_node_id) in rebuilt_edges {
+            register_edge_in_transition_buckets(graph, &edge_id, &from_node_id, &to_node_id);
+        }
+        migrate_legacy_page_transition_buckets(graph, &stored_page_transition_buckets);
     }
 
     reconcile::reconcile_recent_transition_index_coverage(
@@ -111,6 +123,94 @@ pub(crate) fn normalize_graph(graph: &mut Graph) {
     for page_keyword_entry in page_keyword_entries {
         learning::register_page_keyword_entry(graph, &page_keyword_entry);
     }
+}
+
+fn migrate_legacy_page_transition_buckets(
+    graph: &mut Graph,
+    legacy_buckets: &PageTransitionBuckets,
+) {
+    migrate_legacy_page_transition_bucket_layer(graph, &legacy_buckets.total, None);
+
+    for (day_key, bucket_layer) in legacy_buckets.by_day.iter() {
+        if buckets::day_key_to_epoch_day(day_key).is_some() {
+            migrate_legacy_page_transition_bucket_layer(graph, bucket_layer, Some(day_key));
+        }
+    }
+}
+
+fn migrate_legacy_page_transition_bucket_layer(
+    graph: &mut Graph,
+    bucket_layer: &PageTransitionBucketLayer,
+    day_key: Option<&str>,
+) {
+    for bucket in bucket_layer {
+        for (source_node_id, source_pages) in bucket {
+            for (source_page_url, target_sites) in source_pages {
+                for (target_node_id, target_pages) in target_sites {
+                    for (target_page_url, count) in target_pages {
+                        if *count == 0 {
+                            continue;
+                        }
+
+                        increment_migrated_page_transition_count(
+                            graph,
+                            day_key,
+                            source_node_id,
+                            source_page_url,
+                            target_node_id,
+                            target_page_url,
+                            *count,
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn increment_migrated_page_transition_count(
+    graph: &mut Graph,
+    day_key: Option<&str>,
+    source_node_id: &str,
+    source_page_url: &str,
+    target_node_id: &str,
+    target_page_url: &str,
+    count: u64,
+) {
+    let bucket_index = source_bucket_index(graph, source_node_id);
+
+    if source_node_id == target_node_id {
+        let bucket_layer = if let Some(day_key) = day_key {
+            intra_site_page_transition_bucket_day_layer_mut(graph, day_key)
+        } else {
+            &mut graph.intra_site_page_transition_buckets.total
+        };
+        buckets::increment_page_transition_bucket_count(
+            bucket_layer,
+            bucket_index,
+            source_node_id,
+            source_page_url,
+            target_node_id,
+            target_page_url,
+            count,
+        );
+        return;
+    }
+
+    let bucket_layer = if let Some(day_key) = day_key {
+        external_page_transition_bucket_day_layer_mut(graph, day_key)
+    } else {
+        &mut graph.external_page_transition_buckets.total
+    };
+    buckets::increment_page_transition_bucket_count(
+        bucket_layer,
+        bucket_index,
+        source_node_id,
+        source_page_url,
+        target_node_id,
+        target_page_url,
+        count,
+    );
 }
 
 fn normalize_edge(

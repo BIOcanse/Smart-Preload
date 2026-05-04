@@ -1,5 +1,44 @@
-function getPageTransitionCount(
+function getExternalPageTransitionCount(
   graph,
+  windowKey,
+  sourceNodeId,
+  sourcePageUrl,
+  targetNodeId,
+  targetPageUrl
+) {
+  return getPageTransitionCountFromBuckets(
+    graph,
+    graph?.externalPageTransitionBuckets,
+    windowKey,
+    sourceNodeId,
+    sourcePageUrl,
+    targetNodeId,
+    targetPageUrl
+  );
+}
+
+function getIntraSitePageTransitionCount(
+  graph,
+  windowKey,
+  sourceNodeId,
+  sourcePageUrl,
+  targetNodeId,
+  targetPageUrl
+) {
+  return getPageTransitionCountFromBuckets(
+    graph,
+    graph?.intraSitePageTransitionBuckets,
+    windowKey,
+    sourceNodeId,
+    sourcePageUrl,
+    targetNodeId,
+    targetPageUrl
+  );
+}
+
+function getPageTransitionCountFromBuckets(
+  graph,
+  buckets,
   windowKey,
   sourceNodeId,
   sourcePageUrl,
@@ -12,20 +51,20 @@ function getPageTransitionCount(
 
   if (windowKey === "total") {
     return clampNonNegativeInt(
-      graph.pageTransitionBuckets?.total?.[getSourceBucketIndex(graph, sourceNodeId)]?.[
-        sourceNodeId
-      ]?.[sourcePageUrl]?.[targetNodeId]?.[targetPageUrl],
+      buckets?.total?.[getSourceBucketIndex(graph, sourceNodeId)]?.[sourceNodeId]?.[
+        sourcePageUrl
+      ]?.[targetNodeId]?.[targetPageUrl],
       0
     );
   }
 
   let total = 0;
 
-  for (const dayKey of getTransitionWindowMatchingDayKeys(graph, windowKey)) {
+  for (const dayKey of getTransitionWindowMatchingDayKeys(graph, windowKey, buckets)) {
     total += clampNonNegativeInt(
-      graph.pageTransitionBuckets?.byDay?.[dayKey]?.[getSourceBucketIndex(graph, sourceNodeId)]?.[
-        sourceNodeId
-      ]?.[sourcePageUrl]?.[targetNodeId]?.[targetPageUrl],
+      buckets?.byDay?.[dayKey]?.[getSourceBucketIndex(graph, sourceNodeId)]?.[sourceNodeId]?.[
+        sourcePageUrl
+      ]?.[targetNodeId]?.[targetPageUrl],
       0
     );
   }
@@ -40,39 +79,52 @@ function getOutgoingPageEntriesForSource(graph, sourceNodeId, sourcePageUrl) {
     return [];
   }
 
-  const sourcePageMap =
-    graph.pageTransitionBuckets?.total?.[getSourceBucketIndex(graph, sourceNodeId)]?.[
-      sourceNodeId
-    ]?.[normalizedSourcePageUrl] ?? {};
-  const outgoingEntries = [];
+  const bucketIndex = getSourceBucketIndex(graph, sourceNodeId);
+  const sourcePageMaps = [
+    graph.externalPageTransitionBuckets?.total?.[bucketIndex]?.[sourceNodeId]?.[
+      normalizedSourcePageUrl
+    ],
+    graph.intraSitePageTransitionBuckets?.total?.[bucketIndex]?.[sourceNodeId]?.[
+      normalizedSourcePageUrl
+    ],
+    graph.pageTransitionBuckets?.total?.[bucketIndex]?.[sourceNodeId]?.[normalizedSourcePageUrl],
+  ].filter(isPlainObject);
+  const outgoingEntriesByKey = new Map();
 
-  for (const [destinationNodeId, destinationPages] of Object.entries(sourcePageMap)) {
-    for (const [destinationPageUrl, count] of Object.entries(destinationPages || {})) {
-      outgoingEntries.push({
-        destinationNodeId,
-        destinationPageUrl,
-        destinationLabel: derivePageLabel(destinationPageUrl),
-        destinationHost: graph.nodes[destinationNodeId]?.host ?? destinationNodeId,
-        count: clampNonNegativeInt(count, 0),
-        lastSeenAt: getLastSeenAtForPageTransition(
-          graph,
-          sourceNodeId,
-          normalizedSourcePageUrl,
+  for (const sourcePageMap of sourcePageMaps) {
+    for (const [destinationNodeId, destinationPages] of Object.entries(sourcePageMap)) {
+      for (const [destinationPageUrl, count] of Object.entries(destinationPages || {})) {
+        const entryKey = `${destinationNodeId}\n${destinationPageUrl}`;
+        const existingEntry = outgoingEntriesByKey.get(entryKey);
+        const nextCount =
+          clampNonNegativeInt(existingEntry?.count, 0) + clampNonNegativeInt(count, 0);
+
+        outgoingEntriesByKey.set(entryKey, {
           destinationNodeId,
-          destinationPageUrl
-        ),
-        lastTransitionType: getLastTransitionTypeForPageTransition(
-          graph,
-          sourceNodeId,
-          normalizedSourcePageUrl,
-          destinationNodeId,
-          destinationPageUrl
-        ),
-      });
+          destinationPageUrl,
+          destinationLabel: derivePageLabel(destinationPageUrl),
+          destinationHost: graph.nodes[destinationNodeId]?.host ?? destinationNodeId,
+          count: nextCount,
+          lastSeenAt: getLastSeenAtForPageTransition(
+            graph,
+            sourceNodeId,
+            normalizedSourcePageUrl,
+            destinationNodeId,
+            destinationPageUrl
+          ),
+          lastTransitionType: getLastTransitionTypeForPageTransition(
+            graph,
+            sourceNodeId,
+            normalizedSourcePageUrl,
+            destinationNodeId,
+            destinationPageUrl
+          ),
+        });
+      }
     }
   }
 
-  return outgoingEntries;
+  return [...outgoingEntriesByKey.values()];
 }
 
 function getLastSeenAtForPageTransition(

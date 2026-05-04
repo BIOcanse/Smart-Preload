@@ -13,6 +13,10 @@
     await globalThis.ZeroLatencyPreloadWindowManager.maintainPolicy();
   }
 
+  async function ensureWarmWindows() {
+    await globalThis.ZeroLatencyPreloadWindowManager.ensureWarmWindows();
+  }
+
   async function cleanupErroneousWindows() {
     await globalThis.ZeroLatencyPreloadWindowManager.cleanupErroneousWindowsNow();
   }
@@ -21,6 +25,7 @@
     registerCandidates,
     activateIfReady,
     maintain,
+    ensureWarmWindows,
     cleanupErroneousWindows,
   };
 })();

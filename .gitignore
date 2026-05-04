@@ -11,6 +11,7 @@ output/
 dist/
 .claude/
 scripts/debug-consent/
+extansion/shared/local-ai-test-config.js
 
 # OS/editor noise
 .DS_Store

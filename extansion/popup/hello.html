@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Zero-Latency Web</title>
+    <title data-i18n="appName">Zero-Latency Web</title>
     <style>
       :root {
         color-scheme: light;
@@ -164,39 +164,40 @@
   <body>
     <main>
       <header>
-        <h1>Zero-Latency Web</h1>
-        <p class="subtitle" id="page-label">Current page</p>
+        <h1 data-i18n="appName">Zero-Latency Web</h1>
+        <p class="subtitle" id="page-label" data-i18n="popupCurrentPage">Current page</p>
       </header>
 
       <section class="stats">
         <article class="stat-card">
-          <span class="stat-label">Nodes</span>
+          <span class="stat-label" data-i18n="popupNodes">Nodes</span>
           <span class="stat-value" id="node-count">0</span>
         </article>
         <article class="stat-card">
-          <span class="stat-label">Edges</span>
+          <span class="stat-label" data-i18n="popupEdges">Edges</span>
           <span class="stat-value" id="edge-count">0</span>
         </article>
         <article class="stat-card">
-          <span class="stat-label">Updated</span>
+          <span class="stat-label" data-i18n="popupUpdated">Updated</span>
           <span class="stat-value" id="updated-at">-</span>
         </article>
       </section>
 
       <section class="panel">
-        <h2 class="panel-title">Top</h2>
+        <h2 class="panel-title" data-i18n="popupTop">Top</h2>
         <ul class="list" id="top-edges"></ul>
-        <p class="empty hidden" id="top-edges-empty">No preload-qualified links on this page yet.</p>
+        <p class="empty hidden" id="top-edges-empty" data-i18n="popupNoPreloadQualifiedLinks">No preload-qualified links on this page yet.</p>
       </section>
 
       <section class="actions">
-        <button id="refresh-button" type="button">Refresh</button>
-        <button class="danger" id="service-toggle-button" type="button">停止</button>
-        <button class="secondary" id="settings-button" type="button">Settings</button>
+        <button id="refresh-button" type="button" data-i18n="popupRefresh">Refresh</button>
+        <button class="danger" id="service-toggle-button" type="button" data-i18n="popupStop">Stop</button>
+        <button class="secondary" id="settings-button" type="button" data-i18n="popupSettings">Settings</button>
       </section>
 
-      <p class="footer" id="status-text">Waiting for data.</p>
+      <p class="footer" id="status-text" data-i18n="popupWaitingForData">Waiting for data.</p>
     </main>
+    <script src="../shared/i18n.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

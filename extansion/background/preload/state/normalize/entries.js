@@ -6,6 +6,18 @@
       windowId: normalizePositiveInteger(nextValue.windowId),
       hwnd: normalizePositiveFiniteNumber(nextValue.hwnd),
       hiddenBySystem: nextValue.hiddenBySystem === true,
+      systemHideFailureCount: clampNonNegativeInt(nextValue.systemHideFailureCount, 0),
+      systemHideDisabledUntil: normalizePositiveFiniteNumber(
+        nextValue.systemHideDisabledUntil
+      ),
+      lastSystemHideError:
+        typeof nextValue.lastSystemHideError === "string"
+          ? nextValue.lastSystemHideError
+          : null,
+      lastSystemHideFailedAt:
+        typeof nextValue.lastSystemHideFailedAt === "string"
+          ? nextValue.lastSystemHideFailedAt
+          : null,
       updatedAt: typeof nextValue.updatedAt === "string" ? nextValue.updatedAt : null,
     };
   }
@@ -87,6 +99,7 @@
         0
       ),
       pageTransitionCount: clampNonNegativeInt(nextValue.pageTransitionCount, 0),
+      isSameSite: nextValue.isSameSite === true,
     };
   }
 

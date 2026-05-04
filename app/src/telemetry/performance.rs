@@ -1,10 +1,19 @@
 use std::collections::HashSet;
+use std::env;
 
 use anyhow::Result;
 use regex::Regex;
 use sysinfo::{Process, System};
 
 use super::*;
+
+#[derive(Debug, Clone)]
+pub struct SupportedBrowserProcessInfo {
+    pub pid: u32,
+    pub process_name: String,
+    pub executable_path: Option<String>,
+    pub browser_kind: String,
+}
 
 pub struct SystemSnapshotter {
     system: System,
@@ -73,7 +82,7 @@ impl SystemSnapshotter {
             .processes()
             .values()
             .filter_map(|process| {
-                if !is_google_chrome_process(process) {
+                if !is_supported_chromium_process(process) {
                     return None;
                 }
 
@@ -87,29 +96,130 @@ impl SystemSnapshotter {
     }
 }
 
+#[allow(dead_code)]
 pub fn is_google_chrome_process(process: &Process) -> bool {
-    let process_name = process.name().to_string_lossy().to_ascii_lowercase();
-
-    if process_name != "chrome.exe" && process_name != "chrome" {
-        return false;
-    }
-
-    let Some(executable_path) = process.exe() else {
-        return true;
-    };
-
-    let executable_path = executable_path.to_string_lossy().to_ascii_lowercase();
-    executable_path.contains("\\google\\chrome\\")
-        || executable_path.contains("\\google\\chrome beta\\")
-        || executable_path.contains("\\google\\chrome sxs\\")
+    is_supported_chromium_process(process)
 }
 
 pub fn is_google_chrome_browser_process(process: &Process) -> bool {
-    if !is_google_chrome_process(process) {
+    is_supported_chromium_browser_process(process)
+}
+
+pub fn is_supported_chromium_process(process: &Process) -> bool {
+    supported_browser_process_info(process).is_some()
+}
+
+pub fn is_supported_chromium_browser_process(process: &Process) -> bool {
+    if supported_browser_process_info(process).is_none() {
         return false;
     }
 
     !chrome_command_line(process).contains("--type=")
+}
+
+pub fn supported_browser_process_info(process: &Process) -> Option<SupportedBrowserProcessInfo> {
+    let process_name = process.name().to_string_lossy().to_ascii_lowercase();
+
+    if !is_supported_browser_process_name(&process_name) {
+        return None;
+    }
+
+    let executable_path = process.exe().map(|path| path.to_string_lossy().to_string());
+    let executable_path_lower = executable_path
+        .as_deref()
+        .unwrap_or("")
+        .to_ascii_lowercase();
+    let command_line = chrome_command_line(process);
+
+    if env::var_os("ZLW_DEBUG_ALLOW_ANY_CHROME").is_some() {
+        return Some(SupportedBrowserProcessInfo {
+            pid: process.pid().as_u32(),
+            process_name: process.name().to_string_lossy().to_string(),
+            executable_path,
+            browser_kind: infer_browser_kind(&process_name, &executable_path_lower, &command_line),
+        });
+    }
+
+    if executable_path_lower.is_empty() {
+        return Some(SupportedBrowserProcessInfo {
+            pid: process.pid().as_u32(),
+            process_name: process.name().to_string_lossy().to_string(),
+            executable_path,
+            browser_kind: infer_browser_kind(&process_name, &executable_path_lower, &command_line),
+        });
+    }
+
+    if !is_supported_browser_executable_path(&process_name, &executable_path_lower, &command_line) {
+        return None;
+    }
+
+    Some(SupportedBrowserProcessInfo {
+        pid: process.pid().as_u32(),
+        process_name: process.name().to_string_lossy().to_string(),
+        executable_path,
+        browser_kind: infer_browser_kind(&process_name, &executable_path_lower, &command_line),
+    })
+}
+
+fn is_supported_browser_process_name(process_name: &str) -> bool {
+    matches!(
+        process_name,
+        "chrome.exe" | "chrome" | "msedge.exe" | "msedge"
+    )
+}
+
+fn is_supported_browser_executable_path(
+    process_name: &str,
+    executable_path: &str,
+    command_line: &str,
+) -> bool {
+    if process_name == "msedge.exe" || process_name == "msedge" {
+        return executable_path.contains("\\microsoft\\edge\\");
+    }
+
+    executable_path.contains("\\google\\chrome\\")
+        || executable_path.contains("\\google\\chrome beta\\")
+        || executable_path.contains("\\google\\chrome sxs\\")
+        || executable_path.contains("\\chrome for testing\\")
+        || executable_path.contains("\\chromium\\")
+        || executable_path.contains("\\ms-playwright\\chromium-")
+        || executable_path.contains("\\chrome-win64\\chrome.exe")
+        || command_line.contains("prod=google chrome for testing")
+}
+
+fn infer_browser_kind(process_name: &str, executable_path: &str, command_line: &str) -> String {
+    if process_name == "msedge.exe"
+        || process_name == "msedge"
+        || executable_path.contains("\\microsoft\\edge\\")
+    {
+        return "edge".to_owned();
+    }
+
+    if executable_path.contains("\\google\\chrome sxs\\") {
+        return "chrome-canary".to_owned();
+    }
+
+    if executable_path.contains("\\google\\chrome beta\\") {
+        return "chrome-beta".to_owned();
+    }
+
+    if executable_path.contains("\\google\\chrome\\") {
+        return "chrome".to_owned();
+    }
+
+    if executable_path.contains("\\chrome for testing\\")
+        || executable_path.contains("\\ms-playwright\\chromium-")
+        || executable_path.contains("\\chrome-win64\\chrome.exe")
+        || command_line.contains("prod=google chrome for testing")
+    {
+        return "chrome-for-testing".to_owned();
+    }
+
+    if executable_path.contains("\\chromium\\") {
+        return "chromium".to_owned();
+    }
+
+    "chromium-compatible".to_owned()
 }
 
 fn chrome_command_line(process: &Process) -> String {

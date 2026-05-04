@@ -83,16 +83,165 @@ async function applySiteSelectionToCandidateGroup(candidatePool, context = {}, o
   }
 
   const pageSlotLimit = Number(options?.pageSlotLimit);
-  const siteSelectionLimit = Number(options?.siteSelectionLimit);
-  const selectionGroup = typeof options?.selectionGroup === "string" ? options.selectionGroup : "";
-  const sameOriginCandidates = normalizedCandidatePool.filter((candidate) => candidate?.isSameOrigin);
-  const crossSiteCandidates = normalizedCandidatePool.filter((candidate) => !candidate?.isSameOrigin);
+  const crossSiteCandidates = normalizedCandidatePool.filter((candidate) => !candidate?.isSameSite);
 
   if (crossSiteCandidates.length === 0) {
     return [...normalizedCandidatePool]
       .sort(comparePreloadCandidatePriority)
       .slice(0, pageSlotLimit);
   }
+
+  const siteClusters = buildCrossSiteCandidateSiteClusters(crossSiteCandidates);
+
+  if (siteClusters.length === 0) {
+    return applySiteSelectionToCandidateGroupFallback(
+      normalizedCandidatePool,
+      options,
+      siteClusters,
+      new Map()
+    );
+  }
+
+  const aiKeywordMultipliersByNodeId = await buildSiteAiKeywordMultipliersByNodeId(
+    siteClusters,
+    {
+      ...context,
+      getAiInterestContext: options?.getAiInterestContext ?? null,
+    }
+  );
+  const wasmSelectedCandidates = await trySelectPreloadCandidateGroupWithEngine(
+    normalizedCandidatePool,
+    options,
+    aiKeywordMultipliersByNodeId
+  );
+
+  if (wasmSelectedCandidates) {
+    return wasmSelectedCandidates;
+  }
+
+  return applySiteSelectionToCandidateGroupFallback(
+    normalizedCandidatePool,
+    options,
+    siteClusters,
+    aiKeywordMultipliersByNodeId
+  );
+}
+
+async function trySelectPreloadCandidateGroupWithEngine(
+  candidatePool,
+  options,
+  aiKeywordMultipliersByNodeId
+) {
+  if (typeof selectPreloadCandidateGroup !== "function") {
+    return null;
+  }
+
+  const pageSlotLimit = Number(options?.pageSlotLimit);
+  const siteSelectionLimit = Number(options?.siteSelectionLimit);
+  const selectionGroup = typeof options?.selectionGroup === "string" ? options.selectionGroup : "";
+  const result = await selectPreloadCandidateGroup({
+    pageSlotLimit: Number.isFinite(pageSlotLimit) ? Math.max(0, Math.trunc(pageSlotLimit)) : 0,
+    siteSelectionLimit: Number.isFinite(siteSelectionLimit)
+      ? Math.max(0, Math.trunc(siteSelectionLimit))
+      : 0,
+    selectionGroup,
+    candidates: candidatePool.map((candidate, index) => {
+      const siteAiKeywordMatch = aiKeywordMultipliersByNodeId.get(candidate?.nodeId) ?? null;
+
+      return {
+        index,
+        nodeId: typeof candidate?.nodeId === "string" ? candidate.nodeId : "",
+        url: typeof candidate?.url === "string" ? candidate.url : "",
+        targetPageUrl:
+          normalizePageUrlForIndex(candidate?.targetPageUrl || candidate?.url || "") || "",
+        isSameSite: candidate?.isSameSite === true,
+        siteTransitionCount: clampNonNegativeInt(candidate?.siteTransitionCount, 0),
+        siteAiKeywordMultiplier:
+          Number.isFinite(Number(siteAiKeywordMatch?.multiplier)) &&
+          Number(siteAiKeywordMatch.multiplier) > 1
+            ? Number(siteAiKeywordMatch.multiplier)
+            : 1,
+        score: Number.isFinite(Number(candidate?.score)) ? Number(candidate.score) : 0,
+        visibilityScore: Number.isFinite(Number(candidate?.visibilityScore))
+          ? Number(candidate.visibilityScore)
+          : 0,
+        linkIndex: clampNonNegativeInt(candidate?.linkIndex, index),
+      };
+    }),
+  });
+
+  if (!result || !Array.isArray(result.selectedIndices)) {
+    return null;
+  }
+
+  const candidateByIndex = new Map(candidatePool.map((candidate, index) => [index, candidate]));
+  const siteSelectionByCandidateIndex = new Map(
+    (Array.isArray(result.siteSelections) ? result.siteSelections : [])
+      .map((siteSelection) => [
+        normalizeSelectionCandidateIndex(siteSelection?.candidateIndex),
+        siteSelection,
+      ])
+      .filter(([candidateIndex]) => candidateIndex !== null)
+  );
+
+  return result.selectedIndices
+    .map((candidateIndex) => {
+      const normalizedCandidateIndex = normalizeSelectionCandidateIndex(candidateIndex);
+      const candidate = candidateByIndex.get(normalizedCandidateIndex);
+
+      if (!candidate) {
+        return null;
+      }
+
+      const siteSelection = siteSelectionByCandidateIndex.get(normalizedCandidateIndex);
+
+      if (!siteSelection) {
+        return candidate;
+      }
+
+      return {
+        ...candidate,
+        siteSelection: {
+          siteNodeId:
+            typeof siteSelection.siteNodeId === "string" ? siteSelection.siteNodeId : "",
+          siteWeight: Number(siteSelection.siteWeight) || 0,
+          siteTransitionCount: clampNonNegativeInt(siteSelection.siteTransitionCount, 0),
+          cap: clampNonNegativeInt(siteSelection.cap, 0),
+          allocatedSlots: clampNonNegativeInt(siteSelection.allocatedSlots, 0),
+          siteRank: clampNonNegativeInt(siteSelection.siteRank, 0),
+          selectionGroup:
+            typeof siteSelection.selectionGroup === "string"
+              ? siteSelection.selectionGroup
+              : "",
+          siteScoreBreakdown: siteSelection.siteScoreBreakdown ?? null,
+          aiKeywordMatch:
+            aiKeywordMultipliersByNodeId.get(siteSelection.siteNodeId) ?? null,
+        },
+      };
+    })
+    .filter(Boolean);
+}
+
+function normalizeSelectionCandidateIndex(value) {
+  const numericValue = Number(value);
+
+  if (!Number.isInteger(numericValue) || numericValue < 0) {
+    return null;
+  }
+
+  return numericValue;
+}
+
+async function applySiteSelectionToCandidateGroupFallback(
+  normalizedCandidatePool,
+  options,
+  siteClusters,
+  aiKeywordMultipliersByNodeId
+) {
+  const pageSlotLimit = Number(options?.pageSlotLimit);
+  const siteSelectionLimit = Number(options?.siteSelectionLimit);
+  const selectionGroup = typeof options?.selectionGroup === "string" ? options.selectionGroup : "";
+  const sameOriginCandidates = normalizedCandidatePool.filter((candidate) => candidate?.isSameSite);
 
   const selectedSameOriginCandidates = [...sameOriginCandidates]
     .sort(comparePreloadCandidatePriority)
@@ -106,19 +255,10 @@ async function applySiteSelectionToCandidateGroup(candidatePool, context = {}, o
     return selectedSameOriginCandidates;
   }
 
-  const siteClusters = buildCrossSiteCandidateSiteClusters(crossSiteCandidates);
-
   if (siteClusters.length === 0) {
     return selectedSameOriginCandidates;
   }
 
-  const aiKeywordMultipliersByNodeId = await buildSiteAiKeywordMultipliersByNodeId(
-    siteClusters,
-    {
-      ...context,
-      getAiInterestContext: options?.getAiInterestContext ?? null,
-    }
-  );
   const scoredSiteClusters = await scoreCrossSiteCandidateClusters(
     siteClusters,
     aiKeywordMultipliersByNodeId
@@ -232,6 +372,10 @@ async function buildSiteAiKeywordMultipliersByNodeId(siteClusters, context) {
   const graph = context?.graph ?? null;
 
   if (!aiKeywordTools || !graph) {
+    recordSiteAiPredictionDiagnostic("prediction.ai.site-match.skip", {
+      reason: !aiKeywordTools ? "keyword-tools-unavailable" : "graph-unavailable",
+      siteCount: Array.isArray(siteClusters) ? siteClusters.length : 0,
+    });
     return new Map();
   }
 
@@ -244,6 +388,10 @@ async function buildSiteAiKeywordMultipliersByNodeId(siteClusters, context) {
     : [];
 
   if (interestKeywords.length === 0) {
+    recordSiteAiPredictionDiagnostic("prediction.ai.site-match.skip", {
+      reason: "interest-keywords-empty",
+      siteCount: Array.isArray(siteClusters) ? siteClusters.length : 0,
+    });
     return new Map();
   }
 
@@ -264,6 +412,8 @@ async function buildSiteAiKeywordMultipliersByNodeId(siteClusters, context) {
     pageUrls: targetPageUrls,
   });
   const multipliersByNodeId = new Map();
+  let matchedSiteCount = 0;
+  let maxMultiplier = 1;
 
   for (const siteCluster of siteClusters) {
     const siteAiKeywordMatch = aiKeywordTools.buildSiteAiKeywordMatchResult({
@@ -272,8 +422,24 @@ async function buildSiteAiKeywordMultipliersByNodeId(siteClusters, context) {
       targetPageKeywordsByUrl,
     });
 
+    if (siteAiKeywordMatch?.multiplier > 1) {
+      matchedSiteCount += 1;
+      maxMultiplier = Math.max(maxMultiplier, Number(siteAiKeywordMatch.multiplier) || 1);
+    }
     multipliersByNodeId.set(siteCluster.nodeId, siteAiKeywordMatch);
   }
+
+  recordSiteAiPredictionDiagnostic("prediction.ai.site-match.result", {
+    siteCount: siteClusters.length,
+    candidateCount: siteClusters.reduce(
+      (sum, siteCluster) => sum + (siteCluster.candidates?.length ?? 0),
+      0
+    ),
+    interestKeywordCount: interestKeywords.length,
+    targetKeywordEntryCount: Object.keys(targetPageKeywordsByUrl || {}).length,
+    matchedSiteCount,
+    maxMultiplier,
+  });
 
   return multipliersByNodeId;
 }
@@ -490,4 +656,9 @@ function allocateSelectedSitePageSlots(a, scores, caps, transform = (value) => M
   }
 
   return baseline.map((value, index) => value + extra[index]);
+}
+
+function recordSiteAiPredictionDiagnostic(eventName, payload) {
+  globalThis.ZeroLatencyDebugEvents?.record?.(eventName, payload);
+  globalThis.ZeroLatencyDiagnostics?.record?.(eventName, payload);
 }

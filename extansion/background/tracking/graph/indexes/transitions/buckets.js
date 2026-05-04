@@ -3,6 +3,10 @@ function registerEdgeInTransitionBuckets(graph, edge) {
     return;
   }
 
+  if (edge.fromNodeId === edge.toNodeId) {
+    return;
+  }
+
   setTransitionBucketCount(
     graph.transitionBuckets.total,
     graph,
@@ -35,6 +39,18 @@ function getPageTransitionMessageBucketLayer(graph) {
   }
 
   return graph.pageTransitionMessageBuckets.buckets;
+}
+
+function ensurePageTransitionBuckets(rawBuckets) {
+  if (!isPlainObject(rawBuckets) || !Array.isArray(rawBuckets.total)) {
+    return createEmptyPageTransitionBuckets();
+  }
+
+  if (!isPlainObject(rawBuckets.byDay)) {
+    rawBuckets.byDay = {};
+  }
+
+  return rawBuckets;
 }
 
 function incrementPageTransitionBucketCount(
@@ -77,13 +93,25 @@ function getTransitionBucketDayLayer(graph, dayKey) {
   return graph.transitionBuckets.byDay[dayKey] || (graph.transitionBuckets.byDay[dayKey] = createEmptyBucketLayer());
 }
 
-function getPageTransitionBucketDayLayer(graph, dayKey) {
-  if (!isPlainObject(graph.pageTransitionBuckets?.byDay)) {
-    graph.pageTransitionBuckets = createEmptyPageTransitionBuckets();
-  }
+function getExternalPageTransitionBucketDayLayer(graph, dayKey) {
+  graph.externalPageTransitionBuckets = ensurePageTransitionBuckets(
+    graph.externalPageTransitionBuckets
+  );
 
   return (
-    graph.pageTransitionBuckets.byDay[dayKey] || (graph.pageTransitionBuckets.byDay[dayKey] = createEmptyPageBucketLayer())
+    graph.externalPageTransitionBuckets.byDay[dayKey] ||
+    (graph.externalPageTransitionBuckets.byDay[dayKey] = createEmptyPageBucketLayer())
+  );
+}
+
+function getIntraSitePageTransitionBucketDayLayer(graph, dayKey) {
+  graph.intraSitePageTransitionBuckets = ensurePageTransitionBuckets(
+    graph.intraSitePageTransitionBuckets
+  );
+
+  return (
+    graph.intraSitePageTransitionBuckets.byDay[dayKey] ||
+    (graph.intraSitePageTransitionBuckets.byDay[dayKey] = createEmptyPageBucketLayer())
   );
 }
 
@@ -99,8 +127,12 @@ function getSourceBucketIndex(graph, sourceNodeId) {
 }
 
 function deriveBucketText(graph, sourceNodeId) {
-  const sourceHost = graph.nodes?.[sourceNodeId]?.host ?? sourceNodeId ?? "";
-  const normalizedHost = String(sourceHost || "").toLowerCase().trim();
+  const sourceNode = graph.nodes?.[sourceNodeId] ?? {};
+  const sourceHost = sourceNode.hostname || sourceNode.host || sourceNodeId || "";
+  const normalizedHost = String(sourceHost || "")
+    .toLowerCase()
+    .trim()
+    .replace(/^www\./u, "");
 
   if (!normalizedHost) {
     return "__";

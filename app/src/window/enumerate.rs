@@ -1,20 +1,20 @@
 use super::*;
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 use sysinfo::System;
 
-use crate::telemetry::is_google_chrome_browser_process;
+use crate::telemetry::{supported_browser_process_info, SupportedBrowserProcessInfo};
 
 struct EnumContext {
     windows: Vec<ChromeWindowInfo>,
-    chrome_process_ids: HashSet<u32>,
+    browser_processes_by_id: HashMap<u32, SupportedBrowserProcessInfo>,
 }
 
 pub(crate) fn enumerate_chrome_windows() -> Vec<ChromeWindowInfo> {
-    let chrome_process_ids = collect_google_chrome_process_ids();
+    let browser_processes_by_id = collect_supported_browser_processes();
     let context = Mutex::new(EnumContext {
         windows: Vec::new(),
-        chrome_process_ids,
+        browser_processes_by_id,
     });
 
     unsafe {
@@ -88,19 +88,24 @@ unsafe extern "system" fn enum_windows_callback(hwnd: HWND, lparam: LPARAM) -> B
         GetWindowThreadProcessId(hwnd, Some(&mut process_id));
     }
 
-    if !context
+    let process_info = match context
         .lock()
-        .map(|ctx| ctx.chrome_process_ids.contains(&process_id))
-        .unwrap_or(false)
+        .ok()
+        .and_then(|ctx| ctx.browser_processes_by_id.get(&process_id).cloned())
     {
-        return TRUE;
-    }
+        Some(info) => info,
+        None => return TRUE,
+    };
 
     let mut rect = RECT::default();
     let _ = unsafe { GetWindowRect(hwnd, &mut rect) };
 
     let info = ChromeWindowInfo {
         hwnd: hwnd.0 as u64,
+        process_id,
+        process_name: Some(process_info.process_name),
+        executable_path: process_info.executable_path,
+        browser_kind: Some(process_info.browser_kind),
         title: unsafe { get_window_title(hwnd) },
         class_name,
         left: rect.left,
@@ -120,15 +125,31 @@ unsafe extern "system" fn enum_windows_callback(hwnd: HWND, lparam: LPARAM) -> B
     TRUE
 }
 
-fn collect_google_chrome_process_ids() -> HashSet<u32> {
+fn collect_supported_browser_processes() -> HashMap<u32, SupportedBrowserProcessInfo> {
     let mut system = System::new_all();
     system.refresh_all();
 
     system
         .processes()
         .values()
-        .filter(|process| is_google_chrome_browser_process(process))
-        .map(|process| process.pid().as_u32())
+        .filter_map(supported_browser_process_info)
+        .filter(|info| {
+            system
+                .processes()
+                .values()
+                .find(|process| process.pid().as_u32() == info.pid)
+                .is_some_and(|process| {
+                    let command_line = process
+                        .cmd()
+                        .iter()
+                        .map(|value| value.to_string_lossy())
+                        .collect::<Vec<_>>()
+                        .join(" ")
+                        .to_ascii_lowercase();
+                    !command_line.contains("--type=")
+                })
+        })
+        .map(|info| (info.pid, info))
         .collect()
 }
 

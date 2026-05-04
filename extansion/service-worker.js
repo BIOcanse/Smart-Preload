@@ -1,16 +1,26 @@
+try {
+  importScripts("shared/local-ai-test-config.js");
+} catch (_error) {
+  // Optional local-only test config. This file is gitignored and absent in releases.
+}
+
 importScripts(
+  "shared/ai-model-catalog.js",
+  "shared/lmstudio.js",
   "shared/settings.js",
   "background/shared/base.js",
+  "background/shared/native-app/wake.js",
   "background/shared/native-app/request.js",
   "background/shared/native-app/health.js",
-  "background/shared/native-app/ai.js",
   "background/shared/native-app/windows.js",
   "background/shared/native-app.js",
+  "background/diagnostics/logger.js",
   "background/shared/support/platform.js",
   "background/shared/support/features.js",
   "background/shared/support/usability.js",
   "background/shared/support.js",
   "background/ai/keywords.js",
+  "background/ai/providers.js",
   "background/tracking/url/model.js",
   "background/tracking/graph/model/schema.js",
   "background/tracking/graph/model/normalize/learning.js",
@@ -62,7 +72,6 @@ importScripts(
   "background/core/messages/debug.js",
   "background/core/messages/settings.js",
   "background/core/messages/service-control.js",
-  "background/core/messages/ai-models.js",
   "background/core/messages.js",
   "background/core/state/config.js",
   "background/core/state/storage/normalize.js",
@@ -178,6 +187,14 @@ chrome.runtime.onStartup.addListener(() => {
   });
 });
 
+chrome.runtime.onSuspend?.addListener?.(() => {
+  void globalThis.ZeroLatencyDiagnostics?.flushNow?.({ finalFlush: true });
+  void globalThis.ZeroLatencyAiProviders?.unloadConfiguredLmStudioModel?.(
+    getEffectiveExtensionSettings(),
+    "service-worker-suspend"
+  );
+});
+
 chrome.storage.onChanged.addListener((changes, areaName) => {
   queueMutation(async () => {
     await mainRouter.handleStorageChanged(changes, areaName);
@@ -217,6 +234,12 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   queueMutation(async () => {
     await mainRouter.handleTabUpdated(tabId, changeInfo, tab);
+  });
+});
+
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  queueMutation(async () => {
+    await mainRouter.handleTabActivated(activeInfo);
   });
 });
 

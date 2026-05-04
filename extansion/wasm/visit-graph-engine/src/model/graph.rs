@@ -29,6 +29,10 @@ pub(crate) struct Graph {
     #[serde(default)]
     pub(crate) page_transition_buckets: PageTransitionBuckets,
     #[serde(default)]
+    pub(crate) external_page_transition_buckets: PageTransitionBuckets,
+    #[serde(default)]
+    pub(crate) intra_site_page_transition_buckets: PageTransitionBuckets,
+    #[serde(default)]
     pub(crate) page_transition_message_buckets: PageTransitionMessageBuckets,
     #[serde(default)]
     pub(crate) link_behavior_store: BTreeMap<String, BTreeMap<String, LinkBehaviorRecord>>,
@@ -56,12 +60,14 @@ pub(crate) struct Graph {
 impl Default for Graph {
     fn default() -> Self {
         Self {
-            version: 10,
+            version: 12,
             nodes: BTreeMap::new(),
             edges: BTreeMap::new(),
             transition_buckets: TransitionBuckets::default(),
             transition_message_buckets: TransitionMessageBuckets::default(),
             page_transition_buckets: PageTransitionBuckets::default(),
+            external_page_transition_buckets: PageTransitionBuckets::default(),
+            intra_site_page_transition_buckets: PageTransitionBuckets::default(),
             page_transition_message_buckets: PageTransitionMessageBuckets::default(),
             link_behavior_store: BTreeMap::new(),
             page_keyword_store: BTreeMap::new(),
@@ -87,6 +93,8 @@ pub(crate) struct Node {
     pub(crate) hostname: String,
     pub(crate) protocol: String,
     pub(crate) sample_url: String,
+    #[serde(default)]
+    pub(crate) default_landing_page_url: String,
     pub(crate) visit_count: u64,
     pub(crate) first_seen_at: String,
     pub(crate) last_seen_at: String,

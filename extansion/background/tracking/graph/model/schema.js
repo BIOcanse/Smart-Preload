@@ -3,12 +3,14 @@ const MAX_HISTORY_PAGE_POOL_SIZE = 5;
 
 function createEmptyGraph() {
   return {
-    version: 11,
+    version: 12,
     nodes: {},
     edges: {},
     transitionBuckets: createEmptyTransitionBuckets(),
     transitionMessageBuckets: createEmptyTransitionMessageBuckets(),
     pageTransitionBuckets: createEmptyPageTransitionBuckets(),
+    externalPageTransitionBuckets: createEmptyPageTransitionBuckets(),
+    intraSitePageTransitionBuckets: createEmptyPageTransitionBuckets(),
     pageTransitionMessageBuckets: createEmptyPageTransitionMessageBuckets(),
     linkBehaviorStore: {},
     pageKeywordStore: {},

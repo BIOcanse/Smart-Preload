@@ -30,6 +30,10 @@
     return runErroneousPreloadWindowCleanup();
   }
 
+  function ensureWarmWindows() {
+    return ensureWarmPreloadWindowsForActiveNormalWindows();
+  }
+
   function handleRemovedWindowEvent(windowId) {
     return handleRemovedWindow(windowId);
   }
@@ -46,6 +50,7 @@
     maintainPolicy,
     cleanupErroneousWindows,
     cleanupErroneousWindowsNow,
+    ensureWarmWindows,
     handleRemovedWindowEvent,
     handleBoundsChangedEvent,
   };

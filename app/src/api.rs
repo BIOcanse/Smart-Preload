@@ -1,9 +1,11 @@
+use std::collections::{BTreeMap, BTreeSet};
 use std::env;
 use std::fs;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::thread::{self, JoinHandle};
+use std::time::{Duration, Instant};
 
 use anyhow::Result;
 use axum::extract::{Request, State};
@@ -15,24 +17,34 @@ use axum::Router;
 use tokio::net::TcpListener;
 use tokio::sync::watch;
 
+use crate::lifecycle::target_extension_origin_is_installed;
 use crate::runtime_debug::record_app_runtime_event;
 use crate::telemetry::{SystemSnapshot, SystemSnapshotter};
 
 mod routes;
 pub(crate) const EXTENSION_ORIGIN_HEADER: &str = "x-zlw-extension-origin";
+pub(crate) const EXTENSION_HEARTBEAT_TTL: Duration = Duration::from_secs(45);
 
 #[derive(Clone)]
 pub struct ApiState {
     snapshotter: Arc<Mutex<SystemSnapshotter>>,
-    allowed_extension_origin: Arc<Mutex<Option<String>>>,
+    allowed_extension_origins: Arc<Mutex<BTreeSet<String>>>,
+    extension_heartbeats: Arc<Mutex<BTreeMap<String, ExtensionHeartbeatLease>>>,
     debug_api_token: Arc<Mutex<Option<String>>>,
+}
+
+#[derive(Clone, Copy)]
+struct ExtensionHeartbeatLease {
+    last_seen_at: Instant,
+    normal_window_count: Option<usize>,
 }
 
 impl ApiState {
     pub fn new(snapshotter: Arc<Mutex<SystemSnapshotter>>) -> Self {
         Self {
             snapshotter,
-            allowed_extension_origin: Arc::new(Mutex::new(load_allowed_extension_origin())),
+            allowed_extension_origins: Arc::new(Mutex::new(load_allowed_extension_origins())),
+            extension_heartbeats: Arc::new(Mutex::new(BTreeMap::new())),
             debug_api_token: Arc::new(Mutex::new(load_debug_api_token())),
         }
     }
@@ -46,29 +58,102 @@ impl ApiState {
     }
 
     pub(crate) fn get_allowed_extension_origin(&self) -> Option<String> {
-        self.allowed_extension_origin
+        self.allowed_extension_origins
             .lock()
             .ok()
-            .and_then(|value| value.clone())
+            .and_then(|value| value.iter().next().cloned())
+    }
+
+    pub(crate) fn get_allowed_extension_origins(&self) -> Vec<String> {
+        self.allowed_extension_origins
+            .lock()
+            .map(|value| value.iter().cloned().collect())
+            .unwrap_or_default()
     }
 
     pub(crate) fn register_extension_origin(&self, origin: &str) -> Result<bool> {
         let normalized_origin = normalize_extension_origin(origin)
             .ok_or_else(|| anyhow::anyhow!("invalid extension origin"))?;
         let mut guard = self
-            .allowed_extension_origin
+            .allowed_extension_origins
             .lock()
             .map_err(|_| anyhow::anyhow!("extension origin lock poisoned"))?;
 
-        match guard.as_deref() {
-            Some(existing_origin) if existing_origin == normalized_origin => Ok(true),
-            Some(_) => Ok(false),
-            None => {
-                persist_allowed_extension_origin(&normalized_origin)?;
-                *guard = Some(normalized_origin);
-                Ok(true)
-            }
+        if guard.contains(&normalized_origin) {
+            return Ok(true);
         }
+
+        if !target_extension_origin_is_installed(&normalized_origin) {
+            return Ok(false);
+        }
+
+        guard.insert(normalized_origin);
+        persist_allowed_extension_origins(&guard)?;
+        Ok(true)
+    }
+
+    pub(crate) fn record_extension_heartbeat(
+        &self,
+        origin: &str,
+        normal_window_count: Option<usize>,
+    ) -> Result<()> {
+        let normalized_origin = normalize_extension_origin(origin)
+            .ok_or_else(|| anyhow::anyhow!("invalid extension origin"))?;
+
+        if !self.is_authorized_extension_origin(&normalized_origin) {
+            return Err(anyhow::anyhow!("extension origin is not authorized"));
+        }
+
+        let mut guard = self
+            .extension_heartbeats
+            .lock()
+            .map_err(|_| anyhow::anyhow!("extension heartbeat lock poisoned"))?;
+        guard.insert(
+            normalized_origin,
+            ExtensionHeartbeatLease {
+                last_seen_at: Instant::now(),
+                normal_window_count,
+            },
+        );
+        Ok(())
+    }
+
+    pub(crate) fn active_extension_heartbeat_count(&self, ttl: Duration) -> usize {
+        self.prune_and_count_extension_heartbeats(ttl)
+            .map(|(active_count, _normal_window_count, _window_report_count)| active_count)
+            .unwrap_or(0)
+    }
+
+    pub(crate) fn active_extension_normal_window_count(&self, ttl: Duration) -> usize {
+        self.prune_and_count_extension_heartbeats(ttl)
+            .map(|(_active_count, normal_window_count, _window_report_count)| normal_window_count)
+            .unwrap_or(0)
+    }
+
+    pub(crate) fn active_extension_window_report_count(&self, ttl: Duration) -> usize {
+        self.prune_and_count_extension_heartbeats(ttl)
+            .map(|(_active_count, _normal_window_count, window_report_count)| window_report_count)
+            .unwrap_or(0)
+    }
+
+    fn prune_and_count_extension_heartbeats(&self, ttl: Duration) -> Option<(usize, usize, usize)> {
+        let Ok(mut guard) = self.extension_heartbeats.lock() else {
+            return None;
+        };
+        let now = Instant::now();
+
+        guard.retain(|_origin, lease| now.duration_since(lease.last_seen_at) <= ttl);
+        let active_count = guard.len();
+        let window_report_count = guard
+            .values()
+            .filter(|lease| lease.normal_window_count.is_some())
+            .count();
+        let normal_window_count = guard
+            .values()
+            .map(|lease| lease.normal_window_count.unwrap_or(0))
+            .sum();
+
+        Some((active_count, normal_window_count, window_report_count))
     }
 
     fn is_authorized_extension_origin(&self, origin: &str) -> bool {
@@ -76,9 +161,9 @@ impl ApiState {
             return false;
         };
 
-        self.get_allowed_extension_origin()
-            .as_deref()
-            .map(|allowed_origin| allowed_origin == normalized_origin)
+        self.allowed_extension_origins
+            .lock()
+            .map(|allowed_origins| allowed_origins.contains(&normalized_origin))
             .unwrap_or(false)
     }
 
@@ -116,20 +201,17 @@ pub fn spawn_server(state: ApiState, shutdown_rx: watch::Receiver<bool>) -> Join
 async fn run_server(state: ApiState, mut shutdown_rx: watch::Receiver<bool>) -> Result<()> {
     let protected_routes = Router::new()
         .route("/health", get(routes::health))
+        .route(
+            "/api/v1/extension/heartbeat",
+            post(routes::extension_heartbeat),
+        )
+        .route("/api/v1/system/activity", get(routes::system_activity))
         .route("/api/v1/system/hardware", get(routes::system_hardware))
         .route(
             "/api/v1/system/performance",
             get(routes::system_performance),
         )
         .route("/api/v1/system/snapshot", get(routes::system_snapshot))
-        .route("/api/v1/ai/status", get(routes::ai_status))
-        .route("/api/v1/ai/progress", get(routes::ai_progress))
-        .route("/api/v1/ai/models/install", post(routes::install_ai_model))
-        .route(
-            "/api/v1/ai/models/uninstall",
-            post(routes::uninstall_ai_model),
-        )
-        .route("/api/v1/ai/infer", post(routes::invoke_ai_model))
         .route("/api/v1/windows/chrome", get(routes::list_chrome_windows))
         .route(
             "/api/v1/windows/hidden-monitor",
@@ -145,6 +227,10 @@ async fn run_server(state: ApiState, mut shutdown_rx: watch::Receiver<bool>) -> 
         )
         .route("/api/v1/windows/hide", post(routes::hide_chrome_window))
         .route("/api/v1/windows/show", post(routes::show_chrome_window))
+        .route(
+            "/api/v1/diagnostics/logs",
+            post(routes::append_diagnostics_log),
+        )
         .route_layer(middleware::from_fn_with_state(
             state.clone(),
             require_registered_extension_origin,
@@ -343,10 +429,53 @@ fn normalize_debug_origin(origin: &str) -> Option<String> {
     None
 }
 
-fn load_allowed_extension_origin() -> Option<String> {
-    let origin_path = allowed_extension_origin_path().ok()?;
-    let origin = fs::read_to_string(origin_path).ok()?;
-    normalize_extension_origin(&origin)
+fn load_allowed_extension_origins() -> BTreeSet<String> {
+    let mut origins = BTreeSet::new();
+
+    for path in [
+        allowed_extension_origins_path().ok(),
+        allowed_extension_origin_path().ok(),
+    ]
+    .into_iter()
+    .flatten()
+    {
+        let Ok(raw_value) = fs::read_to_string(path) else {
+            continue;
+        };
+
+        for line in raw_value.lines() {
+            if let Some(origin) = normalize_extension_origin(line) {
+                origins.insert(origin);
+            }
+        }
+    }
+
+    origins
+}
+
+fn persist_allowed_extension_origins(origins: &BTreeSet<String>) -> Result<()> {
+    let origins_path = allowed_extension_origins_path()?;
+
+    if let Some(parent) = origins_path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+
+    fs::write(
+        origins_path,
+        origins.iter().cloned().collect::<Vec<_>>().join("\n"),
+    )?;
+
+    if let Some(first_origin) = origins.iter().next() {
+        let legacy_origin_path = allowed_extension_origin_path()?;
+
+        if let Some(parent) = legacy_origin_path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+
+        fs::write(legacy_origin_path, first_origin)?;
+    }
+
+    Ok(())
 }
 
 fn load_debug_api_token() -> Option<String> {
@@ -354,17 +483,6 @@ fn load_debug_api_token() -> Option<String> {
     let token = fs::read_to_string(token_path).ok()?;
     let trimmed = token.trim();
     (!trimmed.is_empty()).then(|| trimmed.to_string())
-}
-
-fn persist_allowed_extension_origin(origin: &str) -> Result<()> {
-    let origin_path = allowed_extension_origin_path()?;
-
-    if let Some(parent_dir) = origin_path.parent() {
-        fs::create_dir_all(parent_dir)?;
-    }
-
-    fs::write(origin_path, origin)?;
-    Ok(())
 }
 
 fn allowed_extension_origin_path() -> Result<PathBuf> {
@@ -375,6 +493,16 @@ fn allowed_extension_origin_path() -> Result<PathBuf> {
     Ok(executable_dir
         .join("portable")
         .join("allowed-extension-origin.txt"))
+}
+
+fn allowed_extension_origins_path() -> Result<PathBuf> {
+    let executable_path = env::current_exe()?;
+    let executable_dir = executable_path
+        .parent()
+        .ok_or_else(|| anyhow::anyhow!("local app executable directory is not available"))?;
+    Ok(executable_dir
+        .join("portable")
+        .join("allowed-extension-origins.txt"))
 }
 
 fn debug_api_token_path() -> Result<PathBuf> {

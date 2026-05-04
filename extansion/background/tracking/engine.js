@@ -11,5 +11,6 @@
     scorePreloadCandidate,
     scorePreloadCandidatesBatch,
     filterPreloadCandidateMetrics,
+    selectPreloadCandidateGroup,
   };
 })();

@@ -4,7 +4,10 @@ use axum::Json;
 use serde::Serialize;
 
 use crate::api::ApiState;
-use crate::telemetry::{HardwareSnapshot, PerformanceSnapshot, SystemSnapshot};
+use crate::telemetry::{
+    collect_activity_snapshot, ActivitySnapshot, HardwareSnapshot, PerformanceSnapshot,
+    SystemSnapshot,
+};
 
 pub(crate) async fn health() -> Json<HealthResponse> {
     Json(HealthResponse { ok: true })
@@ -35,6 +38,10 @@ pub(crate) async fn system_performance(
         .snapshot()
         .map(|snapshot| Json(snapshot.performance))
         .map_err(|error| (StatusCode::INTERNAL_SERVER_ERROR, error.to_string()))
+}
+
+pub(crate) async fn system_activity() -> Json<ActivitySnapshot> {
+    Json(collect_activity_snapshot())
 }
 
 #[derive(Debug, Serialize)]

@@ -5,5 +5,6 @@
     reassignSourceTabRuntimeIfNeeded,
     synchronizePrerenderEntriesForSourceTab,
     synchronizePrefetchEntriesForSourceTab,
+    handleActivatedSourceTab,
   };
 })();

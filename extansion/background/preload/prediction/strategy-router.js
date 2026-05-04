@@ -99,6 +99,7 @@ function buildCandidateTransitionMetricSnapshot(candidate) {
       0
     ),
     pageTransitionCount: clampNonNegativeInt(candidate?.pageTransitionCount, 0),
+    isSameSite: candidate?.isSameSite === true,
   };
 }
 

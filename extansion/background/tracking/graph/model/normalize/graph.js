@@ -5,7 +5,10 @@ function normalizeTrackingGraph(rawGraph) {
   const storedTransitionMessageBucketLayer = getStoredTransitionMessageBucketLayer(
     graph.transitionMessageBuckets
   );
-  graph.version = 10;
+  const storedPageTransitionBuckets = isPlainObject(graph.pageTransitionBuckets)
+    ? graph.pageTransitionBuckets
+    : null;
+  graph.version = 12;
   graph.nodes = isPlainObject(graph.nodes) ? graph.nodes : {};
   graph.edges = isPlainObject(graph.edges) ? graph.edges : {};
   graph.linkBehaviorStore = normalizeLinkBehaviorStore(graph.linkBehaviorStore);
@@ -49,10 +52,15 @@ function normalizeTrackingGraph(rawGraph) {
   graph.transitionBuckets = createEmptyTransitionBuckets();
   graph.transitionMessageBuckets = createEmptyTransitionMessageBuckets();
   graph.pageTransitionBuckets = createEmptyPageTransitionBuckets();
+  graph.externalPageTransitionBuckets = createEmptyPageTransitionBuckets();
+  graph.intraSitePageTransitionBuckets = createEmptyPageTransitionBuckets();
   graph.pageTransitionMessageBuckets = createEmptyPageTransitionMessageBuckets();
 
-  for (const edge of Object.values(graph.edges)) {
-    registerEdgeInTransitionBuckets(graph, edge);
+  if (graph.transitionMessages.length === 0) {
+    for (const edge of Object.values(graph.edges)) {
+      registerEdgeInTransitionBuckets(graph, edge);
+    }
+    migrateLegacyPageTransitionBuckets(graph, storedPageTransitionBuckets);
   }
 
   for (const transitionMessage of graph.transitionMessages) {
@@ -68,4 +76,65 @@ function normalizeTrackingGraph(rawGraph) {
   delete graph.recentTransitions;
 
   return graph;
+}
+
+function migrateLegacyPageTransitionBuckets(graph, legacyBuckets) {
+  if (!isPlainObject(legacyBuckets)) {
+    return;
+  }
+
+  migrateLegacyPageTransitionBucketLayer(graph, legacyBuckets.total, null);
+
+  for (const [dayKey, bucketLayer] of Object.entries(legacyBuckets.byDay || {})) {
+    if (isValidDayKey(dayKey)) {
+      migrateLegacyPageTransitionBucketLayer(graph, bucketLayer, dayKey);
+    }
+  }
+}
+
+function migrateLegacyPageTransitionBucketLayer(graph, bucketLayer, dayKey) {
+  if (!Array.isArray(bucketLayer)) {
+    return;
+  }
+
+  for (const bucket of bucketLayer) {
+    if (!isPlainObject(bucket)) {
+      continue;
+    }
+
+    for (const [sourceNodeId, sourcePages] of Object.entries(bucket)) {
+      for (const [sourcePageUrl, targetSites] of Object.entries(sourcePages || {})) {
+        for (const [targetNodeId, targetPages] of Object.entries(targetSites || {})) {
+          for (const [targetPageUrl, count] of Object.entries(targetPages || {})) {
+            const normalizedCount = clampNonNegativeInt(count, 0);
+
+            if (normalizedCount <= 0) {
+              continue;
+            }
+
+            const targetBuckets =
+              sourceNodeId === targetNodeId
+                ? "intraSitePageTransitionBuckets"
+                : "externalPageTransitionBuckets";
+            const targetLayer =
+              dayKey === null
+                ? graph[targetBuckets].total
+                : targetBuckets === "intraSitePageTransitionBuckets"
+                  ? getIntraSitePageTransitionBucketDayLayer(graph, dayKey)
+                  : getExternalPageTransitionBucketDayLayer(graph, dayKey);
+
+            incrementPageTransitionBucketCount(
+              targetLayer,
+              graph,
+              sourceNodeId,
+              sourcePageUrl,
+              targetNodeId,
+              targetPageUrl,
+              normalizedCount
+            );
+          }
+        }
+      }
+    }
+  }
 }

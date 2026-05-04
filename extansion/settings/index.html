@@ -3,84 +3,84 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Zero-Latency Web Settings</title>
+    <title data-i18n="settingsPageTitle">Zero-Latency Web Settings</title>
     <link rel="stylesheet" href="settings.css" />
   </head>
   <body>
     <div class="settings-shell">
       <aside class="settings-nav">
         <div class="settings-brand">
-          <p class="settings-eyebrow">Zero-Latency Web</p>
-          <h1>Settings</h1>
+          <p class="settings-eyebrow" data-i18n="appName">Zero-Latency Web</p>
+          <h1 data-i18n="settingsTitle">Settings</h1>
         </div>
 
-        <nav class="settings-nav-list" aria-label="Settings sections">
+        <nav class="settings-nav-list" aria-label="Settings sections" data-i18n-aria-label="settingsNavAriaLabel">
           <button class="settings-nav-item active" data-section-target="overview">
-            <span class="settings-nav-title">Overview</span>
-            <span class="settings-nav-sub">Runtime profile and auto-tuning</span>
+            <span class="settings-nav-title" data-i18n="settingsOverview">Overview</span>
+            <span class="settings-nav-sub" data-i18n="settingsOverviewSub">Runtime profile and auto-tuning</span>
           </button>
           <button class="settings-nav-item" data-section-target="tracking">
-            <span class="settings-nav-title">Tracking</span>
-            <span class="settings-nav-sub">Directional graph and search-page handling</span>
+            <span class="settings-nav-title" data-i18n="settingsTracking">Tracking</span>
+            <span class="settings-nav-sub" data-i18n="settingsTrackingSub">Directional graph and search-page handling</span>
           </button>
           <button class="settings-nav-item" data-section-target="preload">
-            <span class="settings-nav-title">Preload</span>
-            <span class="settings-nav-sub">Window policy, cadence, and tab budget</span>
+            <span class="settings-nav-title" data-i18n="settingsPreload">Preload</span>
+            <span class="settings-nav-sub" data-i18n="settingsPreloadSub">Window policy, cadence, and tab budget</span>
           </button>
           <button class="settings-nav-item" data-section-target="ordering">
-            <span class="settings-nav-title">Ordering</span>
-            <span class="settings-nav-sub">Draggable cards with live controls inside</span>
+            <span class="settings-nav-title" data-i18n="settingsOrdering">Ordering</span>
+            <span class="settings-nav-sub" data-i18n="settingsOrderingSub">Draggable cards with live controls inside</span>
           </button>
           <button class="settings-nav-item" data-section-target="experiments">
-            <span class="settings-nav-title">Experiments</span>
-            <span class="settings-nav-sub">Risky live switches and reserved placeholders</span>
+            <span class="settings-nav-title" data-i18n="settingsExperiments">Experiments</span>
+            <span class="settings-nav-sub" data-i18n="settingsExperimentsSub">Risky live switches and reserved placeholders</span>
           </button>
         </nav>
 
         <div class="settings-nav-footer">
-          <p>Stored in local extension storage.</p>
-          <p id="nav-status-text">Loading settings...</p>
+          <p data-i18n="settingsStorageFooter">Stored in local extension storage.</p>
+          <p id="nav-status-text" data-i18n="settingsLoadingSettings">Loading settings...</p>
         </div>
       </aside>
 
       <main class="settings-content">
         <section class="hero-card" id="overview">
           <div class="hero-copy">
-            <p class="hero-kicker">Device-aware configuration</p>
-            <h2>Adaptive preload policy with manual override</h2>
-            <p>
+            <p class="hero-kicker" data-i18n="settingsHeroKicker">Device-aware configuration</p>
+            <h2 data-i18n="settingsHeroTitle">Adaptive preload policy with manual override</h2>
+            <p data-i18n="settingsHeroCopy">
               The extension can cap preload pressure based on detected hardware, while still
               letting you define the ceiling and experimental switches.
             </p>
           </div>
           <div class="hero-metrics">
             <article class="metric-card is-placeholder" aria-hidden="true">
-              <span class="metric-label">Device Profile</span>
+              <span class="metric-label" data-i18n="settingsDeviceProfile">Device Profile</span>
               <strong class="metric-value" id="device-profile-label">-</strong>
-              <span class="metric-meta" id="device-profile-meta">Detecting hardware...</span>
+              <span class="metric-meta" id="device-profile-meta" data-i18n="settingsDetectingHardware">Detecting hardware...</span>
             </article>
             <article class="metric-card is-placeholder" aria-hidden="true">
-              <span class="metric-label">Effective Group Caps</span>
+              <span class="metric-label" data-i18n="settingsEffectiveGroupCaps">Effective Group Caps</span>
               <strong class="metric-value" id="effective-preload-cap">-</strong>
-              <span class="metric-meta" id="effective-preload-meta">Waiting for settings...</span>
+              <span class="metric-meta" id="effective-preload-meta" data-i18n="settingsWaitingForSettings">Waiting for settings...</span>
             </article>
             <article class="metric-card is-placeholder" aria-hidden="true">
-              <span class="metric-label">Watchdog</span>
+              <span class="metric-label" data-i18n="settingsWatchdog">Watchdog</span>
               <strong class="metric-value" id="watchdog-summary">-</strong>
-              <span class="metric-meta" id="watchdog-meta">Waiting for settings...</span>
+              <span class="metric-meta" id="watchdog-meta" data-i18n="settingsWaitingForSettings">Waiting for settings...</span>
             </article>
             <article class="metric-card is-placeholder" aria-hidden="true">
-              <span class="metric-label">Native App</span>
+              <span class="metric-label" data-i18n="settingsNativeApp">Native App</span>
               <strong class="metric-value" id="native-app-status">-</strong>
-              <span class="metric-meta" id="native-app-meta">Checking connection...</span>
+              <span class="metric-meta" id="native-app-meta" data-i18n="settingsCheckingConnection">Checking connection...</span>
             </article>
           </div>
         </section>
 
         <section class="settings-section" id="overview-panel">
           <header class="settings-section-header">
-            <p class="settings-section-title">Overview</p>
-            <p class="settings-section-meta">
+            <p class="settings-section-title" data-i18n="settingsOverview">Overview</p>
+            <p class="settings-section-meta" data-i18n="settingsOverviewMeta">
               High-level controls that influence how aggressively the extension adapts to the
               current machine.
             </p>
@@ -89,10 +89,10 @@
           <div class="settings-list">
             <article class="settings-item" data-runtime-placeholder="true">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="automatic-device-tuning">
+                <label class="settings-item-label" for="automatic-device-tuning" data-i18n="settingsAutomaticDeviceTuning">
                   Automatic device tuning
                 </label>
-                <p class="settings-item-desc">
+                <p class="settings-item-desc" data-i18n="settingsAutomaticDeviceTuningDesc">
                   Reserved toggle for future hardware-aware scheduling. It is saved now, but it does
                   not change runtime behavior yet.
                 </p>
@@ -107,8 +107,8 @@
 
             <article class="settings-item is-wide" data-runtime-placeholder="true">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="preloading-mode">Preload mode</label>
-                <p class="settings-item-desc">
+                <label class="settings-item-label" for="preloading-mode" data-i18n="settingsPreloadMode">Preload mode</label>
+                <p class="settings-item-desc" data-i18n="settingsPreloadModeDesc">
                   Reserved selector for future strategy tiers. It is saved now, but it does not
                   change runtime behavior yet.
                 </p>
@@ -117,15 +117,15 @@
                 <div class="segmented-control" role="radiogroup" aria-label="Preload mode">
                   <label class="segment">
                     <input id="mode-conservative" name="preload-mode" type="radio" value="conservative" />
-                    <span>Conservative</span>
+                    <span data-i18n="settingsModeConservative">Conservative</span>
                   </label>
                   <label class="segment">
                     <input id="mode-balanced" name="preload-mode" type="radio" value="balanced" />
-                    <span>Balanced</span>
+                    <span data-i18n="settingsModeBalanced">Balanced</span>
                   </label>
                   <label class="segment">
                     <input id="mode-aggressive" name="preload-mode" type="radio" value="aggressive" />
-                    <span>Aggressive</span>
+                    <span data-i18n="settingsModeAggressive">Aggressive</span>
                   </label>
                 </div>
               </div>
@@ -135,8 +135,8 @@
 
         <section class="settings-section" id="tracking">
           <header class="settings-section-header">
-            <p class="settings-section-title">Tracking</p>
-            <p class="settings-section-meta">
+            <p class="settings-section-title" data-i18n="settingsTracking">Tracking</p>
+            <p class="settings-section-meta" data-i18n="settingsTrackingMeta">
               Controls for how navigation nodes are normalized and added into the directional graph.
             </p>
           </header>
@@ -144,10 +144,10 @@
           <div class="settings-list">
             <article class="settings-item">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="track-google-search-pages">
+                <label class="settings-item-label" for="track-google-search-pages" data-i18n="settingsSeparateGoogleSearchPages">
                   Separate Google search pages
                 </label>
-                <p class="settings-item-desc">
+                <p class="settings-item-desc" data-i18n="settingsSeparateGoogleSearchPagesDesc">
                   Track `google/search` result pages as their own node so the graph can learn
                   search-page to destination transitions.
                 </p>
@@ -161,10 +161,10 @@
             </article>
             <article class="settings-item">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="exclude-google-internal-pages">
+                <label class="settings-item-label" for="exclude-google-internal-pages" data-i18n="settingsSkipGoogleInternalPages">
                   Skip Google internal pages
                 </label>
-                <p class="settings-item-desc">
+                <p class="settings-item-desc" data-i18n="settingsSkipGoogleInternalPagesDesc">
                   Don't track or preload on the Chrome Web Store, Google account and password
                   manager, Chrome sync, chromestatus, and similar Google administrative pages.
                   Gemini and regular Google products stay tracked.
@@ -182,8 +182,8 @@
 
         <section class="settings-section" id="preload">
           <header class="settings-section-header">
-            <p class="settings-section-title">Preload</p>
-            <p class="settings-section-meta">
+            <p class="settings-section-title" data-i18n="settingsPreload">Preload</p>
+            <p class="settings-section-meta" data-i18n="settingsPreloadMeta">
               Controls for tab priming, watchdog repair, and preload window behavior.
             </p>
           </header>
@@ -191,10 +191,10 @@
           <div class="settings-list">
             <article class="settings-item">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="preloading-enabled">
+                <label class="settings-item-label" for="preloading-enabled" data-i18n="settingsEnablePreloading">
                   Enable preloading
                 </label>
-                <p class="settings-item-desc">
+                <p class="settings-item-desc" data-i18n="settingsEnablePreloadingDesc">
                   Master switch for candidate registration, background tabs, and tab swapping.
                 </p>
               </div>
@@ -207,10 +207,10 @@
             </article>
             <article class="settings-item">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="ignore-waterfall-dynamic-links">
+                <label class="settings-item-label" for="ignore-waterfall-dynamic-links" data-i18n="settingsIgnoreWaterfallDynamicLinks">
                   Ignore waterfall dynamic links
                 </label>
-                <p class="settings-item-desc">
+                <p class="settings-item-desc" data-i18n="settingsIgnoreWaterfallDynamicLinksDesc">
                   On infinite-scroll or waterfall pages, keep prediction on the first stable link
                   set and ignore links appended later by stream loading.
                 </p>
@@ -224,10 +224,10 @@
             </article>
             <article class="settings-item" id="transition-window-scope-row">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="transition-window-scope">
+                <label class="settings-item-label" for="transition-window-scope" data-i18n="settingsTransitionFrequencyWindow">
                   Transition frequency window
                 </label>
-                <p class="settings-item-desc">
+                <p class="settings-item-desc" data-i18n="settingsTransitionFrequencyWindowDesc">
                   When enabled, preload ordering rules use the selected time window instead of the
                   all-time total.
                 </p>
@@ -242,18 +242,18 @@
             </article>
             <article class="settings-item">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="ai-prediction-model">
+                <label class="settings-item-label" for="ai-prediction-provider" data-i18n="settingsAiPredictionAssistant">
                   AI prediction assistant
                 </label>
-                <p class="settings-item-desc">
-                  Choose which local model assists preload scoring. The model has to be downloaded
-                  in the section below first. When the selected model is missing, AI scoring stays
-                  off automatically.
+                <p class="settings-item-desc" data-i18n="settingsAiPredictionAssistantDesc">
+                  Choose an external AI provider and model for keyword scoring. The extension uses
+                  your API key directly; it does not download or manage local models.
                 </p>
                 <p class="settings-item-warning is-hidden" id="ai-prediction-mismatch-warning"></p>
               </div>
               <div class="settings-item-control compound-setting-control">
-                <select id="ai-prediction-model" class="select-input"></select>
+                <select id="ai-prediction-provider" class="select-input"></select>
+                <select id="ai-prediction-model" class="select-input" disabled></select>
                 <label class="switch">
                   <input id="ai-prediction-enabled" type="checkbox" />
                   <span class="switch-track"></span>
@@ -261,34 +261,39 @@
               </div>
             </article>
             <article class="settings-item">
-              <div class="settings-item-info">
-                <label class="settings-item-label" for="manage-ai-model">
-                  Manage model
+            <div class="settings-item-info">
+                <label class="settings-item-label" for="ai-provider-api-key" data-i18n="settingsAiProviderApiKey">
+                  Provider API key
                 </label>
-                <p class="settings-item-desc">
-                  The switch reflects whether the selected model is downloaded. Turning it on marks
-                  the model as installed; turning it off removes it and releases the portable
-                  runtime if no managed model still needs it. Models and runtime stay inside the
-                  local app directory.
+                <p class="settings-item-desc" data-i18n="settingsAiProviderApiKeyDesc">
+                  Stored in local extension storage and used only by the service worker when AI prediction is enabled. LM Studio ignores this field.
                 </p>
-                <p class="settings-item-warning is-hidden" id="ai-manage-platform-warning"></p>
               </div>
               <div class="settings-item-control compound-setting-control">
-                <select id="manage-ai-model" class="select-input"></select>
-                <label class="switch">
-                  <input id="manage-ai-model-downloaded" type="checkbox" />
-                  <span class="switch-track"></span>
+                <input id="ai-provider-api-key" class="text-input" type="password" autocomplete="off" spellcheck="false" />
+              </div>
+            </article>
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="ai-provider-endpoint" data-i18n="settingsAiProviderEndpoint">
+                  Provider endpoint
                 </label>
+                <p class="settings-item-desc" data-i18n="settingsAiProviderEndpointDesc">
+                  Leave the default unless you use an OpenAI-compatible local service such as LM Studio.
+                </p>
+              </div>
+              <div class="settings-item-control compound-setting-control">
+                <input id="ai-provider-endpoint" class="text-input" type="url" autocomplete="off" spellcheck="false" />
               </div>
             </article>
             <div class="sortable-cards-board" id="preload-rule-cards-list"></div>
 
             <article class="settings-item">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="watchdog-enabled">
+                <label class="settings-item-label" for="watchdog-enabled" data-i18n="settingsWindowWatchdog">
                   Window watchdog
                 </label>
-                <p class="settings-item-desc">
+                <p class="settings-item-desc" data-i18n="settingsWindowWatchdogDesc">
                   Rebuild the preload window and repair missing tabs when the container is lost.
                 </p>
               </div>
@@ -302,30 +307,30 @@
 
             <article class="settings-item" id="watchdog-interval-row">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="watchdog-interval-seconds">
+                <label class="settings-item-label" for="watchdog-interval-seconds" data-i18n="settingsWatchdogInterval">
                   Watchdog interval
                 </label>
-                <p class="settings-item-desc">
+                <p class="settings-item-desc" data-i18n="settingsWatchdogIntervalDesc">
                   How often the extension checks whether the preload window is still present.
                 </p>
               </div>
               <div class="settings-item-control">
                 <select id="watchdog-interval-seconds" class="select-input">
-                  <option value="1">1 second</option>
-                  <option value="2">2 seconds</option>
-                  <option value="3">3 seconds</option>
-                  <option value="5">5 seconds</option>
-                  <option value="10">10 seconds</option>
+                  <option value="1" data-i18n="settingsWatchdogIntervalOption1">1 second</option>
+                  <option value="2" data-i18n="settingsWatchdogIntervalOption2">2 seconds</option>
+                  <option value="3" data-i18n="settingsWatchdogIntervalOption3">3 seconds</option>
+                  <option value="5" data-i18n="settingsWatchdogIntervalOption5">5 seconds</option>
+                  <option value="10" data-i18n="settingsWatchdogIntervalOption10">10 seconds</option>
                 </select>
               </div>
             </article>
 
             <article class="settings-item">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="force-minimize">
+                <label class="settings-item-label" for="force-minimize" data-i18n="settingsForceMinimize">
                   Force minimize preload window
                 </label>
-                <p class="settings-item-desc">
+                <p class="settings-item-desc" data-i18n="settingsForceMinimizeDesc">
                   Immediately minimize the preload window again if it is restored or resized.
                 </p>
               </div>
@@ -341,8 +346,8 @@
 
         <section class="settings-section" id="ordering">
           <header class="settings-section-header">
-            <p class="settings-section-title">Ordering</p>
-            <p class="settings-section-meta">
+            <p class="settings-section-title" data-i18n="settingsOrdering">Ordering</p>
+            <p class="settings-section-meta" data-i18n="settingsOrderingMeta">
               Drag the rule cards below to change how the scoring pipeline narrows candidates.
               Weight-range rules filter page candidates directly, while the two site-count cards feed
               the native-preload group and the real-tab preload group separately.
@@ -351,8 +356,8 @@
 
           <div class="sortable-space-shell">
             <div class="sortable-space-header">
-              <p class="sortable-space-title">Drag Space</p>
-              <p class="sortable-space-copy">
+              <p class="sortable-space-title" data-i18n="settingsDragSpace">Drag Space</p>
+              <p class="sortable-space-copy" data-i18n="settingsDragSpaceCopy">
                 Disabling one side turns that card into a single-sided condition.
               </p>
             </div>
@@ -362,8 +367,8 @@
 
         <section class="settings-section" id="experiments">
           <header class="settings-section-header">
-            <p class="settings-section-title">Experiments</p>
-            <p class="settings-section-meta">
+            <p class="settings-section-title" data-i18n="settingsExperiments">Experiments</p>
+            <p class="settings-section-meta" data-i18n="settingsExperimentsMeta">
               Risky live switches belong here. Placeholder switches stay here too, but they remain
               stored-only until they are actually wired into runtime behavior.
             </p>
@@ -372,10 +377,10 @@
           <div class="settings-list">
             <article class="settings-item">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="cross-site-current-tab-swap">
+                <label class="settings-item-label" for="cross-site-current-tab-swap" data-i18n="settingsCrossSiteCurrentTabSwap">
                   Cross-site current-tab hard swap
                 </label>
-                <p class="settings-item-desc">
+                <p class="settings-item-desc" data-i18n="settingsCrossSiteCurrentTabSwapDesc">
                   Use the hidden real-page swap path for cross-site navigations that stay in the
                   current tab. Faster when it works, but it can still damage history and back-button
                   behavior. Enable only if you accept those side effects.
@@ -390,10 +395,10 @@
             </article>
             <article class="settings-item" data-runtime-placeholder="true">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="idle-wake-aggressive">
+                <label class="settings-item-label" for="idle-wake-aggressive" data-i18n="settingsIdleWakeStrongDevices">
                   Idle wake on strong devices
                 </label>
-                <p class="settings-item-desc">
+                <p class="settings-item-desc" data-i18n="settingsIdleWakeStrongDevicesDesc">
                   Saved only for future use. It does not currently wake extra candidate tabs.
                 </p>
               </div>
@@ -407,10 +412,10 @@
 
             <article class="settings-item" data-runtime-placeholder="true">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="pointer-proximity-prediction">
+                <label class="settings-item-label" for="pointer-proximity-prediction" data-i18n="settingsPointerProximityPrediction">
                   Pointer proximity prediction
                 </label>
-                <p class="settings-item-desc">
+                <p class="settings-item-desc" data-i18n="settingsPointerProximityPredictionDesc">
                   Saved only for future use. It does not currently add pointer-based prediction.
                 </p>
               </div>
@@ -424,10 +429,10 @@
 
             <article class="settings-item" data-runtime-placeholder="true">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="auth-state-warmup">
+                <label class="settings-item-label" for="auth-state-warmup" data-i18n="settingsAuthStateWarmup">
                   Auth state warmup
                 </label>
-                <p class="settings-item-desc">
+                <p class="settings-item-desc" data-i18n="settingsAuthStateWarmupDesc">
                   Saved only for future use. It does not currently change auth or warmup behavior.
                 </p>
               </div>
@@ -438,40 +443,44 @@
                 </label>
               </div>
             </article>
+
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="diagnostics-logging-enabled" data-i18n="settingsDiagnosticsLogging">
+                  Log mode
+                </label>
+                <p class="settings-item-desc" data-i18n="settingsDiagnosticsLoggingDesc">
+                  When enabled, runtime diagnostics are written to the local app portable logs folder as JSONL files.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="diagnostics-logging-enabled" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
           </div>
         </section>
 
         <footer class="settings-footer">
           <div class="settings-footer-copy">
-            <strong id="footer-status-title">Ready</strong>
-            <p id="footer-status-text">No unsaved changes.</p>
+            <strong id="footer-status-title" data-i18n="commonReady">Ready</strong>
+            <p id="footer-status-text" data-i18n="settingsNoUnsavedChanges">No unsaved changes.</p>
           </div>
           <div class="settings-footer-actions">
-            <button id="reset-button" class="ghost-button" type="button">Reset Defaults</button>
-            <button id="save-button" class="primary-button" type="button">Save Settings</button>
+            <button id="reset-button" class="ghost-button" type="button" data-i18n="settingsResetDefaults">Reset Defaults</button>
+            <button id="save-button" class="primary-button" type="button" data-i18n="settingsSaveSettings">Save Settings</button>
           </div>
         </footer>
       </main>
     </div>
 
-    <aside class="ai-progress-toast is-hidden" id="ai-progress-toast" role="status" aria-live="polite">
-      <header class="ai-progress-toast-header">
-        <span class="ai-progress-toast-title" id="ai-progress-toast-title">AI model task</span>
-        <button
-          type="button"
-          class="ai-progress-toast-dismiss is-hidden"
-          id="ai-progress-toast-dismiss"
-          aria-label="Dismiss"
-        >×</button>
-      </header>
-      <p class="ai-progress-toast-message" id="ai-progress-toast-message">Working...</p>
-      <div class="ai-progress-toast-bar" aria-hidden="true">
-        <div class="ai-progress-toast-bar-fill" id="ai-progress-toast-bar-fill"></div>
-      </div>
-      <p class="ai-progress-toast-meta" id="ai-progress-toast-meta"></p>
-    </aside>
-
+    <script src="../shared/i18n.js"></script>
+    <script src="../shared/ai-model-catalog.js"></script>
+    <script src="../shared/lmstudio.js"></script>
     <script src="../shared/settings.js"></script>
+    <script src="ai-models.js"></script>
     <script src="settings.js"></script>
   </body>
 </html>

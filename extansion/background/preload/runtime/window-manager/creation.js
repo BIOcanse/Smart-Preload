@@ -1,6 +1,11 @@
 const preloadWindowEnsurePromisesByNormalWindowId = new Map();
 const PRELOAD_WINDOW_HWND_POLL_MS = 50;
 const PRELOAD_WINDOW_HWND_WAIT_MS = 1000;
+const SYSTEM_HIDING_REPROBE_INTERVAL_MS = 10_000;
+const PRELOAD_WINDOW_SYSTEM_HIDE_FAILURE_THRESHOLD = 3;
+const PRELOAD_WINDOW_SYSTEM_HIDE_BACKOFF_MS = 30_000;
+let lastSystemHidingReprobeAt = 0;
+let systemHidingReprobePromise = null;
 
 // This file is part of the preload runtime maintenance subsystem under the
 // watchdog path. Keep it focused on window ensure/reuse/hide lifecycle only.
@@ -34,8 +39,7 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
 
   const normalWindowRuntime = ensureNormalWindowRuntime(preloadState, normalWindowId);
   const existingWindowId = normalWindowRuntime.preloadWindow.windowId;
-  const useSystemHiding =
-    globalThis.ZeroLatencySupport?.isSystemLevelWindowHidingUsable?.() === true;
+  const useSystemHiding = await resolveSystemHidingUsableForPreloadWindow();
 
   globalThis.ZeroLatencyDebugEvents?.record?.("preload-window.ensure.request", {
     normalWindowId,
@@ -59,6 +63,11 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
         actualWindow: existingWindow,
         useSystemHiding,
       });
+      await refocusNormalWindowIfPreloadWindowFocused(
+        existingWindow.id,
+        normalWindowId,
+        "reuse-tracked"
+      );
       globalThis.ZeroLatencyDebugEvents?.record?.("preload-window.ensure.reuse-tracked", {
         normalWindowId,
         preloadWindowId: existingWindow.id,
@@ -99,6 +108,11 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
         actualWindow: reusableWindow,
         useSystemHiding,
       });
+      await refocusNormalWindowIfPreloadWindowFocused(
+        reusableWindowId,
+        normalWindowId,
+        "reuse-discovered"
+      );
     }
 
     globalThis.ZeroLatencyDebugEvents?.record?.("preload-window.ensure.reuse-discovered-selected", {
@@ -121,7 +135,7 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
   const createdWindow = await chrome.windows.create({
     url: PRELOAD_WINDOW_SENTINEL_URL,
     focused: false,
-    state: useSystemHiding ? "normal" : "minimized",
+    state: "minimized",
     type: "normal",
   });
   await ensurePreloadWindowHiddenState({
@@ -132,6 +146,11 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
     useSystemHiding,
     previousChromeWindowHwnds,
   });
+  await refocusNormalWindowIfPreloadWindowFocused(
+    createdWindow.id,
+    normalWindowId,
+    "created"
+  );
   globalThis.markKnownPreloadWindow?.(createdWindow.id);
 
   normalWindowRuntime.preloadWindow.windowId = createdWindow.id;
@@ -151,6 +170,70 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
     supported: true,
     hiddenBySystem: normalWindowRuntime.preloadWindow.hiddenBySystem === true,
   };
+}
+
+async function resolveSystemHidingUsableForPreloadWindow() {
+  const supportApi = globalThis.ZeroLatencySupport;
+
+  if (supportApi?.isSystemLevelWindowHidingUsable?.() === true) {
+    return true;
+  }
+
+  if (supportApi?.supportsSystemLevelWindowHiding?.() !== true) {
+    return false;
+  }
+
+  const now = Date.now();
+  if (now - lastSystemHidingReprobeAt < SYSTEM_HIDING_REPROBE_INTERVAL_MS) {
+    return false;
+  }
+
+  if (!systemHidingReprobePromise) {
+    lastSystemHidingReprobeAt = now;
+    systemHidingReprobePromise = supportApi
+      .probeNativeAppAvailability?.({ forceRefresh: true })
+      .catch(() => false)
+      .finally(() => {
+        systemHidingReprobePromise = null;
+      });
+  }
+
+  return (await systemHidingReprobePromise) === true;
+}
+
+async function refocusNormalWindowIfPreloadWindowFocused(
+  preloadWindowId,
+  normalWindowId,
+  reason
+) {
+  const normalizedPreloadWindowId = normalizePositiveFiniteNumber(preloadWindowId);
+  const normalizedNormalWindowId = normalizePositiveFiniteNumber(normalWindowId);
+
+  if (normalizedPreloadWindowId === null || normalizedNormalWindowId === null) {
+    return;
+  }
+
+  const preloadWindow = await getWindowMaybe(normalizedPreloadWindowId);
+
+  if (preloadWindow?.focused !== true) {
+    return;
+  }
+
+  try {
+    await chrome.windows.update(normalizedNormalWindowId, { focused: true });
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-window.focus.restore-source", {
+      preloadWindowId: normalizedPreloadWindowId,
+      normalWindowId: normalizedNormalWindowId,
+      reason,
+    });
+  } catch (error) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-window.focus.restore-source-failed", {
+      preloadWindowId: normalizedPreloadWindowId,
+      normalWindowId: normalizedNormalWindowId,
+      reason,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 }
 
 async function ensurePreloadWindowHiddenState({
@@ -218,6 +301,18 @@ async function hidePreloadWindowBySystem({
     return false;
   }
 
+  const preloadWindowState = normalWindowRuntime?.preloadWindow;
+  const hideBackoff = getPreloadWindowSystemHideBackoff(preloadWindowState);
+
+  if (hideBackoff.active) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-window.hide.system-backoff-skip", {
+      windowId,
+      disabledUntil: hideBackoff.disabledUntil,
+      remainingMs: hideBackoff.remainingMs,
+    });
+    return false;
+  }
+
   const liveWindow = actualWindow ?? (await getWindowMaybe(windowId));
 
   if (!liveWindow) {
@@ -240,6 +335,10 @@ async function hidePreloadWindowBySystem({
     normalWindowRuntime.preloadWindow.hwnd =
       normalizePositiveFiniteNumber(hideResult.hwnd) ?? resolvedHwnd ?? null;
     normalWindowRuntime.preloadWindow.hiddenBySystem = true;
+    recordPreloadWindowSystemHideSuccess(
+      normalWindowRuntime.preloadWindow,
+      normalWindowRuntime.preloadWindow.hwnd
+    );
     globalThis.ZeroLatencyDebugEvents?.record?.("preload-window.hide.system-result", {
       windowId,
       ok: true,
@@ -254,7 +353,75 @@ async function hidePreloadWindowBySystem({
     resolvedHwnd,
     error: hideResult?.error || null,
   });
+  recordPreloadWindowSystemHideFailure(
+    normalWindowRuntime?.preloadWindow,
+    hideResult?.error || "native-hide-failed"
+  );
   return false;
+}
+
+function getPreloadWindowSystemHideBackoff(preloadWindowState) {
+  const disabledUntil = normalizePositiveFiniteNumber(
+    preloadWindowState?.systemHideDisabledUntil
+  );
+  const now = Date.now();
+
+  if (disabledUntil === null || disabledUntil <= now) {
+    if (preloadWindowState && disabledUntil !== null) {
+      preloadWindowState.systemHideDisabledUntil = null;
+    }
+    return {
+      active: false,
+      disabledUntil: null,
+      remainingMs: 0,
+    };
+  }
+
+  return {
+    active: true,
+    disabledUntil,
+    remainingMs: Math.max(0, Math.ceil(disabledUntil - now)),
+  };
+}
+
+function isPreloadWindowSystemHideBackoffActive(preloadWindowState) {
+  return getPreloadWindowSystemHideBackoff(preloadWindowState).active;
+}
+
+function recordPreloadWindowSystemHideSuccess(preloadWindowState, hwnd = null) {
+  if (!preloadWindowState || typeof preloadWindowState !== "object") {
+    return;
+  }
+
+  preloadWindowState.hwnd = normalizePositiveFiniteNumber(hwnd);
+  preloadWindowState.hiddenBySystem = preloadWindowState.hwnd !== null;
+  preloadWindowState.systemHideFailureCount = 0;
+  preloadWindowState.systemHideDisabledUntil = null;
+  preloadWindowState.lastSystemHideError = null;
+  preloadWindowState.lastSystemHideFailedAt = null;
+  preloadWindowState.updatedAt = new Date().toISOString();
+}
+
+function recordPreloadWindowSystemHideFailure(preloadWindowState, error) {
+  if (!preloadWindowState || typeof preloadWindowState !== "object") {
+    return;
+  }
+
+  const nextFailureCount =
+    clampNonNegativeInt(preloadWindowState.systemHideFailureCount, 0) + 1;
+  preloadWindowState.hiddenBySystem = false;
+  preloadWindowState.hwnd = null;
+  preloadWindowState.systemHideFailureCount = nextFailureCount;
+  preloadWindowState.lastSystemHideError =
+    typeof error === "string" && error ? error : "native-hide-failed";
+  preloadWindowState.lastSystemHideFailedAt = new Date().toISOString();
+
+  if (nextFailureCount >= PRELOAD_WINDOW_SYSTEM_HIDE_FAILURE_THRESHOLD) {
+    preloadWindowState.systemHideDisabledUntil =
+      Date.now() + PRELOAD_WINDOW_SYSTEM_HIDE_BACKOFF_MS;
+  }
+
+  preloadWindowState.updatedAt = new Date().toISOString();
 }
 
 async function captureNativeChromeWindowHwnds() {

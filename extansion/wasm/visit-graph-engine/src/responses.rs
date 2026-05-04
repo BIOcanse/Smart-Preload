@@ -1,6 +1,7 @@
 use crate::filter::FilterCandidatesResult;
 use crate::model::TrackingState;
 use crate::scoring;
+use crate::selection::SelectPreloadCandidateGroupResult;
 use serde::Serialize;
 use serde_json::Value;
 
@@ -50,6 +51,16 @@ pub(crate) struct FilterCandidatesResponse {
     pub(crate) ok: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) result: Option<FilterCandidatesResult>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) error: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct SelectPreloadCandidateGroupResponse {
+    pub(crate) ok: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) result: Option<SelectPreloadCandidateGroupResult>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) error: Option<String>,
 }

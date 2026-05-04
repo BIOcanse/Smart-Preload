@@ -15,6 +15,11 @@
     await saveServiceState(serviceState);
 
     if (serviceState.paused) {
+      await unloadLmStudioModelForInactiveRuntime("service-paused");
+      await globalThis.ZeroLatencyAiProviders?.ensureLmStudioLifecycleWatchdog?.(
+        getEffectiveExtensionSettings(),
+        { forceDisabled: true }
+      );
       await globalThis.ZeroLatencyPreloadWindowPolicy.ensurePreloadWindowWatchdog();
       await clearSpeculationRulesForOpenTabs();
       await resetPreloads();
@@ -31,6 +36,11 @@
       ok: true,
       serviceState,
     };
+  }
+
+  async function unloadLmStudioModelForInactiveRuntime(reason) {
+    const settings = getEffectiveExtensionSettings();
+    await globalThis.ZeroLatencyAiProviders?.unloadConfiguredLmStudioModel?.(settings, reason);
   }
 
   async function clearSpeculationRulesForOpenTabs() {

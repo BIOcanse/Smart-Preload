@@ -8,13 +8,14 @@ function setSystemLevelWindowHidingUsable(value) {
   _systemHidingUsable = value === true;
 }
 
-async function probeNativeAppAvailability() {
+async function probeNativeAppAvailability(options = {}) {
   if (!supportsSystemLevelWindowHiding()) {
     setSystemLevelWindowHidingUsable(false);
     return false;
   }
 
-  const available = await nativeAppHealthCheck({ forceRefresh: true });
+  const forceRefresh = options.forceRefresh !== false;
+  const available = await nativeAppHealthCheck({ forceRefresh });
   setSystemLevelWindowHidingUsable(available);
   return available;
 }

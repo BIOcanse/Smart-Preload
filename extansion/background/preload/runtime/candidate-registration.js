@@ -33,6 +33,20 @@ async function registerPreloadCandidates(message, sender) {
     return { ok: true, preloadedCount: 0, skipped: true };
   }
 
+  if (sourceTab.active !== true) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-candidates.skip-inactive-tab", {
+      sourceTabId: sourceTab.id,
+      sourceWindowId: sourceTab.windowId,
+      pageUrl: message?.pageUrl || sourceTab.url || "",
+    });
+    return {
+      ok: true,
+      preloadedCount: 0,
+      skipped: true,
+      reason: "inactive-source-tab",
+    };
+  }
+
   const preloadState = await loadPreloadState();
 
   if (isPreloadTab(preloadState, sourceTab.id)) {
@@ -88,6 +102,27 @@ async function registerPreloadCandidates(message, sender) {
       scoreBreakdown: target.scoreBreakdown ?? null,
       targetHint: target.targetHint,
     })),
+  });
+  globalThis.ZeroLatencyDiagnostics?.record?.("prediction.final-top", {
+    sourceTabId,
+    sourceWindowId: sourceTab.windowId,
+    sourceUrl: message.pageUrl || sourceTab.url || "",
+    candidateCount: Array.isArray(message.links) ? message.links.length : 0,
+    selectedTargets: selection.selectedTargets.map((target, index) => ({
+      rank: index + 1,
+      url: target.url,
+      nodeId: target.nodeId,
+      strategy: target.strategy,
+      score: target.score,
+      scoreBreakdown: target.scoreBreakdown ?? null,
+      transitionMetrics: target.transitionMetrics ?? null,
+      aiKeywordMatch: target.aiKeywordMatch ?? null,
+      siteSelection: target.siteSelection ?? null,
+      targetHint: target.targetHint,
+    })),
+    tabTargets: selection.tabTargets.map((target) => target.url),
+    prerenderTargets: selection.prerenderTargets.map((target) => target.url),
+    prefetchTargets: selection.prefetchTargets.map((target) => target.url),
   });
 
   if (await isExtensionServicePaused()) {

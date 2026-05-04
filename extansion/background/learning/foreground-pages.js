@@ -60,12 +60,11 @@
       : trackingState;
 
     const settings = getEffectiveExtensionSettings();
-    const backgroundFeatureSupport =
-      globalThis.ZeroLatencySupport?.getBackgroundFeatureSupport?.() ?? {};
+    const aiProvider = globalThis.ZeroLatencyAiProviders;
     const aiEnabled =
       settings.preloading.aiPrediction.enabled === true &&
-      settings.preloading.effectiveAiPredictionModelDownloaded === true &&
-      backgroundFeatureSupport.aiModelManagementUsable === true;
+      settings.preloading.effectiveAiPredictionConfigured === true &&
+      typeof aiProvider?.invokeConfiguredAiProvider === "function";
 
     if (!aiEnabled) {
       return { ok: true, generatedKeywords: false };
@@ -86,22 +85,26 @@
       return { ok: true, generatedKeywords: false };
     }
 
-    const generatedKeywords = await nativeAppInvokeAiModel({
-      model_id: settings.preloading.aiPrediction.modelId,
-      prompt: aiKeywordTools.buildManagedModelPrompt(
-        settings.preloading.aiPrediction.modelId,
+    let normalizedKeywordResult;
+
+    try {
+      const generatedKeywords = await aiProvider.invokeConfiguredAiProvider(
+        settings,
         aiKeywordTools.buildPageKeywordPrompt({
           pageUrl,
           title: typeof message?.title === "string" ? message.title : "",
           textDigest: typeof message?.textDigest === "string" ? message.textDigest : "",
           contentFingerprint,
-        })
-      ),
-      response_format: "json",
-    });
-    const normalizedKeywordResult = aiKeywordTools.parseAiKeywordInferenceResponse(
-      generatedKeywords?.output_text
-    );
+        }),
+        { responseFormat: "json" }
+      );
+      normalizedKeywordResult = aiKeywordTools.parseAiKeywordInferenceResponse(
+        generatedKeywords?.output_text
+      );
+    } catch (error) {
+      console.error("AI page keyword inference failed.", error);
+      return { ok: true, generatedKeywords: false };
+    }
     const generatedAt = new Date().toISOString();
     const expiresAt = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
     await queueMutation(async () => {

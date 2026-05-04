@@ -6,9 +6,9 @@ function getTransitionWindowCount(edge, windowKey) {
   return clampNonNegativeInt(edge?.transitionStats?.[windowKey], 0);
 }
 
-function getTransitionWindowMatchingDayKeys(graph, windowKey) {
+function getTransitionWindowMatchingDayKeys(graph, windowKey, buckets = graph?.transitionBuckets) {
   if (windowKey === "total") {
-    return Object.keys(graph.transitionBuckets?.byDay || {});
+    return Object.keys(buckets?.byDay || {});
   }
 
   const maxAgeDays = getTransitionWindowMaxAgeDays(windowKey);
@@ -18,7 +18,7 @@ function getTransitionWindowMatchingDayKeys(graph, windowKey) {
     return [];
   }
 
-  return Object.keys(graph.transitionBuckets?.byDay || {}).filter((dayKey) => {
+  return Object.keys(buckets?.byDay || {}).filter((dayKey) => {
     const dayNumber = dayKeyToEpochDay(dayKey);
 
     if (dayNumber === null) {

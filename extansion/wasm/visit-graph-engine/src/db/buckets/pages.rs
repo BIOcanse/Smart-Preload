@@ -1,7 +1,46 @@
 use super::*;
 
-pub(crate) fn get_page_transition_count(
+pub(crate) fn get_external_page_transition_count(
     graph: &Graph,
+    window_key: &str,
+    source_node_id: &str,
+    source_page_url: &str,
+    target_node_id: &str,
+    target_page_url: &str,
+) -> u64 {
+    get_page_transition_count_from_buckets(
+        graph,
+        &graph.external_page_transition_buckets,
+        window_key,
+        source_node_id,
+        source_page_url,
+        target_node_id,
+        target_page_url,
+    )
+}
+
+pub(crate) fn get_intra_site_page_transition_count(
+    graph: &Graph,
+    window_key: &str,
+    source_node_id: &str,
+    source_page_url: &str,
+    target_node_id: &str,
+    target_page_url: &str,
+) -> u64 {
+    get_page_transition_count_from_buckets(
+        graph,
+        &graph.intra_site_page_transition_buckets,
+        window_key,
+        source_node_id,
+        source_page_url,
+        target_node_id,
+        target_page_url,
+    )
+}
+
+fn get_page_transition_count_from_buckets(
+    graph: &Graph,
+    buckets: &PageTransitionBuckets,
     window_key: &str,
     source_node_id: &str,
     source_page_url: &str,
@@ -10,7 +49,7 @@ pub(crate) fn get_page_transition_count(
 ) -> u64 {
     if window_key == "total" {
         let bucket_index = source_bucket_index(graph, source_node_id);
-        let Some(bucket) = graph.page_transition_buckets.total.get(bucket_index) else {
+        let Some(bucket) = buckets.total.get(bucket_index) else {
             return 0;
         };
         let Some(source_site_map) = bucket.get(source_node_id) else {
@@ -28,6 +67,7 @@ pub(crate) fn get_page_transition_count(
 
     sum_page_transition_counts_for_window(
         graph,
+        buckets,
         window_key,
         source_node_id,
         source_page_url,
@@ -63,12 +103,23 @@ pub(crate) fn increment_page_transition_bucket_count(
     *target_count += delta;
 }
 
-pub(crate) fn page_transition_bucket_day_layer_mut<'a>(
+pub(crate) fn external_page_transition_bucket_day_layer_mut<'a>(
     graph: &'a mut Graph,
     day_key: &str,
 ) -> &'a mut PageTransitionBucketLayer {
     graph
-        .page_transition_buckets
+        .external_page_transition_buckets
+        .by_day
+        .entry(day_key.to_owned())
+        .or_insert_with(create_empty_page_bucket_layer)
+}
+
+pub(crate) fn intra_site_page_transition_bucket_day_layer_mut<'a>(
+    graph: &'a mut Graph,
+    day_key: &str,
+) -> &'a mut PageTransitionBucketLayer {
+    graph
+        .intra_site_page_transition_buckets
         .by_day
         .entry(day_key.to_owned())
         .or_insert_with(create_empty_page_bucket_layer)
@@ -76,6 +127,7 @@ pub(crate) fn page_transition_bucket_day_layer_mut<'a>(
 
 fn sum_page_transition_counts_for_window(
     graph: &Graph,
+    buckets: &PageTransitionBuckets,
     window_key: &str,
     source_node_id: &str,
     source_page_url: &str,
@@ -85,8 +137,8 @@ fn sum_page_transition_counts_for_window(
     let bucket_index = source_bucket_index(graph, source_node_id);
     let mut total = 0;
 
-    for day_key in matching_day_keys_for_window(graph, window_key) {
-        let Some(bucket_layer) = graph.page_transition_buckets.by_day.get(&day_key) else {
+    for day_key in matching_day_keys_from_day_groups(buckets.by_day.keys(), window_key) {
+        let Some(bucket_layer) = buckets.by_day.get(&day_key) else {
             continue;
         };
         let Some(bucket) = bucket_layer.get(bucket_index) else {

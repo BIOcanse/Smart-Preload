@@ -57,8 +57,15 @@ pub(crate) fn transition_bucket_day_layer_mut<'a>(
 }
 
 pub(crate) fn matching_day_keys_for_window(graph: &Graph, window_key: &str) -> Vec<String> {
+    matching_day_keys_from_day_groups(graph.transition_buckets.by_day.keys(), window_key)
+}
+
+pub(crate) fn matching_day_keys_from_day_groups<'a, I>(day_keys: I, window_key: &str) -> Vec<String>
+where
+    I: Iterator<Item = &'a String>,
+{
     if window_key == "total" {
-        return graph.transition_buckets.by_day.keys().cloned().collect();
+        return day_keys.cloned().collect();
     }
 
     let Some(max_age_days) = transition_window_max_age_days(window_key) else {
@@ -68,10 +75,7 @@ pub(crate) fn matching_day_keys_for_window(graph: &Graph, window_key: &str) -> V
         return Vec::new();
     };
 
-    graph
-        .transition_buckets
-        .by_day
-        .keys()
+    day_keys
         .filter_map(|day_key| {
             let day_number = day_key_to_epoch_day(day_key)?;
             let age_in_days = reference_day.saturating_sub(day_number);

@@ -12,6 +12,12 @@
       case "record-visit":
         await recordVisit(envelope.raw, decision.metadata?.sourceEvent || "committed");
         return;
+      case "set-current-page":
+        await setCurrentPageFromVisit(
+          envelope.raw,
+          decision.metadata?.sourceEvent || "committed"
+        );
+        return;
       case "record-created-navigation-target":
         await recordCreatedNavigationTarget(envelope.raw);
         return;
@@ -28,6 +34,9 @@
           envelope.raw.tab
         );
         return;
+      case "handle-activated-tab":
+        await globalThis.ZeroLatencyPreloadSourceTabs.handleActivatedSourceTab(envelope.raw);
+        return;
       case "handle-removed-window":
         await globalThis.ZeroLatencyPreloadWindowManager.handleRemovedWindowEvent(
           envelope.raw.windowId
@@ -43,6 +52,12 @@
         return;
       case "run-preload-cleanup":
         await globalThis.ZeroLatencyPreloadRuntimeManager.cleanupErroneousWindows();
+        return;
+      case "run-lmstudio-lifecycle-watchdog":
+        await globalThis.ZeroLatencyAiProviders?.maintainLmStudioModelLifecycle?.();
+        return;
+      case "send-native-app-heartbeat":
+        await globalThis.ZeroLatencyNativeAppHeartbeat?.send?.("alarm");
         return;
       default:
         return;

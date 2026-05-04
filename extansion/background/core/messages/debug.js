@@ -21,6 +21,7 @@
       pageContext,
       currentTopTargets: buildCurrentPreloads(preloadState, message?.tabId),
       recentRuntimeEvents: globalThis.ZeroLatencyDebugEvents?.snapshot?.(128) ?? [],
+      diagnostics: globalThis.ZeroLatencyDiagnostics?.getStatus?.() ?? null,
       knownPreloadRuntime: globalThis.snapshotKnownPreloadRuntime?.() ?? null,
       featureSupport: globalThis.ZeroLatencySupport?.getBackgroundFeatureSupport?.() ?? {},
       hiddenWindowMonitor,

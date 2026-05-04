@@ -104,13 +104,15 @@ function queryCandidateTransitionMetricsBatchFallback(graph, query) {
       const targetNodeId = typeof candidate?.targetNodeId === "string" ? candidate.targetNodeId : "";
       const targetPageUrl = typeof candidate?.targetPageUrl === "string" ? candidate.targetPageUrl : "";
       const isSameOriginCandidate = isSameOriginPageTransition(sourcePageUrl, targetPageUrl);
+      const isSameSiteCandidate =
+        Boolean(sourceNodeId && targetNodeId) && sourceNodeId === targetNodeId;
       const siteTransitionCount =
-        sourceNodeId && targetNodeId
+        sourceNodeId && targetNodeId && !isSameSiteCandidate
           ? getTransitionCount(graph, windowKey, sourceNodeId, targetNodeId)
           : 0;
-      const pageTransitionCount =
-        sourceNodeId && sourcePageUrl && targetNodeId && targetPageUrl
-          ? getPageTransitionCount(
+      const outboundPageTransitionCount =
+        sourceNodeId && sourcePageUrl && targetNodeId && targetPageUrl && !isSameSiteCandidate
+          ? getExternalPageTransitionCount(
               graph,
               windowKey,
               sourceNodeId,
@@ -119,19 +121,32 @@ function queryCandidateTransitionMetricsBatchFallback(graph, query) {
               targetPageUrl
             )
           : 0;
-      const outboundPageTransitionCount = isSameOriginCandidate ? 0 : pageTransitionCount;
-      const intraSitePageTransitionCount = isSameOriginCandidate ? pageTransitionCount : 0;
+      const intraSitePageTransitionCount =
+        sourceNodeId && sourcePageUrl && targetNodeId && targetPageUrl && isSameSiteCandidate
+          ? getIntraSitePageTransitionCount(
+              graph,
+              windowKey,
+              sourceNodeId,
+              sourcePageUrl,
+              targetNodeId,
+              targetPageUrl
+            )
+          : 0;
+      const pageTransitionCount = isSameSiteCandidate
+        ? intraSitePageTransitionCount
+        : outboundPageTransitionCount;
 
       return {
         url: typeof candidate?.url === "string" ? candidate.url : "",
         targetNodeId,
         targetPageUrl,
         isSameOriginCandidate,
+        isSameSiteCandidate,
         siteTransitionCount,
         pageTransitionCount,
         outboundPageTransitionCount,
         intraSitePageTransitionCount,
-        transitionCount: isSameOriginCandidate
+        transitionCount: isSameSiteCandidate
           ? intraSitePageTransitionCount
           : outboundPageTransitionCount,
       };

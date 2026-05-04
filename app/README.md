@@ -6,13 +6,13 @@ Windows tray app that exposes local hardware and performance data for the Chrome
 
 - System tray resident app with an `Exit` menu item
 - Local HTTP API on `127.0.0.1:45831`
-- Portable local AI runtime management under the app directory:
-  - portable runtime directory: `<app-dir>\\portable\\runtime\\ollama`
-  - portable model directory: `<app-dir>\\portable\\models\\ollama`
-- Single-process lifecycle:
-  - the local app is launched directly as the tray/API host
-  - the extension only probes the HTTP API and never starts a background helper process
+- No local AI runtime/model management. AI provider keys and inference calls are owned by the extension.
+- Portable install lifecycle:
+  - `zero-latency-web-app.exe --install` writes HKCU registry entries that point to the current portable directory
+  - the extension can wake the app through Chrome Native Messaging when the HTTP API is offline
+  - Native Messaging is only a short-lived launch bridge; the tray/API host remains the only long-running app process
   - tray/API host exits after all top-level Google Chrome browser processes are gone
+  - tray/API host also exits if the registered target extension disappears while Chrome remains open
 - Hardware snapshot:
   - CPU model, manufacturer, cores, clock
   - Memory size, module count, per-module speed and DDR generation
@@ -30,10 +30,10 @@ Windows tray app that exposes local hardware and performance data for the Chrome
 - `GET /api/v1/system/hardware`
 - `GET /api/v1/system/performance`
 - `GET /api/v1/system/snapshot`
-- `GET /api/v1/ai/status`
-- `POST /api/v1/ai/models/install`
-- `POST /api/v1/ai/models/uninstall`
-- `POST /api/v1/ai/infer`
+- `GET /api/v1/system/activity`
+- `GET /api/v1/windows/chrome`
+- `POST /api/v1/windows/hide`
+- `POST /api/v1/windows/show`
 
 The API is intended for the extension bridge on `chrome-extension://...` origins.
 Normal web-page origins are not permitted to call these endpoints.
@@ -78,52 +78,43 @@ $env:CARGO_TARGET_DIR = 'D:\cargo-target\zero-latency-web-app'
 cargo run
 ```
 
+## Portable install
+
+The app stays portable: files remain in the extracted directory. Install and uninstall only update
+per-user registry state under HKCU.
+
+```powershell
+zero-latency-web-app.exe --install
+zero-latency-web-app.exe --status
+zero-latency-web-app.exe --uninstall
+```
+
+Install writes:
+
+- `HKCU\Software\ZeroLatencyWeb`
+- `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.zero_latency_web.app`
+- `<app-dir>\portable\native-messaging\com.zero_latency_web.app.json`
+- `<app-dir>\portable\allowed-extension-origin.txt`
+
+Run `--install` again after moving the portable app directory or after reinstalling the extension
+with a different Chrome extension ID.
+
 ## Lifecycle
 
-- First launch removes any legacy watcher startup entry and stale Native Messaging host manifest.
-- The extension does not wake the tray/API host; the app must already be running before local-only features are used.
+- First launch removes any legacy watcher startup entry.
+- The extension wakes the tray/API host through Native Messaging when installed registration exists.
 - The tray/API host exits automatically when all top-level Google Chrome browser processes are closed.
-- Running the executable without arguments is the normal entry point.
+- The tray/API host exits automatically if the registered extension is removed while Chrome is still running.
+- Running the executable without arguments is a cleanup-compatible entry point; the active host normally starts through Native Messaging wake or explicit `--host`.
 
 Detailed lifecycle notes are in [`docs/Local-App-Lifecycle.md`](../docs/Local-App-Lifecycle.md).
 
-## AI runtime management
+## AI provider boundary
 
-The local app now manages the local AI runtime and model files as portable assets inside the app
-directory instead of installing them into system-level locations.
+The local app does not download models, install runtimes, store API keys, or expose AI inference
+routes. The extension service worker owns prompt composition and provider calls. Prediction scoring
+and ranking remain extension-side, with the Rust/Wasm engine owning the compute-heavy graph and
+prediction core.
 
-It also exposes a generic local model invocation API. Prompt composition, page/context business
-logic, and result interpretation are owned by the extension JS layer, not by the local app.
-
-Current runtime:
-
-- `ollama-runtime`
-
-Current managed models:
-
-- `Qwen3 0.6B`
-- `Qwen3 1.7B`
-- `Qwen3 4B`
-- `Gemma 4 E2B`
-- `Gemma 4 E4B`
-
-Download flow:
-
-- If a selected model is requested and the portable runtime is missing, the app downloads and
-  unpacks the portable runtime first.
-- The app then starts the local runtime from its own directory and pulls the selected model into
-  the local model directory.
-
-Status flow:
-
-- Reading model/runtime status is passive.
-- A status read does not automatically boot the portable runtime.
-- The app does not treat an arbitrary `127.0.0.1:11434` responder as usable.
-- The Ollama API is considered ready only when the running process is the portable runtime owned by this app.
-- If a system/default Ollama instance is already occupying `127.0.0.1:11434`, the app refuses to reuse it because that would break portable model path and lifecycle guarantees.
-- The runtime is only started by install / uninstall / infer paths that actually need it.
-
-Delete flow:
-
-- When a selected model is removed, the app deletes that model from the portable model directory.
-- If no managed models remain, the app removes the portable runtime and model directories.
+For local models, run an external OpenAI-compatible tool such as LM Studio and configure its
+endpoint/key in the extension settings.

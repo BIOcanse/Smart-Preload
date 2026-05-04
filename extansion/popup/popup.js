@@ -8,7 +8,12 @@ const refreshButton = document.getElementById("refresh-button");
 const serviceToggleButton = document.getElementById("service-toggle-button");
 const settingsButton = document.getElementById("settings-button");
 const statusTextElement = document.getElementById("status-text");
+const i18n = globalThis.ZeroLatencyI18n;
+const t = (key, substitutions = [], fallback = "") =>
+  i18n?.t?.(key, substitutions, fallback) || fallback || key;
 let servicePaused = false;
+
+i18n?.applyDocument?.(document);
 
 refreshButton.addEventListener("click", () => {
   void loadSnapshot();
@@ -25,20 +30,20 @@ settingsButton.addEventListener("click", async () => {
     });
 
     if (response?.ok === false) {
-      throw new Error(response.error || "Failed to open settings page.");
+      throw new Error(response.error || t("popupOpenSettingsFailed", [], "Failed to open settings page."));
     }
 
     window.close();
   } catch (error) {
     console.error(error);
-    statusTextElement.textContent = "Failed to open settings page.";
+    statusTextElement.textContent = t("popupOpenSettingsFailed", [], "Failed to open settings page.");
   }
 });
 
 void loadSnapshot();
 
 async function loadSnapshot() {
-  setBusy(true, "Loading visit graph...");
+  setBusy(true, t("popupLoadingVisitGraph", [], "Loading visit graph..."));
 
   try {
     const [activeTab] = await chrome.tabs.query({
@@ -59,12 +64,12 @@ async function loadSnapshot() {
     setBusy(
       false,
       snapshot?.serviceState?.paused === true
-        ? "插件已停止：预测和预加载已关闭。"
-        : "Visit graph loaded."
+        ? t("popupPausedMessage", [], "Plugin stopped: prediction and preloading are disabled.")
+        : t("popupVisitGraphLoaded", [], "Visit graph loaded.")
     );
   } catch (error) {
     console.error(error);
-    setBusy(false, "Failed to load visit graph.");
+    setBusy(false, t("popupLoadVisitGraphFailed", [], "Failed to load visit graph."));
   }
 }
 
@@ -74,8 +79,8 @@ function renderSnapshot(snapshot) {
   edgeCountElement.textContent = String(snapshot?.summary?.edgeCount ?? 0);
   updatedAtElement.textContent = formatUpdatedAt(snapshot?.summary?.updatedAt);
   pageLabelElement.textContent = snapshot?.pageContext?.trackable
-    ? snapshot?.pageContext?.pageLabel || "Current page"
-    : "Current page is not tracked";
+    ? snapshot?.pageContext?.pageLabel || t("popupCurrentPage", [], "Current page")
+    : t("popupCurrentPageNotTracked", [], "Current page is not tracked");
 
   renderTopTargets(snapshot?.currentTopTargets ?? [], snapshot?.pageContext, snapshot?.serviceState);
 }
@@ -85,15 +90,19 @@ function renderTopTargets(topTargets, pageContext, serviceState) {
 
   if (serviceState?.paused === true) {
     topTargetsEmptyElement.classList.remove("hidden");
-    topTargetsEmptyElement.textContent = "插件已停止：预测和预加载已关闭。";
+    topTargetsEmptyElement.textContent = t(
+      "popupPausedMessage",
+      [],
+      "Plugin stopped: prediction and preloading are disabled."
+    );
     return;
   }
 
   if (!topTargets.length) {
     topTargetsEmptyElement.classList.remove("hidden");
     topTargetsEmptyElement.textContent = pageContext?.trackable
-      ? "No preload-qualified links on this page yet."
-      : "Current page is not trackable.";
+      ? t("popupNoPreloadQualifiedLinks", [], "No preload-qualified links on this page yet.")
+      : t("popupCurrentPageNotTrackable", [], "Current page is not trackable.");
     return;
   }
 
@@ -112,11 +121,11 @@ function renderTopTargets(topTargets, pageContext, serviceState) {
     const siteMeta = formatSiteSelectionMeta(target.siteSelection);
     const frequencyMeta = formatTransitionMetricMeta(target.transitionMetrics);
     meta.textContent = [
-      `Weight: ${formatWeight(target.score)}`,
+      t("popupWeightLabel", [formatWeight(target.score)], `Weight: ${formatWeight(target.score)}`),
       frequencyMeta,
       siteMeta,
       target.strategy || "hidden-tab",
-      target.status || "unknown",
+      target.status || t("commonUnknown", [], "unknown"),
       truncateUrl(target.loadedUrl || target.requestedUrl),
     ]
       .filter(Boolean)
@@ -137,8 +146,8 @@ async function toggleServicePaused() {
 
   serviceToggleButton.disabled = true;
   statusTextElement.textContent = nextPaused
-    ? "Stopping prediction and preloading..."
-    : "Starting prediction and preloading...";
+    ? t("popupStoppingService", [], "Stopping prediction and preloading...")
+    : t("popupStartingService", [], "Starting prediction and preloading...");
 
   try {
     const response = await chrome.runtime.sendMessage({
@@ -147,14 +156,14 @@ async function toggleServicePaused() {
     });
 
     if (response?.ok === false) {
-      throw new Error(response.error || "Failed to update plugin state.");
+      throw new Error(response.error || t("popupUpdateStateFailed", [], "Failed to update plugin state."));
     }
 
     renderServiceState(response?.serviceState);
     await loadSnapshot();
   } catch (error) {
     console.error(error);
-    statusTextElement.textContent = "Failed to update plugin state.";
+    statusTextElement.textContent = t("popupUpdateStateFailed", [], "Failed to update plugin state.");
   } finally {
     serviceToggleButton.disabled = false;
   }
@@ -162,10 +171,16 @@ async function toggleServicePaused() {
 
 function renderServiceState(serviceState) {
   servicePaused = serviceState?.paused === true;
-  serviceToggleButton.textContent = servicePaused ? "开启" : "停止";
+  serviceToggleButton.textContent = servicePaused
+    ? t("popupStart", [], "Start")
+    : t("popupStop", [], "Stop");
   serviceToggleButton.title = servicePaused
-    ? "恢复预测和预加载"
-    : "停止预测和预加载，并关闭后台预加载窗口";
+    ? t("popupRestoreServiceTitle", [], "Resume prediction and preloading")
+    : t(
+        "popupStopServiceTitle",
+        [],
+        "Stop prediction and preloading, and close the background preload window"
+      );
   serviceToggleButton.classList.toggle("danger", !servicePaused);
   serviceToggleButton.classList.toggle("success", servicePaused);
 }
@@ -220,7 +235,16 @@ function formatSiteSelectionMeta(siteSelection) {
     return "";
   }
 
-  return `Site: ${formatWeight(siteSelection.siteWeight)} (#${siteSelection.siteRank || 0}, ${siteSelection.allocatedSlots || 0}/${siteSelection.cap || 0})`;
+  return t(
+    "popupSiteMeta",
+    [
+      formatWeight(siteSelection.siteWeight),
+      siteSelection.siteRank || 0,
+      siteSelection.allocatedSlots || 0,
+      siteSelection.cap || 0,
+    ],
+    `Site: ${formatWeight(siteSelection.siteWeight)} (#${siteSelection.siteRank || 0}, ${siteSelection.allocatedSlots || 0}/${siteSelection.cap || 0})`
+  );
 }
 
 function formatTransitionMetricMeta(transitionMetrics) {
@@ -236,5 +260,9 @@ function formatTransitionMetricMeta(transitionMetrics) {
     return "";
   }
 
-  return `Freq: site ${siteCount}, out ${outboundPageCount}, in ${intraSitePageCount}`;
+  return t(
+    "popupFreqMeta",
+    [siteCount, outboundPageCount, intraSitePageCount],
+    `Freq: site ${siteCount}, out ${outboundPageCount}, in ${intraSitePageCount}`
+  );
 }
