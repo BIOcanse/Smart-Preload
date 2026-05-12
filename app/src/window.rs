@@ -4,17 +4,17 @@ use std::sync::Mutex;
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use windows::Win32::Foundation::{BOOL, HWND, LPARAM, RECT, TRUE};
+use windows::Win32::Foundation::{BOOL, HWND, LPARAM, RECT, TRUE, WPARAM};
 use windows::Win32::UI::Accessibility::{SetWinEventHook, UnhookWinEvent, HWINEVENTHOOK};
 use windows::Win32::UI::WindowsAndMessaging::{
     DispatchMessageW, EnumWindows, GetClassNameW, GetMessageW, GetSystemMetrics, GetWindowLongW,
     GetWindowRect, GetWindowTextLengthW, GetWindowTextW, GetWindowThreadProcessId, IsWindow,
-    IsWindowVisible, SetWindowLongW, SetWindowPos, ShowWindow, TranslateMessage, EVENT_OBJECT_HIDE,
-    EVENT_OBJECT_LOCATIONCHANGE, EVENT_OBJECT_SHOW, EVENT_SYSTEM_FOREGROUND,
+    IsWindowVisible, PostMessageW, SetWindowLongW, SetWindowPos, ShowWindow, TranslateMessage,
+    EVENT_OBJECT_HIDE, EVENT_OBJECT_LOCATIONCHANGE, EVENT_OBJECT_SHOW, EVENT_SYSTEM_FOREGROUND,
     EVENT_SYSTEM_MINIMIZEEND, EVENT_SYSTEM_MINIMIZESTART, GWL_EXSTYLE, GWL_STYLE, MSG,
     SM_CXVIRTUALSCREEN, SM_CYVIRTUALSCREEN, SM_XVIRTUALSCREEN, SM_YVIRTUALSCREEN, SWP_FRAMECHANGED,
     SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SW_HIDE, SW_SHOWNA,
-    WINEVENT_OUTOFCONTEXT, WINEVENT_SKIPOWNPROCESS, WS_EX_TOOLWINDOW, WS_MINIMIZE,
+    WINEVENT_OUTOFCONTEXT, WINEVENT_SKIPOWNPROCESS, WM_CLOSE, WS_EX_TOOLWINDOW, WS_MINIMIZE,
 };
 
 mod actions;
@@ -173,4 +173,12 @@ pub fn request_show_chrome_window(request: &ShowWindowRequest) -> ShowWindowResp
 
 pub fn hidden_window_monitor_snapshot() -> HiddenWindowMonitorSnapshot {
     manager::hidden_window_monitor_snapshot()
+}
+
+pub fn close_tracked_hidden_windows(reason: &str) -> usize {
+    manager::close_tracked_hidden_windows(reason)
+}
+
+pub fn close_tracked_hidden_windows_by_hwnds(hwnds: &[u64], reason: &str) -> usize {
+    manager::close_tracked_hidden_windows_by_hwnds(hwnds, reason)
 }

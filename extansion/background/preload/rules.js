@@ -50,46 +50,32 @@ async function applyOrderedPreloadRulesWithWasm(candidatePool, settings, maxTarg
 
 function buildPreloadRuleFilterInput(candidatePool, settings, maxTargets) {
   return {
-    orderedRuleIds: Array.isArray(settings?.layout?.sortableCards?.order)
-      ? settings.layout.sortableCards.order
-      : [],
-    ruleItems: settings?.layout?.sortableCards?.items ?? {},
+    ruleItems: settings?.layout?.ruleCards?.items ?? {},
     maxTargets: normalizeOptionalMaxTargets(maxTargets),
     candidates: candidatePool.map((candidate) => ({
       score: candidate.score,
       visibilityScore: candidate.visibilityScore,
       linkIndex: candidate.linkIndex,
+      bookmarkRank: clampNonNegativeInt(candidate?.bookmarkPreload?.rank, 0),
+      googleBookmarkCandidate: Boolean(candidate?.bookmarkPreload),
     })),
   };
 }
 
 function applyOrderedPreloadRulesFallback(candidatePool, settings, maxTargets) {
   let workingPool = [...candidatePool];
-  const orderedRuleIds = Array.isArray(settings?.layout?.sortableCards?.order)
-    ? settings.layout.sortableCards.order
-    : [];
-  const ruleItems = settings?.layout?.sortableCards?.items ?? {};
+  const ruleItems = settings?.layout?.ruleCards?.items ?? {};
+  const bookmarkRuleCardState = ruleItems.googleBookmarkRank;
 
-  for (const ruleCardId of orderedRuleIds) {
-    const ruleCardState = ruleItems[ruleCardId];
-
-    if (!settingsApi.isRuleCardEnabled(ruleCardState)) {
-      continue;
-    }
-
-    switch (ruleCardId) {
-      case "highWeightRank":
-      case "highWeightRankTab":
-        // Site selection rank cards are consumed by the grouped site-selection stage.
-        break;
-      case "weightRange":
-        workingPool = workingPool.filter((candidate) =>
-          settingsApi.evaluateRuleCardMetric(ruleCardState, candidate.score)
-        );
-        break;
-      default:
-        break;
-    }
+  if (settingsApi.isRuleCardEnabled(bookmarkRuleCardState)) {
+    workingPool = workingPool.filter(
+      (candidate) =>
+        !candidate.bookmarkPreload ||
+        settingsApi.evaluateRuleCardMetric(
+          bookmarkRuleCardState,
+          clampNonNegativeInt(candidate.bookmarkPreload.rank, 0)
+        )
+    );
   }
 
   workingPool.sort(comparePreloadCandidatePriority);

@@ -51,6 +51,8 @@
         return allowNavigationDecision("run-lmstudio-lifecycle-watchdog");
       case globalThis.ZeroLatencyNativeAppHeartbeat?.alarmName:
         return allowNavigationDecision("send-native-app-heartbeat");
+      case globalThis.ZeroLatencyNativeAppHeartbeat?.wakeAlarmName:
+        return allowNavigationDecision("run-native-app-wake-retry");
       default:
         return ignoreNavigationDecision("alarm");
     }

@@ -55,6 +55,7 @@ async function selectPreloadTargets({
     transitionMetrics: buildCandidateTransitionMetricSnapshot(candidate),
     targetHint: candidate.targetHint,
     aiKeywordMatch: candidate.aiKeywordMatch ?? null,
+    bookmarkPreload: candidate.bookmarkPreload ?? null,
     siteSelection: candidate.siteSelection ?? null,
     strategy: candidate.strategy ?? determinePreloadStrategy(candidate, settings),
   }));
@@ -82,6 +83,7 @@ async function selectPreloadTargets({
         transitionMetrics: candidate.transitionMetrics ?? null,
         targetHint: candidate.targetHint,
         aiKeywordMatch: candidate.aiKeywordMatch ?? null,
+        bookmarkPreload: candidate.bookmarkPreload ?? null,
         siteSelection: candidate.siteSelection ?? null,
       })),
   };

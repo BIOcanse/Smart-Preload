@@ -111,6 +111,15 @@ fn run_host() -> Result<()> {
     info!("Zero-Latency Web local hardware API is running in the tray.");
     let tray_result = tray::run_tray(shutdown_tx.clone(), tray_shutdown_rx);
     let _ = shutdown_tx.send(true);
+    let closed_hidden_window_count = window::close_tracked_hidden_windows("host-shutdown");
+
+    if closed_hidden_window_count > 0 {
+        record_app_runtime_event(
+            "host",
+            "host-shutdown-closed-hidden-windows",
+            Some(format!("count={closed_hidden_window_count}")),
+        );
+    }
 
     if let Err(error) = server_handle.join() {
         record_app_runtime_event("host", "api-thread-panic", Some(format!("{error:?}")));

@@ -17,6 +17,14 @@
     const hydratedTabState = await hydrateTabStateFromOpenTabsForBackgroundState(
       normalizedPreloadState
     );
+    const normalizedServiceState = normalizeServiceState(
+      stored[backgroundState.keys.SERVICE_STATE_KEY]
+    );
+    normalizedServiceState.bookmarkPreloading =
+      await hydrateBookmarkPreloadingServiceStateForBackgroundState(
+        normalizedPreloadState,
+        normalizedServiceState.bookmarkPreloading
+      );
 
     await backgroundState.chromeStorage.set({
       [backgroundState.keys.SETTINGS_STORAGE_KEY]: backgroundState.cachedUserSettings,
@@ -25,10 +33,51 @@
       [backgroundState.keys.PENDING_SOURCE_KEY]:
         normalizePendingSourceMap(stored[backgroundState.keys.PENDING_SOURCE_KEY]),
       [backgroundState.keys.PRELOAD_STATE_KEY]: normalizedPreloadState,
-      [backgroundState.keys.SERVICE_STATE_KEY]: normalizeServiceState(
-        stored[backgroundState.keys.SERVICE_STATE_KEY]
-      ),
+      [backgroundState.keys.SERVICE_STATE_KEY]: normalizedServiceState,
     });
+  }
+
+  async function hydrateBookmarkPreloadingServiceStateForBackgroundState(
+    preloadState,
+    currentBookmarkState
+  ) {
+    const normalizedBookmarkState = normalizeBookmarkPreloadingServiceState(
+      currentBookmarkState
+    );
+    const tabs = await chrome.tabs.query({
+      windowType: "normal",
+    });
+    const liveStartupTab = tabs.find(
+      (tab) =>
+        tab.id === normalizedBookmarkState.startupGoogleSearchTabId &&
+        tab.windowId === normalizedBookmarkState.startupGoogleSearchWindowId &&
+        !isPreloadWindowId(preloadState, tab.windowId) &&
+        isGoogleSearchPageForBookmarkPreload(tab.url || "")
+    );
+
+    if (liveStartupTab) {
+      return normalizedBookmarkState;
+    }
+
+    const startupGoogleSearchTab = tabs.find(
+      (tab) =>
+        tab.id &&
+        tab.windowId &&
+        !isPreloadWindowId(preloadState, tab.windowId) &&
+        isGoogleSearchPageForBookmarkPreload(tab.url || "")
+    );
+
+    if (!startupGoogleSearchTab) {
+      return {
+        startupGoogleSearchTabId: null,
+        startupGoogleSearchWindowId: null,
+      };
+    }
+
+    return {
+      startupGoogleSearchTabId: startupGoogleSearchTab.id,
+      startupGoogleSearchWindowId: startupGoogleSearchTab.windowId,
+    };
   }
 
   async function hydrateTabStateFromOpenTabsForBackgroundState(preloadState) {
@@ -193,6 +242,8 @@
     initializeExtensionStateForBackgroundState;
   globalThis.hydrateTabStateFromOpenTabsForBackgroundState =
     hydrateTabStateFromOpenTabsForBackgroundState;
+  globalThis.hydrateBookmarkPreloadingServiceStateForBackgroundState =
+    hydrateBookmarkPreloadingServiceStateForBackgroundState;
   globalThis.sanitizeLivePreloadStateForBackgroundState =
     sanitizeLivePreloadStateForBackgroundState;
 })();

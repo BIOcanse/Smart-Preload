@@ -55,6 +55,7 @@ async function synchronizePreloadsForSourceTab(
         existingEntry.scoreBreakdown = target.scoreBreakdown ?? null;
         existingEntry.transitionMetrics = target.transitionMetrics ?? null;
         existingEntry.aiKeywordMatch = target.aiKeywordMatch ?? null;
+        existingEntry.bookmarkPreload = target.bookmarkPreload ?? null;
         existingEntry.siteSelection = target.siteSelection ?? null;
         existingEntry.status = liveTab.status || existingEntry.status;
         existingEntry.loadedUrl = liveTab.url || existingEntry.loadedUrl;
@@ -87,6 +88,7 @@ async function synchronizePreloadsForSourceTab(
       scoreBreakdown: target.scoreBreakdown ?? null,
       transitionMetrics: target.transitionMetrics ?? null,
       aiKeywordMatch: target.aiKeywordMatch ?? null,
+      bookmarkPreload: target.bookmarkPreload ?? null,
       siteSelection: target.siteSelection ?? null,
       status: "queued",
       createdAt: new Date().toISOString(),
@@ -98,6 +100,7 @@ async function synchronizePreloadsForSourceTab(
       preloadWindowId,
       targetUrl: target.url,
       score: target.score,
+      bookmarkPreload: target.bookmarkPreload ?? null,
       siteSelection: target.siteSelection ?? null,
     });
     await primePreloadEntry(preloadWindowId, existingEntries[target.url]);

@@ -48,8 +48,10 @@
       return;
     }
 
-    await globalThis.ZeroLatencySupport.probeNativeAppAvailability();
-    await globalThis.ZeroLatencyNativeAppHeartbeat?.send?.("runtime-settings");
+    await globalThis.ZeroLatencySupport.probeNativeAppAvailability({
+      forceRefresh: false,
+    });
+    void globalThis.ZeroLatencyNativeAppHeartbeat?.send?.("runtime-settings");
     await globalThis.ZeroLatencyNativeAppHeartbeat?.ensureAlarm?.(true);
     await ensurePreloadWindowWatchdog();
     await globalThis.ZeroLatencyAiProviders?.ensureLmStudioLifecycleWatchdog?.(runtimeSettings);

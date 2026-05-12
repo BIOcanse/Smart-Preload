@@ -14,6 +14,8 @@
 
 ## D1 · 便携 runtime 在系统已装 Ollama 时会回落到系统目录【真实偏差，会破坏便携性主张】
 
+状态（2026-04-30）：已修复。便携 Ollama API 改为 `127.0.0.1:45832`，并且 `try_get_portable_ollama_version()` 只在端口监听 PID 对应 `portable/runtime/ollama/ollama.exe` 时才承认 API 归属。系统默认 `11434` 不再被本地 app 复用。
+
 **设计原文** — 算法文档 §5.9.1：
 
 > 启动前必须显式设置 `OLLAMA_MODELS=<local-app-dir>/portable/models/ollama`，否则模型仍会写到 `%USERPROFILE%\.ollama\models`
@@ -21,7 +23,7 @@
 > 真正的便携性取决于环境变量、端口、进程生命周期是否都被本地 app 接管
 > **如果其中任何一环落回系统默认路径，便携性就不成立**
 
-**当前实现** — [app/src/model/runtime/process.rs:3-20](app/src/model/runtime/process.rs#L3-L20)：
+**旧实现（已替换）** — [app/src/model/runtime/process.rs:3-20](app/src/model/runtime/process.rs#L3-L20)：
 
 ```rust
 pub(crate) async fn ensure_portable_ollama_api_available() -> Result<()> {

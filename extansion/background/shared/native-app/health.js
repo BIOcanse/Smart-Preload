@@ -16,6 +16,7 @@ async function nativeAppHealthCheck(options = {}) {
     const response = await fetchNativeApp("/health", {
       method: "GET",
       timeoutMs: NATIVE_APP_HEALTH_TIMEOUT_MS,
+      skipRegistration: true,
     });
 
     _nativeAppAvailable = response?.ok === true;

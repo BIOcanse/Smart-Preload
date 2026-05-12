@@ -2,13 +2,17 @@
 
 ## Goal
 
-The local app now uses a single-process lifecycle:
+The local app keeps a portable install lifecycle:
 
 - The tray/API app is the only long-running local process.
-- The extension probes the HTTP API only; it does not wake the app through Native Messaging.
-- The legacy watcher and Native Messaging bootstrap are cleanup-only compatibility paths.
+- `--install` writes HKCU registry entries that point to the current portable directory.
+- The extension may wake the app through Chrome Native Messaging when the local HTTP API is offline.
+- If heartbeat recovery cannot reach the app, the extension keeps a wake-retry alarm active and repeatedly probes the local API plus Native Messaging wake paths until the app responds or the extension has no normal browser window left.
+- Native Messaging is a short-lived bootstrap process only; it starts the real tray/API host and exits.
+- There is still no always-on watcher.
 - The tray/API host exits when all top-level Google Chrome browser processes are gone.
-- If the target extension disappears while the tray/API host is already running, the tray/API host shuts down.
+- The tray/API host also exits when the registered extension disappears. This check must stay app-side because an uninstalled extension cannot notify the app after uninstall.
+- Extension ownership for HTTP API access is enforced by the registered origin file and API authorization. Runtime extension-existence checks are lifecycle shutdown checks, not API trust discovery.
 
 ## Designated Entry Files
 
@@ -16,8 +20,14 @@ The local app now uses a single-process lifecycle:
 
 - 本地 app 主程序文件：
   - `app/src/main.rs`
-- 本地 app 后台维护文件：
+- 本地 app 后台维护总文件：
+  - `app/src/lifecycle.rs`
+- 本地 app host 单实例文件：
   - `app/src/lifecycle/host.rs`
+- 本地 app 扩展发现与运行期存在性检测文件：
+  - `app/src/lifecycle/extension/mod.rs`
+- 本地 app Chrome 进程生命周期文件：
+  - `app/src/lifecycle/chrome.rs`
 - 本地 app 旧 watcher 清理文件：
   - `app/src/lifecycle/watcher.rs`
 
@@ -25,12 +35,19 @@ The local app now uses a single-process lifecycle:
 
 - `main.rs`
   - 模式分发入口
+  - install / uninstall / status 命令入口
   - host 生命周期入口
   - API / tray / host 运行时的总装配
 - `host.rs`
   - host 单实例
-  - 扩展安装检测
-  - host 运行期间的扩展卸载关闭监控
+  - 不承担插件安装检测、扩展卸载关闭监控或业务生命周期策略
+- `extension.rs`
+  - 安装 / status 阶段需要的扩展 ID 扫描工具
+  - 运行期 extension shutdown monitor
+  - 只回答“目标扩展是否仍存在”，不决定预测、预加载、AI 或窗口业务
+- `chrome.rs`
+  - Chrome 顶层浏览器进程检测
+  - Chrome 关闭后的 host shutdown monitor
 - `watcher.rs`
   - 不再负责 Chrome 跟随启动
   - 不再补拉 host
@@ -40,19 +57,31 @@ The local app now uses a single-process lifecycle:
 
 The app now accepts these modes:
 
+- `--install`
+  - Writes `HKCU\Software\ZeroLatencyWeb`.
+  - Detects the installed extension ID from Chrome profiles.
+  - Writes the Native Messaging manifest under the portable app directory.
+  - Registers `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.zero_latency_web.app`.
+  - Writes `<app-dir>\portable\allowed-extension-origin.txt` for the local HTTP API authorization boundary.
+- `--uninstall`
+  - Removes `HKCU\Software\ZeroLatencyWeb`.
+  - Removes the Native Messaging registry entry and manifest file.
+  - Removes the legacy watcher Windows Run entry.
+- `--status`
+  - Prints and writes install status without changing registry state.
 - Normal launch / `--host`
   - Real tray application.
   - Owns the HTTP API and system tray icon.
   - Monitors top-level Chrome browser process count.
-  - Re-checks extension installation state while running.
   - If all top-level Chrome browser processes stay gone for a short grace window, it exits.
-  - If the extension is no longer installed, it exits.
+  - Monitors whether the registered target extension still exists.
+  - If the registered target extension disappears, it exits.
+  - API access is allowed only for the origin written during `--install`.
 - Native Messaging compatibility path
   - Chrome launches the executable as a Native Messaging host.
   - Detected by the `chrome-extension://...` origin argument.
-  - Cleans stale Native Messaging registration.
-  - Writes a disabled response and exits.
-  - It never starts `--host` or any other background child process.
+  - Starts the real `--host` process in the background.
+  - Writes a short Native Messaging response and exits.
 - `--watcher`
   - Legacy compatibility only.
   - Removes the old Windows Run watcher registration and exits.
@@ -62,37 +91,82 @@ The app now accepts these modes:
 Launching the executable without arguments does this:
 
 1. Remove the old watcher Windows Run entry if it exists.
-2. Remove the old Native Messaging registration and portable manifest if they exist.
-3. If Chrome is already running and the extension is installed, continue as the tray/API host.
-4. If Chrome is not running, or the extension is not installed, exit.
+2. Exit without starting the tray/API host.
 
-Uninstalling the extension must leave no wake path behind.
+The tray/API host starts only through:
+
+- Chrome Native Messaging wake from the extension
+- explicit `--host`
+- `ZLW_DEBUG_FORCE_HOST=1` for local debugging
+
+Registry changes are explicit: normal launch does not rewrite or delete Native Messaging registration.
+
+When the host is running, lifecycle monitoring remains bidirectional:
+
+- Extension -> app: if the HTTP API is offline, the extension wakes the host through Native Messaging.
+- Extension -> app: if heartbeat fails after short recovery retries, the extension starts `native-app-wake-retry`, which keeps trying to find the HTTP API and wake the host.
+- Extension -> app: each profile sends a persistent heartbeat `clientId` and the HWNDs of hidden preload windows owned by that profile. If that lease expires, the app closes those tracked hidden windows as a native cleanup fallback.
+- App -> extension existence: if Chrome remains open but the target extension is removed, disabled in a way that removes its storage/manifest visibility, or no longer matches the registered extension ID, the host shuts itself down.
+- App -> Chrome lifecycle: if all top-level Chrome browser processes are gone, the host shuts itself down after the grace window.
+- App -> hidden-window cleanup: host shutdown closes any remaining tracked hidden preload windows before the API thread exits.
+
+This runtime extension check is intentionally separate from API authorization. It must never become first-request-wins origin registration.
 
 ## Extension API Flow
 
-The extension-side HTTP client does not own wakeup:
+The extension-side HTTP client owns wakeup after `--install` has registered the current portable app path:
 
 1. Try `/api/v1/extension/register`.
-2. If registration cannot connect, mark the local app as unavailable for this probe.
-3. Normal API calls continue only after registration succeeds over `http://127.0.0.1:45831` with the extension-origin header.
+2. If registration cannot connect, first call `chrome.runtime.sendNativeMessage("com.zero_latency_web.app", { type: "zlw:wake-host" })`.
+3. If one-shot Native Messaging fails, fall back to `chrome.runtime.connectNative("com.zero_latency_web.app")` and send the same wake payload over the port.
+4. The Native Messaging bootstrap starts `zero-latency-web-app.exe --host`.
+5. The extension retries registration with short backoff.
+6. If heartbeat recovery still fails, the extension enables the `native-app-wake-retry` alarm.
+7. Each wake-retry cycle checks `/health`; if still offline, it retries the two Native Messaging wake strategies and then retries registration/heartbeat.
+8. Wake retry stops once heartbeat succeeds, preloading/service is disabled, or the current extension profile has no normal browser window.
+9. Normal API calls continue only after registration succeeds over `http://127.0.0.1:45831` with the extension-origin header.
 
-The existing HTTP API is the only data/control channel between extension JS and local app.
+Native Messaging is only the launch bridge. The HTTP API remains the data/control channel between extension JS and local app.
+
+The local HTTP API does not auto-discover or first-request-win any extension origin. It only accepts the origin in:
+
+- `<app-dir>\portable\allowed-extension-origin.txt`
+
+If that file is missing or stale, run `zero-latency-web-app.exe --install` again after the unpacked / installed extension is present.
+
+## AI Runtime Boundary
+
+The local app no longer manages AI runtimes or model files:
+
+- Local app HTTP API: `http://127.0.0.1:45831`
+- No portable Ollama installation
+- No model download / uninstall endpoint
+- No status polling that starts a model runtime
+- No provider API key storage in the local app
+
+AI inference is owned by extension JS through configured provider keys. Users who want local models should run a separate OpenAI-compatible tool such as LM Studio and configure that endpoint/key in the extension.
+
+Prediction and ranking are not owned by the local app. The intended split is:
+
+- Extension Rust/Wasm owns graph storage, frequency query, prediction scoring, and slot-allocation computation.
+- Extension JS owns browser event orchestration, Chrome API calls, provider adapter calls, and moving the computed result into preload actions.
+- Local app Rust owns OS permission surfaces only: system window control, Native Messaging bootstrap, API authorization, and host lifecycle monitoring.
 
 ## Registration
 
-Legacy Native Messaging state is removed from:
+Native Messaging manifest path:
 
 - `<app-dir>\portable\native-messaging\com.zero_latency_web.app.json`
 
-Legacy registry state is removed from:
+Native Messaging registry path:
 
 - `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.zero_latency_web.app`
 
-On app startup, or if Chrome invokes the legacy Native Messaging path:
+Portable app registry path:
 
-- `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.zero_latency_web.app` is removed.
-- `<app-dir>\portable\native-messaging\com.zero_latency_web.app.json` is removed if present.
-- A Native Messaging wake request is rejected instead of spawning `--host`.
+- `HKCU\Software\ZeroLatencyWeb`
+
+Moving the portable app directory requires rerunning `zero-latency-web-app.exe --install`.
 
 ## Debug Force Host
 
@@ -108,4 +182,4 @@ detection after uninstall and keep the local app/window manager active.
 
 Clicking `Exit` from the tray shuts down the current host process.
 
-Because there is no always-on watcher and no extension wake path anymore, manual exit is not immediately undone by the local app.
+Because there is no always-on watcher, manual exit is not undone by the local app itself. If the extension later needs the API again, heartbeat failure starts the extension-side wake retry loop and it will keep trying to wake the app while that extension profile still has a normal browser window.

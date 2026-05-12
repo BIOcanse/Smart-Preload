@@ -33,7 +33,8 @@ const RUN_VALUE_NAME: &str = "ZeroLatencyWebWatcher";
 const RUN_KEY_PATH: &str = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 const EXTENSION_INSTALL_CHECK_INTERVAL: Duration = Duration::from_secs(15);
 const CHROME_EXIT_GRACE_TICKS: u8 = 3;
-const CHROME_USER_DATA_RELATIVE_PATH: &str = "Google\\Chrome\\User Data";
+const SUPPORTED_BROWSER_USER_DATA_RELATIVE_PATHS: [&str; 2] =
+    ["Google\\Chrome\\User Data", "Microsoft\\Edge\\User Data"];
 const NATIVE_WAKE_MARKER_FILE: &str = "native-wake.marker";
 const NATIVE_WAKE_MARKER_GRACE: Duration = Duration::from_secs(30);
 
@@ -131,8 +132,15 @@ pub(crate) fn consume_recent_native_wake_marker() -> bool {
     recent
 }
 
-fn chrome_user_data_root() -> Option<PathBuf> {
-    let local_app_data = env::var_os("LOCALAPPDATA")?;
-    let root = PathBuf::from(local_app_data).join(CHROME_USER_DATA_RELATIVE_PATH);
-    root.is_dir().then_some(root)
+fn browser_user_data_roots() -> Vec<PathBuf> {
+    let Some(local_app_data) = env::var_os("LOCALAPPDATA") else {
+        return Vec::new();
+    };
+    let local_app_data = PathBuf::from(local_app_data);
+
+    SUPPORTED_BROWSER_USER_DATA_RELATIVE_PATHS
+        .iter()
+        .map(|relative_path| local_app_data.join(relative_path))
+        .filter(|root| root.is_dir())
+        .collect()
 }

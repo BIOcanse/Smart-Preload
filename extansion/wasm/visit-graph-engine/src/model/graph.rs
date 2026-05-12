@@ -35,6 +35,8 @@ pub(crate) struct Graph {
     #[serde(default)]
     pub(crate) page_transition_message_buckets: PageTransitionMessageBuckets,
     #[serde(default)]
+    pub(crate) bookmark_preload_buckets: BookmarkPreloadBuckets,
+    #[serde(default)]
     pub(crate) link_behavior_store: BTreeMap<String, BTreeMap<String, LinkBehaviorRecord>>,
     #[serde(default)]
     pub(crate) page_keyword_store: BTreeMap<String, PageKeywordEntry>,
@@ -60,7 +62,7 @@ pub(crate) struct Graph {
 impl Default for Graph {
     fn default() -> Self {
         Self {
-            version: 12,
+            version: 13,
             nodes: BTreeMap::new(),
             edges: BTreeMap::new(),
             transition_buckets: TransitionBuckets::default(),
@@ -69,6 +71,7 @@ impl Default for Graph {
             external_page_transition_buckets: PageTransitionBuckets::default(),
             intra_site_page_transition_buckets: PageTransitionBuckets::default(),
             page_transition_message_buckets: PageTransitionMessageBuckets::default(),
+            bookmark_preload_buckets: BookmarkPreloadBuckets::default(),
             link_behavior_store: BTreeMap::new(),
             page_keyword_store: BTreeMap::new(),
             page_keyword_buckets: PageKeywordBuckets::default(),
@@ -82,6 +85,15 @@ impl Default for Graph {
             updated_at: None,
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct BookmarkPreloadBuckets {
+    #[serde(default)]
+    pub(crate) startup_google_search: BTreeMap<String, u64>,
+    #[serde(default)]
+    pub(crate) new_google_search_tab: BTreeMap<String, u64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

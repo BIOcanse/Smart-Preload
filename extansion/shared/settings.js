@@ -55,18 +55,18 @@
   }
 
   const SETTINGS_STORAGE_KEY = "userSettingsV1";
-  const AI_TEST_CONFIG_STORAGE_KEY = "aiTestConfigV1";
-  const SETTINGS_STORAGE_VERSION = 14;
+  const SETTINGS_STORAGE_VERSION = 17;
   const AI_MODEL_CATALOG = globalThis.ZeroLatencyAiModelCatalog ?? null;
-  const PRELOAD_RULE_CARD_IDS = ["nativePerPagePreloadLimit", "perPagePreloadLimit"];
-  const SORTABLE_CARD_IDS = [
+  const PRELOAD_RULE_CARD_IDS = [
+    "nativePerPagePreloadLimit",
     "highWeightRank",
+    "perPagePreloadLimit",
     "highWeightRankTab",
-    "weightRange",
   ];
-  const RULE_CARD_IDS = [...PRELOAD_RULE_CARD_IDS, ...SORTABLE_CARD_IDS];
-  const SORTABLE_OPERATOR_VALUES = ["disabled", "gt", "gte", "eq", "lte", "lt"];
-  const SORTABLE_STATUS_VALUES = ["enabled", "disabled"];
+  const TRACKING_RULE_CARD_IDS = ["googleBookmarkRank"];
+  const RULE_CARD_IDS = [...PRELOAD_RULE_CARD_IDS, ...TRACKING_RULE_CARD_IDS];
+  const RULE_CONDITION_OPERATOR_VALUES = ["disabled", "gt", "gte", "eq", "lte", "lt"];
+  const RULE_STATUS_VALUES = ["enabled", "disabled"];
   const TRANSITION_WINDOW_VALUES = ["total", "last365d", "last30d", "last7d", "last1d"];
   const TRANSITION_WINDOW_OPTIONS = [
     { value: "total", label: localize("transitionWindowTotal", "Total") },
@@ -187,34 +187,15 @@
       ),
       fields: createRuleFields("x"),
     },
-    weightRange: {
-      title: localize("ruleWeightRangeTitle", "Pages with preload weight at x"),
+    googleBookmarkRank: {
+      title: localize("ruleGoogleBookmarkRankTitle", "Google search bookmark preload rank x"),
       description: localize(
-        "ruleWeightRangeDesc",
-        "Expresses a rule condition that filters page candidates by final candidate weight range."
+        "ruleGoogleBookmarkRankDesc",
+        "Only applies on Google search pages. When enabled, Chrome bookmarks become preload candidates and this rank rule keeps the most-used bookmark candidates."
       ),
       fields: createRuleFields("x"),
     },
   };
-  const LEGACY_RULE_CARD_DEFAULTS = {
-    highWeightRank: {
-      valueA: 5,
-      operatorA: "lte",
-      valueB: 1,
-      operatorB: "gte",
-      valueC: 0,
-      status: "enabled",
-    },
-    weightRange: {
-      valueA: 10,
-      operatorA: "gte",
-      valueB: 100,
-      operatorB: "lte",
-      valueC: 0,
-      status: "enabled",
-    },
-  };
-
   const DEFAULT_SETTINGS = {
     version: SETTINGS_STORAGE_VERSION,
     automaticDeviceTuning: true,
@@ -266,8 +247,7 @@
       enabled: false,
     },
     layout: {
-      sortableCards: {
-        order: [...SORTABLE_CARD_IDS],
+      ruleCards: {
         items: {
           nativePerPagePreloadLimit: {
             valueA: 0,
@@ -301,12 +281,12 @@
             valueC: 3,
             status: "enabled",
           },
-          weightRange: {
+          googleBookmarkRank: {
             valueA: 1,
             operatorA: "lte",
             valueB: 1,
-            operatorB: "disabled",
-            valueC: 0,
+            operatorB: "lte",
+            valueC: 5,
             status: "disabled",
           },
         },
@@ -353,12 +333,6 @@
 
   function normalizeStoredSettings(value) {
     const normalized = mergeSettings(DEFAULT_SETTINGS, value);
-    const legacyCrossSiteCurrentTabSwap = isPlainObject(value?.preloading)
-      ? value.preloading.crossSiteCurrentTabSwap
-      : undefined;
-    const hasExplicitExperimentCrossSiteSwap =
-      isPlainObject(value?.experiments) &&
-      typeof value.experiments.crossSiteCurrentTabSwap === "boolean";
     normalized.version = SETTINGS_STORAGE_VERSION;
     normalized.preloading.mode = ["conservative", "balanced", "aggressive"].includes(
       normalized.preloading.mode
@@ -371,7 +345,6 @@
     normalized.preloading.aiPrediction = normalizeAiPredictionSettings(
       normalized.preloading.aiPrediction
     );
-    migrateAiProviderCatalogDefaults(normalized, value);
     delete normalized.preloading.modelManager;
     normalized.preloading.ignoreWaterfallDynamicLinks =
       normalized.preloading.ignoreWaterfallDynamicLinks !== false;
@@ -383,28 +356,23 @@
       DEFAULT_SETTINGS.preloadWindow.watchdogIntervalSeconds
     );
     normalized.experiments.crossSiteCurrentTabSwap =
-      hasExplicitExperimentCrossSiteSwap
-        ? Boolean(normalized.experiments.crossSiteCurrentTabSwap)
-        : typeof legacyCrossSiteCurrentTabSwap === "boolean"
-          ? legacyCrossSiteCurrentTabSwap
-          : DEFAULT_SETTINGS.experiments.crossSiteCurrentTabSwap;
+      normalized.experiments.crossSiteCurrentTabSwap !== false;
     normalized.diagnostics = {
       enabled: normalized.diagnostics?.enabled === true,
     };
-    normalized.layout = normalizeLayoutSettings(normalized.layout);
-    migrateLegacyRuleCardDefaults(normalized, value);
-    migrateSplitSiteSelectionRuleCard(normalized, value);
-    migrateSplitPreloadCapRuleCard(normalized, value);
+    normalized.layout = normalizeLayoutSettings(
+      isPlainObject(value?.layout) ? value.layout : normalized.layout
+    );
     normalized.preloading.nativeMaxPreloadsPerSource = derivePreloadCapFromRuleCard(
-      normalized.layout.sortableCards.items?.nativePerPagePreloadLimit,
+      normalized.layout.ruleCards.items?.nativePerPagePreloadLimit,
       normalized.preloading.nativeMaxPreloadsPerSource
     );
     normalized.preloading.maxTabsPerSource = derivePreloadCapFromRuleCard(
-      normalized.layout.sortableCards.items?.perPagePreloadLimit,
+      normalized.layout.ruleCards.items?.perPagePreloadLimit,
       normalized.preloading.maxTabsPerSource
     );
     normalized.preloading.siteSelectionLimit = deriveSiteSelectionLimitFromRuleCard(
-      normalized.layout.sortableCards.items?.highWeightRank,
+      normalized.layout.ruleCards.items?.highWeightRank,
       normalized.preloading.siteSelectionLimit
     );
     normalized.preloading.siteSelectionLimit = clamp(
@@ -414,7 +382,7 @@
       DEFAULT_SETTINGS.preloading.siteSelectionLimit
     );
     normalized.preloading.tabSiteSelectionLimit = deriveSiteSelectionLimitFromRuleCard(
-      normalized.layout.sortableCards.items?.highWeightRankTab,
+      normalized.layout.ruleCards.items?.highWeightRankTab,
       normalized.preloading.tabSiteSelectionLimit
     );
     normalized.preloading.tabSiteSelectionLimit = clamp(
@@ -427,181 +395,45 @@
   }
 
   function normalizeLayoutSettings(layoutSettings) {
-    const normalizedLayout = mergeSettings(DEFAULT_SETTINGS.layout, layoutSettings);
-    const sortableCards = normalizedLayout.sortableCards || {};
-    const rawOrder = Array.isArray(sortableCards.order) ? sortableCards.order : [];
-    const normalizedOrder = rawOrder
-      .map(normalizeRuleCardId)
-      .filter(Boolean);
-    const uniqueOrder = normalizedOrder.filter(
-      (cardId, index) =>
-        SORTABLE_CARD_IDS.includes(cardId) && normalizedOrder.indexOf(cardId) === index
-    );
-    const completedOrder = [
-      ...uniqueOrder,
-      ...SORTABLE_CARD_IDS.filter((cardId) => !uniqueOrder.includes(cardId)),
-    ];
+    const rawRuleCards = isPlainObject(layoutSettings?.ruleCards)
+      ? layoutSettings.ruleCards
+      : {};
+    const rawItems = isPlainObject(rawRuleCards.items)
+      ? rawRuleCards.items
+      : {};
 
     return {
-      sortableCards: {
-        order: completedOrder,
-        items: normalizeSortableCardItems(remapLegacyRuleCardItems(sortableCards.items)),
+      ruleCards: {
+        items: normalizeRuleCardItems(rawItems),
       },
     };
   }
 
-  function migrateLegacyRuleCardDefaults(normalizedSettings, rawValue) {
-    const rawVersion = Number(rawValue?.version);
-
-    if (Number.isFinite(rawVersion) && rawVersion >= SETTINGS_STORAGE_VERSION) {
-      return;
-    }
-
-    const rawItems = isPlainObject(rawValue?.layout?.sortableCards?.items)
-      ? rawValue.layout.sortableCards.items
-      : {};
-    const nextItems = {
-      ...(normalizedSettings.layout?.sortableCards?.items || {}),
-    };
-    let didMutate = false;
-
-    for (const [legacyCardId, nextCardId] of Object.entries(LEGACY_RULE_CARD_ID_RENAMES)) {
-      if (!matchesRuleCardState(rawItems[legacyCardId], LEGACY_RULE_CARD_DEFAULTS[nextCardId])) {
-        continue;
-      }
-
-      nextItems[nextCardId] = cloneSettings(DEFAULT_SETTINGS.layout.sortableCards.items[nextCardId]);
-      didMutate = true;
-    }
-
-    if (!didMutate) {
-      return;
-    }
-
-    normalizedSettings.layout = {
-      ...normalizedSettings.layout,
-      sortableCards: {
-        ...normalizedSettings.layout.sortableCards,
-        items: nextItems,
-      },
-    };
-  }
-
-  function migrateSplitSiteSelectionRuleCard(normalizedSettings, rawValue) {
-    const rawVersion = Number(rawValue?.version);
-
-    if (Number.isFinite(rawVersion) && rawVersion >= SETTINGS_STORAGE_VERSION) {
-      return;
-    }
-
-    const rawItems = isPlainObject(rawValue?.layout?.sortableCards?.items)
-      ? remapLegacyRuleCardItems(rawValue.layout.sortableCards.items)
-      : {};
-    const sourceCardState = rawItems.highWeightRank;
-
-    if (!isPlainObject(sourceCardState) || isPlainObject(rawItems.highWeightRankTab)) {
-      return;
-    }
-
-    const currentOrder = Array.isArray(normalizedSettings.layout?.sortableCards?.order)
-      ? normalizedSettings.layout.sortableCards.order
-      : [];
-    const nextOrder = currentOrder.filter((cardId) => cardId !== "highWeightRankTab");
-    const nativeCardIndex = nextOrder.indexOf("highWeightRank");
-
-    if (nativeCardIndex >= 0) {
-      nextOrder.splice(nativeCardIndex + 1, 0, "highWeightRankTab");
-    } else {
-      nextOrder.push("highWeightRankTab");
-    }
-
-    normalizedSettings.layout = {
-      ...normalizedSettings.layout,
-      sortableCards: {
-        ...normalizedSettings.layout.sortableCards,
-        order: nextOrder,
-        items: {
-          ...normalizedSettings.layout.sortableCards.items,
-          highWeightRankTab: mergeSettings(
-            DEFAULT_SETTINGS.layout.sortableCards.items.highWeightRankTab,
-            sourceCardState
-          ),
-        },
-      },
-    };
-  }
-
-  function migrateSplitPreloadCapRuleCard(normalizedSettings, rawValue) {
-    const rawVersion = Number(rawValue?.version);
-
-    if (Number.isFinite(rawVersion) && rawVersion >= SETTINGS_STORAGE_VERSION) {
-      return;
-    }
-
-    const rawItems = isPlainObject(rawValue?.layout?.sortableCards?.items)
-      ? remapLegacyRuleCardItems(rawValue.layout.sortableCards.items)
-      : {};
-    const sourceCardState = rawItems.perPagePreloadLimit;
-
-    if (!isPlainObject(sourceCardState) || isPlainObject(rawItems.nativePerPagePreloadLimit)) {
-      return;
-    }
-
-    normalizedSettings.layout = {
-      ...normalizedSettings.layout,
-      sortableCards: {
-        ...normalizedSettings.layout.sortableCards,
-        items: {
-          ...normalizedSettings.layout.sortableCards.items,
-          nativePerPagePreloadLimit: mergeSettings(
-            DEFAULT_SETTINGS.layout.sortableCards.items.nativePerPagePreloadLimit,
-            sourceCardState
-          ),
-        },
-      },
-    };
-  }
-
-  function matchesRuleCardState(rawValue, expectedValue) {
-    if (!isPlainObject(rawValue) || !isPlainObject(expectedValue)) {
-      return false;
-    }
-
-    return (
-      Number(rawValue.valueA) === Number(expectedValue.valueA) &&
-      rawValue.operatorA === expectedValue.operatorA &&
-      Number(rawValue.valueB) === Number(expectedValue.valueB) &&
-      rawValue.operatorB === expectedValue.operatorB &&
-      Number(rawValue.valueC) === Number(expectedValue.valueC) &&
-      rawValue.status === expectedValue.status
-    );
-  }
-
-  function normalizeSortableCardItems(rawItems) {
+  function normalizeRuleCardItems(rawItems) {
     const nextItems = {};
     const providedItems = isPlainObject(rawItems) ? rawItems : {};
 
     for (const cardId of RULE_CARD_IDS) {
       const mergedItem = mergeSettings(
-        DEFAULT_SETTINGS.layout.sortableCards.items[cardId],
+        DEFAULT_SETTINGS.layout.ruleCards.items[cardId],
         providedItems[cardId]
       );
 
       nextItems[cardId] = {
-        valueA: clamp(mergedItem.valueA, 0, 9999, DEFAULT_SETTINGS.layout.sortableCards.items[cardId].valueA),
-        operatorA: normalizeSortableOperator(
+        valueA: clamp(mergedItem.valueA, 0, 9999, DEFAULT_SETTINGS.layout.ruleCards.items[cardId].valueA),
+        operatorA: normalizeRuleOperator(
           mergedItem.operatorA,
-          DEFAULT_SETTINGS.layout.sortableCards.items[cardId].operatorA
+          DEFAULT_SETTINGS.layout.ruleCards.items[cardId].operatorA
         ),
-        valueB: clamp(mergedItem.valueB, 0, 9999, DEFAULT_SETTINGS.layout.sortableCards.items[cardId].valueB),
-        operatorB: normalizeSortableOperator(
+        valueB: clamp(mergedItem.valueB, 0, 9999, DEFAULT_SETTINGS.layout.ruleCards.items[cardId].valueB),
+        operatorB: normalizeRuleOperator(
           mergedItem.operatorB,
-          DEFAULT_SETTINGS.layout.sortableCards.items[cardId].operatorB
+          DEFAULT_SETTINGS.layout.ruleCards.items[cardId].operatorB
         ),
-        valueC: clamp(mergedItem.valueC, 0, 9999, DEFAULT_SETTINGS.layout.sortableCards.items[cardId].valueC),
-        status: normalizeSortableStatus(
+        valueC: clamp(mergedItem.valueC, 0, 9999, DEFAULT_SETTINGS.layout.ruleCards.items[cardId].valueC),
+        status: normalizeRuleStatus(
           mergedItem.status,
-          DEFAULT_SETTINGS.layout.sortableCards.items[cardId].status
+          DEFAULT_SETTINGS.layout.ruleCards.items[cardId].status
         ),
       };
     }
@@ -609,40 +441,12 @@
     return nextItems;
   }
 
-  function normalizeRuleCardId(cardId) {
-    if (typeof cardId !== "string") {
-      return null;
-    }
-
-    return LEGACY_RULE_CARD_ID_RENAMES[cardId] ?? cardId;
+  function normalizeRuleOperator(value, fallback) {
+    return RULE_CONDITION_OPERATOR_VALUES.includes(value) ? value : fallback;
   }
 
-  function remapLegacyRuleCardItems(rawItems) {
-    if (!isPlainObject(rawItems)) {
-      return {};
-    }
-
-    const nextItems = {};
-
-    for (const [rawCardId, rawCardState] of Object.entries(rawItems)) {
-      const normalizedCardId = normalizeRuleCardId(rawCardId);
-
-      if (!normalizedCardId) {
-        continue;
-      }
-
-      nextItems[normalizedCardId] = rawCardState;
-    }
-
-    return nextItems;
-  }
-
-  function normalizeSortableOperator(value, fallback) {
-    return SORTABLE_OPERATOR_VALUES.includes(value) ? value : fallback;
-  }
-
-  function normalizeSortableStatus(value, fallback) {
-    return SORTABLE_STATUS_VALUES.includes(value) ? value : fallback;
+  function normalizeRuleStatus(value, fallback) {
+    return RULE_STATUS_VALUES.includes(value) ? value : fallback;
   }
 
   function normalizeTransitionWindowKey(value, fallback = DEFAULT_SETTINGS.preloading.transitionWindowScope.windowKey) {
@@ -750,143 +554,12 @@
     };
   }
 
-  function migrateAiProviderCatalogDefaults(normalizedSettings, rawValue) {
-    const rawVersion = Number(rawValue?.version);
-
-    if (Number.isFinite(rawVersion) && rawVersion >= SETTINGS_STORAGE_VERSION) {
-      return;
-    }
-
-    const aiPrediction = normalizedSettings.preloading.aiPrediction;
-    const kimiModelChanged = replaceStringMapValue(
-      aiPrediction.modelIds,
-      "kimi",
-      "moonshot-v1-8k",
-      AI_PROVIDER_BY_ID.kimi?.defaultModelId
-    );
-    const kimiEndpointChanged = replaceStringMapValue(
-      aiPrediction.endpointUrls,
-      "kimi",
-      "https://api.moonshot.cn/v1/chat/completions",
-      AI_PROVIDER_BY_ID.kimi?.endpointUrl
-    );
-    const glmModelChanged = replaceStringMapValue(
-      aiPrediction.modelIds,
-      "glm",
-      "glm-4-flash",
-      AI_PROVIDER_BY_ID.glm?.defaultModelId
-    );
-    const openRouterModelChanged = replaceStringMapValue(
-      aiPrediction.modelIds,
-      "openrouter",
-      "deepseek/deepseek-chat-v3-0324:free",
-      AI_PROVIDER_BY_ID.openrouter?.defaultModelId
-    );
-    const deepSeekModelChanged = replaceStringMapValue(
-      aiPrediction.modelIds,
-      "deepseek",
-      "deepseek-chat",
-      AI_PROVIDER_BY_ID.deepseek?.defaultModelId
-    );
-
-    if (aiPrediction.providerId === "kimi") {
-      if (kimiModelChanged && aiPrediction.modelId === "moonshot-v1-8k") {
-        aiPrediction.modelId = aiPrediction.modelIds.kimi;
-      }
-
-      if (kimiEndpointChanged && !aiPrediction.endpointUrls.kimi) {
-        aiPrediction.endpointUrls.kimi = AI_PROVIDER_BY_ID.kimi?.endpointUrl || "";
-      }
-    }
-
-    if (aiPrediction.providerId === "glm" && glmModelChanged && aiPrediction.modelId === "glm-4-flash") {
-      aiPrediction.modelId = aiPrediction.modelIds.glm;
-    }
-
-    if (
-      aiPrediction.providerId === "openrouter" &&
-      openRouterModelChanged &&
-      aiPrediction.modelId === "deepseek/deepseek-chat-v3-0324:free"
-    ) {
-      aiPrediction.modelId = aiPrediction.modelIds.openrouter;
-    }
-
-    if (
-      aiPrediction.providerId === "deepseek" &&
-      deepSeekModelChanged &&
-      aiPrediction.modelId === "deepseek-chat"
-    ) {
-      aiPrediction.modelId = aiPrediction.modelIds.deepseek;
-    }
-  }
-
-  function replaceStringMapValue(targetMap, key, oldValue, newValue) {
-    if (!isPlainObject(targetMap) || !newValue || targetMap[key] !== oldValue) {
-      return false;
-    }
-
-    targetMap[key] = newValue;
-    return true;
-  }
-
-  function normalizeAiTestConfig(value) {
-    if (!isPlainObject(value)) {
-      return null;
-    }
-
-    const providerId = normalizeAiProviderId(value.providerId);
-    const provider = AI_PROVIDER_BY_ID[providerId];
-    const modelId =
-      typeof value.modelId === "string" && value.modelId.trim()
-        ? value.modelId.trim()
-        : provider?.defaultModelId || "";
-    const endpointUrl =
-      typeof value.endpointUrl === "string" && value.endpointUrl.trim()
-        ? value.endpointUrl.trim()
-        : provider?.endpointUrl || "";
-    const apiKey = typeof value.apiKey === "string" ? value.apiKey.trim() : "";
-
-    if (!provider || !modelId || !endpointUrl) {
-      return null;
-    }
-
-    return {
-      enabled: value.enabled !== false,
-      providerId,
-      modelId,
-      endpointUrl,
-      apiKey,
-    };
-  }
-
-  function applyAiTestConfig(settings, rawTestConfig) {
-    const testConfig = normalizeAiTestConfig(rawTestConfig);
-
-    if (!testConfig) {
-      return settings;
-    }
-
-    const nextSettings = cloneSettings(settings);
-    const aiPrediction = nextSettings.preloading.aiPrediction;
-    aiPrediction.enabled = testConfig.enabled;
-    aiPrediction.providerId = testConfig.providerId;
-    aiPrediction.modelId = testConfig.modelId;
-    aiPrediction.modelIds[testConfig.providerId] = testConfig.modelId;
-    aiPrediction.endpointUrls[testConfig.providerId] = testConfig.endpointUrl;
-
-    if (testConfig.apiKey) {
-      aiPrediction.apiKeys[testConfig.providerId] = testConfig.apiKey;
-    }
-
-    return normalizeStoredSettings(nextSettings);
-  }
-
   function isRuleCardEnabled(cardState) {
-    return isPlainObject(cardState) && normalizeSortableStatus(cardState.status, "enabled") === "enabled";
+    return isPlainObject(cardState) && normalizeRuleStatus(cardState.status, "enabled") === "enabled";
   }
 
   function compareRuleValues(leftValue, operator, rightValue) {
-    const normalizedOperator = normalizeSortableOperator(operator, "disabled");
+    const normalizedOperator = normalizeRuleOperator(operator, "disabled");
 
     if (normalizedOperator === "disabled") {
       return true;
@@ -949,10 +622,10 @@
 
     const normalizedCard = {
       valueA: clamp(cardState.valueA, 0, 9999, 0),
-      operatorA: normalizeSortableOperator(cardState.operatorA, "disabled"),
-      operatorB: normalizeSortableOperator(cardState.operatorB, "lte"),
+      operatorA: normalizeRuleOperator(cardState.operatorA, "disabled"),
+      operatorB: normalizeRuleOperator(cardState.operatorB, "lte"),
       valueC: clamp(cardState.valueC, 0, 9999, fallbackValue),
-      status: normalizeSortableStatus(cardState.status, "enabled"),
+      status: normalizeRuleStatus(cardState.status, "enabled"),
     };
 
     if (normalizedCard.status !== "enabled") {
@@ -984,10 +657,10 @@
 
     const normalizedCard = {
       valueA: clamp(cardState.valueA, 0, 9999, 0),
-      operatorA: normalizeSortableOperator(cardState.operatorA, "disabled"),
-      operatorB: normalizeSortableOperator(cardState.operatorB, "lte"),
+      operatorA: normalizeRuleOperator(cardState.operatorA, "disabled"),
+      operatorB: normalizeRuleOperator(cardState.operatorB, "lte"),
       valueC: clamp(cardState.valueC, 0, 9999, fallbackValue),
-      status: normalizeSortableStatus(cardState.status, "enabled"),
+      status: normalizeRuleStatus(cardState.status, "enabled"),
     };
 
     if (normalizedCard.status !== "enabled") {
@@ -1120,13 +793,9 @@
   async function loadSettings(storageArea) {
     const stored = await storageArea.get({
       [SETTINGS_STORAGE_KEY]: DEFAULT_SETTINGS,
-      [AI_TEST_CONFIG_STORAGE_KEY]: null,
     });
 
-    return applyAiTestConfig(
-      normalizeStoredSettings(stored[SETTINGS_STORAGE_KEY]),
-      globalThis.ZeroLatencyLocalAiTestConfig ?? stored[AI_TEST_CONFIG_STORAGE_KEY]
-    );
+    return normalizeStoredSettings(stored[SETTINGS_STORAGE_KEY]);
   }
 
   async function saveSettings(storageArea, settings) {
@@ -1139,13 +808,12 @@
 
   globalThis.ZeroLatencySettings = {
     SETTINGS_STORAGE_KEY,
-    AI_TEST_CONFIG_STORAGE_KEY,
     SETTINGS_STORAGE_VERSION,
     PRELOAD_RULE_CARD_IDS,
-    SORTABLE_CARD_IDS,
+    TRACKING_RULE_CARD_IDS,
     RULE_CARD_IDS,
-    SORTABLE_OPERATOR_VALUES,
-    SORTABLE_STATUS_VALUES,
+    RULE_CONDITION_OPERATOR_VALUES,
+    RULE_STATUS_VALUES,
     TRANSITION_WINDOW_VALUES,
     TRANSITION_WINDOW_OPTIONS,
     AI_PROVIDER_OPTIONS,
@@ -1174,7 +842,3 @@
     saveSettings,
   };
 })();
-const LEGACY_RULE_CARD_ID_RENAMES = {
-  highFrequencyRank: "highWeightRank",
-  frequencyRange: "weightRange",
-};

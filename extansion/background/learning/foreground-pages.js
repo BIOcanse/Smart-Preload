@@ -1,145 +1,201 @@
 (function () {
   async function handleForegroundPageDigest(message, sender) {
-    if (await isExtensionServicePaused()) {
-      return { ok: true, skipped: true, reason: "service-paused" };
+    const context = await resolveForegroundPageDigestContext(message, sender);
+
+    if (context.response) {
+      return context.response;
     }
 
-    const aiKeywordTools = globalThis.ZeroLatencyAiKeywords;
+    const nextTrackingState = await recordForegroundPageIfNeeded(context);
+    const settings = getEffectiveExtensionSettings();
+    const aiProvider = globalThis.ZeroLatencyAiProviders;
+
+    if (!shouldGenerateForegroundPageKeywords(settings, aiProvider)) {
+      return { ok: true, generatedKeywords: false };
+    }
+
+    const currentKeywordEntry = await getForegroundPageKeywordEntry(
+      nextTrackingState,
+      context.pageUrl
+    );
+
+    if (!shouldRefreshPageKeywordEntry(currentKeywordEntry, context.contentFingerprint)) {
+      return { ok: true, generatedKeywords: false };
+    }
+
+    const normalizedKeywordResult = await generateForegroundPageKeywords({
+      aiProvider,
+      settings,
+      context,
+    });
+
+    if (!normalizedKeywordResult) {
+      return { ok: true, generatedKeywords: false };
+    }
+
+    await saveForegroundPageKeywordsIfNeeded({
+      context,
+      settings,
+      normalizedKeywordResult,
+    });
+    return { ok: true, generatedKeywords: true };
+  }
+
+  async function resolveForegroundPageDigestContext(message, sender) {
+    if (await isExtensionServicePaused()) {
+      return { response: { ok: true, skipped: true, reason: "service-paused" } };
+    }
+
     const sourceTab = sender?.tab;
     const pageUrl = normalizePageUrlForIndex(message?.pageUrl || sourceTab?.url || "");
 
     if (!sourceTab?.id || !pageUrl || !isTrackableAndAllowedUrl(pageUrl)) {
-      return { ok: true, skipped: true };
+      return { response: { ok: true, skipped: true } };
     }
 
     const preloadState = await loadPreloadState();
 
     if (isPreloadTab(preloadState, sourceTab.id)) {
-      return { ok: true, skipped: true };
+      return { response: { ok: true, skipped: true } };
     }
 
     const currentWindow = await getWindowMaybe(sourceTab.windowId);
 
     if (currentWindow?.focused !== true || sourceTab.active !== true) {
-      return { ok: true, skipped: true };
+      return { response: { ok: true, skipped: true } };
     }
 
+    return {
+      response: null,
+      sourceTab,
+      preloadState,
+      pageUrl,
+      title: typeof message?.title === "string" ? message.title : "",
+      textDigest: typeof message?.textDigest === "string" ? message.textDigest : "",
+      contentFingerprint:
+        typeof message?.contentFingerprint === "string" ? message.contentFingerprint : "",
+      nodeId: buildNodeSeed(pageUrl).nodeId,
+    };
+  }
+
+  async function recordForegroundPageIfNeeded(context) {
     const trackingState = await loadTrackingState();
-    const title = typeof message?.title === "string" ? message.title : "";
-    const textDigest = typeof message?.textDigest === "string" ? message.textDigest : "";
-    const contentFingerprint =
-      typeof message?.contentFingerprint === "string" ? message.contentFingerprint : "";
-    const nodeId = buildNodeSeed(pageUrl).nodeId;
     const shouldRecordForegroundPage = shouldRefreshForegroundPageRecord(
       trackingState.graph,
-      pageUrl,
-      contentFingerprint,
-      title,
-      textDigest
+      context.pageUrl,
+      context.contentFingerprint,
+      context.title,
+      context.textDigest
     );
-    const nextTrackingState = shouldRecordForegroundPage
-      ? await queueMutation(async () => {
-          const latestTrackingState = await loadTrackingState();
-          const refreshedTrackingState = await applyTrackingEvent(latestTrackingState, {
-            type: "record-foreground-page",
-            tabId: String(sourceTab.id),
-            windowId: String(sourceTab.windowId ?? -1),
-            nodeId,
-            pageUrl,
-            title,
-            textDigest,
-            contentFingerprint,
-            occurredAt: new Date().toISOString(),
-            activatedAt: new Date().toISOString(),
-            wasPreloadedBeforeForeground:
-              findPreloadEntryByTabId(preloadState, sourceTab.id) !== null,
-          });
-          await saveTrackingState(refreshedTrackingState);
-          return refreshedTrackingState;
-        })
-      : trackingState;
 
-    const settings = getEffectiveExtensionSettings();
-    const aiProvider = globalThis.ZeroLatencyAiProviders;
-    const aiEnabled =
-      settings.preloading.aiPrediction.enabled === true &&
-      settings.preloading.effectiveAiPredictionConfigured === true &&
-      typeof aiProvider?.invokeConfiguredAiProvider === "function";
-
-    if (!aiEnabled) {
-      return { ok: true, generatedKeywords: false };
+    if (!shouldRecordForegroundPage) {
+      return trackingState;
     }
 
-    const currentKeywordEntry =
-      nextTrackingState.graph.pageKeywordStore?.[pageUrl] ??
-      (await queryTrackingGraph(nextTrackingState, {
+    return queueMutation(async () => {
+      const latestTrackingState = await loadTrackingState();
+      const refreshedTrackingState = await applyTrackingEvent(latestTrackingState, {
+        type: "record-foreground-page",
+        tabId: String(context.sourceTab.id),
+        windowId: String(context.sourceTab.windowId ?? -1),
+        nodeId: context.nodeId,
+        pageUrl: context.pageUrl,
+        title: context.title,
+        textDigest: context.textDigest,
+        contentFingerprint: context.contentFingerprint,
+        occurredAt: new Date().toISOString(),
+        activatedAt: new Date().toISOString(),
+        wasPreloadedBeforeForeground:
+          findPreloadEntryByTabId(context.preloadState, context.sourceTab.id) !== null,
+      });
+      await saveTrackingState(refreshedTrackingState);
+      return refreshedTrackingState;
+    });
+  }
+
+  function shouldGenerateForegroundPageKeywords(settings, aiProvider) {
+    return (
+      settings.preloading.aiPrediction.enabled === true &&
+      settings.preloading.effectiveAiPredictionConfigured === true &&
+      typeof aiProvider?.invokeConfiguredAiProvider === "function" &&
+      Boolean(globalThis.ZeroLatencyAiKeywords)
+    );
+  }
+
+  async function getForegroundPageKeywordEntry(trackingState, pageUrl) {
+    return (
+      trackingState.graph.pageKeywordStore?.[pageUrl] ??
+      (await queryTrackingGraph(trackingState, {
         type: "get-page-keywords",
         pageUrl,
-      }));
+      }))
+    );
+  }
 
-    if (
+  function shouldRefreshPageKeywordEntry(currentKeywordEntry, contentFingerprint) {
+    return !(
       currentKeywordEntry &&
       currentKeywordEntry.contentFingerprint === contentFingerprint &&
       !isKeywordEntryExpired(currentKeywordEntry)
-    ) {
-      return { ok: true, generatedKeywords: false };
-    }
+    );
+  }
 
-    let normalizedKeywordResult;
+  async function generateForegroundPageKeywords({ aiProvider, settings, context }) {
+    const aiKeywordTools = globalThis.ZeroLatencyAiKeywords;
 
     try {
       const generatedKeywords = await aiProvider.invokeConfiguredAiProvider(
         settings,
         aiKeywordTools.buildPageKeywordPrompt({
-          pageUrl,
-          title: typeof message?.title === "string" ? message.title : "",
-          textDigest: typeof message?.textDigest === "string" ? message.textDigest : "",
-          contentFingerprint,
+          pageUrl: context.pageUrl,
+          title: context.title,
+          textDigest: context.textDigest,
+          contentFingerprint: context.contentFingerprint,
         }),
         { responseFormat: "json" }
       );
-      normalizedKeywordResult = aiKeywordTools.parseAiKeywordInferenceResponse(
-        generatedKeywords?.output_text
-      );
+      return aiKeywordTools.parseAiKeywordInferenceResponse(generatedKeywords?.output_text);
     } catch (error) {
       console.error("AI page keyword inference failed.", error);
-      return { ok: true, generatedKeywords: false };
+      return null;
     }
+  }
+
+  async function saveForegroundPageKeywordsIfNeeded({
+    context,
+    settings,
+    normalizedKeywordResult,
+  }) {
     const generatedAt = new Date().toISOString();
     const expiresAt = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
     await queueMutation(async () => {
       const latestTrackingState = await loadTrackingState();
       const latestKeywordEntry =
-        latestTrackingState.graph.pageKeywordStore?.[pageUrl] ??
+        latestTrackingState.graph.pageKeywordStore?.[context.pageUrl] ??
         (await queryTrackingGraph(latestTrackingState, {
           type: "get-page-keywords",
-          pageUrl,
+          pageUrl: context.pageUrl,
         }));
 
-      if (
-        latestKeywordEntry &&
-        latestKeywordEntry.contentFingerprint === contentFingerprint &&
-        !isKeywordEntryExpired(latestKeywordEntry)
-      ) {
+      if (!shouldRefreshPageKeywordEntry(latestKeywordEntry, context.contentFingerprint)) {
         return latestTrackingState;
       }
 
       const finalTrackingState = await applyTrackingEvent(latestTrackingState, {
         type: "upsert-page-keywords",
-        pageUrl,
-        siteNodeId: nodeId,
-        title,
+        pageUrl: context.pageUrl,
+        siteNodeId: context.nodeId,
+        title: context.title,
         keywords: normalizedKeywordResult.keywords,
         pageType: normalizedKeywordResult.pageType,
         generatedAt,
         expiresAt,
         modelId: settings.preloading.aiPrediction.modelId,
-        contentFingerprint,
+        contentFingerprint: context.contentFingerprint,
       });
       await saveTrackingState(finalTrackingState);
       return finalTrackingState;
     });
-    return { ok: true, generatedKeywords: true };
   }
 
   function shouldRefreshForegroundPageRecord(

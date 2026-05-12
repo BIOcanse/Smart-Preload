@@ -120,9 +120,11 @@ function renderTopTargets(topTargets, pageContext, serviceState) {
     meta.className = "item-meta";
     const siteMeta = formatSiteSelectionMeta(target.siteSelection);
     const frequencyMeta = formatTransitionMetricMeta(target.transitionMetrics);
+    const bookmarkMeta = formatBookmarkPreloadMeta(target.bookmarkPreload);
     meta.textContent = [
       t("popupWeightLabel", [formatWeight(target.score)], `Weight: ${formatWeight(target.score)}`),
       frequencyMeta,
+      bookmarkMeta,
       siteMeta,
       target.strategy || "hidden-tab",
       target.status || t("commonUnknown", [], "unknown"),
@@ -264,5 +266,24 @@ function formatTransitionMetricMeta(transitionMetrics) {
     "popupFreqMeta",
     [siteCount, outboundPageCount, intraSitePageCount],
     `Freq: site ${siteCount}, out ${outboundPageCount}, in ${intraSitePageCount}`
+  );
+}
+
+function formatBookmarkPreloadMeta(bookmarkPreload) {
+  if (!bookmarkPreload) {
+    return "";
+  }
+
+  const count = Number(bookmarkPreload.count) || 0;
+  const rank = Number(bookmarkPreload.rank) || 0;
+
+  if (count === 0 && rank === 0) {
+    return "";
+  }
+
+  return t(
+    "popupBookmarkMeta",
+    [count, rank],
+    `Bookmark: ${count}, rank ${rank}`
   );
 }

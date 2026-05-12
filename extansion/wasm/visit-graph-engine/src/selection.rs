@@ -83,91 +83,138 @@ pub fn select_preload_candidate_group(
     let candidates = input.candidates;
 
     if candidates.is_empty() || input.page_slot_limit == 0 {
-        return Ok(SelectPreloadCandidateGroupResult {
-            selected_indices: Vec::new(),
-            site_selections: Vec::new(),
-        });
+        return Ok(empty_selection_result());
     }
 
-    let mut same_site_indices = candidates
-        .iter()
-        .enumerate()
-        .filter_map(|(index, candidate)| candidate.is_same_site.then_some(index))
-        .collect::<Vec<usize>>();
-    let cross_site_indices = candidates
-        .iter()
-        .enumerate()
-        .filter_map(|(index, candidate)| (!candidate.is_same_site).then_some(index))
-        .collect::<Vec<usize>>();
+    let (same_site_indices, cross_site_indices) = partition_candidates_by_site_scope(&candidates);
 
     if cross_site_indices.is_empty() {
-        let mut selected_indices = (0..candidates.len()).collect::<Vec<usize>>();
-        selected_indices.sort_by(|left, right| {
-            compare_candidate_priority(&candidates[*left], &candidates[*right])
-        });
-        selected_indices.truncate(input.page_slot_limit);
-
-        return Ok(SelectPreloadCandidateGroupResult {
-            selected_indices: selected_indices
-                .into_iter()
-                .map(|candidate_index| candidates[candidate_index].index)
-                .collect(),
-            site_selections: Vec::new(),
-        });
+        return Ok(build_selection_result(
+            &candidates,
+            select_top_candidate_indices(
+                &candidates,
+                (0..candidates.len()).collect(),
+                input.page_slot_limit,
+            ),
+            Vec::new(),
+        ));
     }
 
-    same_site_indices
-        .sort_by(|left, right| compare_candidate_priority(&candidates[*left], &candidates[*right]));
-    same_site_indices.truncate(input.page_slot_limit);
+    let same_site_indices =
+        select_top_candidate_indices(&candidates, same_site_indices, input.page_slot_limit);
     let remaining_cross_site_slots = input
         .page_slot_limit
         .saturating_sub(same_site_indices.len());
 
     if remaining_cross_site_slots == 0 {
-        return Ok(SelectPreloadCandidateGroupResult {
-            selected_indices: same_site_indices
-                .into_iter()
-                .map(|candidate_index| candidates[candidate_index].index)
-                .collect(),
-            site_selections: Vec::new(),
-        });
+        return Ok(build_selection_result(
+            &candidates,
+            same_site_indices,
+            Vec::new(),
+        ));
     }
 
-    let mut site_clusters = build_cross_site_clusters(&candidates, &cross_site_indices);
+    let site_clusters = select_cross_site_clusters(
+        &candidates,
+        &cross_site_indices,
+        input.site_selection_limit,
+        remaining_cross_site_slots,
+    );
 
     if site_clusters.is_empty() {
-        return Ok(SelectPreloadCandidateGroupResult {
-            selected_indices: same_site_indices
-                .into_iter()
-                .map(|candidate_index| candidates[candidate_index].index)
-                .collect(),
-            site_selections: Vec::new(),
-        });
+        return Ok(build_selection_result(
+            &candidates,
+            same_site_indices,
+            Vec::new(),
+        ));
     }
 
-    site_clusters.sort_by(|left, right| compare_site_cluster_priority(left, right, &candidates));
-    let selected_site_count = input
-        .site_selection_limit
+    let allocations =
+        allocate_slots_for_selected_site_clusters(remaining_cross_site_slots, &site_clusters)?;
+    let (mut selected_working_indices, site_selections) =
+        build_selection_from_allocated_site_clusters(
+            &candidates,
+            same_site_indices,
+            &site_clusters,
+            &allocations,
+            &input.selection_group,
+        );
+    sort_candidate_indices_by_priority(&candidates, &mut selected_working_indices);
+
+    Ok(build_selection_result(
+        &candidates,
+        selected_working_indices,
+        site_selections,
+    ))
+}
+
+fn empty_selection_result() -> SelectPreloadCandidateGroupResult {
+    SelectPreloadCandidateGroupResult {
+        selected_indices: Vec::new(),
+        site_selections: Vec::new(),
+    }
+}
+
+fn partition_candidates_by_site_scope(
+    candidates: &[PreloadSelectionCandidateInput],
+) -> (Vec<usize>, Vec<usize>) {
+    candidates.iter().enumerate().fold(
+        (Vec::new(), Vec::new()),
+        |mut partition, (index, candidate)| {
+            if candidate.is_same_site {
+                partition.0.push(index);
+            } else {
+                partition.1.push(index);
+            }
+            partition
+        },
+    )
+}
+
+fn select_top_candidate_indices(
+    candidates: &[PreloadSelectionCandidateInput],
+    mut candidate_indices: Vec<usize>,
+    limit: usize,
+) -> Vec<usize> {
+    sort_candidate_indices_by_priority(candidates, &mut candidate_indices);
+    candidate_indices.truncate(limit);
+    candidate_indices
+}
+
+fn sort_candidate_indices_by_priority(
+    candidates: &[PreloadSelectionCandidateInput],
+    candidate_indices: &mut [usize],
+) {
+    candidate_indices
+        .sort_by(|left, right| compare_candidate_priority(&candidates[*left], &candidates[*right]));
+}
+
+fn select_cross_site_clusters(
+    candidates: &[PreloadSelectionCandidateInput],
+    cross_site_indices: &[usize],
+    site_selection_limit: usize,
+    remaining_cross_site_slots: usize,
+) -> Vec<SiteCluster> {
+    let mut site_clusters = build_cross_site_clusters(candidates, cross_site_indices);
+    site_clusters.sort_by(|left, right| compare_site_cluster_priority(left, right, candidates));
+    let selected_site_count = site_selection_limit
         .min(remaining_cross_site_slots)
         .min(site_clusters.len());
-
-    if selected_site_count == 0 {
-        return Ok(SelectPreloadCandidateGroupResult {
-            selected_indices: same_site_indices
-                .into_iter()
-                .map(|candidate_index| candidates[candidate_index].index)
-                .collect(),
-            site_selections: Vec::new(),
-        });
-    }
-
     site_clusters.truncate(selected_site_count);
+    site_clusters
+}
+
+fn allocate_slots_for_selected_site_clusters(
+    remaining_cross_site_slots: usize,
+    site_clusters: &[SiteCluster],
+) -> Result<Vec<usize>, String> {
     let total_selected_site_cap = site_clusters
         .iter()
         .map(|site_cluster| site_cluster.cap)
         .sum::<usize>();
     let allocated_page_slot_count = remaining_cross_site_slots.min(total_selected_site_cap);
-    let allocations = allocate_selected_site_page_slots(
+
+    allocate_selected_site_page_slots(
         allocated_page_slot_count,
         &site_clusters
             .iter()
@@ -177,8 +224,16 @@ pub fn select_preload_candidate_group(
             .iter()
             .map(|site_cluster| site_cluster.cap)
             .collect::<Vec<usize>>(),
-    )?;
-    let mut selected_working_indices = same_site_indices;
+    )
+}
+
+fn build_selection_from_allocated_site_clusters(
+    candidates: &[PreloadSelectionCandidateInput],
+    mut selected_working_indices: Vec<usize>,
+    site_clusters: &[SiteCluster],
+    allocations: &[usize],
+    selection_group: &str,
+) -> (Vec<usize>, Vec<SelectedCandidateSiteSelection>) {
     let mut site_selections = Vec::new();
 
     for (site_rank, site_cluster) in site_clusters.iter().enumerate() {
@@ -188,38 +243,63 @@ pub fn select_preload_candidate_group(
             continue;
         }
 
-        for candidate_index in site_cluster
-            .candidate_indices
-            .iter()
-            .copied()
-            .take(allocated_slots)
-        {
-            selected_working_indices.push(candidate_index);
-            site_selections.push(SelectedCandidateSiteSelection {
-                candidate_index: candidates[candidate_index].index,
-                site_node_id: site_cluster.node_id.clone(),
-                site_weight: site_cluster.site_weight,
-                site_transition_count: site_cluster.site_transition_count,
-                cap: site_cluster.cap,
-                allocated_slots,
-                site_rank: site_rank + 1,
-                selection_group: input.selection_group.clone(),
-                site_ai_keyword_multiplier: site_cluster.site_ai_keyword_multiplier,
-                site_score_breakdown: site_cluster.site_score_breakdown.clone(),
-            });
-        }
+        append_allocated_site_cluster_selection(
+            candidates,
+            &mut selected_working_indices,
+            &mut site_selections,
+            site_cluster,
+            allocated_slots,
+            site_rank + 1,
+            selection_group,
+        );
     }
 
-    selected_working_indices
-        .sort_by(|left, right| compare_candidate_priority(&candidates[*left], &candidates[*right]));
+    (selected_working_indices, site_selections)
+}
 
-    Ok(SelectPreloadCandidateGroupResult {
+fn append_allocated_site_cluster_selection(
+    candidates: &[PreloadSelectionCandidateInput],
+    selected_working_indices: &mut Vec<usize>,
+    site_selections: &mut Vec<SelectedCandidateSiteSelection>,
+    site_cluster: &SiteCluster,
+    allocated_slots: usize,
+    site_rank: usize,
+    selection_group: &str,
+) {
+    for candidate_index in site_cluster
+        .candidate_indices
+        .iter()
+        .copied()
+        .take(allocated_slots)
+    {
+        selected_working_indices.push(candidate_index);
+        site_selections.push(SelectedCandidateSiteSelection {
+            candidate_index: candidates[candidate_index].index,
+            site_node_id: site_cluster.node_id.clone(),
+            site_weight: site_cluster.site_weight,
+            site_transition_count: site_cluster.site_transition_count,
+            cap: site_cluster.cap,
+            allocated_slots,
+            site_rank,
+            selection_group: selection_group.to_owned(),
+            site_ai_keyword_multiplier: site_cluster.site_ai_keyword_multiplier,
+            site_score_breakdown: site_cluster.site_score_breakdown.clone(),
+        });
+    }
+}
+
+fn build_selection_result(
+    candidates: &[PreloadSelectionCandidateInput],
+    selected_working_indices: Vec<usize>,
+    site_selections: Vec<SelectedCandidateSiteSelection>,
+) -> SelectPreloadCandidateGroupResult {
+    SelectPreloadCandidateGroupResult {
         selected_indices: selected_working_indices
             .into_iter()
             .map(|candidate_index| candidates[candidate_index].index)
             .collect(),
         site_selections,
-    })
+    }
 }
 
 fn build_cross_site_clusters(

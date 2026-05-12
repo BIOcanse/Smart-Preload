@@ -185,34 +185,82 @@ async function buildAiKeywordMultipliersByUrl(candidatePool, context) {
 }
 
 async function getAiInterestKeywordsForPreloading(context = {}) {
+  const predictionContext = resolveAiInterestPredictionContext(context);
+
+  if (!predictionContext.ready) {
+    recordAiPredictionDiagnostic("prediction.ai.interest.skip", {
+      enabled: predictionContext.aiPredictionSettings.enabled === true,
+      configured: predictionContext.settings?.preloading?.effectiveAiPredictionConfigured === true,
+      hasProvider: typeof predictionContext.aiProvider?.invokeConfiguredAiProvider === "function",
+      hasModel: Boolean(predictionContext.aiPredictionSettings.modelId),
+      hasKeywordTools: Boolean(predictionContext.aiKeywordTools),
+      hasGraph: Boolean(predictionContext.graph),
+    });
+    return buildEmptyAiInterestContext();
+  }
+
+  const { historyPagePool, recentForegroundPages, currentPage, openPages } =
+    await loadAiInterestPageContext(context, predictionContext.graph);
+  const interestKeywords = await getAiInterestKeywords({
+    settings: predictionContext.settings,
+    currentPage,
+    openPages,
+    historyPagePool,
+    recentForegroundPages,
+  });
+
+  recordAiInterestResultDiagnostic(
+    predictionContext.aiPredictionSettings,
+    interestKeywords,
+    openPages,
+    recentForegroundPages,
+    historyPagePool
+  );
+
+  return {
+    interestKeywords,
+    historyPagePool,
+    recentForegroundPages,
+    currentPage,
+    openPages,
+  };
+}
+
+function resolveAiInterestPredictionContext(context = {}) {
   const aiKeywordTools = globalThis.ZeroLatencyAiKeywords;
   const aiProvider = globalThis.ZeroLatencyAiProviders;
   const settings = context?.settings ?? null;
   const aiPredictionSettings = settings?.preloading?.aiPrediction ?? {};
-  const aiPredictionEnabled =
+  const graph = context?.graph ?? null;
+  const ready =
     aiPredictionSettings.enabled === true &&
     settings?.preloading?.effectiveAiPredictionConfigured === true &&
-    typeof aiProvider?.invokeConfiguredAiProvider === "function";
-  const graph = context?.graph ?? null;
+    typeof aiProvider?.invokeConfiguredAiProvider === "function" &&
+    Boolean(aiPredictionSettings.modelId) &&
+    Boolean(aiKeywordTools) &&
+    Boolean(graph);
 
-  if (!aiPredictionEnabled || !aiPredictionSettings.modelId || !aiKeywordTools || !graph) {
-    recordAiPredictionDiagnostic("prediction.ai.interest.skip", {
-      enabled: aiPredictionSettings.enabled === true,
-      configured: settings?.preloading?.effectiveAiPredictionConfigured === true,
-      hasProvider: typeof aiProvider?.invokeConfiguredAiProvider === "function",
-      hasModel: Boolean(aiPredictionSettings.modelId),
-      hasKeywordTools: Boolean(aiKeywordTools),
-      hasGraph: Boolean(graph),
-    });
-    return {
-      interestKeywords: [],
-      historyPagePool: null,
-      recentForegroundPages: [],
-      currentPage: null,
-      openPages: [],
-    };
-  }
+  return {
+    aiKeywordTools,
+    aiProvider,
+    settings,
+    aiPredictionSettings,
+    graph,
+    ready,
+  };
+}
 
+function buildEmptyAiInterestContext() {
+  return {
+    interestKeywords: [],
+    historyPagePool: null,
+    recentForegroundPages: [],
+    currentPage: null,
+    openPages: [],
+  };
+}
+
+async function loadAiInterestPageContext(context, graph) {
   const [historyPagePool, recentForegroundPages] = await Promise.all([
     queryTrackingGraphFromGraph(graph, {
       type: "get-history-page-pool",
@@ -223,7 +271,25 @@ async function getAiInterestKeywordsForPreloading(context = {}) {
       limit: 8,
     }),
   ]);
-  const currentPage = {
+  const currentPage = buildCurrentPageAiContextRecord(context);
+  const openPages = await collectOpenContextPages({
+    graph,
+    sourceWindowId: context?.sourceWindowId,
+    currentPage,
+    historyPagePool,
+    recentForegroundPages,
+  });
+
+  return {
+    historyPagePool,
+    recentForegroundPages,
+    currentPage,
+    openPages,
+  };
+}
+
+function buildCurrentPageAiContextRecord(context) {
+  return {
     pageUrl: normalizePageUrlForIndex(context?.sourceUrl || ""),
     title: typeof context?.currentPageTitle === "string" ? context.currentPageTitle : "",
     textDigest:
@@ -233,21 +299,15 @@ async function getAiInterestKeywordsForPreloading(context = {}) {
         ? context.currentPageContentFingerprint
         : "",
   };
-  const openPages = await collectOpenContextPages({
-    graph,
-    sourceWindowId: context?.sourceWindowId,
-    currentPage,
-    historyPagePool,
-    recentForegroundPages,
-  });
-  const interestKeywords = await getAiInterestKeywords({
-    settings,
-    currentPage,
-    openPages,
-    historyPagePool,
-    recentForegroundPages,
-  });
+}
 
+function recordAiInterestResultDiagnostic(
+  aiPredictionSettings,
+  interestKeywords,
+  openPages,
+  recentForegroundPages,
+  historyPagePool
+) {
   recordAiPredictionDiagnostic("prediction.ai.interest.result", {
     providerId: aiPredictionSettings.providerId || "",
     modelId: aiPredictionSettings.modelId || "",
@@ -258,14 +318,6 @@ async function getAiInterestKeywordsForPreloading(context = {}) {
       : 0,
     historyPageCount: Array.isArray(historyPagePool?.urls) ? historyPagePool.urls.length : 0,
   });
-
-  return {
-    interestKeywords,
-    historyPagePool,
-    recentForegroundPages,
-    currentPage,
-    openPages,
-  };
 }
 
 async function getAiInterestKeywords({
@@ -282,7 +334,46 @@ async function getAiInterestKeywords({
   const recentForegroundPageRecords = normalizeRecentForegroundPagePromptRecords(
     recentForegroundPages
   );
-  const cacheKey = JSON.stringify({
+  const cacheKey = buildAiInterestKeywordCacheKey({
+    aiPredictionSettings,
+    currentPage,
+    openPages,
+    recentForegroundPageRecords,
+    historyPageRecords,
+  });
+  const cachedEntry = aiInterestKeywordCache.get(cacheKey);
+
+  if (cachedEntry && cachedEntry.expiresAt > Date.now()) {
+    return cachedEntry.promise;
+  }
+
+  const inferencePromise = invokeAiInterestKeywordInference({
+    aiKeywordTools,
+    aiProvider,
+    settings,
+    aiPredictionSettings,
+    currentPage,
+    openPages,
+    recentForegroundPageRecords,
+    historyPageRecords,
+  });
+
+  aiInterestKeywordCache.set(cacheKey, {
+    expiresAt: Date.now() + AI_INTEREST_KEYWORD_CACHE_TTL_MS,
+    promise: inferencePromise,
+  });
+  pruneAiInterestKeywordCache();
+  return inferencePromise;
+}
+
+function buildAiInterestKeywordCacheKey({
+  aiPredictionSettings,
+  currentPage,
+  openPages,
+  recentForegroundPageRecords,
+  historyPageRecords,
+}) {
+  return JSON.stringify({
     providerId: aiPredictionSettings.providerId || "",
     modelId: aiPredictionSettings.modelId || "",
     currentPageUrl: currentPage?.pageUrl || "",
@@ -291,22 +382,29 @@ async function getAiInterestKeywords({
     recentForegroundPageUrls: recentForegroundPageRecords.map((page) => page.pageUrl),
     historyPageUrls: historyPageRecords.map((page) => page.pageUrl),
   });
-  const cachedEntry = aiInterestKeywordCache.get(cacheKey);
+}
 
-  if (cachedEntry && cachedEntry.expiresAt > Date.now()) {
-    return cachedEntry.promise;
-  }
-
-  const inferencePromise = aiProvider.invokeConfiguredAiProvider(
-    settings,
-    aiKeywordTools.buildContextKeywordPrompt({
-      currentPage,
-      openPages,
-      recentForegroundPages: recentForegroundPageRecords,
-      historyPagePool: historyPageRecords,
-    }),
-    { responseFormat: "json" }
-  )
+function invokeAiInterestKeywordInference({
+  aiKeywordTools,
+  aiProvider,
+  settings,
+  aiPredictionSettings,
+  currentPage,
+  openPages,
+  recentForegroundPageRecords,
+  historyPageRecords,
+}) {
+  return aiProvider
+    .invokeConfiguredAiProvider(
+      settings,
+      aiKeywordTools.buildContextKeywordPrompt({
+        currentPage,
+        openPages,
+        recentForegroundPages: recentForegroundPageRecords,
+        historyPagePool: historyPageRecords,
+      }),
+      { responseFormat: "json" }
+    )
     .then((result) => aiKeywordTools.parseAiKeywordInferenceResponse(result?.output_text))
     .then((result) => (Array.isArray(result?.keywords) ? result.keywords : []))
     .catch((error) => {
@@ -318,13 +416,6 @@ async function getAiInterestKeywords({
       });
       return [];
     });
-
-  aiInterestKeywordCache.set(cacheKey, {
-    expiresAt: Date.now() + AI_INTEREST_KEYWORD_CACHE_TTL_MS,
-    promise: inferencePromise,
-  });
-  pruneAiInterestKeywordCache();
-  return inferencePromise;
 }
 
 function recordAiPredictionDiagnostic(eventName, payload) {
