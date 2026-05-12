@@ -136,44 +136,58 @@ async function trySelectPreloadCandidateGroupWithEngine(
     return null;
   }
 
-  const pageSlotLimit = Number(options?.pageSlotLimit);
-  const siteSelectionLimit = Number(options?.siteSelectionLimit);
-  const selectionGroup = typeof options?.selectionGroup === "string" ? options.selectionGroup : "";
-  const result = await selectPreloadCandidateGroup({
-    pageSlotLimit: Number.isFinite(pageSlotLimit) ? Math.max(0, Math.trunc(pageSlotLimit)) : 0,
-    siteSelectionLimit: Number.isFinite(siteSelectionLimit)
-      ? Math.max(0, Math.trunc(siteSelectionLimit))
-      : 0,
-    selectionGroup,
-    candidates: candidatePool.map((candidate, index) => {
-      const siteAiKeywordMatch = aiKeywordMultipliersByNodeId.get(candidate?.nodeId) ?? null;
-
-      return {
-        index,
-        nodeId: typeof candidate?.nodeId === "string" ? candidate.nodeId : "",
-        url: typeof candidate?.url === "string" ? candidate.url : "",
-        targetPageUrl:
-          normalizePageUrlForIndex(candidate?.targetPageUrl || candidate?.url || "") || "",
-        isSameSite: candidate?.isSameSite === true,
-        siteTransitionCount: clampNonNegativeInt(candidate?.siteTransitionCount, 0),
-        siteAiKeywordMultiplier:
-          Number.isFinite(Number(siteAiKeywordMatch?.multiplier)) &&
-          Number(siteAiKeywordMatch.multiplier) > 1
-            ? Number(siteAiKeywordMatch.multiplier)
-            : 1,
-        score: Number.isFinite(Number(candidate?.score)) ? Number(candidate.score) : 0,
-        visibilityScore: Number.isFinite(Number(candidate?.visibilityScore))
-          ? Number(candidate.visibilityScore)
-          : 0,
-        linkIndex: clampNonNegativeInt(candidate?.linkIndex, index),
-      };
-    }),
-  });
+  const result = await selectPreloadCandidateGroup(
+    buildEngineSelectionRequest(candidatePool, options, aiKeywordMultipliersByNodeId)
+  );
 
   if (!result || !Array.isArray(result.selectedIndices)) {
     return null;
   }
 
+  return mapEngineSelectionResultToCandidates(result, candidatePool, aiKeywordMultipliersByNodeId);
+}
+
+function buildEngineSelectionRequest(candidatePool, options, aiKeywordMultipliersByNodeId) {
+  const pageSlotLimit = Number(options?.pageSlotLimit);
+  const siteSelectionLimit = Number(options?.siteSelectionLimit);
+  const selectionGroup = typeof options?.selectionGroup === "string" ? options.selectionGroup : "";
+
+  return {
+    pageSlotLimit: Number.isFinite(pageSlotLimit) ? Math.max(0, Math.trunc(pageSlotLimit)) : 0,
+    siteSelectionLimit: Number.isFinite(siteSelectionLimit)
+      ? Math.max(0, Math.trunc(siteSelectionLimit))
+      : 0,
+    selectionGroup,
+    candidates: candidatePool.map((candidate, index) =>
+      buildEngineSelectionCandidateInput(candidate, index, aiKeywordMultipliersByNodeId)
+    ),
+  };
+}
+
+function buildEngineSelectionCandidateInput(candidate, index, aiKeywordMultipliersByNodeId) {
+  const siteAiKeywordMatch = aiKeywordMultipliersByNodeId.get(candidate?.nodeId) ?? null;
+
+  return {
+    index,
+    nodeId: typeof candidate?.nodeId === "string" ? candidate.nodeId : "",
+    url: typeof candidate?.url === "string" ? candidate.url : "",
+    targetPageUrl: normalizePageUrlForIndex(candidate?.targetPageUrl || candidate?.url || "") || "",
+    isSameSite: candidate?.isSameSite === true,
+    siteTransitionCount: clampNonNegativeInt(candidate?.siteTransitionCount, 0),
+    siteAiKeywordMultiplier:
+      Number.isFinite(Number(siteAiKeywordMatch?.multiplier)) &&
+      Number(siteAiKeywordMatch.multiplier) > 1
+        ? Number(siteAiKeywordMatch.multiplier)
+        : 1,
+    score: Number.isFinite(Number(candidate?.score)) ? Number(candidate.score) : 0,
+    visibilityScore: Number.isFinite(Number(candidate?.visibilityScore))
+      ? Number(candidate.visibilityScore)
+      : 0,
+    linkIndex: clampNonNegativeInt(candidate?.linkIndex, index),
+  };
+}
+
+function mapEngineSelectionResultToCandidates(result, candidatePool, aiKeywordMultipliersByNodeId) {
   const candidateByIndex = new Map(candidatePool.map((candidate, index) => [index, candidate]));
   const siteSelectionByCandidateIndex = new Map(
     (Array.isArray(result.siteSelections) ? result.siteSelections : [])
@@ -241,11 +255,10 @@ async function applySiteSelectionToCandidateGroupFallback(
   const pageSlotLimit = Number(options?.pageSlotLimit);
   const siteSelectionLimit = Number(options?.siteSelectionLimit);
   const selectionGroup = typeof options?.selectionGroup === "string" ? options.selectionGroup : "";
-  const sameOriginCandidates = normalizedCandidatePool.filter((candidate) => candidate?.isSameSite);
-
-  const selectedSameOriginCandidates = [...sameOriginCandidates]
-    .sort(comparePreloadCandidatePriority)
-    .slice(0, pageSlotLimit);
+  const selectedSameOriginCandidates = selectFallbackSameOriginCandidates(
+    normalizedCandidatePool,
+    pageSlotLimit
+  );
   const remainingCrossSitePageSlots = Math.max(
     0,
     pageSlotLimit - selectedSameOriginCandidates.length
@@ -259,6 +272,41 @@ async function applySiteSelectionToCandidateGroupFallback(
     return selectedSameOriginCandidates;
   }
 
+  const selectedSiteClusters = await selectFallbackCrossSiteClusters(
+    siteClusters,
+    aiKeywordMultipliersByNodeId,
+    siteSelectionLimit,
+    remainingCrossSitePageSlots
+  );
+
+  if (selectedSiteClusters.length === 0) {
+    return selectedSameOriginCandidates;
+  }
+
+  const selectedCrossSiteCandidates = buildFallbackSelectedCrossSiteCandidates(
+    selectedSiteClusters,
+    remainingCrossSitePageSlots,
+    selectionGroup
+  );
+
+  return [...selectedSameOriginCandidates, ...selectedCrossSiteCandidates].sort(
+    comparePreloadCandidatePriority
+  );
+}
+
+function selectFallbackSameOriginCandidates(normalizedCandidatePool, pageSlotLimit) {
+  return normalizedCandidatePool
+    .filter((candidate) => candidate?.isSameSite)
+    .sort(comparePreloadCandidatePriority)
+    .slice(0, pageSlotLimit);
+}
+
+async function selectFallbackCrossSiteClusters(
+  siteClusters,
+  aiKeywordMultipliersByNodeId,
+  siteSelectionLimit,
+  remainingCrossSitePageSlots
+) {
   const scoredSiteClusters = await scoreCrossSiteCandidateClusters(
     siteClusters,
     aiKeywordMultipliersByNodeId
@@ -268,12 +316,15 @@ async function applySiteSelectionToCandidateGroupFallback(
     remainingCrossSitePageSlots,
     scoredSiteClusters.length
   );
-  const selectedSiteClusters = scoredSiteClusters.slice(0, effectiveSelectedSiteCount);
 
-  if (selectedSiteClusters.length === 0) {
-    return selectedSameOriginCandidates;
-  }
+  return scoredSiteClusters.slice(0, effectiveSelectedSiteCount);
+}
 
+function buildFallbackSelectedCrossSiteCandidates(
+  selectedSiteClusters,
+  remainingCrossSitePageSlots,
+  selectionGroup
+) {
   const totalSelectedSiteCap = selectedSiteClusters.reduce(
     (sum, siteCluster) => sum + siteCluster.cap,
     0
@@ -284,34 +335,43 @@ async function applySiteSelectionToCandidateGroupFallback(
     selectedSiteClusters.map((siteCluster) => siteCluster.siteWeight),
     selectedSiteClusters.map((siteCluster) => siteCluster.cap)
   );
-  const selectedCrossSiteCandidates = selectedSiteClusters.flatMap((siteCluster, index) => {
-    const allocatedSlots = allocations[index] ?? 0;
 
-    if (allocatedSlots <= 0) {
-      return [];
-    }
-
-    return [...siteCluster.candidates]
-      .sort(comparePreloadCandidatePriority)
-      .slice(0, allocatedSlots)
-      .map((candidate) => ({
-        ...candidate,
-        siteSelection: {
-          siteNodeId: siteCluster.nodeId,
-          siteWeight: siteCluster.siteWeight,
-          siteTransitionCount: siteCluster.siteTransitionCount,
-          cap: siteCluster.cap,
-          allocatedSlots,
-          siteRank: index + 1,
-          selectionGroup,
-          aiKeywordMatch: siteCluster.siteAiKeywordMatch ?? null,
-        },
-      }));
-  });
-
-  return [...selectedSameOriginCandidates, ...selectedCrossSiteCandidates].sort(
-    comparePreloadCandidatePriority
+  return selectedSiteClusters.flatMap((siteCluster, index) =>
+    buildFallbackSelectedCandidatesForSiteCluster(
+      siteCluster,
+      allocations[index] ?? 0,
+      index + 1,
+      selectionGroup
+    )
   );
+}
+
+function buildFallbackSelectedCandidatesForSiteCluster(
+  siteCluster,
+  allocatedSlots,
+  siteRank,
+  selectionGroup
+) {
+  if (allocatedSlots <= 0) {
+    return [];
+  }
+
+  return [...siteCluster.candidates]
+    .sort(comparePreloadCandidatePriority)
+    .slice(0, allocatedSlots)
+    .map((candidate) => ({
+      ...candidate,
+      siteSelection: {
+        siteNodeId: siteCluster.nodeId,
+        siteWeight: siteCluster.siteWeight,
+        siteTransitionCount: siteCluster.siteTransitionCount,
+        cap: siteCluster.cap,
+        allocatedSlots,
+        siteRank,
+        selectionGroup,
+        aiKeywordMatch: siteCluster.siteAiKeywordMatch ?? null,
+      },
+    }));
 }
 
 function buildCrossSiteCandidateSiteClusters(crossSiteCandidates) {

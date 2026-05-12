@@ -7,6 +7,10 @@ pub struct FilterCandidateInput {
     pub score: f64,
     pub visibility_score: f64,
     pub link_index: usize,
+    #[serde(default)]
+    pub bookmark_rank: u64,
+    #[serde(default)]
+    pub google_bookmark_candidate: bool,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -22,8 +26,6 @@ pub struct FilterRuleCardStateInput {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FilterCandidatesInput {
-    #[serde(default)]
-    pub ordered_rule_ids: Vec<String>,
     #[serde(default)]
     pub rule_items: BTreeMap<String, FilterRuleCardStateInput>,
     #[serde(default)]

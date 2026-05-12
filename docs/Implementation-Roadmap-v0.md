@@ -15,15 +15,18 @@
 
 ## 1.1 当前指定入口边界
 
-当前已固定 4 个指定入口文件：
+当前已固定这些指定入口 / 边界文件：
 
 - 扩展主程序文件：`extansion/service-worker.js`
 - 扩展后台维护文件：`extansion/background/preload/runtime/policy/watchdog.js`
 - 本地 app 主程序文件：`app/src/main.rs`
-- 本地 app 后台维护文件：`app/src/lifecycle/host.rs`
+- 本地 app 后台维护总文件：`app/src/lifecycle.rs`
+- 本地 app host 单实例文件：`app/src/lifecycle/host.rs`
+- 本地 app 扩展发现与运行期存在性检测文件：`app/src/lifecycle/extension.rs`
+- 本地 app Chrome 进程生命周期文件：`app/src/lifecycle/chrome.rs`
 - 本地 app 旧 watcher 清理文件：`app/src/lifecycle/watcher.rs`
 
-后续路线图里的“收口”“减厚”“边界整理”，都以这 4 个指定入口为基线判断：
+后续路线图里的“收口”“减厚”“边界整理”，都以这些指定入口 / 边界为基线判断：
 
 - 高层逻辑如果继续长在别处，需要先判断它是合理的子系统协调层，还是新的隐式入口。
 - 只有前者可以保留；后者应继续收回指定入口边界。
@@ -215,16 +218,23 @@
 - 当前已开始替换旧固定窗口桶：Rust / JS 图结构改为 `total + byDay`
 - 原始消息层已新增按 UTC 日期分组索引，用于后续窗口查询与老化检查
 - 现有 `windowKey` 对外接口保留不变，但内部实现已开始切到“按日期组动态求和”
-- 设置页已新增 AI 预测辅助占位项：模型选择 + 启用开关
-- 设置页已新增模型管理占位项：模型选择 + 下载状态开关
-- 当前模型列表已收进共享设置层：Qwen3 `0.6B / 1.7B / 4B`，Gemma 4 `E2B / E4B`
+- 2026-05-03 架构迁移：
+  - 站点选择与页面槽位分配的纯计算已收进插件 Wasm `selection` 层。
+  - JS 仍负责浏览器候选收集、策略分组、AI provider 调用和关键词库查询。
+  - Wasm `select_preload_candidate_group_json` 负责：同组候选聚类、站点权重计算、站点数量截断、按真实 `cap` 分配页面槽位、输出最终候选 index。
+  - JS 保留旧算法作为 fallback，旧 Wasm 或 Wasm 加载失败时不会中断预加载链。
+- 2026-05-03 日志模式：
+  - 设置页新增 `Log mode` 开关，默认关闭。
+  - 开启后扩展把运行期诊断事件批量写入本地 app。
+  - 本地 app 保存位置固定为 `<local-app-dir>/portable/logs/extension-<sessionId>.jsonl`。
+  - 当前不做复杂查看器和导出 UI；后续排查时直接取 JSONL 文件分析。
+  - 已覆盖现有 runtime debug 事件、最终 top 排序、tracking visit 写入、created target、tab replacement、preload window / hidden-tab / activation 相关事件。
+- 设置页 AI 预测辅助已改为：provider 选择 + 模型名 + API key + endpoint + 启用开关
 - 时间窗口中的 `total` 全量窗口继续保留，不会被 `365d` 替代
-- AI runtime 口径已改成“本地 app 目录内的便携 runtime + 本地模型目录”
-- AI 模型管理当前开始从“设置占位”推进到“本地 app 真实下载 / 删除 / 检测”
-- 当前目标运行时固定为 `ollama-runtime`
-- 本地 app 已新增 AI 状态 / 安装 / 删除 / 通用推理 API 端点
-- 扩展侧已新增 `ai-models:get-status` / `ai-models:set-installed` 后台消息链
-- 设置页 `Manage model` 已开始走真实本地 app 状态，而不是纯本地占位布尔值
+- AI runtime 口径已改为“不由插件 / 本地 app 管理模型或运行时”
+- 本地 app 的 AI 状态 / 安装 / 删除 / 通用推理 API 端点已移除
+- 扩展侧 `ai-models:*` 后台消息链已移除
+- AI provider key 当前支持：OpenAI / Gemini / Claude / Grok / DeepSeek / Qwen / GLM / Kimi / OpenRouter / LM Studio
 - AI 关键词库口径已明确改成“页级数据库 + 页级索引层”
 - 最近上下文口径已明确改成“只统计真实进入前台的页面”
 - AI 关键词乘区当前已固定初始区间：
@@ -253,8 +263,7 @@
   - AI 近期兴趣关键词推理已开始与候选池构造并行推进
   - 关键词乘区已开始作为异步补入乘区挂进现有总权重链
   - debug snapshot 已开始暴露历史页面信息池和当前 preload 条目的 AI 关键词命中结果，方便测试期观察
-- AI prompt 组装边界已收回扩展 JS；本地 app 只保留 runtime / model 管理和通用模型调用
-- 本地 app AI 推理接口已收成统一 `infer` 出口，页面关键词 prompt 已开始由扩展侧独立组装
+- AI prompt 组装、provider 调用、返回解析边界都在扩展 JS；本地 app 不再参与 AI 推理链
 - 站外导航频数系统下一步已明确重构为“双层排序”：
   - 先按站点频数 + 站点 AI 匹配算 `siteWeight`
   - 先按执行策略拆成原生预加载组和真实标签页组
@@ -475,29 +484,16 @@
 - core/messages 已继续拆成：
   - `core/messages/debug`
   - `core/messages/settings`
-  - `core/messages/ai-models`
-- 当前 `core/messages.js` 已退化成后台消息域统一导出边界，不再继续承载 debug、settings 和 AI 模型管理全部实现
-- 本地 app 的 `model.rs` 已继续拆成：
-  - `model/catalog`
-  - `model/types`
-  - `model/runtime`
-  - `model/status`
-  - `model/infer`
-- 当前 `app/src/model.rs` 已退化成便携模型能力的统一导出边界，不再继续承载模型清单、请求响应类型、runtime、状态和推理实现细节
+  - `core/messages/service-control`
+- 当前 `core/messages.js` 已退化成后台消息域统一导出边界，不再继续承载 debug、settings 和服务控制全部实现
+- 本地 app 的模型管理模块已移除：
+  - 不再编译 `app/src/model.rs`
+  - 不再暴露 AI install / uninstall / progress / infer HTTP 路由
+  - provider key 与 AI 推理由扩展 JS 管理
 - 本地 app 的 `api.rs` 已继续拆成：
   - `api/routes/system`
-  - `api/routes/ai`
   - `api/routes/windows`
 - 当前 `app/src/api.rs` 已退化成 HTTP 服务入口与路由装配边界，不再继续承载各路由域的具体处理实现
-- 本地 app 的 `model/runtime.rs` 已继续拆成：
-  - `model/runtime/paths`
-  - `model/runtime/install`
-  - `model/runtime/process`
-- 当前 `app/src/model/runtime.rs` 已退化成便携模型运行时层统一导出边界，不再继续承载路径、安装和进程控制全部实现
-- 本地 app 的 `model/status.rs` 已继续拆成：
-  - `model/status/runtime`
-  - `model/status/models`
-- 当前 `app/src/model/status.rs` 已退化成便携模型状态汇总层统一导出边界，不再继续承载 runtime 状态和模型状态全部实现
 - wasm 计算核的 `db.rs` 已继续拆成：
   - `db/buckets`
   - `db/learning`
@@ -554,14 +550,16 @@ Phase 4 后台窗口方案已开始推进：
 - 当前 `app/src/window/actions.rs` 已退化成 Win32 动作层，不再继续承载高层隐藏窗口维护语义
 - 本地 app 的 `lifecycle.rs` 已继续拆成：
   - `lifecycle/chrome`
+  - `lifecycle/extension`
   - `lifecycle/host`
   - `lifecycle/watcher`
-- 当前 `app/src/lifecycle.rs` 已退化成生命周期统一导出边界，不再继续承载 Chrome 探测、host 单实例、扩展安装检测和 shutdown monitor 全部实现
-- 当前 `app/src/lifecycle/host.rs` 承担 host 单实例、扩展安装检测和扩展卸载关闭监控；不负责补拉任何离散进程
+- 当前 `app/src/lifecycle.rs` 已退化成生命周期统一导出边界，不再继续承载 Chrome 探测、host 单实例和 shutdown monitor 全部实现
+- 当前 `app/src/lifecycle/host.rs` 只承担 host 单实例
+- 当前 `app/src/lifecycle/extension.rs` 承担安装 / status 阶段需要的扩展 ID 扫描，以及运行期扩展存在性监控；如果目标扩展消失，本地 app 必须能自行退出
 - 当前 `app/src/lifecycle/watcher.rs` 仅保留历史 Windows Run watcher 清理和旧 `--watcher` 参数兼容
 - 本轮稳定性修复已开始落地：
   - 本地 app API 已新增“注册并锁定当前扩展 origin”的授权边界，不再接受任意扩展直接控制
-  - runtime message 已新增 `side-effect` 队列，AI 推理、模型管理、候选注册和页面摘要链不再阻塞主 mutation queue
+  - runtime message 已新增 `side-effect` 队列，候选注册和页面摘要链不再阻塞主 mutation queue；AI provider 调用也保持异步失败兜底
   - source-lock 已新增 TTL，并在导航 commit 时统一消费，不再无限残留
   - hidden-tab 激活链已改成“先写 tracking，再移动 tab”
   - Wasm 引擎首次加载失败后已支持冷却后重试，不再整轮 worker 生命周期永久退回 JS fallback
@@ -580,9 +578,9 @@ Phase 4 后台窗口方案已开始推进：
 - 扩展侧的 `background/shared/native-app.js` 已继续拆成：
   - `shared/native-app/request`
   - `shared/native-app/health`
-  - `shared/native-app/ai`
+  - `shared/native-app/wake`
   - `shared/native-app/windows`
-- 当前 `background/shared/native-app.js` 已退化成本地 app 客户端统一导出边界，不再继续承载请求、健康检查、AI 和窗口操作全部实现
+- 当前 `background/shared/native-app.js` 已退化成本地 app 客户端统一导出边界，不再继续承载请求、健康检查、唤醒和窗口操作全部实现
 - 设置层新增 `preloadWindow.systemLevelHiding.support` 和 `usable` 字段，用于降级判断
 - 预加载状态层新增 `preloadWindow.hwnd` 和 `preloadWindow.hiddenBySystem` 字段
 - `ensurePreloadWindow` 已支持双路径：系统级隐藏优先，最小化回退
@@ -643,10 +641,11 @@ Phase 5 高级算法接入前，应优先清理三类基础层面的遗留问题
    - 详见 `Algorithm-Design-Workflow-v0.md` §5.14.1
    - 后续仍需结合真实点击测试继续调参
 
-2. 便携 ollama-runtime 的真实边界
-   - 环境变量、端口、进程生命周期都必须由本地 app 接管
-   - 任何一环落回系统默认路径，便携性就不成立
-   - 详见 `Algorithm-Design-Workflow-v0.md` §5.9.1
+2. AI provider key 边界
+   - 扩展 JS 直接调用 provider API
+   - 本地 app 不保存 key、不下载模型、不启动模型运行时
+   - 本地模型通过 LM Studio 等外部 OpenAI-compatible 服务接入
+   - 详见 `Algorithm-Design-Workflow-v0.md` §5.8-§5.11
 
 3. 后台窗口定位与持续隐藏
    - HWND 匹配改成 title-based 精确匹配

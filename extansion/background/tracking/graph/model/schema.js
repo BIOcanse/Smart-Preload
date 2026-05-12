@@ -3,7 +3,7 @@ const MAX_HISTORY_PAGE_POOL_SIZE = 5;
 
 function createEmptyGraph() {
   return {
-    version: 12,
+    version: 13,
     nodes: {},
     edges: {},
     transitionBuckets: createEmptyTransitionBuckets(),
@@ -12,6 +12,7 @@ function createEmptyGraph() {
     externalPageTransitionBuckets: createEmptyPageTransitionBuckets(),
     intraSitePageTransitionBuckets: createEmptyPageTransitionBuckets(),
     pageTransitionMessageBuckets: createEmptyPageTransitionMessageBuckets(),
+    bookmarkPreloadBuckets: createEmptyBookmarkPreloadBuckets(),
     linkBehaviorStore: {},
     pageKeywordStore: {},
     pageKeywordBuckets: createEmptyPageKeywordBuckets(),
@@ -24,6 +25,44 @@ function createEmptyGraph() {
     transitionSequence: 0,
     updatedAt: null,
   };
+}
+
+function createEmptyBookmarkPreloadBuckets() {
+  return {
+    startupGoogleSearch: {},
+    newGoogleSearchTab: {},
+  };
+}
+
+function normalizeBookmarkPreloadBuckets(rawBuckets) {
+  const buckets = isPlainObject(rawBuckets) ? rawBuckets : {};
+
+  return {
+    startupGoogleSearch: normalizeBookmarkPreloadBucketLayer(
+      buckets.startupGoogleSearch
+    ),
+    newGoogleSearchTab: normalizeBookmarkPreloadBucketLayer(
+      buckets.newGoogleSearchTab
+    ),
+  };
+}
+
+function normalizeBookmarkPreloadBucketLayer(rawLayer) {
+  const layer = isPlainObject(rawLayer) ? rawLayer : {};
+  const normalizedLayer = {};
+
+  for (const [rawPageUrl, rawCount] of Object.entries(layer)) {
+    const pageUrl = normalizePageUrlForIndex(rawPageUrl || "");
+    const count = clampNonNegativeInt(rawCount, 0);
+
+    if (!pageUrl || count <= 0) {
+      continue;
+    }
+
+    normalizedLayer[pageUrl] = count;
+  }
+
+  return normalizedLayer;
 }
 
 function createEmptyTransitionBuckets() {

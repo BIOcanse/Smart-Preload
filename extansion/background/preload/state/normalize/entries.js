@@ -35,6 +35,7 @@
       transitionMetrics: normalizeTransitionMetrics(nextEntry.transitionMetrics),
       status: typeof nextEntry.status === "string" ? nextEntry.status : "queued",
       aiKeywordMatch: normalizeAiKeywordMatch(nextEntry.aiKeywordMatch),
+      bookmarkPreload: normalizeBookmarkPreloadMetadata(nextEntry.bookmarkPreload),
       siteSelection: normalizeSiteSelection(nextEntry.siteSelection),
       createdAt: typeof nextEntry.createdAt === "string" ? nextEntry.createdAt : null,
       updatedAt: typeof nextEntry.updatedAt === "string" ? nextEntry.updatedAt : null,
@@ -54,6 +55,7 @@
       strategy,
       targetHint: typeof nextEntry.targetHint === "string" ? nextEntry.targetHint : null,
       aiKeywordMatch: normalizeAiKeywordMatch(nextEntry.aiKeywordMatch),
+      bookmarkPreload: normalizeBookmarkPreloadMetadata(nextEntry.bookmarkPreload),
       siteSelection: normalizeSiteSelection(nextEntry.siteSelection),
       updatedAt: typeof nextEntry.updatedAt === "string" ? nextEntry.updatedAt : null,
     };
@@ -173,6 +175,31 @@
       siteRank: Number.isFinite(siteRank) ? Math.max(0, Math.trunc(siteRank)) : 0,
       selectionGroup: typeof nextValue.selectionGroup === "string" ? nextValue.selectionGroup : "",
       aiKeywordMatch: normalizeAiKeywordMatch(nextValue.aiKeywordMatch),
+    };
+  }
+
+  function normalizeBookmarkPreloadMetadata(rawValue) {
+    const nextValue = isPlainObject(rawValue) ? rawValue : null;
+
+    if (!nextValue) {
+      return null;
+    }
+
+    const bucketKey =
+      nextValue.bucketKey === BOOKMARK_PRELOAD_BUCKET_STARTUP_GOOGLE_SEARCH ||
+      nextValue.bucketKey === BOOKMARK_PRELOAD_BUCKET_NEW_GOOGLE_SEARCH_TAB
+        ? nextValue.bucketKey
+        : "";
+
+    if (!bucketKey) {
+      return null;
+    }
+
+    return {
+      bucketKey,
+      count: clampNonNegativeInt(nextValue.count, 0),
+      rank: clampNonNegativeInt(nextValue.rank, 0),
+      title: typeof nextValue.title === "string" ? nextValue.title : "",
     };
   }
 

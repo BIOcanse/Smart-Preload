@@ -1,15 +1,14 @@
-try {
-  importScripts("shared/local-ai-test-config.js");
-} catch (_error) {
-  // Optional local-only test config. This file is gitignored and absent in releases.
-}
-
 importScripts(
   "shared/ai-model-catalog.js",
   "shared/lmstudio.js",
   "shared/settings.js",
   "background/shared/base.js",
   "background/shared/native-app/wake.js",
+  "background/shared/native-app/request/common.js",
+  "background/shared/native-app/request/transport.js",
+  "background/shared/native-app/request/registration.js",
+  "background/shared/native-app/request/heartbeat-activity.js",
+  "background/shared/native-app/request/heartbeat.js",
   "background/shared/native-app/request.js",
   "background/shared/native-app/health.js",
   "background/shared/native-app/windows.js",
@@ -20,6 +19,10 @@ importScripts(
   "background/shared/support/usability.js",
   "background/shared/support.js",
   "background/ai/keywords.js",
+  "background/ai/providers/common.js",
+  "background/ai/providers/request.js",
+  "background/ai/providers/response.js",
+  "background/ai/providers/lmstudio-lifecycle.js",
   "background/ai/providers.js",
   "background/tracking/url/model.js",
   "background/tracking/graph/model/schema.js",
@@ -87,6 +90,7 @@ importScripts(
   "background/preload/scoring.js",
   "background/preload/rules.js",
   "background/preload/prediction/metrics.js",
+  "background/preload/prediction/bookmarks.js",
   "background/preload/prediction/candidate-pool.js",
   "background/preload/prediction/site-selection.js",
   "background/preload/prediction/strategy/flags.js",
@@ -106,6 +110,11 @@ importScripts(
   "background/preload/runtime/policy/watchdog.js",
   "background/preload/runtime/window-policy.js",
   "background/preload/runtime/windows.js",
+  "background/preload/runtime/candidate-registration/context.js",
+  "background/preload/runtime/candidate-registration/tracking.js",
+  "background/preload/runtime/candidate-registration/diagnostics.js",
+  "background/preload/runtime/candidate-registration/apply-selection.js",
+  "background/preload/runtime/candidate-registration/response.js",
   "background/preload/runtime/candidate-registration.js",
   "background/preload/runtime/source-tabs/ownership.js",
   "background/preload/runtime/source-tabs/hidden-tabs.js",
@@ -113,6 +122,10 @@ importScripts(
   "background/preload/runtime/source-tabs.js",
   "background/preload/runtime/sync.js",
   "background/preload/runtime/activation/tracking.js",
+  "background/preload/runtime/activation/request.js",
+  "background/preload/runtime/activation/resolution.js",
+  "background/preload/runtime/activation/promotion.js",
+  "background/preload/runtime/activation/cleanup.js",
   "background/preload/runtime/activation/flow.js",
   "background/preload/runtime/activation.js",
   "background/preload/runtime/lifecycle/candidates.js",

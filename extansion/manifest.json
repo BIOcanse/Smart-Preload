@@ -10,6 +10,7 @@
     "tabs",
     "windows",
     "webNavigation",
+    "bookmarks",
     "unlimitedStorage",
     "nativeMessaging"
   ],
@@ -34,7 +35,18 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["scripts/navigation-interceptor.js"],
+      "js": [
+        "scripts/navigation/shared.js",
+        "scripts/navigation/background-client.js",
+        "scripts/navigation/fallbacks.js",
+        "scripts/navigation/speculation-rules.js",
+        "scripts/navigation/waterfall-baseline.js",
+        "scripts/navigation/page-digest.js",
+        "scripts/navigation/candidate-scan.js",
+        "scripts/navigation/click-edge.js",
+        "scripts/navigation/dom-observer.js",
+        "scripts/navigation-interceptor.js"
+      ],
       "run_at": "document_start"
     }
   ],

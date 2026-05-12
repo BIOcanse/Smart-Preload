@@ -10,7 +10,7 @@ pub(crate) fn normalize_graph(graph: &mut Graph) {
     let stored_transition_message_buckets = graph.transition_message_buckets.clone();
     let stored_page_transition_buckets = graph.page_transition_buckets.clone();
 
-    graph.version = 12;
+    graph.version = 13;
 
     let edge_ids: Vec<String> = graph.edges.keys().cloned().collect();
 
@@ -65,6 +65,7 @@ pub(crate) fn normalize_graph(graph: &mut Graph) {
     graph.external_page_transition_buckets = PageTransitionBuckets::default();
     graph.intra_site_page_transition_buckets = PageTransitionBuckets::default();
     graph.page_transition_message_buckets = PageTransitionMessageBuckets::default();
+    normalize_bookmark_preload_buckets(graph);
     learning::normalize_link_behavior_store(&mut graph.link_behavior_store);
     learning::normalize_page_keyword_store(&mut graph.page_keyword_store);
     graph.page_keyword_buckets = PageKeywordBuckets::default();
@@ -123,6 +124,17 @@ pub(crate) fn normalize_graph(graph: &mut Graph) {
     for page_keyword_entry in page_keyword_entries {
         learning::register_page_keyword_entry(graph, &page_keyword_entry);
     }
+}
+
+fn normalize_bookmark_preload_buckets(graph: &mut Graph) {
+    graph
+        .bookmark_preload_buckets
+        .startup_google_search
+        .retain(|page_url, count| !page_url.is_empty() && *count > 0);
+    graph
+        .bookmark_preload_buckets
+        .new_google_search_tab
+        .retain(|page_url, count| !page_url.is_empty() && *count > 0);
 }
 
 fn migrate_legacy_page_transition_buckets(

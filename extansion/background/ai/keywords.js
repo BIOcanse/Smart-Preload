@@ -302,74 +302,101 @@ function buildCandidateSemanticFieldEntries(candidate, targetPageKeywordEntry) {
 
 function buildSiteSemanticFieldEntries(siteCandidates, targetPageKeywordsByUrl) {
   const normalizedSiteCandidates = Array.isArray(siteCandidates) ? siteCandidates : [];
-  const fieldEntries = [];
-  const aggregateLinkFields = {
-    anchorText: new Set(),
-    nearbyText: new Set(),
-    titleAttr: new Set(),
-    ariaLabel: new Set(),
-    imageAlt: new Set(),
-    hrefPathTokens: new Set(),
-  };
-  const targetKeywordWeights = new Map();
-  const targetTitles = new Set();
-  const targetPageTypes = new Set();
+  const aggregate = createSiteSemanticAggregate();
 
   for (const candidate of normalizedSiteCandidates) {
-    collectSiteFieldTexts(aggregateLinkFields.anchorText, candidate?.anchorText);
-    collectSiteFieldTexts(aggregateLinkFields.nearbyText, candidate?.nearbyText);
-    collectSiteFieldTexts(aggregateLinkFields.titleAttr, candidate?.titleAttr);
-    collectSiteFieldTexts(aggregateLinkFields.ariaLabel, candidate?.ariaLabel);
-    collectSiteFieldTexts(aggregateLinkFields.imageAlt, candidate?.imageAlt);
+    collectSiteCandidateSemanticFields(aggregate, candidate, targetPageKeywordsByUrl);
+  }
 
-    if (Array.isArray(candidate?.hrefPathTokens)) {
-      for (const token of candidate.hrefPathTokens) {
-        const normalizedToken = normalizeKeywordMatchText(token);
+  return buildSiteSemanticFieldEntriesFromAggregate(aggregate);
+}
 
-        if (normalizedToken) {
-          aggregateLinkFields.hrefPathTokens.add(normalizedToken);
-        }
-      }
+function createSiteSemanticAggregate() {
+  return {
+    linkFields: {
+      anchorText: new Set(),
+      nearbyText: new Set(),
+      titleAttr: new Set(),
+      ariaLabel: new Set(),
+      imageAlt: new Set(),
+      hrefPathTokens: new Set(),
+    },
+    targetKeywordWeights: new Map(),
+    targetTitles: new Set(),
+    targetPageTypes: new Set(),
+  };
+}
+
+function collectSiteCandidateSemanticFields(aggregate, candidate, targetPageKeywordsByUrl) {
+  collectSiteCandidateLinkFields(aggregate.linkFields, candidate);
+  collectSiteCandidateTargetFields(aggregate, candidate, targetPageKeywordsByUrl);
+}
+
+function collectSiteCandidateLinkFields(aggregateLinkFields, candidate) {
+  collectSiteFieldTexts(aggregateLinkFields.anchorText, candidate?.anchorText);
+  collectSiteFieldTexts(aggregateLinkFields.nearbyText, candidate?.nearbyText);
+  collectSiteFieldTexts(aggregateLinkFields.titleAttr, candidate?.titleAttr);
+  collectSiteFieldTexts(aggregateLinkFields.ariaLabel, candidate?.ariaLabel);
+  collectSiteFieldTexts(aggregateLinkFields.imageAlt, candidate?.imageAlt);
+
+  if (!Array.isArray(candidate?.hrefPathTokens)) {
+    return;
+  }
+
+  for (const token of candidate.hrefPathTokens) {
+    const normalizedToken = normalizeKeywordMatchText(token);
+
+    if (normalizedToken) {
+      aggregateLinkFields.hrefPathTokens.add(normalizedToken);
     }
+  }
+}
 
-    const targetPageUrl = normalizeKeywordMatchText(candidate?.targetPageUrl || candidate?.url || "");
-    const pageKeywordEntry =
-      targetPageKeywordsByUrl?.[candidate?.targetPageUrl] ??
-      targetPageKeywordsByUrl?.[candidate?.url] ??
-      null;
+function collectSiteCandidateTargetFields(aggregate, candidate, targetPageKeywordsByUrl) {
+  const targetPageUrl = normalizeKeywordMatchText(candidate?.targetPageUrl || candidate?.url || "");
+  const pageKeywordEntry = resolveTargetPageKeywordEntryForCandidate(
+    candidate,
+    targetPageKeywordsByUrl
+  );
 
-    if (!pageKeywordEntry && !targetPageUrl) {
+  if (!pageKeywordEntry && !targetPageUrl) {
+    return;
+  }
+
+  collectTargetKeywordWeights(aggregate.targetKeywordWeights, pageKeywordEntry);
+  collectSiteFieldTexts(aggregate.targetTitles, pageKeywordEntry?.title);
+  collectSiteFieldTexts(aggregate.targetPageTypes, pageKeywordEntry?.pageType);
+}
+
+function resolveTargetPageKeywordEntryForCandidate(candidate, targetPageKeywordsByUrl) {
+  return (
+    targetPageKeywordsByUrl?.[candidate?.targetPageUrl] ??
+    targetPageKeywordsByUrl?.[candidate?.url] ??
+    null
+  );
+}
+
+function collectTargetKeywordWeights(targetKeywordWeights, pageKeywordEntry) {
+  for (const keyword of pageKeywordEntry?.keywords ?? []) {
+    const keywordText = normalizeKeywordMatchText(keyword?.text);
+
+    if (!keywordText) {
       continue;
     }
 
-    for (const keyword of pageKeywordEntry?.keywords ?? []) {
-      const keywordText = normalizeKeywordMatchText(keyword?.text);
+    const weightedScore =
+      KEYWORD_FIELD_WEIGHTS.targetKeyword * clampAiKeywordScore(keyword?.score);
+    const previousWeightedScore = targetKeywordWeights.get(keywordText) ?? 0;
 
-      if (!keywordText) {
-        continue;
-      }
-
-      const weightedScore =
-        KEYWORD_FIELD_WEIGHTS.targetKeyword * clampAiKeywordScore(keyword?.score);
-      const previousWeightedScore = targetKeywordWeights.get(keywordText) ?? 0;
-
-      if (weightedScore > previousWeightedScore) {
-        targetKeywordWeights.set(keywordText, weightedScore);
-      }
-    }
-
-    const normalizedTitle = normalizeKeywordMatchText(pageKeywordEntry?.title);
-
-    if (normalizedTitle) {
-      targetTitles.add(normalizedTitle);
-    }
-
-    const normalizedPageType = normalizeKeywordMatchText(pageKeywordEntry?.pageType);
-
-    if (normalizedPageType) {
-      targetPageTypes.add(normalizedPageType);
+    if (weightedScore > previousWeightedScore) {
+      targetKeywordWeights.set(keywordText, weightedScore);
     }
   }
+}
+
+function buildSiteSemanticFieldEntriesFromAggregate(aggregate) {
+  const fieldEntries = [];
+  const aggregateLinkFields = aggregate.linkFields;
 
   pushSemanticField(
     fieldEntries,
@@ -408,7 +435,7 @@ function buildSiteSemanticFieldEntries(siteCandidates, targetPageKeywordsByUrl) 
     KEYWORD_FIELD_WEIGHTS.hrefPathTokens
   );
 
-  for (const [keywordText, weightedScore] of targetKeywordWeights.entries()) {
+  for (const [keywordText, weightedScore] of aggregate.targetKeywordWeights.entries()) {
     fieldEntries.push({
       field: "targetKeyword",
       text: keywordText,
@@ -416,7 +443,7 @@ function buildSiteSemanticFieldEntries(siteCandidates, targetPageKeywordsByUrl) 
     });
   }
 
-  for (const targetTitle of targetTitles) {
+  for (const targetTitle of aggregate.targetTitles) {
     fieldEntries.push({
       field: "targetTitle",
       text: targetTitle,
@@ -424,7 +451,7 @@ function buildSiteSemanticFieldEntries(siteCandidates, targetPageKeywordsByUrl) 
     });
   }
 
-  for (const targetPageType of targetPageTypes) {
+  for (const targetPageType of aggregate.targetPageTypes) {
     fieldEntries.push({
       field: "targetPageType",
       text: targetPageType,

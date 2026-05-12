@@ -59,6 +59,9 @@
       case "send-native-app-heartbeat":
         await globalThis.ZeroLatencyNativeAppHeartbeat?.send?.("alarm");
         return;
+      case "run-native-app-wake-retry":
+        await globalThis.ZeroLatencyNativeAppHeartbeat?.runWakeRetry?.("alarm");
+        return;
       default:
         return;
     }

@@ -47,3 +47,16 @@ pub(super) fn show_window_now(hwnd: u64) -> Result<()> {
     let _ = unsafe { ShowWindow(handle, SW_SHOWNA) };
     Ok(())
 }
+
+pub(super) fn close_window_now(hwnd: u64) -> Result<()> {
+    let handle = HWND(hwnd as *mut _);
+
+    if !unsafe { IsWindow(handle).as_bool() } {
+        return Ok(());
+    }
+
+    unsafe { PostMessageW(handle, WM_CLOSE, WPARAM(0), LPARAM(0)) }
+        .ok()
+        .context("PostMessageW(WM_CLOSE) failed")?;
+    Ok(())
+}

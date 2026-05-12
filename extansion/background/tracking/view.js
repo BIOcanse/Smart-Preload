@@ -26,6 +26,7 @@ function buildDebugSnapshot(graph) {
         : 0,
       historyPagePool,
     },
+    bookmarkPreloadBuckets: graph.bookmarkPreloadBuckets || {},
   };
 }
 

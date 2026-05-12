@@ -52,7 +52,12 @@ pub(crate) async fn extension_heartbeat(
     })?;
 
     state
-        .record_extension_heartbeat(&origin, payload.normal_window_count)
+        .record_extension_heartbeat(
+            &origin,
+            payload.client_id.as_deref(),
+            payload.normal_window_count,
+            &payload.preload_window_hwnds,
+        )
         .map_err(|error| (StatusCode::FORBIDDEN, error.to_string()))?;
     let active_lease_count =
         state.active_extension_heartbeat_count(crate::api::EXTENSION_HEARTBEAT_TTL);
@@ -85,7 +90,11 @@ pub(crate) struct RegisterExtensionResponse {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct ExtensionHeartbeatRequest {
     #[serde(default)]
+    client_id: Option<String>,
+    #[serde(default)]
     normal_window_count: Option<usize>,
+    #[serde(default)]
+    preload_window_hwnds: Vec<u64>,
 }
 
 #[derive(Debug, Serialize)]

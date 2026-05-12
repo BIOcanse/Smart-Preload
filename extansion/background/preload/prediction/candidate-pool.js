@@ -19,56 +19,25 @@ async function buildPreloadCandidatePool({
   transitionWindowKey = "total",
 }) {
   const sourcePageUrl = normalizePageUrlForIndex(sourceUrl);
-  const candidatePoolByUrl = new Map();
   const sourceCandidateLinks = Array.isArray(candidateLinks) ? candidateLinks : [];
-
-  for (let index = 0; index < sourceCandidateLinks.length; index += 1) {
-    const candidate = sourceCandidateLinks[index];
-    const candidateUrl = normalizeNavigableUrl(candidate?.url, sourceUrl);
-
-    if (!candidateUrl || candidateUrl === sourceUrl) {
-      continue;
-    }
-
-    if (isExcludedGooglePage(candidateUrl)) {
-      continue;
-    }
-
-    const targetNodeId = buildNodeSeed(candidateUrl).nodeId;
-    const targetPageUrl = normalizePageUrlForIndex(candidateUrl);
-    const visibilityScore = Number(candidate.visibility) || 0;
-    const recordedTargetHint = isGoogleSearchResultsPage(sourceUrl)
-      ? null
-      : getRecordedLinkTargetHint(graph, sourcePageUrl, candidateUrl);
-
-    const nextCandidate = {
-      url: candidateUrl,
-      nodeId: targetNodeId,
-      targetHint:
-        recordedTargetHint ??
-        (candidate?.targetHint === "_blank" ? "_blank" : "_self"),
-      isSameOrigin: isSameOriginUrl(sourceUrl, candidateUrl),
-      isSameSite: sourceNodeId === targetNodeId,
-      targetPageUrl,
-      transitionWindowKey,
-      visibilityScore,
-      linkIndex: index,
-      anchorText: typeof candidate?.anchorText === "string" ? candidate.anchorText : "",
-      nearbyText: typeof candidate?.nearbyText === "string" ? candidate.nearbyText : "",
-      titleAttr: typeof candidate?.titleAttr === "string" ? candidate.titleAttr : "",
-      ariaLabel: typeof candidate?.ariaLabel === "string" ? candidate.ariaLabel : "",
-      imageAlt: typeof candidate?.imageAlt === "string" ? candidate.imageAlt : "",
-      hrefPathTokens: buildHrefPathTokens(candidateUrl),
-    };
-    const existingCandidate = candidatePoolByUrl.get(candidateUrl);
-
-    candidatePoolByUrl.set(
-      candidateUrl,
-      existingCandidate
-        ? mergeCandidatePoolEntry(existingCandidate, nextCandidate)
-        : nextCandidate
-    );
-  }
+  const candidatePoolByUrl = buildLinkCandidatePoolByUrl({
+    sourceNodeId,
+    sourceUrl,
+    graph,
+    sourcePageUrl,
+    sourceCandidateLinks,
+    transitionWindowKey,
+  });
+  await addBookmarkCandidatesToPool(candidatePoolByUrl, {
+    sourceNodeId,
+    sourceUrl,
+    sourceWindowId,
+    sourceTabId,
+    graph,
+    settings,
+    transitionWindowKey,
+    linkIndexOffset: sourceCandidateLinks.length,
+  });
 
   const candidatePool = filterSourceSpecificCandidatePool(
     [...candidatePoolByUrl.values()],
@@ -79,19 +48,12 @@ async function buildPreloadCandidatePool({
     return [];
   }
 
-  const candidateMetricsByUrl = await getCandidateTransitionMetricsByUrl({
+  const enrichedCandidatePool = await enrichPreloadCandidatePoolWithMetrics(candidatePool, {
     graph,
     transitionWindowKey,
     sourceNodeId,
     sourcePageUrl,
-    candidatePool,
   });
-  const enrichedCandidatePool = candidatePool
-    .map((candidate) => enrichPreloadCandidateWithMetrics(candidate, candidateMetricsByUrl, {
-      graph,
-      sourceNodeId,
-    }))
-    .filter(Boolean);
 
   return scorePreloadCandidatePool(enrichedCandidatePool, {
     graph,
@@ -103,6 +65,114 @@ async function buildPreloadCandidatePool({
     currentPageTextDigest,
     currentPageContentFingerprint,
   });
+}
+
+function buildLinkCandidatePoolByUrl({
+  sourceNodeId,
+  sourceUrl,
+  graph,
+  sourcePageUrl,
+  sourceCandidateLinks,
+  transitionWindowKey,
+}) {
+  const candidatePoolByUrl = new Map();
+
+  for (let index = 0; index < sourceCandidateLinks.length; index += 1) {
+    const nextCandidate = buildLinkPreloadCandidate({
+      candidate: sourceCandidateLinks[index],
+      index,
+      sourceNodeId,
+      sourceUrl,
+      graph,
+      sourcePageUrl,
+      transitionWindowKey,
+    });
+
+    if (nextCandidate) {
+      mergeCandidateIntoPool(candidatePoolByUrl, nextCandidate.url, nextCandidate);
+    }
+  }
+
+  return candidatePoolByUrl;
+}
+
+function buildLinkPreloadCandidate({
+  candidate,
+  index,
+  sourceNodeId,
+  sourceUrl,
+  graph,
+  sourcePageUrl,
+  transitionWindowKey,
+}) {
+  const candidateUrl = normalizeNavigableUrl(candidate?.url, sourceUrl);
+
+  if (!candidateUrl || candidateUrl === sourceUrl || isExcludedGooglePage(candidateUrl)) {
+    return null;
+  }
+
+  const targetNodeId = buildNodeSeed(candidateUrl).nodeId;
+  const targetPageUrl = normalizePageUrlForIndex(candidateUrl);
+  const visibilityScore = Number(candidate.visibility) || 0;
+  const recordedTargetHint = isGoogleSearchResultsPage(sourceUrl)
+    ? null
+    : getRecordedLinkTargetHint(graph, sourcePageUrl, candidateUrl);
+
+  return {
+    url: candidateUrl,
+    nodeId: targetNodeId,
+    targetHint: recordedTargetHint ?? (candidate?.targetHint === "_blank" ? "_blank" : "_self"),
+    isSameOrigin: isSameOriginUrl(sourceUrl, candidateUrl),
+    isSameSite: sourceNodeId === targetNodeId,
+    targetPageUrl,
+    transitionWindowKey,
+    visibilityScore,
+    linkIndex: index,
+    anchorText: typeof candidate?.anchorText === "string" ? candidate.anchorText : "",
+    nearbyText: typeof candidate?.nearbyText === "string" ? candidate.nearbyText : "",
+    titleAttr: typeof candidate?.titleAttr === "string" ? candidate.titleAttr : "",
+    ariaLabel: typeof candidate?.ariaLabel === "string" ? candidate.ariaLabel : "",
+    imageAlt: typeof candidate?.imageAlt === "string" ? candidate.imageAlt : "",
+    hrefPathTokens: buildHrefPathTokens(candidateUrl),
+  };
+}
+
+async function addBookmarkCandidatesToPool(candidatePoolByUrl, context) {
+  const bookmarkCandidateEntries = await buildGoogleBookmarkPreloadCandidateEntries(context);
+
+  for (const bookmarkCandidate of bookmarkCandidateEntries) {
+    mergeCandidateIntoPool(candidatePoolByUrl, bookmarkCandidate.url, bookmarkCandidate);
+  }
+}
+
+function mergeCandidateIntoPool(candidatePoolByUrl, candidateUrl, nextCandidate) {
+  const existingCandidate = candidatePoolByUrl.get(candidateUrl);
+
+  candidatePoolByUrl.set(
+    candidateUrl,
+    existingCandidate
+      ? mergeCandidatePoolEntry(existingCandidate, nextCandidate)
+      : nextCandidate
+  );
+}
+
+async function enrichPreloadCandidatePoolWithMetrics(candidatePool, context) {
+  const candidateMetricsByUrl = await getCandidateTransitionMetricsByUrl({
+    graph: context.graph,
+    transitionWindowKey: context.transitionWindowKey,
+    sourceNodeId: context.sourceNodeId,
+    sourcePageUrl: context.sourcePageUrl,
+    candidatePool,
+  });
+
+  return candidatePool
+    .map((candidate) =>
+      enrichPreloadCandidateWithMetrics(candidate, candidateMetricsByUrl, {
+        graph: context.graph,
+        sourceNodeId: context.sourceNodeId,
+      })
+    )
+    .filter(Boolean);
 }
 
 function mergeCandidatePoolEntry(existingCandidate, nextCandidate) {
@@ -120,7 +190,35 @@ function mergeCandidatePoolEntry(existingCandidate, nextCandidate) {
     titleAttr: selectRicherCandidateText(existingCandidate.titleAttr, nextCandidate.titleAttr),
     ariaLabel: selectRicherCandidateText(existingCandidate.ariaLabel, nextCandidate.ariaLabel),
     imageAlt: selectRicherCandidateText(existingCandidate.imageAlt, nextCandidate.imageAlt),
+    extraScoreMultipliers: mergeCandidateScoreMultipliers(
+      existingCandidate.extraScoreMultipliers,
+      nextCandidate.extraScoreMultipliers
+    ),
+    bookmarkPreload:
+      selectBookmarkPreloadMetadata(existingCandidate.bookmarkPreload, nextCandidate.bookmarkPreload),
   };
+}
+
+function mergeCandidateScoreMultipliers(existingMultipliers, nextMultipliers) {
+  return [
+    ...(Array.isArray(existingMultipliers) ? existingMultipliers : []),
+    ...(Array.isArray(nextMultipliers) ? nextMultipliers : []),
+  ].filter((value) => Number.isFinite(Number(value)));
+}
+
+function selectBookmarkPreloadMetadata(existingMetadata, nextMetadata) {
+  if (!existingMetadata) {
+    return nextMetadata ?? null;
+  }
+
+  if (!nextMetadata) {
+    return existingMetadata;
+  }
+
+  return clampNonNegativeInt(nextMetadata.count, 0) >
+    clampNonNegativeInt(existingMetadata.count, 0)
+    ? nextMetadata
+    : existingMetadata;
 }
 
 function buildCandidateInstancePriority(candidate) {

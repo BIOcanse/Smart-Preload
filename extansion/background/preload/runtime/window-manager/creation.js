@@ -47,6 +47,43 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
     useSystemHiding,
   });
 
+  const trackedWindowResult = await tryReuseTrackedPreloadWindow({
+    preloadState,
+    normalWindowRuntime,
+    normalWindowId,
+    existingWindowId,
+    useSystemHiding,
+  });
+
+  if (trackedWindowResult) {
+    return trackedWindowResult;
+  }
+
+  const discoveredWindowResult = await tryReuseDiscoveredPreloadWindow({
+    preloadState,
+    normalWindowRuntime,
+    normalWindowId,
+    useSystemHiding,
+  });
+
+  if (discoveredWindowResult) {
+    return discoveredWindowResult;
+  }
+
+  return await createPreloadWindowForRuntime({
+    preloadState,
+    normalWindowRuntime,
+    normalWindowId,
+    useSystemHiding,
+  });
+}
+
+async function tryReuseTrackedPreloadWindow({
+  normalWindowRuntime,
+  normalWindowId,
+  existingWindowId,
+  useSystemHiding,
+}) {
   if (Number.isFinite(existingWindowId)) {
     const existingWindow = await getWindowMaybe(existingWindowId);
     // Chrome window IDs are session-scoped and can be reused after restart/profile switch.
@@ -91,13 +128,19 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
     resetPreloadWindowState(normalWindowRuntime.preloadWindow);
   }
 
+  return null;
+}
+
+async function tryReuseDiscoveredPreloadWindow({
+  preloadState,
+  normalWindowRuntime,
+  normalWindowId,
+  useSystemHiding,
+}) {
   const reusableWindowId = await findReusablePreloadWindowId(preloadState, normalWindowId);
 
   if (Number.isFinite(reusableWindowId)) {
-    normalWindowRuntime.preloadWindow.windowId = reusableWindowId;
-    normalWindowRuntime.preloadWindow.updatedAt = new Date().toISOString();
-    normalWindowRuntime.updatedAt = normalWindowRuntime.preloadWindow.updatedAt;
-    preloadState.updatedAt = normalWindowRuntime.preloadWindow.updatedAt;
+    commitPreloadWindowRuntimeState(preloadState, normalWindowRuntime, reusableWindowId);
     const reusableWindow = await getWindowMaybe(reusableWindowId);
     globalThis.markKnownPreloadWindow?.(reusableWindowId);
 
@@ -128,6 +171,16 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
       hiddenBySystem: normalWindowRuntime.preloadWindow.hiddenBySystem === true,
     };
   }
+
+  return null;
+}
+
+async function createPreloadWindowForRuntime({
+  preloadState,
+  normalWindowRuntime,
+  normalWindowId,
+  useSystemHiding,
+}) {
   const previousChromeWindowHwnds = useSystemHiding
     ? await captureNativeChromeWindowHwnds()
     : null;
@@ -153,10 +206,7 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
   );
   globalThis.markKnownPreloadWindow?.(createdWindow.id);
 
-  normalWindowRuntime.preloadWindow.windowId = createdWindow.id;
-  normalWindowRuntime.preloadWindow.updatedAt = new Date().toISOString();
-  normalWindowRuntime.updatedAt = normalWindowRuntime.preloadWindow.updatedAt;
-  preloadState.updatedAt = normalWindowRuntime.preloadWindow.updatedAt;
+  commitPreloadWindowRuntimeState(preloadState, normalWindowRuntime, createdWindow.id);
   globalThis.ZeroLatencyDebugEvents?.record?.("preload-window.ensure.created", {
     normalWindowId,
     preloadWindowId: createdWindow.id,
@@ -170,6 +220,13 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
     supported: true,
     hiddenBySystem: normalWindowRuntime.preloadWindow.hiddenBySystem === true,
   };
+}
+
+function commitPreloadWindowRuntimeState(preloadState, normalWindowRuntime, preloadWindowId) {
+  normalWindowRuntime.preloadWindow.windowId = preloadWindowId;
+  normalWindowRuntime.preloadWindow.updatedAt = new Date().toISOString();
+  normalWindowRuntime.updatedAt = normalWindowRuntime.preloadWindow.updatedAt;
+  preloadState.updatedAt = normalWindowRuntime.preloadWindow.updatedAt;
 }
 
 async function resolveSystemHidingUsableForPreloadWindow() {
@@ -555,12 +612,6 @@ function normalizeFiniteNumber(value) {
   const numericValue = Number(value);
 
   return Number.isFinite(numericValue) ? numericValue : null;
-}
-
-function normalizePositiveFiniteNumber(value) {
-  const numericValue = normalizeFiniteNumber(value);
-
-  return Number.isFinite(numericValue) && numericValue > 0 ? numericValue : null;
 }
 
 async function findReusablePreloadWindowId(preloadState, normalWindowId) {

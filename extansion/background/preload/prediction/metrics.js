@@ -44,11 +44,8 @@ function enrichPreloadCandidateWithMetrics(candidate, candidateMetricsByUrl, con
     : outboundPageTransitionCount;
   const baseScore = buildPreloadCandidateBaseScore();
 
-  return {
-    ...candidate,
-    score: baseScore,
-    baseScore,
-    scoreMultipliers: buildPreloadCandidateScoreMultipliers({
+  const scoreMultipliers = [
+    ...buildPreloadCandidateScoreMultipliers({
       siteTransitionCount,
       pageTransitionCount,
       isSameSite,
@@ -56,6 +53,16 @@ function enrichPreloadCandidateWithMetrics(candidate, candidateMetricsByUrl, con
       intraSitePageTransitionCount,
       targetHint: candidate.targetHint,
     }),
+    ...(Array.isArray(candidate.extraScoreMultipliers)
+      ? candidate.extraScoreMultipliers.filter((value) => Number.isFinite(Number(value)))
+      : []),
+  ];
+
+  return {
+    ...candidate,
+    score: baseScore,
+    baseScore,
+    scoreMultipliers,
     isSameSite,
     siteTransitionCount,
     pageTransitionCount,

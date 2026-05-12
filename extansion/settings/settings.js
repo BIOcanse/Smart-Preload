@@ -37,17 +37,23 @@ const resetButton = document.getElementById("reset-button");
 const navButtons = Array.from(document.querySelectorAll(".settings-nav-item"));
 const aiPredictionMismatchWarningElement = document.getElementById("ai-prediction-mismatch-warning");
 const PRELOAD_RULE_CARD_IDS =
-  settingsApi.PRELOAD_RULE_CARD_IDS ?? ["nativePerPagePreloadLimit", "perPagePreloadLimit"];
-const NAV_SECTION_IDS = ["overview", "tracking", "preload", "ordering", "experiments"];
+  settingsApi.PRELOAD_RULE_CARD_IDS ?? [
+    "nativePerPagePreloadLimit",
+    "highWeightRank",
+    "perPagePreloadLimit",
+    "highWeightRankTab",
+  ];
+const TRACKING_RULE_CARD_IDS =
+  settingsApi.TRACKING_RULE_CARD_IDS ?? ["googleBookmarkRank"];
+const NAV_SECTION_IDS = ["overview", "tracking", "preload", "experiments"];
 const NAV_SECTION_GROUPS = {
   overview: ["overview", "overview-panel"],
   tracking: ["tracking"],
   preload: ["preload"],
-  ordering: ["ordering"],
   experiments: ["experiments"],
 };
 const preloadRuleCardsListElement = document.getElementById("preload-rule-cards-list");
-const sortableCardsListElement = document.getElementById("sortable-cards-list");
+const trackingRuleCardsListElement = document.getElementById("tracking-rule-cards-list");
 
 const deviceProfileLabelElement = document.getElementById("device-profile-label");
 const deviceProfileMetaElement = document.getElementById("device-profile-meta");
@@ -66,9 +72,6 @@ const RULE_CARD_SCHEMA = settingsApi.RULE_CARD_SCHEMA ?? {};
 
 let savedSettings = settingsApi.cloneSettings(settingsApi.DEFAULT_SETTINGS);
 let draftSettings = settingsApi.cloneSettings(settingsApi.DEFAULT_SETTINGS);
-let armedDragCardId = null;
-let activeDragCardId = null;
-let activeDropTarget = null;
 let pendingNavSyncFrame = null;
 let currentFeatureSupport = {};
 let aiModelOptionsRequestId = 0;
@@ -77,7 +80,6 @@ let pendingLmStudioModelLoadId = "";
 void initializeSettingsPage();
 
 async function initializeSettingsPage() {
-  await loadOptionalLocalAiTestConfig();
   populateTransitionWindowOptions();
   populateAiProviderOptions();
   bindUiEvents();
@@ -94,16 +96,6 @@ async function initializeSettingsPage() {
     console.error(error);
     setStatus(t("commonFailed", [], "Failed"), t("settingsCouldNotLoad", [], "Could not load settings from storage."));
   }
-}
-
-async function loadOptionalLocalAiTestConfig() {
-  await new Promise((resolve) => {
-    const script = document.createElement("script");
-    script.src = "../shared/local-ai-test-config.js";
-    script.onload = resolve;
-    script.onerror = resolve;
-    document.head.append(script);
-  });
 }
 
 function populateTransitionWindowOptions() {
@@ -142,30 +134,10 @@ function bindUiEvents() {
     element.addEventListener("input", handleFormChange);
   }
 
-  sortableCardsListElement.addEventListener("mousedown", (event) => {
-    const card = event.target.closest(".sortable-space-item");
-
-    if (!card || isInteractiveDragBlocker(event.target)) {
-      armedDragCardId = null;
-      return;
-    }
-
-    armedDragCardId = card.dataset.cardId ?? null;
-  });
-  document.addEventListener("mouseup", () => {
-    if (!activeDragCardId) {
-      armedDragCardId = null;
-    }
-  });
-
-  sortableCardsListElement.addEventListener("dragstart", handleSortableCardDragStart);
-  sortableCardsListElement.addEventListener("dragover", handleSortableCardDragOver);
-  sortableCardsListElement.addEventListener("drop", handleSortableCardDrop);
-  sortableCardsListElement.addEventListener("dragend", clearSortableCardDragState);
-  sortableCardsListElement.addEventListener("input", handleSortableCardInput);
-  sortableCardsListElement.addEventListener("change", handleSortableCardInput);
-  preloadRuleCardsListElement?.addEventListener("input", handleSortableCardInput);
-  preloadRuleCardsListElement?.addEventListener("change", handleSortableCardInput);
+  preloadRuleCardsListElement?.addEventListener("input", handleRuleCardInput);
+  preloadRuleCardsListElement?.addEventListener("change", handleRuleCardInput);
+  trackingRuleCardsListElement?.addEventListener("input", handleRuleCardInput);
+  trackingRuleCardsListElement?.addEventListener("change", handleRuleCardInput);
 
   saveButton.addEventListener("click", async () => {
     await saveCurrentSettings();
@@ -296,9 +268,8 @@ function readFormSettings() {
       enabled: formElements.diagnosticsLoggingEnabled.checked,
     },
     layout: {
-      sortableCards: {
-        order: [...draftSettings.layout.sortableCards.order],
-        items: settingsApi.cloneSettings(draftSettings.layout.sortableCards.items),
+      ruleCards: {
+        items: settingsApi.cloneSettings(draftSettings.layout.ruleCards.items),
       },
     },
   });
@@ -773,11 +744,11 @@ function clampScrollTop(value, maxScrollTop) {
 }
 
 function renderRuleCards(settings) {
-  renderRuleCardList(preloadRuleCardsListElement, PRELOAD_RULE_CARD_IDS, settings, false);
-  renderRuleCardList(sortableCardsListElement, settings.layout.sortableCards.order, settings, true);
+  renderRuleCardList(preloadRuleCardsListElement, PRELOAD_RULE_CARD_IDS, settings);
+  renderRuleCardList(trackingRuleCardsListElement, TRACKING_RULE_CARD_IDS, settings);
 }
 
-function renderRuleCardList(container, cardIds, settings, isSortable) {
+function renderRuleCardList(container, cardIds, settings) {
   if (!container) {
     return;
   }
@@ -786,18 +757,15 @@ function renderRuleCardList(container, cardIds, settings, isSortable) {
 
   for (const cardId of cardIds) {
     const cardSchema = RULE_CARD_SCHEMA[cardId];
-    const cardState = settings.layout.sortableCards.items?.[cardId];
+    const cardState = settings.layout.ruleCards.items?.[cardId];
 
     if (!cardSchema || !cardState) {
       continue;
     }
 
     const item = document.createElement("article");
-    item.className = isSortable
-      ? "settings-item sortable-space-item sortable-rule-item"
-      : "settings-item sortable-rule-item preload-rule-card";
+    item.className = "settings-item rule-card preload-rule-card";
     item.dataset.cardId = cardId;
-    item.draggable = isSortable;
 
     const info = document.createElement("div");
     info.className = "settings-item-info";
@@ -813,28 +781,28 @@ function renderRuleCardList(container, cardIds, settings, isSortable) {
     info.append(title, description);
 
     const controlArea = document.createElement("div");
-    controlArea.className = "settings-item-control sortable-space-item-control";
-    controlArea.append(createSortableControlWidget(cardId, cardSchema, cardState));
+    controlArea.className = "settings-item-control rule-card-control";
+    controlArea.append(createRuleControlWidget(cardId, cardSchema, cardState));
     item.append(info, controlArea);
     container.append(item);
   }
 }
 
-function createSortableControlWidget(cardId, cardSchema, cardState) {
+function createRuleControlWidget(cardId, cardSchema, cardState) {
   const control = document.createElement("div");
-  control.className = "sortable-space-control sortable-rule-controls";
+  control.className = "rule-control rule-controls";
 
   for (const field of cardSchema.fields) {
     const value = cardState[field.key];
     const fieldShell = document.createElement("label");
-    fieldShell.className = "sortable-rule-slot";
+    fieldShell.className = "rule-slot";
     fieldShell.title = field.label;
 
     if (field.type === "number") {
       const isDisabled = isRuleNumberFieldDisabled(cardState, field.key);
       const input = document.createElement("input");
       input.type = "number";
-      input.className = "number-input sortable-rule-input";
+      input.className = "number-input rule-input";
       input.min = String(field.min ?? 0);
       input.max = String(field.max ?? 9999);
       input.value = String(value ?? field.min ?? 0);
@@ -846,7 +814,7 @@ function createSortableControlWidget(cardId, cardSchema, cardState) {
       fieldShell.append(input);
     } else if (field.type === "select") {
       const select = document.createElement("select");
-      select.className = "select-input sortable-rule-select";
+      select.className = "select-input rule-select";
       select.dataset.cardId = cardId;
       select.dataset.fieldKey = field.key;
 
@@ -882,7 +850,7 @@ function createSortableControlWidget(cardId, cardSchema, cardState) {
 
       const token = document.createElement("input");
       token.type = "text";
-      token.className = "number-input sortable-rule-input sortable-rule-token";
+      token.className = "number-input rule-input rule-token";
       token.value = field.text;
       token.readOnly = true;
       token.tabIndex = -1;
@@ -899,7 +867,7 @@ function createSortableControlWidget(cardId, cardSchema, cardState) {
   return control;
 }
 
-function handleSortableCardInput(event) {
+function handleRuleCardInput(event) {
   const input = event.target.closest(
     "input[data-card-id][data-field-key], select[data-card-id][data-field-key]"
   );
@@ -926,11 +894,11 @@ function handleSortableCardInput(event) {
         : Number(input.value || 0);
 
   draftSettings = settingsApi.normalizeStoredSettings(
-    updateSortableCardField(draftSettings, cardId, fieldKey, nextValue)
+    updateRuleCardField(draftSettings, cardId, fieldKey, nextValue)
   );
 
   if (fieldSchema.type === "number") {
-    input.value = String(draftSettings.layout.sortableCards.items[cardId][fieldKey]);
+    input.value = String(draftSettings.layout.ruleCards.items[cardId][fieldKey]);
   }
 
   if (fieldSchema.type === "select") {
@@ -944,14 +912,14 @@ function handleSortableCardInput(event) {
   }
 }
 
-function updateSortableCardField(source, cardId, fieldKey, value) {
+function updateRuleCardField(source, cardId, fieldKey, value) {
   const nextState = settingsApi.cloneSettings(source);
 
-  if (!nextState.layout?.sortableCards?.items?.[cardId]) {
+  if (!nextState.layout?.ruleCards?.items?.[cardId]) {
     return nextState;
   }
 
-  nextState.layout.sortableCards.items[cardId][fieldKey] = value;
+  nextState.layout.ruleCards.items[cardId][fieldKey] = value;
   return nextState;
 }
 
@@ -965,158 +933,6 @@ function isRuleNumberFieldDisabled(cardState, fieldKey) {
   }
 
   return false;
-}
-
-function handleSortableCardDragStart(event) {
-  const card = event.target.closest(".sortable-space-item");
-
-  if (!card || armedDragCardId !== card.dataset.cardId) {
-    event.preventDefault();
-    return;
-  }
-
-  activeDragCardId = card.dataset.cardId;
-  card.classList.add("is-dragging");
-  event.dataTransfer.effectAllowed = "move";
-  event.dataTransfer.setData("text/plain", activeDragCardId);
-}
-
-function handleSortableCardDragOver(event) {
-  if (!activeDragCardId) {
-    return;
-  }
-
-  event.preventDefault();
-  const targetCard = event.target.closest(".sortable-space-item");
-
-  if (!targetCard || targetCard.dataset.cardId === activeDragCardId) {
-    clearDropTargetClasses();
-    activeDropTarget = null;
-    return;
-  }
-
-  const placement = getDropPlacement(targetCard, event.clientY);
-  applyDropTargetClasses(targetCard, placement);
-  activeDropTarget = {
-    cardId: targetCard.dataset.cardId,
-    placement,
-  };
-}
-
-function handleSortableCardDrop(event) {
-  if (!activeDragCardId) {
-    return;
-  }
-
-  event.preventDefault();
-  const nextOrder = moveSortableCard(
-    draftSettings.layout.sortableCards.order,
-    activeDragCardId,
-    activeDropTarget?.cardId ?? null,
-    activeDropTarget?.placement ?? "after"
-  );
-
-  draftSettings = settingsApi.normalizeStoredSettings({
-    ...draftSettings,
-    layout: {
-      sortableCards: {
-        order: nextOrder,
-        items: settingsApi.cloneSettings(draftSettings.layout.sortableCards.items),
-      },
-    },
-  });
-
-  renderRuleCards(draftSettings);
-  clearSortableCardDragState();
-
-  if (isDirty()) {
-    setDirtyStatus(t("settingsCardOrderChanged", [], "Card order changed. Save to apply."));
-  } else {
-    setStatus(t("commonReady", [], "Ready"), t("settingsNoUnsavedChanges", [], "No unsaved changes."));
-  }
-}
-
-function isInteractiveDragBlocker(target) {
-  return Boolean(
-    target.closest(
-      "input, select, textarea, button, a, label, .switch, .switch-track, .segmented-control, .segment"
-    )
-  );
-}
-
-function moveSortableCard(order, draggedCardId, targetCardId, placement) {
-  const nextOrder = [...order];
-  const draggedIndex = nextOrder.indexOf(draggedCardId);
-
-  if (draggedIndex === -1) {
-    return nextOrder;
-  }
-
-  nextOrder.splice(draggedIndex, 1);
-
-  if (!targetCardId) {
-    nextOrder.push(draggedCardId);
-    return nextOrder;
-  }
-
-  const targetIndex = nextOrder.indexOf(targetCardId);
-
-  if (targetIndex === -1) {
-    nextOrder.push(draggedCardId);
-    return nextOrder;
-  }
-
-  const insertionIndex = placement === "before" ? targetIndex : targetIndex + 1;
-  nextOrder.splice(insertionIndex, 0, draggedCardId);
-  return nextOrder;
-}
-
-function getDropPlacement(targetCard, clientY) {
-  const bounds = targetCard.getBoundingClientRect();
-  return clientY < bounds.top + bounds.height / 2 ? "before" : "after";
-}
-
-function clearDropTargetClasses() {
-  for (const card of sortableCardsListElement.querySelectorAll(".sortable-space-item")) {
-    card.classList.remove("is-drop-target-before", "is-drop-target-after");
-  }
-}
-
-function applyDropTargetClasses(targetCard, placement) {
-  clearDropTargetClasses();
-
-  const previousCard = getAdjacentSortableCard(targetCard, "previousElementSibling");
-  const nextCard = getAdjacentSortableCard(targetCard, "nextElementSibling");
-
-  if (placement === "before") {
-    targetCard.classList.add("is-drop-target-before");
-    previousCard?.classList.add("is-drop-target-after");
-    return;
-  }
-
-  targetCard.classList.add("is-drop-target-after");
-  nextCard?.classList.add("is-drop-target-before");
-}
-
-function getAdjacentSortableCard(startCard, directionKey) {
-  let cursor = startCard?.[directionKey] ?? null;
-
-  while (cursor && !cursor.classList?.contains("sortable-space-item")) {
-    cursor = cursor[directionKey] ?? null;
-  }
-
-  return cursor;
-}
-
-function clearSortableCardDragState() {
-  armedDragCardId = null;
-  activeDragCardId = null;
-  activeDropTarget = null;
-  clearDropTargetClasses();
-
-  for (const card of sortableCardsListElement.querySelectorAll(".sortable-space-item")) {
-    card.classList.remove("is-dragging");
-  }
 }
 
 async function fetchAndRenderFeatureSupport() {

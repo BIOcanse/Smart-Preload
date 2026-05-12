@@ -8,7 +8,7 @@ function normalizeTrackingGraph(rawGraph) {
   const storedPageTransitionBuckets = isPlainObject(graph.pageTransitionBuckets)
     ? graph.pageTransitionBuckets
     : null;
-  graph.version = 12;
+  graph.version = 13;
   graph.nodes = isPlainObject(graph.nodes) ? graph.nodes : {};
   graph.edges = isPlainObject(graph.edges) ? graph.edges : {};
   graph.linkBehaviorStore = normalizeLinkBehaviorStore(graph.linkBehaviorStore);
@@ -55,6 +55,9 @@ function normalizeTrackingGraph(rawGraph) {
   graph.externalPageTransitionBuckets = createEmptyPageTransitionBuckets();
   graph.intraSitePageTransitionBuckets = createEmptyPageTransitionBuckets();
   graph.pageTransitionMessageBuckets = createEmptyPageTransitionMessageBuckets();
+  graph.bookmarkPreloadBuckets = normalizeBookmarkPreloadBuckets(
+    graph.bookmarkPreloadBuckets
+  );
 
   if (graph.transitionMessages.length === 0) {
     for (const edge of Object.values(graph.edges)) {

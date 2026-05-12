@@ -1,96 +1,159 @@
 async function recordVisit(details, sourceEvent) {
+  const normalizedVisitUrl = await resolveTrackableVisitUrl(details, sourceEvent, "tracking.visit");
+
+  if (!normalizedVisitUrl) {
+    return;
+  }
+
+  const context = await buildRecordVisitContext(details, normalizedVisitUrl);
+
+  await recordBookmarkPreloadNavigationForVisit(context);
+
+  if (!context.pageInitiatedTransition && !context.pendingSource) {
+    await saveCurrentPageFromRecordVisitContext(
+      context,
+      sourceEvent,
+      "non-link-without-source-lock"
+    );
+    return;
+  }
+
+  if (isSelfRecordVisitTransition(context)) {
+    await skipSelfRecordVisitTransition(context, sourceEvent);
+    return;
+  }
+
+  await saveRecordVisitTransition(context, sourceEvent);
+}
+
+async function resolveTrackableVisitUrl(details, sourceEvent, diagnosticPrefix) {
   const normalizedVisitUrl = normalizePageUrlForIndex(details.url || "");
 
   if (!isTrackableAndAllowedUrl(details.url) || !normalizedVisitUrl) {
-    globalThis.ZeroLatencyDiagnostics?.record?.("tracking.visit.ignored", {
+    globalThis.ZeroLatencyDiagnostics?.record?.(`${diagnosticPrefix}.ignored`, {
       reason: "untrackable-url",
       tabId: details.tabId,
       url: details.url || "",
       sourceEvent,
     });
-    return;
+    return null;
   }
 
   const preloadState = await loadPreloadState();
 
   if (isPreloadTab(preloadState, details.tabId)) {
-    globalThis.ZeroLatencyDiagnostics?.record?.("tracking.visit.ignored", {
+    globalThis.ZeroLatencyDiagnostics?.record?.(`${diagnosticPrefix}.ignored`, {
       reason: "preload-tab",
       tabId: details.tabId,
       url: details.url || "",
       sourceEvent,
     });
-    return;
+    return null;
   }
 
+  return normalizedVisitUrl;
+}
+
+async function buildRecordVisitContext(details, normalizedVisitUrl) {
   const trackingState = await loadTrackingState();
   const tabId = String(details.tabId);
   const targetNode = buildNodeSeed(details.url);
   const pendingSource = trackingState.pendingSources?.[tabId] ?? null;
-  const previousTabState = trackingState.tabState?.[String(details.tabId)] ?? null;
+  const previousTabState = trackingState.tabState?.[tabId] ?? null;
   const previousNodeId = pendingSource?.nodeId ?? previousTabState?.nodeId ?? null;
   const previousPageUrl =
     normalizePageUrlForIndex(pendingSource?.pageUrl || "") ??
     normalizePageUrlForIndex(previousTabState?.url || "");
-  const pageInitiatedTransition = isPageInitiatedTransitionType(details.transitionType);
 
-  if (!pageInitiatedTransition && !pendingSource) {
-    const nextTrackingState = await applyTrackingEvent(trackingState, {
-      type: "set-current-page",
-      tabId,
-      targetNode,
-      occurredAt: toIsoTimestamp(details.timeStamp),
-      url: normalizedVisitUrl,
-    });
-
-    await saveTrackingState(nextTrackingState);
-    globalThis.ZeroLatencyDiagnostics?.record?.("tracking.current-page.saved", {
-      tabId: details.tabId,
-      sourceEvent,
-      reason: "non-link-without-source-lock",
-      transitionType: details.transitionType || "unknown",
-      targetNodeId: targetNode.nodeId,
-      targetPageUrl: normalizedVisitUrl,
-    });
-    return;
-  }
-
-  if (previousNodeId === targetNode.nodeId && previousPageUrl === normalizedVisitUrl) {
-    if (trackingState.pendingSources?.[tabId]) {
-      delete trackingState.pendingSources[tabId];
-    }
-
-    const nextTrackingState = await applyTrackingEvent(trackingState, {
-      type: "set-current-page",
-      tabId,
-      targetNode,
-      occurredAt: toIsoTimestamp(details.timeStamp),
-      url: normalizedVisitUrl,
-    });
-
-    await saveTrackingState(nextTrackingState);
-    globalThis.ZeroLatencyDiagnostics?.record?.("tracking.visit.self-transition-skipped", {
-      tabId: details.tabId,
-      sourceEvent,
-      transitionType: details.transitionType || "unknown",
-      targetNodeId: targetNode.nodeId,
-      targetPageUrl: normalizedVisitUrl,
-    });
-    return;
-  }
-
-  const previousTransitionSequence = clampNonNegativeInt(
-    trackingState.graph?.transitionSequence,
-    0
-  );
-  const nextTrackingState = await applyTrackingEvent(trackingState, {
-    type: "record-visit",
+  return {
+    details,
+    normalizedVisitUrl,
+    trackingState,
     tabId,
     targetNode,
-    occurredAt: toIsoTimestamp(details.timeStamp),
+    pendingSource,
+    previousTabState,
+    previousNodeId,
+    previousPageUrl,
+    pageInitiatedTransition: isPageInitiatedTransitionType(details.transitionType),
+  };
+}
+
+async function recordBookmarkPreloadNavigationForVisit(context) {
+  await recordGoogleBookmarkPreloadNavigationIfNeeded(context.trackingState, {
+    sourceTabId: context.details.tabId,
+    sourceWindowId: null,
+    sourcePageUrl: context.previousPageUrl || "",
+    targetUrl: context.normalizedVisitUrl,
+    transitionType: context.details.transitionType || "unknown",
+    occurredAt: toIsoTimestamp(context.details.timeStamp),
+    settings: getEffectiveExtensionSettings(),
+  });
+}
+
+async function saveCurrentPageFromRecordVisitContext(context, sourceEvent, reason) {
+  const nextTrackingState = await applyTrackingEvent(context.trackingState, {
+    type: "set-current-page",
+    tabId: context.tabId,
+    targetNode: context.targetNode,
+    occurredAt: toIsoTimestamp(context.details.timeStamp),
+    url: context.normalizedVisitUrl,
+  });
+
+  await saveTrackingState(nextTrackingState);
+  globalThis.ZeroLatencyDiagnostics?.record?.("tracking.current-page.saved", {
+    tabId: context.details.tabId,
+    sourceEvent,
+    reason,
+    transitionType: context.details.transitionType || "unknown",
+    targetNodeId: context.targetNode.nodeId,
+    targetPageUrl: context.normalizedVisitUrl,
+  });
+}
+
+function isSelfRecordVisitTransition(context) {
+  return (
+    context.previousNodeId === context.targetNode.nodeId &&
+    context.previousPageUrl === context.normalizedVisitUrl
+  );
+}
+
+async function skipSelfRecordVisitTransition(context, sourceEvent) {
+  if (context.trackingState.pendingSources?.[context.tabId]) {
+    delete context.trackingState.pendingSources[context.tabId];
+  }
+
+  const nextTrackingState = await applyTrackingEvent(context.trackingState, {
+    type: "set-current-page",
+    tabId: context.tabId,
+    targetNode: context.targetNode,
+    occurredAt: toIsoTimestamp(context.details.timeStamp),
+    url: context.normalizedVisitUrl,
+  });
+
+  await saveTrackingState(nextTrackingState);
+  globalThis.ZeroLatencyDiagnostics?.record?.("tracking.visit.self-transition-skipped", {
+    tabId: context.details.tabId,
+    sourceEvent,
+    transitionType: context.details.transitionType || "unknown",
+    targetNodeId: context.targetNode.nodeId,
+    targetPageUrl: context.normalizedVisitUrl,
+  });
+}
+
+async function saveRecordVisitTransition(context, sourceEvent) {
+  const previousTransitionSequence = clampNonNegativeInt(
+    context.trackingState.graph?.transitionSequence,
+    0
+  );
+  const nextTrackingState = await applyTrackingEvent(context.trackingState, {
+    type: "record-visit",
+    tabId: context.tabId,
+    targetNode: context.targetNode,
+    occurredAt: toIsoTimestamp(context.details.timeStamp),
     eventType: sourceEvent,
-    transitionType: details.transitionType || "unknown",
-    url: normalizedVisitUrl,
+    transitionType: context.details.transitionType || "unknown",
+    url: context.normalizedVisitUrl,
   });
 
   await saveTrackingState(nextTrackingState);
@@ -101,13 +164,13 @@ async function recordVisit(details, sourceEvent) {
   const transitionRecorded = nextTransitionSequence > previousTransitionSequence;
 
   globalThis.ZeroLatencyDiagnostics?.record?.("tracking.visit.saved", {
-    tabId: details.tabId,
+    tabId: context.details.tabId,
     sourceEvent,
-    transitionType: details.transitionType || "unknown",
-    previousNodeId: previousTabState?.nodeId ?? null,
-    previousPageUrl: previousTabState?.url || "",
-    targetNodeId: targetNode.nodeId,
-    targetPageUrl: normalizedVisitUrl,
+    transitionType: context.details.transitionType || "unknown",
+    previousNodeId: context.previousTabState?.nodeId ?? null,
+    previousPageUrl: context.previousTabState?.url || "",
+    targetNodeId: context.targetNode.nodeId,
+    targetPageUrl: context.normalizedVisitUrl,
     transitionRecorded,
     transitionSequence: transitionRecorded ? nextTransitionSequence : null,
   });
