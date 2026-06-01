@@ -96,6 +96,11 @@ Install writes:
 - `<app-dir>\portable\native-messaging\com.zero_latency_web.app.json`
 - `<app-dir>\portable\allowed-extension-origin.txt`
 
+`install-register.cmd` also checks whether the existing registry registration points to a
+different portable app directory. If the old directory looks like a Zero-Latency Web app package
+by filename and file type, the script can stop the old tray process and delete that old directory
+after the new registration succeeds.
+
 Run `--install` again after moving the portable app directory or after reinstalling the extension
 with a different Chrome extension ID.
 

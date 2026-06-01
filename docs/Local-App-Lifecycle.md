@@ -63,6 +63,10 @@ The app now accepts these modes:
   - Writes the Native Messaging manifest under the portable app directory.
   - Registers `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.zero_latency_web.app`.
   - Writes `<app-dir>\portable\allowed-extension-origin.txt` for the local HTTP API authorization boundary.
+  - `install-register.cmd` checks an existing registration before overwriting it. If the old
+    app path points to a different directory and that directory contains the expected app package
+    files and directories with matching file types, the script asks whether to stop and delete
+    the old app directory after the new registration succeeds.
 - `--uninstall`
   - Removes `HKCU\Software\ZeroLatencyWeb`.
   - Removes the Native Messaging registry entry and manifest file.
