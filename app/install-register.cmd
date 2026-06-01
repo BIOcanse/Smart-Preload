@@ -3,6 +3,11 @@ setlocal
 
 cd /d "%~dp0"
 
+if exist "%~dp0install-register.ps1" (
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0install-register.ps1"
+  exit /b %ERRORLEVEL%
+)
+
 if not exist "zero-latency-web-app.exe" (
   echo [Zero-Latency Web] zero-latency-web-app.exe was not found in this folder.
   echo Please keep this script next to zero-latency-web-app.exe.

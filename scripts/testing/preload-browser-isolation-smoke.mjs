@@ -15,7 +15,7 @@ const appDir = path.join(
   repoRoot,
   "dist",
   "staging",
-  "zero-latency-web-app-v1.0.4"
+  "zero-latency-web-app-v1.0.5"
 );
 const appExe = path.join(appDir, "zero-latency-web-app.exe");
 const portableDir = path.join(appDir, "portable");
