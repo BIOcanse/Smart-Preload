@@ -65,8 +65,9 @@ pub fn current_mode() -> AppMode {
 
 pub(crate) use chrome::spawn_chrome_shutdown_monitor;
 pub(crate) use extension::{
-    spawn_extension_shutdown_monitor, target_extension_id, target_extension_is_installed,
-    target_extension_origin_is_installed,
+    registered_extension_ids, spawn_extension_shutdown_monitor, target_extension_disabled_ids,
+    target_extension_enabled_ids, target_extension_id, target_extension_ids,
+    target_extension_is_installed, target_extension_origin_is_installed,
 };
 pub(crate) use host::acquire_host_guard;
 pub(crate) use install::{

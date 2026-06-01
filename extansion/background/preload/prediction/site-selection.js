@@ -6,8 +6,14 @@ async function applySiteSelectionToPreloadCandidatePool(candidatePool, context =
   }
 
   const settings = context?.settings ?? null;
-  const nativePageSlotLimit = resolveNativePageSlotLimit(settings);
-  const tabPageSlotLimit = resolveTabPageSlotLimit(settings);
+  const nativePageSlotLimit = resolveNativePageSlotLimit(
+    settings,
+    context?.slotLimits?.nativePageSlotLimit
+  );
+  const tabPageSlotLimit = resolveTabPageSlotLimit(
+    settings,
+    context?.slotLimits?.tabPageSlotLimit
+  );
   const getAiInterestContext = createSharedAiInterestContextLoader(context);
   const groupedCandidatePools = buildPreloadCandidateSiteSelectionGroups(
     normalizedCandidatePool,
@@ -311,13 +317,14 @@ async function selectFallbackCrossSiteClusters(
     siteClusters,
     aiKeywordMultipliersByNodeId
   );
+  const sortedSiteClusters = sortScoredCrossSiteCandidateClusters(scoredSiteClusters);
   const effectiveSelectedSiteCount = Math.min(
     siteSelectionLimit,
     remainingCrossSitePageSlots,
-    scoredSiteClusters.length
+    sortedSiteClusters.length
   );
 
-  return scoredSiteClusters.slice(0, effectiveSelectedSiteCount);
+  return sortedSiteClusters.slice(0, effectiveSelectedSiteCount);
 }
 
 function buildFallbackSelectedCrossSiteCandidates(
@@ -536,8 +543,13 @@ async function scoreCrossSiteCandidateClusters(siteClusters, aiKeywordMultiplier
           ? normalizedScore
           : buildPreloadCandidateBaseScore(),
       };
-    })
-    .sort(compareSiteClusterPriority);
+    });
+}
+
+function sortScoredCrossSiteCandidateClusters(siteClusters) {
+  return [...(Array.isArray(siteClusters) ? siteClusters : [])].sort(
+    compareSiteClusterPriority
+  );
 }
 
 function compareSiteClusterPriority(left, right) {
@@ -559,7 +571,13 @@ function compareSiteClusterPriority(left, right) {
   return 0;
 }
 
-function resolveNativePageSlotLimit(settings) {
+function resolveNativePageSlotLimit(settings, overrideValue = null) {
+  const overridePageSlotLimit = Number(overrideValue);
+
+  if (Number.isFinite(overridePageSlotLimit)) {
+    return Math.max(0, Math.trunc(overridePageSlotLimit));
+  }
+
   const configuredPageSlotLimit = Number(
     settings?.preloading?.effectiveNativeMaxPreloadsPerSource
   );
@@ -573,7 +591,13 @@ function resolveNativePageSlotLimit(settings) {
       );
 }
 
-function resolveTabPageSlotLimit(settings) {
+function resolveTabPageSlotLimit(settings, overrideValue = null) {
+  const overridePageSlotLimit = Number(overrideValue);
+
+  if (Number.isFinite(overridePageSlotLimit)) {
+    return Math.max(0, Math.trunc(overridePageSlotLimit));
+  }
+
   const configuredPageSlotLimit = Number(settings?.preloading?.effectiveTabMaxPreloadsPerSource);
 
   return Number.isFinite(configuredPageSlotLimit)

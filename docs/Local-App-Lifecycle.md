@@ -105,6 +105,7 @@ When the host is running, lifecycle monitoring remains bidirectional:
 
 - Extension -> app: if the HTTP API is offline, the extension wakes the host through Native Messaging.
 - Extension -> app: if heartbeat fails after short recovery retries, the extension starts `native-app-wake-retry`, which keeps trying to find the HTTP API and wake the host.
+- Extension -> app: heartbeat and wake retry are extension liveness responsibilities, not preload-runtime responsibilities. They must stay active while the extension service itself is online, even when predictive preloading is disabled.
 - Extension -> app: each profile sends a persistent heartbeat `clientId` and the HWNDs of hidden preload windows owned by that profile. If that lease expires, the app closes those tracked hidden windows as a native cleanup fallback.
 - App -> extension existence: if Chrome remains open but the target extension is removed, disabled in a way that removes its storage/manifest visibility, or no longer matches the registered extension ID, the host shuts itself down.
 - App -> Chrome lifecycle: if all top-level Chrome browser processes are gone, the host shuts itself down after the grace window.
@@ -123,8 +124,10 @@ The extension-side HTTP client owns wakeup after `--install` has registered the 
 5. The extension retries registration with short backoff.
 6. If heartbeat recovery still fails, the extension enables the `native-app-wake-retry` alarm.
 7. Each wake-retry cycle checks `/health`; if still offline, it retries the two Native Messaging wake strategies and then retries registration/heartbeat.
-8. Wake retry stops once heartbeat succeeds, preloading/service is disabled, or the current extension profile has no normal browser window.
+8. Wake retry stops once heartbeat succeeds, the extension service is paused, or the current extension profile has no normal browser window.
 9. Normal API calls continue only after registration succeeds over `http://127.0.0.1:45831` with the extension-origin header.
+
+User requirement captured on 2026-05-29: "心跳检测不通过就尝试拉起". Implementation interpretation: a missing/offline local app is handled by heartbeat recovery regardless of whether predictive preloading is currently enabled. The preloading toggle may stop preloading windows and AI lifecycle work, but it must not disable native app liveness heartbeat.
 
 Native Messaging is only the launch bridge. The HTTP API remains the data/control channel between extension JS and local app.
 

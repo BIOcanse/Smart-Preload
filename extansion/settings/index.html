@@ -15,11 +15,7 @@
         </div>
 
         <nav class="settings-nav-list" aria-label="Settings sections" data-i18n-aria-label="settingsNavAriaLabel">
-          <button class="settings-nav-item active" data-section-target="overview">
-            <span class="settings-nav-title" data-i18n="settingsOverview">Overview</span>
-            <span class="settings-nav-sub" data-i18n="settingsOverviewSub">Runtime profile and auto-tuning</span>
-          </button>
-          <button class="settings-nav-item" data-section-target="tracking">
+          <button class="settings-nav-item active" data-section-target="tracking">
             <span class="settings-nav-title" data-i18n="settingsTracking">Tracking</span>
             <span class="settings-nav-sub" data-i18n="settingsTrackingSub">Directional graph and search-page handling</span>
           </button>
@@ -40,95 +36,6 @@
       </aside>
 
       <main class="settings-content">
-        <section class="hero-card" id="overview">
-          <div class="hero-copy">
-            <p class="hero-kicker" data-i18n="settingsHeroKicker">Device-aware configuration</p>
-            <h2 data-i18n="settingsHeroTitle">Adaptive preload policy with manual override</h2>
-            <p data-i18n="settingsHeroCopy">
-              The extension can cap preload pressure based on detected hardware, while still
-              letting you define the ceiling and experimental switches.
-            </p>
-          </div>
-          <div class="hero-metrics">
-            <article class="metric-card is-placeholder" aria-hidden="true">
-              <span class="metric-label" data-i18n="settingsDeviceProfile">Device Profile</span>
-              <strong class="metric-value" id="device-profile-label">-</strong>
-              <span class="metric-meta" id="device-profile-meta" data-i18n="settingsDetectingHardware">Detecting hardware...</span>
-            </article>
-            <article class="metric-card is-placeholder" aria-hidden="true">
-              <span class="metric-label" data-i18n="settingsEffectiveGroupCaps">Effective Group Caps</span>
-              <strong class="metric-value" id="effective-preload-cap">-</strong>
-              <span class="metric-meta" id="effective-preload-meta" data-i18n="settingsWaitingForSettings">Waiting for settings...</span>
-            </article>
-            <article class="metric-card is-placeholder" aria-hidden="true">
-              <span class="metric-label" data-i18n="settingsWatchdog">Watchdog</span>
-              <strong class="metric-value" id="watchdog-summary">-</strong>
-              <span class="metric-meta" id="watchdog-meta" data-i18n="settingsWaitingForSettings">Waiting for settings...</span>
-            </article>
-            <article class="metric-card is-placeholder" aria-hidden="true">
-              <span class="metric-label" data-i18n="settingsNativeApp">Native App</span>
-              <strong class="metric-value" id="native-app-status">-</strong>
-              <span class="metric-meta" id="native-app-meta" data-i18n="settingsCheckingConnection">Checking connection...</span>
-            </article>
-          </div>
-        </section>
-
-        <section class="settings-section" id="overview-panel">
-          <header class="settings-section-header">
-            <p class="settings-section-title" data-i18n="settingsOverview">Overview</p>
-            <p class="settings-section-meta" data-i18n="settingsOverviewMeta">
-              High-level controls that influence how aggressively the extension adapts to the
-              current machine.
-            </p>
-          </header>
-
-          <div class="settings-list">
-            <article class="settings-item" data-runtime-placeholder="true">
-              <div class="settings-item-info">
-                <label class="settings-item-label" for="automatic-device-tuning" data-i18n="settingsAutomaticDeviceTuning">
-                  Automatic device tuning
-                </label>
-                <p class="settings-item-desc" data-i18n="settingsAutomaticDeviceTuningDesc">
-                  Reserved toggle for future hardware-aware scheduling. It is saved now, but it does
-                  not change runtime behavior yet.
-                </p>
-              </div>
-              <div class="settings-item-control">
-                <label class="switch">
-                  <input id="automatic-device-tuning" type="checkbox" />
-                  <span class="switch-track"></span>
-                </label>
-              </div>
-            </article>
-
-            <article class="settings-item is-wide" data-runtime-placeholder="true">
-              <div class="settings-item-info">
-                <label class="settings-item-label" for="preloading-mode" data-i18n="settingsPreloadMode">Preload mode</label>
-                <p class="settings-item-desc" data-i18n="settingsPreloadModeDesc">
-                  Reserved selector for future strategy tiers. It is saved now, but it does not
-                  change runtime behavior yet.
-                </p>
-              </div>
-              <div class="settings-item-control">
-                <div class="segmented-control" role="radiogroup" aria-label="Preload mode">
-                  <label class="segment">
-                    <input id="mode-conservative" name="preload-mode" type="radio" value="conservative" />
-                    <span data-i18n="settingsModeConservative">Conservative</span>
-                  </label>
-                  <label class="segment">
-                    <input id="mode-balanced" name="preload-mode" type="radio" value="balanced" />
-                    <span data-i18n="settingsModeBalanced">Balanced</span>
-                  </label>
-                  <label class="segment">
-                    <input id="mode-aggressive" name="preload-mode" type="radio" value="aggressive" />
-                    <span data-i18n="settingsModeAggressive">Aggressive</span>
-                  </label>
-                </div>
-              </div>
-            </article>
-          </div>
-        </section>
-
         <section class="settings-section" id="tracking">
           <header class="settings-section-header">
             <p class="settings-section-title" data-i18n="settingsTracking">Tracking</p>
@@ -235,6 +142,75 @@
                   <input id="transition-window-scope-enabled" type="checkbox" />
                   <span class="switch-track"></span>
                 </label>
+              </div>
+            </article>
+            <article class="settings-item is-wide scheduler-settings-item">
+              <div class="settings-item-info">
+                <p class="settings-item-label" data-i18n="settingsGlobalPreloadScheduler">
+                  Global preload scheduler
+                </p>
+                <p class="settings-item-desc" data-i18n="settingsGlobalPreloadSchedulerDesc">
+                  Account-level limits for distributing preload slots across all source tabs with candidates.
+                </p>
+              </div>
+              <div class="settings-item-control scheduler-grid">
+                <fieldset class="scheduler-group">
+                  <legend data-i18n="settingsSchedulerHiddenTabs">Hidden real tabs</legend>
+                  <label class="scheduler-field" for="scheduler-tab-total-min">
+                    <span data-i18n="settingsSchedulerMin">Min</span>
+                    <input id="scheduler-tab-total-min" class="number-input" type="number" min="1" max="64" step="1" />
+                  </label>
+                  <label class="scheduler-field" for="scheduler-tab-total-max">
+                    <span data-i18n="settingsSchedulerMax">Max</span>
+                    <input id="scheduler-tab-total-max" class="number-input" type="number" min="1" max="64" step="1" />
+                  </label>
+                  <label class="scheduler-field" for="scheduler-tab-half-life-tabs">
+                    <span data-i18n="settingsSchedulerHalfLifeTabs">Half-life tabs</span>
+                    <input id="scheduler-tab-half-life-tabs" class="number-input" type="number" min="1" max="100" step="1" />
+                  </label>
+                </fieldset>
+                <fieldset class="scheduler-group">
+                  <legend data-i18n="settingsSchedulerNativePreload">Native preload</legend>
+                  <label class="scheduler-field" for="scheduler-native-total-min">
+                    <span data-i18n="settingsSchedulerMin">Min</span>
+                    <input id="scheduler-native-total-min" class="number-input" type="number" min="1" max="64" step="1" />
+                  </label>
+                  <label class="scheduler-field" for="scheduler-native-total-max">
+                    <span data-i18n="settingsSchedulerMax">Max</span>
+                    <input id="scheduler-native-total-max" class="number-input" type="number" min="1" max="128" step="1" />
+                  </label>
+                  <label class="scheduler-field" for="scheduler-native-half-life-tabs">
+                    <span data-i18n="settingsSchedulerHalfLifeTabs">Half-life tabs</span>
+                    <input id="scheduler-native-half-life-tabs" class="number-input" type="number" min="1" max="100" step="1" />
+                  </label>
+                </fieldset>
+                <fieldset class="scheduler-group">
+                  <legend data-i18n="settingsSchedulerAttentionPool">Attention pool</legend>
+                  <label class="scheduler-field" for="scheduler-attention-pool-hours">
+                    <span data-i18n="settingsSchedulerPoolHours">Pool hours</span>
+                    <input id="scheduler-attention-pool-hours" class="number-input" type="number" min="1" max="24" step="1" />
+                  </label>
+                  <label class="scheduler-field" for="scheduler-attention-segment-seconds">
+                    <span data-i18n="settingsSchedulerSegmentSeconds">Segment seconds</span>
+                    <input id="scheduler-attention-segment-seconds" class="number-input" type="number" min="10" max="600" step="1" />
+                  </label>
+                  <label class="scheduler-field" for="scheduler-attention-max-gap-seconds">
+                    <span data-i18n="settingsSchedulerMaxGapSeconds">Max gap seconds</span>
+                    <input id="scheduler-attention-max-gap-seconds" class="number-input" type="number" min="10" max="600" step="1" />
+                  </label>
+                  <label class="scheduler-field" for="scheduler-attention-input-window-seconds">
+                    <span data-i18n="settingsSchedulerInputWindowSeconds">Input window seconds</span>
+                    <input id="scheduler-attention-input-window-seconds" class="number-input" type="number" min="10" max="600" step="1" />
+                  </label>
+                  <label class="scheduler-field" for="scheduler-attention-media-weight">
+                    <span data-i18n="settingsSchedulerMediaWeight">Video weight</span>
+                    <input id="scheduler-attention-media-weight" class="number-input" type="number" min="0" max="1" step="0.05" />
+                  </label>
+                  <label class="scheduler-field" for="scheduler-attention-audio-weight">
+                    <span data-i18n="settingsSchedulerAudioWeight">Audio weight</span>
+                    <input id="scheduler-attention-audio-weight" class="number-input" type="number" min="0" max="1" step="0.01" />
+                  </label>
+                </fieldset>
               </div>
             </article>
             <article class="settings-item">

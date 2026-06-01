@@ -46,6 +46,9 @@ async function enforcePreloadWindowPolicy() {
         const previousHiddenBySystem =
           normalWindowRuntime.preloadWindow.hiddenBySystem === true;
         const previousHwnd = normalWindowRuntime.preloadWindow.hwnd ?? null;
+        const previousSystemHideSignature = getPreloadWindowSystemHideSignature(
+          normalWindowRuntime.preloadWindow
+        );
         await preloadWindowManager.maintainHiddenState(ensuredWindow.windowId, {
           hiddenBySystem: normalWindowRuntime.preloadWindow.hiddenBySystem === true,
           hwnd: normalWindowRuntime.preloadWindow.hwnd,
@@ -56,7 +59,9 @@ async function enforcePreloadWindowPolicy() {
           didMutate ||
           previousHiddenBySystem !==
             (normalWindowRuntime.preloadWindow.hiddenBySystem === true) ||
-          previousHwnd !== (normalWindowRuntime.preloadWindow.hwnd ?? null);
+          previousHwnd !== (normalWindowRuntime.preloadWindow.hwnd ?? null) ||
+          previousSystemHideSignature !==
+            getPreloadWindowSystemHideSignature(normalWindowRuntime.preloadWindow);
         continue;
       }
 
@@ -85,6 +90,9 @@ async function enforcePreloadWindowPolicy() {
     const previousHiddenBySystem =
       normalWindowRuntime.preloadWindow.hiddenBySystem === true;
     const previousHwnd = normalWindowRuntime.preloadWindow.hwnd ?? null;
+    const previousSystemHideSignature = getPreloadWindowSystemHideSignature(
+      normalWindowRuntime.preloadWindow
+    );
     await preloadWindowManager.maintainHiddenState(ensuredWindow.windowId, {
       hiddenBySystem: isHiddenBySystem,
       hwnd: normalWindowRuntime.preloadWindow.hwnd,
@@ -95,7 +103,9 @@ async function enforcePreloadWindowPolicy() {
       didMutate ||
       previousHiddenBySystem !==
         (normalWindowRuntime.preloadWindow.hiddenBySystem === true) ||
-      previousHwnd !== (normalWindowRuntime.preloadWindow.hwnd ?? null);
+      previousHwnd !== (normalWindowRuntime.preloadWindow.hwnd ?? null) ||
+      previousSystemHideSignature !==
+        getPreloadWindowSystemHideSignature(normalWindowRuntime.preloadWindow);
 
     if (didRepairEntries) {
       didMutate = true;
@@ -150,4 +160,27 @@ function shouldKeepWarmPreloadWindow(normalWindowRuntime) {
   }
 
   return !isPreloadWindowSystemHideBackoffActive(normalWindowRuntime?.preloadWindow);
+}
+
+function getPreloadWindowSystemHideSignature(preloadWindowState) {
+  if (!preloadWindowState || typeof preloadWindowState !== "object") {
+    return "";
+  }
+
+  return JSON.stringify({
+    hiddenBySystem: preloadWindowState.hiddenBySystem === true,
+    hwnd: normalizePositiveFiniteNumber(preloadWindowState.hwnd),
+    systemHideFailureCount: clampNonNegativeInt(preloadWindowState.systemHideFailureCount, 0),
+    systemHideDisabledUntil: normalizePositiveFiniteNumber(
+      preloadWindowState.systemHideDisabledUntil
+    ),
+    lastSystemHideError:
+      typeof preloadWindowState.lastSystemHideError === "string"
+        ? preloadWindowState.lastSystemHideError
+        : null,
+    lastSystemHideFailedAt:
+      typeof preloadWindowState.lastSystemHideFailedAt === "string"
+        ? preloadWindowState.lastSystemHideFailedAt
+        : null,
+  });
 }

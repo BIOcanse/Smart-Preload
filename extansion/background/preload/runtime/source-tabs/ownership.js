@@ -42,55 +42,6 @@ async function handleActivatedSourceTab(activeInfo) {
     return;
   }
 
-  let preloadState = await loadPreloadState();
-  const normalWindowRuntime = getNormalWindowRuntime(preloadState, windowId);
-  let didMutate = false;
-
-  if (normalWindowRuntime) {
-    for (const sourceTabId of Object.keys(normalWindowRuntime.sourceTabs || {})) {
-      if (Number(sourceTabId) === tabId) {
-        continue;
-      }
-
-      await clearSpeculationRulesForTab(sourceTabId);
-      preloadState = await clearPreloadsForSourceTab(
-        preloadState,
-        windowId,
-        sourceTabId
-      );
-      didMutate = true;
-    }
-
-    const latestNormalWindowRuntime = getNormalWindowRuntime(preloadState, windowId);
-
-    if (
-      latestNormalWindowRuntime &&
-      !hasHiddenPreloadEntriesForNormalWindow(latestNormalWindowRuntime)
-    ) {
-      if (shouldKeepWarmPreloadWindow(latestNormalWindowRuntime)) {
-        const ensuredWindow = await globalThis.ZeroLatencyPreloadWindowManager.ensureWindow(
-          preloadState,
-          windowId
-        );
-        if (ensuredWindow?.created === true) {
-          didMutate = true;
-        }
-      } else if (
-        await globalThis.ZeroLatencyPreloadWindowManager.closeWindowForNormalWindow(
-          preloadState,
-          windowId
-        )
-      ) {
-        didMutate = true;
-        pruneNormalWindowRuntime(preloadState, windowId);
-      }
-    }
-  }
-
-  if (didMutate) {
-    await savePreloadState(preloadState);
-  }
-
   await requestPreloadCandidateRefreshForTab(tabId);
 }
 

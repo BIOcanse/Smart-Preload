@@ -22,6 +22,8 @@
         return allowNavigationDecision("handle-activated-tab");
       case "window-removed":
         return allowNavigationDecision("handle-removed-window");
+      case "window-focused":
+        return allowNavigationDecision("handle-focused-window");
       case "window-bounds-changed":
         return allowNavigationDecision("handle-preload-window-bounds-changed");
       case "alarm":

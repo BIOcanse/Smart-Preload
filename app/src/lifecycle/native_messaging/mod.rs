@@ -5,21 +5,26 @@ mod registry;
 
 use crate::runtime_debug::record_app_runtime_event;
 use serde_json::json;
+use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 use super::{disable_watcher_registration, NATIVE_MESSAGING_HOST_NAME};
 use anyhow::Result;
 
-pub(crate) fn ensure_native_messaging_registration(extension_id: &str) -> Result<PathBuf> {
+pub(crate) fn ensure_native_messaging_registration(extension_ids: &[String]) -> Result<PathBuf> {
     disable_watcher_registration()?;
 
-    let manifest_path = manifest::write_native_messaging_manifest(extension_id)?;
+    let manifest_path = manifest::write_native_messaging_manifest(extension_ids)?;
     registry::ensure_native_messaging_registry_entries(&manifest_path)?;
 
     record_app_runtime_event(
         "native-messaging",
         "registration-ensured",
-        Some(format!("{extension_id}::{}", manifest_path.display())),
+        Some(format!(
+            "{}::{}",
+            extension_ids.join(","),
+            manifest_path.display()
+        )),
     );
 
     Ok(manifest_path)
@@ -61,9 +66,14 @@ pub(crate) fn remove_native_messaging_registration() -> Result<()> {
     Ok(())
 }
 
-pub(crate) fn native_messaging_registration_status() -> Result<(Option<String>, PathBuf, bool)> {
-    let registry_value = registry::read_native_messaging_registry_value()?;
+pub(crate) fn native_messaging_registration_status(
+) -> Result<(BTreeMap<String, String>, PathBuf, bool)> {
+    let registry_values = registry::read_native_messaging_registry_values()?;
     let manifest_path = manifest::native_messaging_manifest_path()?;
     let manifest_exists = manifest_path.exists();
-    Ok((registry_value, manifest_path, manifest_exists))
+    Ok((registry_values, manifest_path, manifest_exists))
+}
+
+pub(crate) fn native_messaging_registry_browser_count() -> usize {
+    registry::native_messaging_registry_browser_count()
 }

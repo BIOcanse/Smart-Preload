@@ -34,11 +34,11 @@
     const servicePaused = await isExtensionServicePaused();
     globalThis.ZeroLatencyDiagnostics?.configureFromSettings?.(runtimeSettings);
 
-    if (servicePaused || !runtimeSettings.preloading.enabled) {
+    if (servicePaused) {
       await globalThis.ZeroLatencyNativeAppHeartbeat?.ensureAlarm?.(false);
       await globalThis.ZeroLatencyAiProviders?.unloadConfiguredLmStudioModel?.(
         runtimeSettings,
-        servicePaused ? "service-paused" : "preloading-disabled"
+        "service-paused"
       );
       await globalThis.ZeroLatencyAiProviders?.ensureLmStudioLifecycleWatchdog?.(runtimeSettings, {
         forceDisabled: true,
@@ -48,12 +48,25 @@
       return;
     }
 
+    await globalThis.ZeroLatencyNativeAppHeartbeat?.ensureAlarm?.(true);
     await globalThis.ZeroLatencySupport.probeNativeAppAvailability({
       forceRefresh: false,
     });
     void globalThis.ZeroLatencyNativeAppHeartbeat?.send?.("runtime-settings");
-    await globalThis.ZeroLatencyNativeAppHeartbeat?.ensureAlarm?.(true);
     await ensurePreloadWindowWatchdog();
+
+    if (!runtimeSettings.preloading.enabled) {
+      await globalThis.ZeroLatencyAiProviders?.unloadConfiguredLmStudioModel?.(
+        runtimeSettings,
+        "preloading-disabled"
+      );
+      await globalThis.ZeroLatencyAiProviders?.ensureLmStudioLifecycleWatchdog?.(runtimeSettings, {
+        forceDisabled: true,
+      });
+      await resetPreloads();
+      return;
+    }
+
     await globalThis.ZeroLatencyAiProviders?.ensureLmStudioLifecycleWatchdog?.(runtimeSettings);
 
     await globalThis.ZeroLatencyPreloadRuntimeManager.ensureWarmWindows?.();

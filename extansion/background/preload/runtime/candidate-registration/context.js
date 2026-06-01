@@ -50,23 +50,6 @@ async function resolvePreloadCandidateRegistrationContext(message, sender) {
     };
   }
 
-  if (sourceTab.active !== true) {
-    globalThis.ZeroLatencyDebugEvents?.record?.("preload-candidates.skip-inactive-tab", {
-      sourceTabId: sourceTab.id,
-      sourceWindowId: sourceTab.windowId,
-      pageUrl: sourcePageUrl,
-    });
-    return {
-      ok: false,
-      response: {
-        ok: true,
-        preloadedCount: 0,
-        skipped: true,
-        reason: "inactive-source-tab",
-      },
-    };
-  }
-
   const preloadState = await loadPreloadState();
 
   if (isPreloadTab(preloadState, sourceTab.id)) {

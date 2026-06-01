@@ -15,6 +15,8 @@
     WATERFALL_BASELINE_MAX_UNLOCKED_MS: 2500,
     RESCAN_DELAY_MS: 700,
     PAGE_DIGEST_DELAY_MS: 1500,
+    ATTENTION_ACTIVITY_INTERVAL_MS: 15_000,
+    ATTENTION_ACTIVITY_MIN_REPORT_INTERVAL_MS: 1_000,
     SPECULATION_RULES_ELEMENT_ID: "zero-latency-speculation-rules",
   };
 
@@ -36,6 +38,10 @@
     waterfallBaselineLocked: false,
     ignoreWaterfallDynamicLinks: true,
     lastReportedPageDigestFingerprint: null,
+    attentionActivityTimerId: null,
+    lastUserInputAt: 0,
+    lastAttentionActivityReportedAt: 0,
+    lastAttentionActivitySignature: "",
   };
 
   function sleep(ms) {

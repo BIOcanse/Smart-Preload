@@ -23,9 +23,36 @@
       case "reset-graph":
         return globalThis.ZeroLatencyCoreMessages.handleReset();
       case "register-preload-candidates":
+        void globalThis.ZeroLatencyPreloadSchedulerAttention?.recordActiveTabAttentionFromSender?.(
+          sender,
+          "preload-candidate-scan",
+          {
+            activity: message?.attentionActivity ?? null,
+          }
+        )?.catch?.((error) => {
+          console.debug("Failed to record preload candidate attention.", error);
+        });
         return globalThis.ZeroLatencyPreloadRuntimeManager.registerCandidates(message, sender);
       case "report-foreground-page-digest":
+        void globalThis.ZeroLatencyPreloadSchedulerAttention?.recordActiveTabAttentionFromSender?.(
+          sender,
+          "foreground-page-digest",
+          {
+            activity: message?.attentionActivity ?? null,
+          }
+        )?.catch?.((error) => {
+          console.debug("Failed to record foreground digest attention.", error);
+        });
         return globalThis.ZeroLatencyLearning.handleForegroundPageDigest(message, sender);
+      case "record-attention-activity":
+        await globalThis.ZeroLatencyPreloadSchedulerAttention?.recordActiveTabAttentionFromSender?.(
+          sender,
+          "content-attention-activity",
+          {
+            activity: message?.activity ?? message,
+          }
+        );
+        return { ok: true };
       case "remember-source-page":
         return globalThis.ZeroLatencyLearning.rememberSourcePage(message, sender);
       case "record-link-behavior":

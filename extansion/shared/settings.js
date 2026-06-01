@@ -55,7 +55,7 @@
   }
 
   const SETTINGS_STORAGE_KEY = "userSettingsV1";
-  const SETTINGS_STORAGE_VERSION = 17;
+  const SETTINGS_STORAGE_VERSION = 20;
   const AI_MODEL_CATALOG = globalThis.ZeroLatencyAiModelCatalog ?? null;
   const PRELOAD_RULE_CARD_IDS = [
     "nativePerPagePreloadLimit",
@@ -215,6 +215,20 @@
         enabled: false,
         windowKey: "total",
       },
+      scheduler: {
+        nativeTotalMin: 7,
+        nativeTotalMax: 32,
+        nativeHalfLifeTabs: 8,
+        tabTotalMin: 3,
+        tabTotalMax: 12,
+        tabHalfLifeTabs: 8,
+        attentionPoolHours: 5,
+        attentionSegmentSeconds: 60,
+        attentionMaxObservableGapSeconds: 60,
+        attentionInputWindowSeconds: 60,
+        attentionMediaPlaybackWeight: 0.2,
+        attentionAudioPlaybackWeight: 0.07,
+      },
       aiPrediction: {
         enabled: false,
         providerId: "deepseek",
@@ -244,7 +258,7 @@
       authStateWarmup: false,
     },
     diagnostics: {
-      enabled: false,
+      enabled: true,
     },
     layout: {
       ruleCards: {
@@ -341,6 +355,9 @@
       : DEFAULT_SETTINGS.preloading.mode;
     normalized.preloading.transitionWindowScope = normalizeTransitionWindowScopeSettings(
       normalized.preloading.transitionWindowScope
+    );
+    normalized.preloading.scheduler = normalizePreloadSchedulerSettings(
+      normalized.preloading.scheduler
     );
     normalized.preloading.aiPrediction = normalizeAiPredictionSettings(
       normalized.preloading.aiPrediction
@@ -459,6 +476,85 @@
     return {
       enabled: Boolean(mergedValue.enabled),
       windowKey: normalizeTransitionWindowKey(mergedValue.windowKey),
+    };
+  }
+
+  function normalizePreloadSchedulerSettings(value) {
+    const mergedValue = mergeSettings(DEFAULT_SETTINGS.preloading.scheduler, value);
+
+    return {
+      nativeTotalMin: clamp(
+        mergedValue.nativeTotalMin,
+        1,
+        64,
+        DEFAULT_SETTINGS.preloading.scheduler.nativeTotalMin
+      ),
+      nativeTotalMax: clampSchedulerMax(
+        mergedValue.nativeTotalMax,
+        mergedValue.nativeTotalMin,
+        DEFAULT_SETTINGS.preloading.scheduler.nativeTotalMax,
+        128
+      ),
+      nativeHalfLifeTabs: clamp(
+        mergedValue.nativeHalfLifeTabs,
+        1,
+        100,
+        DEFAULT_SETTINGS.preloading.scheduler.nativeHalfLifeTabs
+      ),
+      tabTotalMin: clamp(
+        mergedValue.tabTotalMin,
+        1,
+        64,
+        DEFAULT_SETTINGS.preloading.scheduler.tabTotalMin
+      ),
+      tabTotalMax: clampSchedulerMax(
+        mergedValue.tabTotalMax,
+        mergedValue.tabTotalMin,
+        DEFAULT_SETTINGS.preloading.scheduler.tabTotalMax,
+        64
+      ),
+      tabHalfLifeTabs: clamp(
+        mergedValue.tabHalfLifeTabs,
+        1,
+        100,
+        DEFAULT_SETTINGS.preloading.scheduler.tabHalfLifeTabs
+      ),
+      attentionPoolHours: clamp(
+        mergedValue.attentionPoolHours,
+        1,
+        24,
+        DEFAULT_SETTINGS.preloading.scheduler.attentionPoolHours
+      ),
+      attentionSegmentSeconds: clamp(
+        mergedValue.attentionSegmentSeconds,
+        10,
+        600,
+        DEFAULT_SETTINGS.preloading.scheduler.attentionSegmentSeconds
+      ),
+      attentionMaxObservableGapSeconds: clamp(
+        mergedValue.attentionMaxObservableGapSeconds,
+        10,
+        600,
+        DEFAULT_SETTINGS.preloading.scheduler.attentionMaxObservableGapSeconds
+      ),
+      attentionInputWindowSeconds: clamp(
+        mergedValue.attentionInputWindowSeconds,
+        10,
+        600,
+        DEFAULT_SETTINGS.preloading.scheduler.attentionInputWindowSeconds
+      ),
+      attentionMediaPlaybackWeight: clampNumber(
+        mergedValue.attentionMediaPlaybackWeight,
+        0,
+        1,
+        DEFAULT_SETTINGS.preloading.scheduler.attentionMediaPlaybackWeight
+      ),
+      attentionAudioPlaybackWeight: clampNumber(
+        mergedValue.attentionAudioPlaybackWeight,
+        0,
+        1,
+        DEFAULT_SETTINGS.preloading.scheduler.attentionAudioPlaybackWeight
+      ),
     };
   }
 
@@ -688,6 +784,21 @@
     return Math.min(max, Math.max(min, Math.round(numericValue)));
   }
 
+  function clampNumber(value, min, max, fallback) {
+    const numericValue = Number(value);
+
+    if (!Number.isFinite(numericValue)) {
+      return fallback;
+    }
+
+    return Math.min(max, Math.max(min, numericValue));
+  }
+
+  function clampSchedulerMax(value, minValue, fallback, hardMax) {
+    const normalizedMin = clamp(minValue, 1, hardMax, 1);
+    return clamp(value, normalizedMin, hardMax, Math.max(normalizedMin, fallback));
+  }
+
   function detectDeviceProfile(snapshot = getNavigatorSnapshot()) {
     const hardwareConcurrency = Number(snapshot.hardwareConcurrency) || 0;
     const deviceMemory = Number(snapshot.deviceMemory) || 0;
@@ -750,6 +861,7 @@
             normalized.preloading.siteSelectionLimit
         ),
         effectiveTransitionWindowKey,
+        effectivePreloadScheduler: normalized.preloading.scheduler,
         effectiveAiPredictionConfigured: isAiPredictionConfigured(
           normalized.preloading.aiPrediction
         ),

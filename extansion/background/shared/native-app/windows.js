@@ -4,6 +4,10 @@ async function nativeAppHideWindow(windowBounds) {
       method: "POST",
       body: {
         hwnd: normalizePositiveFiniteNumber(windowBounds?.hwnd, undefined),
+        titleContains:
+          typeof windowBounds?.titleContains === "string" && windowBounds.titleContains
+            ? windowBounds.titleContains
+            : undefined,
         left: windowBounds.left,
         top: windowBounds.top,
         width: windowBounds.width,

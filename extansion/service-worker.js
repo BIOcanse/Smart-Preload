@@ -88,6 +88,9 @@ importScripts(
   "background/shared/chrome.js",
   "background/tracking/index.js",
   "background/preload/scoring.js",
+  "background/preload/scheduler/allocation.js",
+  "background/preload/scheduler/attention.js",
+  "background/preload/scheduler/selections.js",
   "background/preload/rules.js",
   "background/preload/prediction/metrics.js",
   "background/preload/prediction/bookmarks.js",
@@ -259,6 +262,12 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 chrome.windows.onRemoved.addListener((windowId) => {
   queueMutation(async () => {
     await mainRouter.handleWindowRemoved(windowId);
+  });
+});
+
+chrome.windows.onFocusChanged.addListener((windowId) => {
+  queueMutation(async () => {
+    await mainRouter.handleWindowFocused(windowId);
   });
 });
 

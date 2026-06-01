@@ -38,6 +38,10 @@
         return envelope.source.tabId
           ? allowAndLearnDecision("report-foreground-page-digest")
           : ignoreDecision(envelope.messageType, { ok: true, skipped: true });
+      case "attention:activity":
+        return envelope.source.tabId
+          ? allowDecision("record-attention-activity")
+          : ignoreDecision(envelope.messageType, { ok: true, skipped: true });
       case "tracking:remember-source-page":
         return envelope.source.tabId
           ? allowAndLearnDecision("remember-source-page")

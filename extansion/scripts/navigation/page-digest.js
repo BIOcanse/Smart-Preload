@@ -20,6 +20,7 @@
         title: document.title || "",
         textDigest: collectPageTextDigest(),
         contentFingerprint: nextPageDigestFingerprint,
+        attentionActivity: namespace.buildAttentionActivitySnapshot?.() ?? null,
       });
       state.lastReportedPageDigestFingerprint = nextPageDigestFingerprint;
     } catch (_error) {

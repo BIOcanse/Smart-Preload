@@ -10,6 +10,7 @@
     resetWaterfallBaseline,
     sendCandidateLinks,
     reportPageDigest,
+    reportAttentionActivityToBackground,
     applySpeculationRules,
   } = namespace;
 
@@ -54,13 +55,145 @@
     }, constants.PAGE_DIGEST_DELAY_MS);
   }
 
+  function buildAttentionActivitySnapshot() {
+    const observedAtMs = Date.now();
+
+    return {
+      pageUrl: location.href,
+      observedAt: new Date(observedAtMs).toISOString(),
+      documentVisible: document.visibilityState === "visible" && document.hidden !== true,
+      prerendering: isPassivePrerenderContext(),
+      lastUserInputAt:
+        state.lastUserInputAt > 0 ? new Date(state.lastUserInputAt).toISOString() : null,
+      videoPlaybackActive: hasActiveVideoPlayback(),
+      audioPlaybackActive: hasActiveAudioPlayback(),
+    };
+  }
+
+  function recordUserInputForAttention() {
+    state.lastUserInputAt = Date.now();
+    void reportAttentionActivity({ throttle: true });
+  }
+
+  async function reportAttentionActivity(options = {}) {
+    if (typeof reportAttentionActivityToBackground !== "function") {
+      return;
+    }
+
+    const now = Date.now();
+
+    if (
+      options.throttle === true &&
+      now - state.lastAttentionActivityReportedAt <
+        constants.ATTENTION_ACTIVITY_MIN_REPORT_INTERVAL_MS
+    ) {
+      return;
+    }
+
+    state.lastAttentionActivityReportedAt = now;
+    await reportAttentionActivityToBackground(buildAttentionActivitySnapshot());
+  }
+
+  function startAttentionActivityReporter() {
+    if (state.attentionActivityTimerId) {
+      return;
+    }
+
+    void reportAttentionActivity({ force: true });
+    state.attentionActivityTimerId = window.setInterval(() => {
+      void reportAttentionActivity({ force: true });
+    }, constants.ATTENTION_ACTIVITY_INTERVAL_MS);
+  }
+
+  function hasActiveVideoPlayback() {
+    const mediaElements = document.querySelectorAll("video,audio");
+    const MediaElementCtor = globalThis.HTMLMediaElement;
+
+    for (const mediaElement of mediaElements) {
+      if (
+        (typeof MediaElementCtor !== "function" ||
+          mediaElement instanceof MediaElementCtor) &&
+        mediaElement.paused === false &&
+        mediaElement.ended === false &&
+        mediaElement.readyState > 1 &&
+        mediaElement.tagName?.toLowerCase() === "video"
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function hasActiveAudioPlayback() {
+    const mediaElements = document.querySelectorAll("video,audio");
+    const MediaElementCtor = globalThis.HTMLMediaElement;
+
+    for (const mediaElement of mediaElements) {
+      if (
+        (typeof MediaElementCtor !== "function" ||
+          mediaElement instanceof MediaElementCtor) &&
+        mediaElement.paused === false &&
+        mediaElement.ended === false &&
+        mediaElement.readyState > 1 &&
+        mediaElement.tagName?.toLowerCase() === "audio"
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   function bindNavigationContentEvents() {
     document.addEventListener(
       "mousedown",
       (event) => {
+        recordUserInputForAttention();
         void namespace.primeSourcePageForNavigation(event);
       },
       true
+    );
+
+    document.addEventListener(
+      "mousemove",
+      () => {
+        recordUserInputForAttention();
+      },
+      {
+        capture: true,
+        passive: true,
+      }
+    );
+
+    document.addEventListener(
+      "wheel",
+      () => {
+        recordUserInputForAttention();
+      },
+      {
+        capture: true,
+        passive: true,
+      }
+    );
+
+    document.addEventListener(
+      "keydown",
+      () => {
+        recordUserInputForAttention();
+      },
+      true
+    );
+
+    document.addEventListener(
+      "touchstart",
+      () => {
+        recordUserInputForAttention();
+      },
+      {
+        capture: true,
+        passive: true,
+      }
     );
 
     document.addEventListener(
@@ -97,12 +230,47 @@
 
     document.addEventListener("prerenderingchange", () => {
       if (isPassivePrerenderContext()) {
+        void reportAttentionActivity({ force: true });
         return;
       }
 
+      void reportAttentionActivity({ force: true });
       scheduleCandidateScan();
       schedulePageDigestReport();
     });
+
+    document.addEventListener("visibilitychange", () => {
+      void reportAttentionActivity({ force: true });
+    });
+
+    document.addEventListener(
+      "play",
+      () => {
+        void reportAttentionActivity({ force: true });
+      },
+      true
+    );
+    document.addEventListener(
+      "playing",
+      () => {
+        void reportAttentionActivity({ force: true });
+      },
+      true
+    );
+    document.addEventListener(
+      "pause",
+      () => {
+        void reportAttentionActivity({ force: true });
+      },
+      true
+    );
+    document.addEventListener(
+      "ended",
+      () => {
+        void reportAttentionActivity({ force: true });
+      },
+      true
+    );
 
     document.addEventListener("focusin", () => {
       if (hasActiveEditableFocus()) {
@@ -128,6 +296,7 @@
     });
 
     bindRuntimeMessages();
+    startAttentionActivityReporter();
     startMutationObserverWhenReady(createMutationObserver());
   }
 
@@ -197,6 +366,14 @@
           prerenderTargets: [],
           prefetchTargets: [],
         });
+        return;
+      }
+
+      if (message?.type === "preload:apply-speculation-rules") {
+        applySpeculationRules({
+          prerenderTargets: message.prerenderTargets ?? [],
+          prefetchTargets: message.prefetchTargets ?? [],
+        });
       }
     });
   }
@@ -205,5 +382,6 @@
     bindNavigationContentEvents,
     scheduleCandidateScan,
     schedulePageDigestReport,
+    buildAttentionActivitySnapshot,
   });
 })();

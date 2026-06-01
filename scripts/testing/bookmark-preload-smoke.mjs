@@ -251,10 +251,16 @@ async function inspectSettingsPage({ debugPort, serviceWorker, extensionId, clie
     return {
       title: document.title,
       preloadCards: cardIds("#preload-rule-cards-list"),
-      rankingCards: cardIds("#ranking-rule-cards-list"),
+      trackingCards: cardIds("#tracking-rule-cards-list"),
       hasSortableList: Boolean(document.getElementById("sortable-cards-list")),
       draggableElementCount: document.querySelectorAll("[draggable='true']").length,
       hasWeightRangeCard: Boolean(document.querySelector("[data-card-id='weightRange']")),
+      hasOverviewSection: Boolean(
+        document.getElementById("overview") || document.getElementById("overview-panel")
+      ),
+      hasOverviewNav: Array.from(document.querySelectorAll(".settings-nav-title")).some((item) =>
+        /Overview|概览/.test(item.textContent || "")
+      ),
       orderingText: document.getElementById("ordering")?.innerText || "",
     };
   });
@@ -267,8 +273,11 @@ async function inspectSettingsPage({ debugPort, serviceWorker, extensionId, clie
   await writeFile(screenshotPath, Buffer.from(screenshot.data, "base64"));
 
   const ok =
-    dom.preloadCards.join(",") === "nativePerPagePreloadLimit,perPagePreloadLimit" &&
-    dom.rankingCards.join(",") === "highWeightRank,highWeightRankTab,googleBookmarkRank" &&
+    dom.preloadCards.join(",") ===
+      "nativePerPagePreloadLimit,highWeightRank,perPagePreloadLimit,highWeightRankTab" &&
+    dom.trackingCards.join(",") === "googleBookmarkRank" &&
+    dom.hasOverviewSection === false &&
+    dom.hasOverviewNav === false &&
     dom.hasSortableList === false &&
     dom.draggableElementCount === 0 &&
     dom.hasWeightRangeCard === false;

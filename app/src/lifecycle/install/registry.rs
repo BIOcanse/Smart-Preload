@@ -9,6 +9,7 @@ pub(super) struct AppRegistration {
     pub(super) app_path: Option<String>,
     pub(super) install_dir: Option<String>,
     pub(super) extension_id: Option<String>,
+    pub(super) extension_ids: Vec<String>,
 }
 
 pub(super) fn write_app_registration() -> Result<()> {
@@ -33,15 +34,17 @@ pub(super) fn write_app_registration() -> Result<()> {
 }
 
 pub(super) fn write_native_messaging_app_registration(
-    extension_id: &str,
+    extension_ids: &[String],
     manifest_path: &PathBuf,
 ) -> Result<()> {
+    let primary_extension_id = extension_ids.first().cloned().unwrap_or_default();
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
     let (app_key, _) = hkcu
         .create_subkey(APP_REGISTRY_PATH)
         .context("failed to open ZeroLatencyWeb registry key")?;
 
-    app_key.set_value(EXTENSION_ID_VALUE_NAME, &extension_id.to_string())?;
+    app_key.set_value(EXTENSION_ID_VALUE_NAME, &primary_extension_id)?;
+    app_key.set_value(EXTENSION_IDS_VALUE_NAME, &extension_ids.join("\n"))?;
     app_key.set_value(
         MANIFEST_PATH_VALUE_NAME,
         &manifest_path.to_string_lossy().to_string(),
@@ -67,13 +70,30 @@ pub(super) fn read_app_registration() -> Result<AppRegistration> {
             app_path: None,
             install_dir: None,
             extension_id: None,
+            extension_ids: Vec::new(),
         });
     };
+    let extension_id = app_key.get_value(EXTENSION_ID_VALUE_NAME).ok();
+    let extension_ids = app_key
+        .get_value::<String, _>(EXTENSION_IDS_VALUE_NAME)
+        .ok()
+        .map(|value| {
+            value
+                .lines()
+                .map(str::trim)
+                .filter(|value| !value.is_empty())
+                .map(ToOwned::to_owned)
+                .collect::<Vec<_>>()
+        })
+        .filter(|values| !values.is_empty())
+        .or_else(|| extension_id.clone().map(|value| vec![value]))
+        .unwrap_or_default();
 
     Ok(AppRegistration {
         app_path: app_key.get_value(APP_PATH_VALUE_NAME).ok(),
         install_dir: app_key.get_value(INSTALL_DIR_VALUE_NAME).ok(),
-        extension_id: app_key.get_value(EXTENSION_ID_VALUE_NAME).ok(),
+        extension_id,
+        extension_ids,
     })
 }
 
@@ -100,4 +120,5 @@ const INSTALL_DIR_VALUE_NAME: &str = "InstallDir";
 const INSTALLED_AT_VALUE_NAME: &str = "InstalledAt";
 const MANIFEST_PATH_VALUE_NAME: &str = "NativeMessagingManifestPath";
 const EXTENSION_ID_VALUE_NAME: &str = "ExtensionId";
+const EXTENSION_IDS_VALUE_NAME: &str = "ExtensionIds";
 const VERSION_VALUE_NAME: &str = "Version";

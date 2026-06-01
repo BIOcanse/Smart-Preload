@@ -12,6 +12,7 @@ const i18n = globalThis.ZeroLatencyI18n;
 const t = (key, substitutions = [], fallback = "") =>
   i18n?.t?.(key, substitutions, fallback) || fallback || key;
 let servicePaused = false;
+let snapshotReloadTimerId = null;
 
 i18n?.applyDocument?.(document);
 
@@ -41,6 +42,27 @@ settingsButton.addEventListener("click", async () => {
 });
 
 void loadSnapshot();
+
+chrome.tabs?.onActivated?.addListener?.(() => {
+  scheduleSnapshotReload();
+});
+
+chrome.tabs?.onUpdated?.addListener?.((_tabId, changeInfo, tab) => {
+  if (tab?.active === true && (changeInfo?.url || changeInfo?.status === "complete")) {
+    scheduleSnapshotReload();
+  }
+});
+
+chrome.windows?.onFocusChanged?.addListener?.(() => {
+  scheduleSnapshotReload();
+});
+
+function scheduleSnapshotReload() {
+  window.clearTimeout(snapshotReloadTimerId);
+  snapshotReloadTimerId = window.setTimeout(() => {
+    void loadSnapshot();
+  }, 120);
+}
 
 async function loadSnapshot() {
   setBusy(true, t("popupLoadingVisitGraph", [], "Loading visit graph..."));

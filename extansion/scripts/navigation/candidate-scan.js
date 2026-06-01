@@ -71,6 +71,7 @@
         pageTitle: document.title || "",
         pageTextDigest: collectPageTextDigest(),
         contentFingerprint: buildPageContentFingerprint(),
+        attentionActivity: namespace.buildAttentionActivitySnapshot?.() ?? null,
         links,
       });
       syncContentScriptPreloadPolicy(response?.contentScriptPolicy);

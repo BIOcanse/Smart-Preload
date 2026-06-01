@@ -135,7 +135,7 @@ fn run_host() -> Result<()> {
 }
 
 fn spawn_extension_heartbeat_shutdown_monitor(state: ApiState, shutdown_tx: watch::Sender<bool>) {
-    const NO_NORMAL_WINDOW_GRACE: Duration = Duration::from_secs(20);
+    const NO_NORMAL_WINDOW_GRACE: Duration = Duration::from_secs(90);
     const HEARTBEAT_CHECK_INTERVAL: Duration = Duration::from_secs(5);
 
     thread::spawn(move || {

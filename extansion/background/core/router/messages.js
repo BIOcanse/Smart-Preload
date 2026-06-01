@@ -19,6 +19,7 @@
     switch (actionKey) {
       case "register-preload-candidates":
       case "report-foreground-page-digest":
+      case "record-attention-activity":
         return "side-effect";
       default:
         return "mutation";

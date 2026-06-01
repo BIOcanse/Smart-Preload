@@ -1,6 +1,9 @@
 (function () {
   const modules = globalThis.ZeroLatencyNativeAppRequestModules;
   let nativeAppHeartbeatPromise = null;
+  let nativeAppWakeRetryPromise = null;
+  let lastNativeAppHeartbeatStartedAt = 0;
+  let lastNativeAppWakeRetryStartedAt = 0;
 
   async function sendNativeAppHeartbeat(reason = "alarm") {
     if (nativeAppHeartbeatPromise) {
@@ -8,6 +11,30 @@
         reason,
       });
       return nativeAppHeartbeatPromise;
+    }
+
+    const heartbeatThrottle = getNativeAppAlarmThrottleState(
+      reason,
+      lastNativeAppHeartbeatStartedAt,
+      modules.NATIVE_APP_HEARTBEAT_INTERVAL_SECONDS
+    );
+
+    if (heartbeatThrottle.skip) {
+      globalThis.ZeroLatencyDebugEvents?.record?.("native-app.heartbeat.skip-throttled", {
+        reason,
+        elapsedMs: heartbeatThrottle.elapsedMs,
+        throttleMs: heartbeatThrottle.throttleMs,
+      });
+      return {
+        ok: false,
+        skipped: true,
+        reason: "throttled",
+        elapsedMs: heartbeatThrottle.elapsedMs,
+      };
+    }
+
+    if (heartbeatThrottle.alarmDriven) {
+      lastNativeAppHeartbeatStartedAt = Date.now();
     }
 
     nativeAppHeartbeatPromise = sendNativeAppHeartbeatInternal(reason).finally(() => {
@@ -144,6 +171,45 @@
   }
 
   async function runNativeAppWakeRetry(reason = "alarm") {
+    if (nativeAppWakeRetryPromise) {
+      globalThis.ZeroLatencyDebugEvents?.record?.("native-app.wake-retry.join-inflight", {
+        reason,
+      });
+      return nativeAppWakeRetryPromise;
+    }
+
+    const wakeRetryThrottle = getNativeAppAlarmThrottleState(
+      reason,
+      lastNativeAppWakeRetryStartedAt,
+      modules.NATIVE_APP_WAKE_RETRY_INTERVAL_SECONDS
+    );
+
+    if (wakeRetryThrottle.skip) {
+      globalThis.ZeroLatencyDebugEvents?.record?.("native-app.wake-retry.skip-throttled", {
+        reason,
+        elapsedMs: wakeRetryThrottle.elapsedMs,
+        throttleMs: wakeRetryThrottle.throttleMs,
+      });
+      return {
+        ok: false,
+        skipped: true,
+        reason: "throttled",
+        elapsedMs: wakeRetryThrottle.elapsedMs,
+      };
+    }
+
+    if (wakeRetryThrottle.alarmDriven) {
+      lastNativeAppWakeRetryStartedAt = Date.now();
+    }
+
+    nativeAppWakeRetryPromise = runNativeAppWakeRetryInternal(reason).finally(() => {
+      nativeAppWakeRetryPromise = null;
+    });
+
+    return nativeAppWakeRetryPromise;
+  }
+
+  async function runNativeAppWakeRetryInternal(reason = "alarm") {
     const browserActivity = await modules.collectNativeAppHeartbeatBrowserActivity();
 
     if (browserActivity.normalWindowCount === 0) {
@@ -161,6 +227,8 @@
     }
 
     if (await probeNativeAppAvailableForWakeRetry()) {
+      await ensureNativeAppWakeRetryAlarm(false);
+      modules.markNativeAppSystemHidingAvailability(true);
       modules.resetNativeAppRegistration();
       return sendNativeAppHeartbeat(`${reason}:health-ok`);
     }
@@ -221,6 +289,23 @@
       ok: false,
       error: lastError instanceof Error ? lastError.message : String(lastError || ""),
     };
+  }
+
+  function getNativeAppAlarmThrottleState(reason, lastStartedAt, intervalSeconds) {
+    const alarmDriven = isNativeAppAlarmDrivenReason(reason);
+    const throttleMs = Math.max(1_000, Math.floor((Number(intervalSeconds) || 0) * 1_000 * 0.8));
+    const elapsedMs = lastStartedAt > 0 ? Date.now() - lastStartedAt : null;
+
+    return {
+      alarmDriven,
+      throttleMs,
+      elapsedMs,
+      skip: alarmDriven && elapsedMs !== null && elapsedMs < throttleMs,
+    };
+  }
+
+  function isNativeAppAlarmDrivenReason(reason) {
+    return String(reason || "alarm") === "alarm";
   }
 
   async function probeNativeAppAvailableForWakeRetry() {

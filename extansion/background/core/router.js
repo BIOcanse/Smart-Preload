@@ -69,6 +69,12 @@
       });
     }
 
+    async handleWindowFocused(windowId) {
+      await globalThis.ZeroLatencyRouterNavigation.dispatchNavigationEvent("window-focused", {
+        windowId,
+      });
+    }
+
     async handleWindowBoundsChanged(window) {
       await globalThis.ZeroLatencyRouterNavigation.dispatchNavigationEvent(
         "window-bounds-changed",
