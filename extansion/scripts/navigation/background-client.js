@@ -74,6 +74,7 @@
       pageTitle: payload.pageTitle,
       pageTextDigest: payload.pageTextDigest,
       contentFingerprint: payload.contentFingerprint,
+      attentionActivity: payload.attentionActivity ?? null,
       links: payload.links,
     });
   }
@@ -85,7 +86,19 @@
       title: payload.title,
       textDigest: payload.textDigest,
       contentFingerprint: payload.contentFingerprint,
+      attentionActivity: payload.attentionActivity ?? null,
     });
+  }
+
+  async function reportAttentionActivityToBackground(payload) {
+    try {
+      await chrome.runtime.sendMessage({
+        type: "attention:activity",
+        activity: payload,
+      });
+    } catch (_error) {
+      // Ignore transient background messaging failures.
+    }
   }
 
   Object.assign(namespace, {
@@ -94,5 +107,6 @@
     requestClickNavigationResolutionWithTimeout,
     registerPreloadCandidates,
     reportPageDigestToBackground,
+    reportAttentionActivityToBackground,
   });
 })();

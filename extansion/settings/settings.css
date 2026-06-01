@@ -72,10 +72,7 @@ body {
 .settings-brand-copy,
 .settings-nav-footer p,
 .settings-section-meta,
-.settings-item-desc,
-.metric-meta,
-.hero-copy p,
-.hero-kicker {
+.settings-item-desc {
   margin: 0;
   color: var(--muted);
 }
@@ -139,73 +136,12 @@ body {
   padding: 28px;
 }
 
-.hero-card,
 .settings-section,
 .settings-footer {
   border: 1px solid var(--line);
   border-radius: 28px;
   background: var(--surface);
   box-shadow: var(--shadow);
-}
-
-.hero-card {
-  display: grid;
-  gap: 24px;
-  padding: 28px;
-  background: var(--surface);
-}
-
-.hero-kicker {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.hero-copy {
-  display: grid;
-  gap: 10px;
-}
-
-.hero-copy h2 {
-  margin: 0;
-  max-width: 12ch;
-  font-size: clamp(30px, 4vw, 48px);
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-}
-
-.hero-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.metric-card {
-  display: grid;
-  gap: 8px;
-  min-height: 148px;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  background: var(--surface-muted);
-}
-
-.metric-card.is-placeholder > * {
-  display: none;
-}
-
-.metric-label {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.metric-value {
-  font-size: 30px;
-  line-height: 1;
 }
 
 .settings-section {
@@ -279,6 +215,47 @@ body {
 .compound-setting-control .select-input,
 .compound-setting-control .text-input {
   width: 160px;
+}
+
+.scheduler-settings-item {
+  grid-template-columns: minmax(240px, 0.7fr) minmax(0, 1.3fr);
+}
+
+.scheduler-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.scheduler-group {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.scheduler-group legend {
+  padding: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.scheduler-field {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.scheduler-field .number-input {
+  min-width: 0;
+  padding: 10px 12px;
 }
 
 .settings-item.has-disabled-select .compound-setting-control .select-input {
@@ -587,9 +564,6 @@ body {
     border-bottom: 1px solid var(--line);
   }
 
-  .hero-metrics {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 720px) {
@@ -597,7 +571,6 @@ body {
     padding: 18px;
   }
 
-  .hero-card,
   .settings-section,
   .settings-footer {
     padding: 18px;
@@ -612,11 +585,16 @@ body {
 
   .settings-item-control,
   .compound-setting-control,
+  .scheduler-grid,
   .segmented-control,
   .rule-card-control,
   .rule-control {
     min-width: 0;
     width: 100%;
+  }
+
+  .scheduler-grid {
+    grid-template-columns: 1fr;
   }
 
   .compound-setting-control {

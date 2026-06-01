@@ -379,9 +379,11 @@ async function hidePreloadWindowBySystem({
   const resolvedHwnd =
     normalizePositiveFiniteNumber(normalWindowRuntime.preloadWindow.hwnd) ??
     (await detectCreatedPreloadWindowHwnd(previousChromeWindowHwnds, liveWindow)) ??
+    (await detectChromeWindowHwndByPreloadSentinel(liveWindow)) ??
     (await detectChromeWindowHwndByBounds(liveWindow));
   const hideResult = await nativeAppHideWindow({
     hwnd: resolvedHwnd ?? undefined,
+    titleContains: PRELOAD_WINDOW_SENTINEL_URL,
     left: liveWindow.left,
     top: liveWindow.top,
     width: liveWindow.width,
@@ -536,6 +538,16 @@ async function detectChromeWindowHwndByBounds(actualWindow) {
   return normalizePositiveFiniteNumber(bestCandidate?.hwnd);
 }
 
+async function detectChromeWindowHwndByPreloadSentinel(actualWindow = null) {
+  const windows = await getNativeChromeWindows();
+  const candidates = windows.filter((window) => isNativePreloadWindowByTitle(window));
+  const bestCandidate =
+    pickBestChromeWindowByBounds(candidates, actualWindow) ??
+    pickBestPreloadSentinelWindow(candidates);
+
+  return normalizePositiveFiniteNumber(bestCandidate?.hwnd);
+}
+
 async function getNativeChromeWindows() {
   if (typeof globalThis.nativeAppListChromeWindows !== "function") {
     return [];
@@ -569,6 +581,35 @@ function pickBestChromeWindowByBounds(windows, actualWindow) {
 
       return 0;
     })[0] ?? null;
+}
+
+function pickBestPreloadSentinelWindow(windows) {
+  return [...(Array.isArray(windows) ? windows : [])]
+    .sort((left, right) => {
+      if (Boolean(left?.toolWindow) !== Boolean(right?.toolWindow)) {
+        return Number(Boolean(right?.toolWindow)) - Number(Boolean(left?.toolWindow));
+      }
+
+      if (Boolean(left?.minimized) !== Boolean(right?.minimized)) {
+        return Number(Boolean(right?.minimized)) - Number(Boolean(left?.minimized));
+      }
+
+      if (Boolean(left?.visible) !== Boolean(right?.visible)) {
+        return Number(Boolean(left?.visible)) - Number(Boolean(right?.visible));
+      }
+
+      return 0;
+    })[0] ?? null;
+}
+
+function isNativePreloadWindowByTitle(window) {
+  const title = typeof window?.title === "string" ? window.title : "";
+  const sentinelUrl =
+    typeof PRELOAD_WINDOW_SENTINEL_URL === "string"
+      ? PRELOAD_WINDOW_SENTINEL_URL
+      : "about:blank#zero-latency-preload-window";
+
+  return title.includes(sentinelUrl) || title.includes("zero-latency-preload-window");
 }
 
 function matchesChromeWindowBounds(window, actualWindow) {

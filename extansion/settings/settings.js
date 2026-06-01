@@ -7,16 +7,26 @@ const t = (key, substitutions = [], fallback = "") =>
 i18n?.applyDocument?.(document);
 
 const formElements = {
-  automaticDeviceTuning: document.getElementById("automatic-device-tuning"),
-  modeConservative: document.getElementById("mode-conservative"),
-  modeBalanced: document.getElementById("mode-balanced"),
-  modeAggressive: document.getElementById("mode-aggressive"),
   trackGoogleSearchPages: document.getElementById("track-google-search-pages"),
   excludeGoogleInternalPages: document.getElementById("exclude-google-internal-pages"),
   preloadingEnabled: document.getElementById("preloading-enabled"),
   ignoreWaterfallDynamicLinks: document.getElementById("ignore-waterfall-dynamic-links"),
   transitionWindowScope: document.getElementById("transition-window-scope"),
   transitionWindowScopeEnabled: document.getElementById("transition-window-scope-enabled"),
+  schedulerTabTotalMin: document.getElementById("scheduler-tab-total-min"),
+  schedulerTabTotalMax: document.getElementById("scheduler-tab-total-max"),
+  schedulerTabHalfLifeTabs: document.getElementById("scheduler-tab-half-life-tabs"),
+  schedulerNativeTotalMin: document.getElementById("scheduler-native-total-min"),
+  schedulerNativeTotalMax: document.getElementById("scheduler-native-total-max"),
+  schedulerNativeHalfLifeTabs: document.getElementById("scheduler-native-half-life-tabs"),
+  schedulerAttentionPoolHours: document.getElementById("scheduler-attention-pool-hours"),
+  schedulerAttentionSegmentSeconds: document.getElementById("scheduler-attention-segment-seconds"),
+  schedulerAttentionMaxGapSeconds: document.getElementById("scheduler-attention-max-gap-seconds"),
+  schedulerAttentionInputWindowSeconds: document.getElementById(
+    "scheduler-attention-input-window-seconds"
+  ),
+  schedulerAttentionMediaWeight: document.getElementById("scheduler-attention-media-weight"),
+  schedulerAttentionAudioWeight: document.getElementById("scheduler-attention-audio-weight"),
   aiPredictionProvider: document.getElementById("ai-prediction-provider"),
   aiPredictionModel: document.getElementById("ai-prediction-model"),
   aiProviderApiKey: document.getElementById("ai-provider-api-key"),
@@ -45,9 +55,8 @@ const PRELOAD_RULE_CARD_IDS =
   ];
 const TRACKING_RULE_CARD_IDS =
   settingsApi.TRACKING_RULE_CARD_IDS ?? ["googleBookmarkRank"];
-const NAV_SECTION_IDS = ["overview", "tracking", "preload", "experiments"];
+const NAV_SECTION_IDS = ["tracking", "preload", "experiments"];
 const NAV_SECTION_GROUPS = {
-  overview: ["overview", "overview-panel"],
   tracking: ["tracking"],
   preload: ["preload"],
   experiments: ["experiments"],
@@ -55,14 +64,6 @@ const NAV_SECTION_GROUPS = {
 const preloadRuleCardsListElement = document.getElementById("preload-rule-cards-list");
 const trackingRuleCardsListElement = document.getElementById("tracking-rule-cards-list");
 
-const deviceProfileLabelElement = document.getElementById("device-profile-label");
-const deviceProfileMetaElement = document.getElementById("device-profile-meta");
-const effectivePreloadCapElement = document.getElementById("effective-preload-cap");
-const effectivePreloadMetaElement = document.getElementById("effective-preload-meta");
-const watchdogSummaryElement = document.getElementById("watchdog-summary");
-const watchdogMetaElement = document.getElementById("watchdog-meta");
-const nativeAppStatusElement = document.getElementById("native-app-status");
-const nativeAppMetaElement = document.getElementById("native-app-meta");
 const watchdogIntervalRowElement = document.getElementById("watchdog-interval-row");
 const transitionWindowScopeRowElement = document.getElementById("transition-window-scope-row");
 const footerStatusTitleElement = document.getElementById("footer-status-title");
@@ -73,7 +74,6 @@ const RULE_CARD_SCHEMA = settingsApi.RULE_CARD_SCHEMA ?? {};
 let savedSettings = settingsApi.cloneSettings(settingsApi.DEFAULT_SETTINGS);
 let draftSettings = settingsApi.cloneSettings(settingsApi.DEFAULT_SETTINGS);
 let pendingNavSyncFrame = null;
-let currentFeatureSupport = {};
 let aiModelOptionsRequestId = 0;
 let pendingLmStudioModelLoadId = "";
 
@@ -91,7 +91,6 @@ async function initializeSettingsPage() {
     renderForm(draftSettings);
     queueNavScrollSync();
     setStatus(t("commonReady", [], "Ready"), t("settingsNoUnsavedChanges", [], "No unsaved changes."));
-    await fetchAndRenderFeatureSupport();
   } catch (error) {
     console.error(error);
     setStatus(t("commonFailed", [], "Failed"), t("settingsCouldNotLoad", [], "Could not load settings from storage."));
@@ -130,6 +129,10 @@ function populateAiProviderOptions() {
 
 function bindUiEvents() {
   for (const element of Object.values(formElements)) {
+    if (!element) {
+      continue;
+    }
+
     element.addEventListener("change", handleFormChange);
     element.addEventListener("input", handleFormChange);
   }
@@ -174,6 +177,9 @@ async function handleFormChange(event) {
   }
 
   draftSettings = readFormSettings();
+  if (isSchedulerFormElement(event?.target)) {
+    syncSchedulerFieldsFromSettings(draftSettings);
+  }
   if (
     event?.target === formElements.aiPredictionProvider ||
     event?.target === formElements.aiProviderApiKey ||
@@ -199,15 +205,24 @@ async function handleFormChange(event) {
   }
 }
 
+function isSchedulerFormElement(element) {
+  return (
+    element === formElements.schedulerTabTotalMin ||
+    element === formElements.schedulerTabTotalMax ||
+    element === formElements.schedulerTabHalfLifeTabs ||
+    element === formElements.schedulerNativeTotalMin ||
+    element === formElements.schedulerNativeTotalMax ||
+    element === formElements.schedulerNativeHalfLifeTabs ||
+    element === formElements.schedulerAttentionPoolHours ||
+    element === formElements.schedulerAttentionSegmentSeconds ||
+    element === formElements.schedulerAttentionMaxGapSeconds ||
+    element === formElements.schedulerAttentionInputWindowSeconds ||
+    element === formElements.schedulerAttentionMediaWeight ||
+    element === formElements.schedulerAttentionAudioWeight
+  );
+}
+
 function readFormSettings() {
-  let mode = "balanced";
-
-  if (formElements.modeConservative.checked) {
-    mode = "conservative";
-  } else if (formElements.modeAggressive.checked) {
-    mode = "aggressive";
-  }
-
   const aiProviderId = formElements.aiPredictionProvider.value;
   const aiProvider = settingsApi.AI_PROVIDER_BY_ID?.[aiProviderId] ?? {};
   const aiProviderIsLmStudio = isLmStudioProvider(aiProviderId);
@@ -227,14 +242,14 @@ function readFormSettings() {
   };
 
   return settingsApi.normalizeStoredSettings({
-    automaticDeviceTuning: formElements.automaticDeviceTuning.checked,
+    automaticDeviceTuning: draftSettings.automaticDeviceTuning,
     tracking: {
       trackGoogleSearchPages: formElements.trackGoogleSearchPages.checked,
       excludeGoogleInternalPages: formElements.excludeGoogleInternalPages.checked,
     },
     preloading: {
       enabled: formElements.preloadingEnabled.checked,
-      mode,
+      mode: draftSettings.preloading.mode,
       nativeMaxPreloadsPerSource: draftSettings.preloading.nativeMaxPreloadsPerSource,
       maxTabsPerSource: draftSettings.preloading.maxTabsPerSource,
       siteSelectionLimit: draftSettings.preloading.siteSelectionLimit,
@@ -244,6 +259,7 @@ function readFormSettings() {
         enabled: formElements.transitionWindowScopeEnabled.checked,
         windowKey: formElements.transitionWindowScope.value,
       },
+      scheduler: readSchedulerSettingsFromForm(),
       aiPrediction: {
         enabled: formElements.aiPredictionEnabled.checked,
         providerId: aiProviderId,
@@ -284,10 +300,6 @@ function renderForm(settings) {
 }
 
 function syncBaseControlsFromSettings(settings) {
-  formElements.automaticDeviceTuning.checked = settings.automaticDeviceTuning;
-  formElements.modeConservative.checked = settings.preloading.mode === "conservative";
-  formElements.modeBalanced.checked = settings.preloading.mode === "balanced";
-  formElements.modeAggressive.checked = settings.preloading.mode === "aggressive";
   formElements.trackGoogleSearchPages.checked = settings.tracking.trackGoogleSearchPages;
   formElements.excludeGoogleInternalPages.checked = settings.tracking.excludeGoogleInternalPages;
   formElements.preloadingEnabled.checked = settings.preloading.enabled;
@@ -296,6 +308,7 @@ function syncBaseControlsFromSettings(settings) {
   formElements.transitionWindowScopeEnabled.checked =
     settings.preloading.transitionWindowScope.enabled;
   formElements.transitionWindowScope.value = settings.preloading.transitionWindowScope.windowKey;
+  syncSchedulerFieldsFromSettings(settings);
   formElements.aiPredictionEnabled.checked = settings.preloading.aiPrediction.enabled;
   formElements.aiPredictionProvider.value = settings.preloading.aiPrediction.providerId;
   syncAiProviderFieldsFromSettings(settings);
@@ -310,6 +323,53 @@ function syncBaseControlsFromSettings(settings) {
     settings.experiments.pointerProximityPrediction;
   formElements.authStateWarmup.checked = settings.experiments.authStateWarmup;
   formElements.diagnosticsLoggingEnabled.checked = settings.diagnostics?.enabled === true;
+}
+
+function readSchedulerSettingsFromForm() {
+  return {
+    nativeTotalMin: Number(formElements.schedulerNativeTotalMin.value),
+    nativeTotalMax: Number(formElements.schedulerNativeTotalMax.value),
+    nativeHalfLifeTabs: Number(formElements.schedulerNativeHalfLifeTabs.value),
+    tabTotalMin: Number(formElements.schedulerTabTotalMin.value),
+    tabTotalMax: Number(formElements.schedulerTabTotalMax.value),
+    tabHalfLifeTabs: Number(formElements.schedulerTabHalfLifeTabs.value),
+    attentionPoolHours: Number(formElements.schedulerAttentionPoolHours.value),
+    attentionSegmentSeconds: Number(formElements.schedulerAttentionSegmentSeconds.value),
+    attentionMaxObservableGapSeconds: Number(formElements.schedulerAttentionMaxGapSeconds.value),
+    attentionInputWindowSeconds: Number(
+      formElements.schedulerAttentionInputWindowSeconds.value
+    ),
+    attentionMediaPlaybackWeight: Number(formElements.schedulerAttentionMediaWeight.value),
+    attentionAudioPlaybackWeight: Number(formElements.schedulerAttentionAudioWeight.value),
+  };
+}
+
+function syncSchedulerFieldsFromSettings(settings) {
+  const schedulerSettings =
+    settings.preloading?.scheduler ?? settingsApi.DEFAULT_SETTINGS.preloading.scheduler;
+
+  formElements.schedulerNativeTotalMin.value = String(schedulerSettings.nativeTotalMin);
+  formElements.schedulerNativeTotalMax.value = String(schedulerSettings.nativeTotalMax);
+  formElements.schedulerNativeHalfLifeTabs.value = String(schedulerSettings.nativeHalfLifeTabs);
+  formElements.schedulerTabTotalMin.value = String(schedulerSettings.tabTotalMin);
+  formElements.schedulerTabTotalMax.value = String(schedulerSettings.tabTotalMax);
+  formElements.schedulerTabHalfLifeTabs.value = String(schedulerSettings.tabHalfLifeTabs);
+  formElements.schedulerAttentionPoolHours.value = String(schedulerSettings.attentionPoolHours);
+  formElements.schedulerAttentionSegmentSeconds.value = String(
+    schedulerSettings.attentionSegmentSeconds
+  );
+  formElements.schedulerAttentionMaxGapSeconds.value = String(
+    schedulerSettings.attentionMaxObservableGapSeconds
+  );
+  formElements.schedulerAttentionInputWindowSeconds.value = String(
+    schedulerSettings.attentionInputWindowSeconds
+  );
+  formElements.schedulerAttentionMediaWeight.value = String(
+    schedulerSettings.attentionMediaPlaybackWeight
+  );
+  formElements.schedulerAttentionAudioWeight.value = String(
+    schedulerSettings.attentionAudioPlaybackWeight
+  );
 }
 
 function syncAiProviderFieldsFromSettings(settings) {
@@ -506,37 +566,6 @@ function formatAiModelOptionLabel(model) {
 
 function updateComputedState(settings) {
   const effectiveSettings = settingsApi.resolveEffectiveSettings(settings);
-  const deviceProfile = effectiveSettings.detectedDeviceProfile;
-  deviceProfileLabelElement.textContent = deviceProfile.label;
-  deviceProfileMetaElement.textContent = t(
-    "settingsHardwareMeta",
-    [deviceProfile.hardwareConcurrency || "?", deviceProfile.deviceMemory || "?"],
-    `${deviceProfile.hardwareConcurrency || "?"} cores | ${
-      deviceProfile.deviceMemory || "?"
-    } GB memory hint`
-  );
-  effectivePreloadCapElement.textContent = String(
-    `${effectiveSettings.preloading.effectiveNativeMaxPreloadsPerSource} / ${effectiveSettings.preloading.effectiveTabMaxPreloadsPerSource}`
-  );
-  const selectedTransitionWindowLabel =
-    settingsApi.TRANSITION_WINDOW_OPTIONS?.find(
-      (option) => option.value === effectiveSettings.preloading.effectiveTransitionWindowKey
-    )?.label ?? t("transitionWindowTotal", [], "Total");
-  effectivePreloadMetaElement.textContent = t(
-    "settingsEffectivePreloadMeta",
-    [selectedTransitionWindowLabel],
-    `Native / tab slot caps. Rules use ${selectedTransitionWindowLabel}.`
-  );
-  watchdogSummaryElement.textContent = effectiveSettings.preloadWindow.watchdogEnabled
-    ? t("commonOn", [], "On")
-    : t("commonOff", [], "Off");
-  watchdogMetaElement.textContent = effectiveSettings.preloadWindow.watchdogEnabled
-    ? t(
-        "settingsWatchdogChecksEvery",
-        [effectiveSettings.preloadWindow.watchdogIntervalSeconds],
-        `Checks every ${effectiveSettings.preloadWindow.watchdogIntervalSeconds} second(s).`
-      )
-    : t("settingsWindowRepairDisabled", [], "Window repair is disabled.");
   watchdogIntervalRowElement.classList.toggle(
     "is-disabled",
     !effectiveSettings.preloadWindow.watchdogEnabled
@@ -933,74 +962,6 @@ function isRuleNumberFieldDisabled(cardState, fieldKey) {
   }
 
   return false;
-}
-
-async function fetchAndRenderFeatureSupport() {
-  try {
-    const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const snapshot = await chrome.runtime.sendMessage({
-      type: "visit-graph:get-debug-snapshot",
-      tabId: activeTab?.id,
-      pageUrl: activeTab?.url,
-    });
-
-    currentFeatureSupport = snapshot?.featureSupport ?? {};
-    renderNativeAppStatus(currentFeatureSupport);
-  } catch (_error) {
-    currentFeatureSupport = {};
-    renderNativeAppStatus({});
-  }
-}
-
-function isLikelyWindowsPlatform() {
-  const platform = currentFeatureSupport?.platform ?? {};
-
-  if (platform.windows === true) {
-    return true;
-  }
-
-  if (platform.mac === true || platform.linux === true) {
-    return false;
-  }
-
-  return /\bwindows\b/i.test(globalThis.navigator?.userAgent || "");
-}
-
-function renderNativeAppStatus(featureSupport) {
-  const supported = featureSupport.systemLevelWindowHiding === true;
-  const usable = featureSupport.systemLevelWindowHidingUsable === true;
-  const platform = featureSupport.platform ?? {};
-
-  if (!supported) {
-    nativeAppStatusElement.textContent = "N/A";
-    const platformName = platform.mac
-      ? "macOS"
-      : platform.linux
-        ? "Linux"
-        : t("commonThisPlatform", [], "this platform");
-    nativeAppMetaElement.textContent = t(
-      "settingsSystemHidingUnsupported",
-      [platformName],
-      `System-level hiding not supported on ${platformName}.`
-    );
-    return;
-  }
-
-  if (usable) {
-    nativeAppStatusElement.textContent = t("settingsConnected", [], "Connected");
-    nativeAppMetaElement.textContent = t(
-      "settingsSystemHidingActive",
-      [],
-      "System-level window hiding is active."
-    );
-  } else {
-    nativeAppStatusElement.textContent = t("settingsOffline", [], "Offline");
-    nativeAppMetaElement.textContent = t(
-      "settingsNativeAppOffline",
-      [],
-      "Native app not detected. Using minimize fallback."
-    );
-  }
 }
 
 function syncAiPredictionMismatchWarning() {

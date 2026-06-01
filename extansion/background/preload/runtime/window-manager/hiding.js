@@ -17,9 +17,19 @@ async function refreshSystemHiddenPreloadWindow(windowId, options = {}) {
     return { ok: false, reason: "window-missing" };
   }
 
+  const resolvedHwnd =
+    normalizePositiveFiniteNumber(options?.hwnd, null) ??
+    (typeof detectChromeWindowHwndByPreloadSentinel === "function"
+      ? await detectChromeWindowHwndByPreloadSentinel(preloadWindow)
+      : null) ??
+    (typeof detectChromeWindowHwndByBounds === "function"
+      ? await detectChromeWindowHwndByBounds(preloadWindow)
+      : null);
+
   globalThis.ZeroLatencyDebugEvents?.record?.("preload-window.hide.system-refresh-attempt", {
     windowId,
     hwnd: normalizePositiveFiniteNumber(options?.hwnd, null),
+    resolvedHwnd,
     left: preloadWindow.left ?? null,
     top: preloadWindow.top ?? null,
     width: preloadWindow.width ?? null,
@@ -27,7 +37,8 @@ async function refreshSystemHiddenPreloadWindow(windowId, options = {}) {
     trigger: options?.trigger || null,
   });
   const hideResult = await nativeAppHideWindow({
-    hwnd: normalizePositiveFiniteNumber(options?.hwnd, undefined),
+    hwnd: resolvedHwnd ?? undefined,
+    titleContains: PRELOAD_WINDOW_SENTINEL_URL,
     left: preloadWindow.left,
     top: preloadWindow.top,
     width: preloadWindow.width,

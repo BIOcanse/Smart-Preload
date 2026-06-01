@@ -2,7 +2,6 @@ async function requestPreloadCandidateRefreshForOpenTabs() {
   const preloadState = await loadPreloadState();
   const tabs = await chrome.tabs.query({
     windowType: "normal",
-    active: true,
   });
 
   for (const tab of tabs) {
@@ -32,7 +31,6 @@ async function requestPreloadCandidateRefreshForTab(tabId) {
 
   if (
     !tab?.id ||
-    tab.active !== true ||
     !isTrackableAndAllowedUrl(tab.url || "") ||
     isPreloadTab(preloadState, tab.id)
   ) {

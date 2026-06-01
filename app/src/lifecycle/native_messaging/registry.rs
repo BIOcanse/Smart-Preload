@@ -1,5 +1,6 @@
 use super::super::NATIVE_MESSAGING_HOST_NAME;
 use anyhow::{Context, Result};
+use std::collections::BTreeMap;
 use std::path::PathBuf;
 use winreg::enums::{HKEY_CURRENT_USER, KEY_WRITE};
 use winreg::RegKey;
@@ -56,8 +57,10 @@ pub(super) fn remove_native_messaging_registry_entries() -> Result<()> {
     Ok(())
 }
 
-pub(super) fn read_native_messaging_registry_value() -> Result<Option<String>> {
-    for (_browser_name, registry_path) in NATIVE_MESSAGING_REGISTRY_PATHS {
+pub(super) fn read_native_messaging_registry_values() -> Result<BTreeMap<String, String>> {
+    let mut values = BTreeMap::new();
+
+    for (browser_name, registry_path) in NATIVE_MESSAGING_REGISTRY_PATHS {
         let hkcu = RegKey::predef(HKEY_CURRENT_USER);
         let Ok(hosts_key) = hkcu.open_subkey(registry_path) else {
             continue;
@@ -68,9 +71,13 @@ pub(super) fn read_native_messaging_registry_value() -> Result<Option<String>> {
         let value: String = host_key.get_value("").unwrap_or_default();
 
         if !value.trim().is_empty() {
-            return Ok(Some(value));
+            values.insert(browser_name.to_string(), value);
         }
     }
 
-    Ok(None)
+    Ok(values)
+}
+
+pub(super) fn native_messaging_registry_browser_count() -> usize {
+    NATIVE_MESSAGING_REGISTRY_PATHS.len()
 }

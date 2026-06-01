@@ -25,6 +25,7 @@
       record("diagnostics.enabled", {
         sessionId,
       });
+      record("diagnostics.config", buildDiagnosticConfigSnapshot(settings));
       return;
     }
 
@@ -168,6 +169,50 @@
       bufferedEvents: buffer.length,
       lastNativeLogPath,
     };
+  }
+
+  function buildDiagnosticConfigSnapshot(settings) {
+    const manifest =
+      typeof globalThis.chrome?.runtime?.getManifest === "function"
+        ? globalThis.chrome.runtime.getManifest()
+        : null;
+
+    return {
+      sessionId,
+      generatedAt: new Date().toISOString(),
+      extension: {
+        id: typeof globalThis.chrome?.runtime?.id === "string" ? globalThis.chrome.runtime.id : null,
+        version: typeof manifest?.version === "string" ? manifest.version : null,
+        defaultLocale:
+          typeof manifest?.default_locale === "string" ? manifest.default_locale : null,
+      },
+      settings: sanitizeSettingsForDiagnostics(settings),
+    };
+  }
+
+  function sanitizeSettingsForDiagnostics(settings) {
+    const sanitizedSettings = sanitizeDiagnosticPayload(settings);
+    const aiPrediction = sanitizedSettings?.preloading?.aiPrediction;
+
+    if (aiPrediction && typeof aiPrediction === "object") {
+      aiPrediction.apiKeys = sanitizeApiKeyMap(aiPrediction.apiKeys);
+    }
+
+    return sanitizedSettings;
+  }
+
+  function sanitizeApiKeyMap(apiKeys) {
+    if (!apiKeys || typeof apiKeys !== "object" || Array.isArray(apiKeys)) {
+      return {};
+    }
+
+    const sanitizedApiKeys = {};
+
+    for (const [providerId, apiKey] of Object.entries(apiKeys)) {
+      sanitizedApiKeys[providerId] = typeof apiKey === "string" && apiKey.trim() ? "[redacted]" : "";
+    }
+
+    return sanitizedApiKeys;
   }
 
   function createSessionId() {

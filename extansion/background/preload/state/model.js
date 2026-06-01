@@ -3,6 +3,32 @@
     return {
       version: 2,
       normalWindowsById: {},
+      scheduler: createEmptyPreloadSchedulerState(),
+      updatedAt: null,
+    };
+  }
+
+  function createEmptyPreloadSchedulerState() {
+    return {
+      attentionPool: {
+        segments: [],
+        totalDurationMs: 0,
+        updatedAt: null,
+      },
+      attentionPendingByKey: {},
+      activeTabCursor: {
+        tabId: null,
+        windowId: null,
+        pageUrl: "",
+        observedAt: null,
+        counting: false,
+        weight: 0,
+        activityKind: "inactive",
+        expiresAt: null,
+        pendingDurationMs: 0,
+        pendingStartedAt: null,
+      },
+      candidateSelectionSnapshotsByTabId: {},
       updatedAt: null,
     };
   }
@@ -57,6 +83,7 @@
   }
 
   globalThis.createEmptyPreloadState = createEmptyPreloadState;
+  globalThis.createEmptyPreloadSchedulerState = createEmptyPreloadSchedulerState;
   globalThis.createEmptyPreloadWindowState = createEmptyPreloadWindowState;
   globalThis.resetPreloadWindowState = resetPreloadWindowState;
   globalThis.createEmptyNormalWindowRuntime = createEmptyNormalWindowRuntime;

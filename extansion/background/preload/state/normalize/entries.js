@@ -206,4 +206,9 @@
   globalThis.normalizePreloadWindowState = normalizePreloadWindowState;
   globalThis.normalizeHiddenTabPreloadEntry = normalizeHiddenTabPreloadEntry;
   globalThis.normalizeSyntheticPreloadEntry = normalizeSyntheticPreloadEntry;
+  globalThis.normalizeScoreBreakdown = normalizeScoreBreakdown;
+  globalThis.normalizeTransitionMetrics = normalizeTransitionMetrics;
+  globalThis.normalizeAiKeywordMatch = normalizeAiKeywordMatch;
+  globalThis.normalizeSiteSelection = normalizeSiteSelection;
+  globalThis.normalizeBookmarkPreloadMetadata = normalizeBookmarkPreloadMetadata;
 })();

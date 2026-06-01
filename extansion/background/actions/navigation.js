@@ -11,11 +11,21 @@
     switch (decision.actionKey) {
       case "record-visit":
         await recordVisit(envelope.raw, decision.metadata?.sourceEvent || "committed");
+        await globalThis.ZeroLatencyPreloadSchedulerAttention?.recordActiveTabAttentionFromNavigationDetails?.(
+          envelope.raw,
+          decision.metadata?.sourceEvent || "committed",
+          { queue: false }
+        );
         return;
       case "set-current-page":
         await setCurrentPageFromVisit(
           envelope.raw,
           decision.metadata?.sourceEvent || "committed"
+        );
+        await globalThis.ZeroLatencyPreloadSchedulerAttention?.recordActiveTabAttentionFromNavigationDetails?.(
+          envelope.raw,
+          decision.metadata?.sourceEvent || "committed",
+          { queue: false }
         );
         return;
       case "record-created-navigation-target":
@@ -26,6 +36,11 @@
         return;
       case "handle-removed-tab":
         await handleRemovedTab(envelope.raw.tabId);
+        await globalThis.ZeroLatencyPreloadSchedulerAttention?.pausePreloadAttentionCursorIfMatches?.(
+          { tabId: envelope.raw.tabId },
+          "tab-removed",
+          { queue: false }
+        );
         return;
       case "update-preloaded-tab-status":
         await updatePreloadedTabStatus(
@@ -35,11 +50,28 @@
         );
         return;
       case "handle-activated-tab":
+        await globalThis.ZeroLatencyPreloadSchedulerAttention?.recordActiveTabAttentionFromActiveInfo?.(
+          envelope.raw,
+          "tab-activated",
+          { queue: false }
+        );
         await globalThis.ZeroLatencyPreloadSourceTabs.handleActivatedSourceTab(envelope.raw);
         return;
       case "handle-removed-window":
         await globalThis.ZeroLatencyPreloadWindowManager.handleRemovedWindowEvent(
           envelope.raw.windowId
+        );
+        await globalThis.ZeroLatencyPreloadSchedulerAttention?.pausePreloadAttentionCursorIfMatches?.(
+          { windowId: envelope.raw.windowId },
+          "window-removed",
+          { queue: false }
+        );
+        return;
+      case "handle-focused-window":
+        await globalThis.ZeroLatencyPreloadSchedulerAttention?.recordActiveTabAttentionFromFocusedWindow?.(
+          envelope.raw.windowId,
+          "window-focused",
+          { queue: false }
         );
         return;
       case "handle-preload-window-bounds-changed":

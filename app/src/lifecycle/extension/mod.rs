@@ -8,10 +8,11 @@ use profile::chrome_profile_directories;
 use scan::{profile_contains_target_extension_id, scan_for_registered_extension};
 use storage::{
     is_detected_extension_storage_present, is_valid_extension_id,
-    registered_extension_id_from_allowed_origin,
+    registered_extension_ids_from_allowed_origins,
 };
 
 use super::EXTENSION_INSTALL_CHECK_INTERVAL;
+use std::collections::BTreeSet;
 use std::thread;
 use std::time::Duration;
 use tokio::sync::watch;
@@ -19,6 +20,22 @@ use tracing::info;
 
 pub(crate) fn target_extension_id() -> Option<String> {
     scan_for_registered_extension().extension_id
+}
+
+pub(crate) fn target_extension_ids() -> Vec<String> {
+    scan_for_registered_extension().extension_ids
+}
+
+pub(crate) fn target_extension_enabled_ids() -> Vec<String> {
+    scan_for_registered_extension().enabled_extension_ids
+}
+
+pub(crate) fn target_extension_disabled_ids() -> Vec<String> {
+    scan_for_registered_extension().disabled_extension_ids
+}
+
+pub(crate) fn registered_extension_ids() -> Vec<String> {
+    registered_extension_ids_from_allowed_origins()
 }
 
 pub(crate) fn target_extension_is_installed() -> bool {
@@ -85,14 +102,16 @@ pub(crate) fn spawn_extension_shutdown_monitor(shutdown_tx: watch::Sender<bool>)
 
 #[derive(Debug)]
 struct ExtensionInstallTracker {
-    detected_extension_id: Option<String>,
+    detected_extension_ids: BTreeSet<String>,
     installed: bool,
 }
 
 impl ExtensionInstallTracker {
     fn new() -> Self {
         Self {
-            detected_extension_id: registered_extension_id_from_allowed_origin(),
+            detected_extension_ids: registered_extension_ids_from_allowed_origins()
+                .into_iter()
+                .collect(),
             installed: false,
         }
     }
@@ -100,10 +119,10 @@ impl ExtensionInstallTracker {
     fn refresh(&mut self) -> bool {
         let scan = scan_for_registered_extension();
 
-        if let Some(extension_id) = scan.extension_id {
-            self.detected_extension_id = Some(extension_id);
-            self.installed = true;
-            return true;
+        if !scan.extension_ids.is_empty() {
+            self.detected_extension_ids = scan.extension_ids.into_iter().collect();
+            self.installed = !scan.enabled_extension_ids.is_empty();
+            return self.installed;
         }
 
         if scan.scan_succeeded {
@@ -112,9 +131,9 @@ impl ExtensionInstallTracker {
         }
 
         self.installed = self
-            .detected_extension_id
-            .as_deref()
-            .is_some_and(is_detected_extension_storage_present);
+            .detected_extension_ids
+            .iter()
+            .any(|extension_id| is_detected_extension_storage_present(extension_id));
         self.installed
     }
 }

@@ -8,7 +8,7 @@ async function registerPreloadCandidates(message, sender) {
   const { sourceTab, sourcePageUrl, runtimeSettings, featureSupport } = context;
   const { trackingState, sourceTabId, currentNodeId } =
     await buildPreloadCandidateSelectionContext(message, sourceTab);
-  const selection = await selectPreloadTargets({
+  const selectionContext = {
     currentNodeId,
     sourceUrl: sourcePageUrl,
     sourceWindowId: sourceTab.windowId,
@@ -22,27 +22,48 @@ async function registerPreloadCandidates(message, sender) {
     candidateLinks: Array.isArray(message.links) ? message.links : [],
     graph: trackingState.graph,
     settings: runtimeSettings,
-  });
-  recordPreloadCandidateSelectionDiagnostics({
-    message,
-    sourceTab,
-    sourceTabId,
-    sourcePageUrl,
-    selection,
-  });
+  };
+  const scoredCandidatePool = await buildScoredPreloadCandidatePool(selectionContext);
 
   if (await isExtensionServicePaused()) {
     return {
       ok: true,
       preloadedCount: 0,
       skipped: true,
-      reason: "service-paused-after-selection",
+      reason: "service-paused-after-scoring",
     };
   }
 
-  await applyPreloadCandidateSelection({
+  const schedulerSelections = globalThis.ZeroLatencyPreloadSchedulerSelections;
+  let selection = null;
+
+  if (typeof schedulerSelections?.applyPreloadSchedulerCandidateSelection === "function") {
+    selection = await schedulerSelections.applyPreloadSchedulerCandidateSelection({
+      sourceTab,
+      sourceTabId,
+      sourcePageUrl,
+      currentNodeId,
+      message,
+      scoredCandidatePool,
+      settings: runtimeSettings,
+      graph: trackingState.graph,
+    });
+  }
+
+  if (!selection) {
+    selection = await selectPreloadTargetsFromScoredCandidatePool({
+      ...selectionContext,
+      scoredCandidatePool,
+      slotLimits:
+        schedulerSelections?.buildSchedulerDiscoverySlotLimits?.(runtimeSettings) ?? null,
+    });
+  }
+
+  recordPreloadCandidateSelectionDiagnostics({
+    message,
     sourceTab,
     sourceTabId,
+    sourcePageUrl,
     selection,
   });
 
