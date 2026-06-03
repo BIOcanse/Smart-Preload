@@ -10,6 +10,9 @@
 
     switch (decision.actionKey) {
       case "record-visit":
+        if (await shouldSkipNavigationForExcludedIncognitoTab(envelope.raw.tabId, "record-visit")) {
+          return;
+        }
         await recordVisit(envelope.raw, decision.metadata?.sourceEvent || "committed");
         await globalThis.ZeroLatencyPreloadSchedulerAttention?.recordActiveTabAttentionFromNavigationDetails?.(
           envelope.raw,
@@ -18,6 +21,14 @@
         );
         return;
       case "set-current-page":
+        if (
+          await shouldSkipNavigationForExcludedIncognitoTab(
+            envelope.raw.tabId,
+            "set-current-page"
+          )
+        ) {
+          return;
+        }
         await setCurrentPageFromVisit(
           envelope.raw,
           decision.metadata?.sourceEvent || "committed"
@@ -32,7 +43,58 @@
         await recordCreatedNavigationTarget(envelope.raw);
         return;
       case "record-tab-replacement":
+        if (
+          (await shouldSkipNavigationForExcludedIncognitoTab(
+            envelope.raw.tabId,
+            "tab-replacement-new"
+          )) ||
+          (await shouldSkipNavigationForExcludedIncognitoTab(
+            envelope.raw.replacedTabId,
+            "tab-replacement-old"
+          ))
+        ) {
+          return;
+        }
         await recordTabReplacement(envelope.raw);
+        return;
+      case "handle-created-tab":
+        {
+          if (envelope.raw.openerTabId == null) {
+            return;
+          }
+
+          const fallbackActivation =
+            await globalThis.ZeroLatencyPreloadRuntimeManager.activateUpdatedTabNavigationTarget?.({
+              tabId: envelope.raw.id,
+              changeInfo: {
+                url: envelope.raw.pendingUrl || envelope.raw.url || "",
+              },
+              tab: envelope.raw,
+            });
+          globalThis.ZeroLatencyDiagnostics?.record?.(
+            "tracking.tab-created.contextmenu-preload-fallback",
+            {
+              tabId: envelope.raw.id,
+              openerTabId: envelope.raw.openerTabId ?? null,
+              url: envelope.raw.pendingUrl || envelope.raw.url || "",
+              handled: fallbackActivation?.handled === true,
+              reason: fallbackActivation?.reason ?? null,
+              activatedTabId: fallbackActivation?.tabId ?? null,
+            }
+          );
+
+          if (fallbackActivation?.handled === true) {
+            globalThis.ZeroLatencyDiagnostics?.record?.(
+              "tracking.tab-created.contextmenu-preload-activated",
+              {
+                tabId: envelope.raw.id,
+                openerTabId: envelope.raw.openerTabId ?? null,
+                url: envelope.raw.pendingUrl || envelope.raw.url || "",
+                activatedTabId: fallbackActivation.tabId ?? null,
+              }
+            );
+          }
+        }
         return;
       case "handle-removed-tab":
         await handleRemovedTab(envelope.raw.tabId);
@@ -43,6 +105,42 @@
         );
         return;
       case "update-preloaded-tab-status":
+        {
+          const fallbackUrl =
+            envelope.raw.changeInfo?.url ?? envelope.raw.tab?.pendingUrl ?? envelope.raw.tab?.url ?? "";
+
+          if (envelope.raw.tab?.openerTabId != null) {
+            const fallbackActivation =
+              await globalThis.ZeroLatencyPreloadRuntimeManager.activateUpdatedTabNavigationTarget?.(
+                envelope.raw
+              );
+
+            globalThis.ZeroLatencyDiagnostics?.record?.(
+              "tracking.tab-updated.contextmenu-preload-fallback",
+              {
+                tabId: envelope.raw.tabId,
+                openerTabId: envelope.raw.tab?.openerTabId ?? null,
+                url: fallbackUrl,
+                handled: fallbackActivation?.handled === true,
+                reason: fallbackActivation?.reason ?? null,
+                activatedTabId: fallbackActivation?.tabId ?? null,
+              }
+            );
+
+            if (fallbackActivation?.handled === true) {
+              globalThis.ZeroLatencyDiagnostics?.record?.(
+                "tracking.tab-updated.contextmenu-preload-activated",
+                {
+                  tabId: envelope.raw.tabId,
+                  openerTabId: envelope.raw.tab?.openerTabId ?? null,
+                  url: fallbackUrl,
+                  activatedTabId: fallbackActivation.tabId ?? null,
+                }
+              );
+              return;
+            }
+          }
+        }
         await updatePreloadedTabStatus(
           envelope.raw.tabId,
           envelope.raw.changeInfo,
@@ -97,6 +195,33 @@
       default:
         return;
     }
+  }
+
+  async function shouldSkipNavigationForExcludedIncognitoTab(tabId, reason) {
+    const normalizedTabId = normalizePositiveInteger(tabId);
+
+    if (normalizedTabId === null) {
+      return false;
+    }
+
+    const tab = await getTabMaybe(normalizedTabId);
+
+    if (
+      globalThis.ZeroLatencyPreloadIncognitoPolicy?.shouldExcludeIncognitoPreloadSource?.(
+        tab,
+        getEffectiveExtensionSettings()
+      ) !== true
+    ) {
+      return false;
+    }
+
+    globalThis.ZeroLatencyDebugEvents?.record?.("navigation.skip-incognito-source", {
+      tabId: normalizedTabId,
+      windowId: tab?.windowId ?? null,
+      url: tab?.url || "",
+      reason,
+    });
+    return true;
   }
 
   globalThis.ZeroLatencyNavigationActions = {

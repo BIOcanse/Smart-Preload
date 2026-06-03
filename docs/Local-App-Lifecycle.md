@@ -7,7 +7,9 @@ The local app keeps a portable install lifecycle:
 - The tray/API app is the only long-running local process.
 - `--install` writes HKCU registry entries that point to the current portable directory.
 - The extension may wake the app through Chrome Native Messaging when the local HTTP API is offline.
+- Extension load, install, startup, and settings application must immediately run one native-app liveness heartbeat before continuing with preload runtime work. This first heartbeat is awaited so the MV3 service worker cannot drop it as background fire-and-forget work.
 - If heartbeat recovery cannot reach the app, the extension keeps a wake-retry alarm active and repeatedly probes the local API plus Native Messaging wake paths until the app responds or the extension has no normal browser window left.
+- Native Messaging wake depends on browser registration and manifest `allowed_origins`; a plain app registry entry is not enough. If the extension ID cannot be discovered during `--install`, install must not delete an existing Native Messaging registration. Fresh installs still need the extension present at least once so the app can write the allowed origin.
 - Native Messaging is a short-lived bootstrap process only; it starts the real tray/API host and exits.
 - There is still no always-on watcher.
 - The tray/API host exits when all top-level Google Chrome browser processes are gone.
@@ -59,9 +61,10 @@ The app now accepts these modes:
 
 - `--install`
   - Writes `HKCU\Software\ZeroLatencyWeb`.
-  - Detects the installed extension ID from Chrome profiles.
-  - Writes the Native Messaging manifest under the portable app directory.
-  - Registers `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.zero_latency_web.app`.
+  - Detects the installed extension ID from Chrome / Edge profiles using a structural manifest fingerprint, not localized display name text.
+  - Writes the Native Messaging manifest under the portable app directory when at least one extension ID is known.
+  - Registers `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.zero_latency_web.app` and `HKCU\Software\Microsoft\Edge\NativeMessagingHosts\com.zero_latency_web.app` when the manifest can be written.
+  - If no extension ID is available, it leaves any existing Native Messaging registration in place and reports the missing extension state instead of deleting the wake bridge.
   - Writes `<app-dir>\portable\allowed-extension-origin.txt` for the local HTTP API authorization boundary.
   - `install-register.cmd` checks an existing registration before overwriting it. If the old
     app path points to a different directory and that directory contains the expected app package
@@ -108,6 +111,7 @@ Registry changes are explicit: normal launch does not rewrite or delete Native M
 When the host is running, lifecycle monitoring remains bidirectional:
 
 - Extension -> app: if the HTTP API is offline, the extension wakes the host through Native Messaging.
+- Extension -> app: startup/runtime settings application sends an immediate awaited heartbeat; recurring heartbeat/wake retry use shorter local retry cadence for faster recovery after the app is closed.
 - Extension -> app: if heartbeat fails after short recovery retries, the extension starts `native-app-wake-retry`, which keeps trying to find the HTTP API and wake the host.
 - Extension -> app: heartbeat and wake retry are extension liveness responsibilities, not preload-runtime responsibilities. They must stay active while the extension service itself is online, even when predictive preloading is disabled.
 - Extension -> app: each profile sends a persistent heartbeat `clientId` and the HWNDs of hidden preload windows owned by that profile. If that lease expires, the app closes those tracked hidden windows as a native cleanup fallback.
@@ -121,15 +125,16 @@ This runtime extension check is intentionally separate from API authorization. I
 
 The extension-side HTTP client owns wakeup after `--install` has registered the current portable app path:
 
-1. Try `/api/v1/extension/register`.
-2. If registration cannot connect, first call `chrome.runtime.sendNativeMessage("com.zero_latency_web.app", { type: "zlw:wake-host" })`.
-3. If one-shot Native Messaging fails, fall back to `chrome.runtime.connectNative("com.zero_latency_web.app")` and send the same wake payload over the port.
-4. The Native Messaging bootstrap starts `zero-latency-web-app.exe --host`.
-5. The extension retries registration with short backoff.
-6. If heartbeat recovery still fails, the extension enables the `native-app-wake-retry` alarm.
-7. Each wake-retry cycle checks `/health`; if still offline, it retries the two Native Messaging wake strategies and then retries registration/heartbeat.
-8. Wake retry stops once heartbeat succeeds, the extension service is paused, or the current extension profile has no normal browser window.
-9. Normal API calls continue only after registration succeeds over `http://127.0.0.1:45831` with the extension-origin header.
+1. On service worker bootstrap, install, startup, or settings application, create the heartbeat alarm and immediately send one awaited heartbeat.
+2. Try `/api/v1/extension/register`.
+3. If registration cannot connect, first call `chrome.runtime.sendNativeMessage("com.zero_latency_web.app", { type: "zlw:wake-host" })`.
+4. If one-shot Native Messaging fails, fall back to `chrome.runtime.connectNative("com.zero_latency_web.app")` and send the same wake payload over the port.
+5. The Native Messaging bootstrap starts `zero-latency-web-app.exe --host`.
+6. The extension retries registration with short backoff.
+7. If heartbeat recovery still fails, the extension enables the `native-app-wake-retry` alarm.
+8. Each wake-retry cycle checks `/health`; if still offline, it retries the two Native Messaging wake strategies and then retries registration/heartbeat.
+9. Wake retry stops once heartbeat succeeds, the extension service is paused, or the current extension profile has no normal browser window.
+10. Normal API calls continue only after registration succeeds over `http://127.0.0.1:45831` with the extension-origin header.
 
 User requirement captured on 2026-05-29: "心跳检测不通过就尝试拉起". Implementation interpretation: a missing/offline local app is handled by heartbeat recovery regardless of whether predictive preloading is currently enabled. The preloading toggle may stop preloading windows and AI lifecycle work, but it must not disable native app liveness heartbeat.
 

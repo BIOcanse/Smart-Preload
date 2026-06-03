@@ -552,10 +552,23 @@
     const pageUrl = normalizeAttentionPageUrl(tab?.url || "");
     const runtimeOptions = buildPreloadAttentionRuntimeOptions(options);
     const activity = resolveAttentionActivity(options?.activity, runtimeOptions);
+    const settings =
+      typeof getEffectiveExtensionSettings === "function"
+        ? getEffectiveExtensionSettings()
+        : null;
+    const incognitoExcluded =
+      globalThis.ZeroLatencyPreloadIncognitoPolicy?.shouldExcludeIncognitoPreloadSource?.(
+        {
+          ...tab,
+          incognito: tab?.incognito === true || sourceWindow?.incognito === true,
+        },
+        settings
+      ) === true;
     const canCount =
       sourceWindow?.type === "normal" &&
       sourceWindow?.focused === true &&
       tab?.active === true &&
+      incognitoExcluded !== true &&
       pageUrl &&
       isTrackableAndAllowedUrl(pageUrl) &&
       activity.weight > 0;

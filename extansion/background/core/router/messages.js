@@ -18,6 +18,7 @@
   function resolveMessageQueueMode(actionKey) {
     switch (actionKey) {
       case "register-preload-candidates":
+      case "preload-interaction-status":
       case "report-foreground-page-digest":
       case "record-attention-activity":
         return "side-effect";

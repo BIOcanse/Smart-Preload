@@ -93,8 +93,14 @@ Install writes:
 
 - `HKCU\Software\ZeroLatencyWeb`
 - `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.zero_latency_web.app`
+- `HKCU\Software\Microsoft\Edge\NativeMessagingHosts\com.zero_latency_web.app`
 - `<app-dir>\portable\native-messaging\com.zero_latency_web.app.json`
 - `<app-dir>\portable\allowed-extension-origin.txt`
+- `<app-dir>\portable\allowed-extension-origins.txt`
+
+If Native Messaging is not registered in the status output, install or enable the browser
+extension first, then run `install-register.cmd` again. The extension cannot wake the local app
+until the browser has a registered Native Messaging host whose manifest allows that extension ID.
 
 `install-register.cmd` also checks whether the existing registry registration points to a
 different portable app directory. If the old directory looks like a Zero-Latency Web app package

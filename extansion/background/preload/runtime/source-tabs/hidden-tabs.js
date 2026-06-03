@@ -4,6 +4,22 @@ async function synchronizePreloadsForSourceTab(
   sourceTabId,
   targets
 ) {
+  const pressureState =
+    typeof getPreloadResourcePressureState === "function"
+      ? await getPreloadResourcePressureState(getEffectiveExtensionSettings())
+      : null;
+
+  if (pressureState?.shouldDeferHiddenTabs === true) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("hidden-tab.sync.resource-pressure-skip", {
+      normalWindowId,
+      sourceTabId,
+      targetCount: Array.isArray(targets) ? targets.length : 0,
+      policy: pressureState.policy,
+      reason: pressureState.reason,
+    });
+    return preloadState;
+  }
+
   preloadState = await reassignSourceTabRuntimeIfNeeded(
     preloadState,
     normalWindowId,
@@ -28,6 +44,10 @@ async function synchronizePreloadsForSourceTab(
 
   for (const [url, entry] of Object.entries(existingEntries)) {
     if (desiredUrls.has(url)) {
+      continue;
+    }
+
+    if (entry?.interactionPreload) {
       continue;
     }
 
@@ -56,6 +76,7 @@ async function synchronizePreloadsForSourceTab(
         existingEntry.transitionMetrics = target.transitionMetrics ?? null;
         existingEntry.aiKeywordMatch = target.aiKeywordMatch ?? null;
         existingEntry.bookmarkPreload = target.bookmarkPreload ?? null;
+        existingEntry.interactionPreload = target.interactionPreload ?? null;
         existingEntry.siteSelection = target.siteSelection ?? null;
         existingEntry.status = liveTab.status || existingEntry.status;
         existingEntry.loadedUrl = liveTab.url || existingEntry.loadedUrl;
@@ -76,7 +97,12 @@ async function synchronizePreloadsForSourceTab(
         preloadWindowId,
         created: ensuredWindow?.created === true,
         hiddenBySystem: ensuredWindow?.hiddenBySystem === true,
+        reason: ensuredWindow?.reason ?? null,
       });
+
+      if (normalizePositiveInteger(preloadWindowId) === null) {
+        return preloadState;
+      }
     }
 
     existingEntries[target.url] = {
@@ -89,6 +115,7 @@ async function synchronizePreloadsForSourceTab(
       transitionMetrics: target.transitionMetrics ?? null,
       aiKeywordMatch: target.aiKeywordMatch ?? null,
       bookmarkPreload: target.bookmarkPreload ?? null,
+      interactionPreload: target.interactionPreload ?? null,
       siteSelection: target.siteSelection ?? null,
       status: "queued",
       createdAt: new Date().toISOString(),

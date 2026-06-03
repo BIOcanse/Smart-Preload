@@ -1,0 +1,653 @@
+{
+  "appName": {
+    "message": "Préchargement intelligent"
+  },
+  "appDescription": {
+    "message": "Précharge plus intelligemment et plus activement les pages que vous êtes susceptible d’ouvrir ensuite."
+  },
+  "commonReady": {
+    "message": "Pr?t"
+  },
+  "commonLoading": {
+    "message": "Chargement"
+  },
+  "commonFailed": {
+    "message": "?chec"
+  },
+  "commonSaving": {
+    "message": "Enregistrement"
+  },
+  "commonSaved": {
+    "message": "Enregistr?"
+  },
+  "commonUnsaved": {
+    "message": "Non enregistr?"
+  },
+  "commonDownloading": {
+    "message": "T?l?chargement"
+  },
+  "commonDownloaded": {
+    "message": "T?l?charg?"
+  },
+  "commonRemoving": {
+    "message": "Suppression"
+  },
+  "commonRemoved": {
+    "message": "Supprim?"
+  },
+  "commonOn": {
+    "message": "Activ?"
+  },
+  "commonOff": {
+    "message": "D?sactiv?"
+  },
+  "commonUnknown": {
+    "message": "Inconnu"
+  },
+  "commonThisPlatform": {
+    "message": "cette plateforme"
+  },
+  "commonModel": {
+    "message": "mod?le"
+  },
+  "commonDone": {
+    "message": "Termin?."
+  },
+  "commonWorking": {
+    "message": "Traitement..."
+  },
+  "commonDismiss": {
+    "message": "Fermer"
+  },
+  "commonHelp": {
+    "message": "Aide"
+  },
+  "popupCurrentPage": {
+    "message": "Page actuelle"
+  },
+  "popupNodes": {
+    "message": "N?uds"
+  },
+  "popupEdges": {
+    "message": "Liens"
+  },
+  "popupUpdated": {
+    "message": "Mis ? jour"
+  },
+  "popupTop": {
+    "message": "Meilleurs"
+  },
+  "popupNoPreloadQualifiedLinks": {
+    "message": "Aucun lien ?ligible au pr?chargement sur cette page pour le moment."
+  },
+  "popupRefresh": {
+    "message": "Actualiser"
+  },
+  "popupStop": {
+    "message": "Arr?ter"
+  },
+  "popupStart": {
+    "message": "D?marrer"
+  },
+  "popupSettings": {
+    "message": "Param?tres"
+  },
+  "popupWaitingForData": {
+    "message": "En attente des donn?es."
+  },
+  "popupOpenSettingsFailed": {
+    "message": "Impossible d?ouvrir la page des param?tres."
+  },
+  "popupLoadingVisitGraph": {
+    "message": "Chargement du graphe de visites..."
+  },
+  "popupPausedMessage": {
+    "message": "Extension arr?t?e : la pr?diction et le pr?chargement sont d?sactiv?s."
+  },
+  "popupVisitGraphLoaded": {
+    "message": "Graphe de visites charg?."
+  },
+  "popupLoadVisitGraphFailed": {
+    "message": "Impossible de charger le graphe de visites."
+  },
+  "performanceInsufficientReducePreloadCaps": {
+    "message": "Performances insuffisantes. R?duisez les limites de pr?chargement."
+  },
+  "popupCurrentPageNotTracked": {
+    "message": "La page actuelle n?est pas suivie"
+  },
+  "popupCurrentPageNotTrackable": {
+    "message": "La page actuelle ne peut pas ?tre suivie."
+  },
+  "popupStoppingService": {
+    "message": "Arr?t de la pr?diction et du pr?chargement..."
+  },
+  "popupStartingService": {
+    "message": "D?marrage de la pr?diction et du pr?chargement..."
+  },
+  "popupUpdateStateFailed": {
+    "message": "Impossible de mettre ? jour l??tat de l?extension."
+  },
+  "popupRestoreServiceTitle": {
+    "message": "Reprendre la pr?diction et le pr?chargement"
+  },
+  "popupStopServiceTitle": {
+    "message": "Arr?ter la pr?diction et le pr?chargement, puis fermer la fen?tre de pr?chargement en arri?re-plan"
+  },
+  "popupWeightLabel": {
+    "message": "Poids : {0}"
+  },
+  "popupSiteMeta": {
+    "message": "Site : {0} (n? {1}, {2}/{3})"
+  },
+  "popupFreqMeta": {
+    "message": "Fr?q. : site {0}, sortie {1}, interne {2}"
+  },
+  "popupBookmarkMeta": {
+    "message": "Favori : {0}, rang {1}"
+  },
+  "settingsPageTitle": {
+    "message": "Paramètres du préchargement intelligent"
+  },
+  "settingsTitle": {
+    "message": "Param?tres"
+  },
+  "settingsNavAriaLabel": {
+    "message": "Sections des param?tres"
+  },
+  "settingsOverview": {
+    "message": "Aper?u"
+  },
+  "settingsTracking": {
+    "message": "Suivi"
+  },
+  "settingsPreload": {
+    "message": "Pr?chargement"
+  },
+  "settingsOrdering": {
+    "message": "Ordre"
+  },
+  "settingsExperiments": {
+    "message": "Exp?riences"
+  },
+  "settingsOverviewSub": {
+    "message": "Profil d?ex?cution et r?glage automatique"
+  },
+  "settingsOrderingSub": {
+    "message": "Filtres de classement simples"
+  },
+  "settingsStorageFooter": {
+    "message": "Stock? dans le stockage local de l?extension."
+  },
+  "settingsLoadingSettings": {
+    "message": "Chargement des param?tres..."
+  },
+  "settingsHeroKicker": {
+    "message": "Contrôle de préchargement intelligent"
+  },
+  "settingsHeroTitle": {
+    "message": "Un préchargement plus intelligent et plus proactif"
+  },
+  "settingsHeroCopy": {
+    "message": "Le préchargement intelligent répartit les créneaux entre les onglets actifs selon les signaux de page, l’attention récente et la pression de l’appareil, tout en vous laissant définir les limites manuellement."
+  },
+  "settingsDeviceProfile": {
+    "message": "Profil de l?appareil"
+  },
+  "settingsDetectingHardware": {
+    "message": "D?tection du mat?riel..."
+  },
+  "settingsEffectiveGroupCaps": {
+    "message": "Limites de groupe effectives"
+  },
+  "settingsWaitingForSettings": {
+    "message": "En attente des r?glages..."
+  },
+  "settingsWatchdog": {
+    "message": "Surveillance"
+  },
+  "settingsNativeApp": {
+    "message": "Application locale"
+  },
+  "settingsCheckingConnection": {
+    "message": "V?rification de la connexion..."
+  },
+  "settingsOverviewMeta": {
+    "message": "Contr?les g?n?raux qui d?terminent l?agressivit? de l?adaptation ? la machine actuelle."
+  },
+  "settingsAutomaticDeviceTuning": {
+    "message": "Ajustement automatique ? l?appareil"
+  },
+  "settingsAutomaticDeviceTuningDesc": {
+    "message": "Interrupteur r?serv? ? une future planification adapt?e au mat?riel. Il est enregistr? maintenant, mais ne change pas encore le comportement ? l?ex?cution."
+  },
+  "settingsPreloadMode": {
+    "message": "Mode de pr?chargement"
+  },
+  "settingsPreloadModeDesc": {
+    "message": "S?lecteur r?serv? ? de futurs niveaux de strat?gie. Il est enregistr? maintenant, mais ne change pas encore le comportement ? l?ex?cution."
+  },
+  "settingsModeConservative": {
+    "message": "Conservateur"
+  },
+  "settingsModeBalanced": {
+    "message": "?quilibr?"
+  },
+  "settingsModeAggressive": {
+    "message": "Agressif"
+  },
+  "settingsTrackingMeta": {
+    "message": "Contr?le la normalisation des n?uds de navigation et leur ajout au graphe directionnel."
+  },
+  "settingsSeparateGoogleSearchPages": {
+    "message": "S?parer les pages de recherche Google"
+  },
+  "settingsSeparateGoogleSearchPagesDesc": {
+    "message": "Suit les pages de r?sultats `google/search` comme des n?uds distincts afin d?apprendre les transitions depuis la recherche vers les destinations."
+  },
+  "settingsSkipGoogleInternalPages": {
+    "message": "Ignorer les pages internes Google"
+  },
+  "settingsSkipGoogleInternalPagesDesc": {
+    "message": "Ne pas suivre ni précharger le Chrome Web Store, le compte Google, le gestionnaire de mots de passe, Chrome Sync, chromestatus et les pages administratives Google similaires. Gemini et les produits Google courants restent suivis."
+  },
+  "settingsPreloadMeta": {
+    "message": "Contr?le la pr?paration des onglets, la r?paration watchdog et le comportement de la fen?tre de pr?chargement."
+  },
+  "settingsEnablePreloading": {
+    "message": "Activer le pr?chargement"
+  },
+  "settingsEnablePreloadingDesc": {
+    "message": "Interrupteur principal pour l?enregistrement des candidats, les onglets en arri?re-plan et les ?changes d?onglets."
+  },
+  "settingsIgnoreWaterfallDynamicLinks": {
+    "message": "Ignorer les liens dynamiques en flux"
+  },
+  "settingsIgnoreWaterfallDynamicLinksDesc": {
+    "message": "Sur les pages ? d?filement infini ou en cascade, conserver la pr?diction sur le premier ensemble stable de liens et ignorer les liens ajout?s ensuite par chargement en flux."
+  },
+  "settingsExcludeIncognitoWindows": {
+    "message": "Exclure les fen?tres de navigation priv?e du pr?chargement"
+  },
+  "settingsExcludeIncognitoWindowsDesc": {
+    "message": "Une fois activ?es, les fen?tres priv?es restent hors apprentissage, scoring, allocation de slots et pr?chargements d?interaction. D?sactiv?, elles partagent les m?mes limites de compte que les pages normales, mais les sources priv?es utilisent uniquement des fen?tres de pr?chargement priv?es."
+  },
+  "settingsTransitionFrequencyWindow": {
+    "message": "Fen?tre de fr?quence de transition"
+  },
+  "settingsTransitionFrequencyWindowDesc": {
+    "message": "Quand cette option est activ?e, la pond?ration de fr?quence de transition utilise la fen?tre choisie au lieu du total historique."
+  },
+  "settingsGlobalPreloadScheduler": {
+    "message": "Planificateur global de pr?chargement"
+  },
+  "settingsGlobalPreloadSchedulerDesc": {
+    "message": "Limites au niveau du compte pour distribuer les cr?neaux de pr?chargement entre tous les onglets source ayant des candidats."
+  },
+  "settingsSchedulerHiddenTabs": {
+    "message": "Onglets r?els masqu?s"
+  },
+  "settingsSchedulerNativePreload": {
+    "message": "Pr?chargement natif"
+  },
+  "settingsSchedulerAttentionPool": {
+    "message": "R?serve d?attention"
+  },
+  "settingsSchedulerMin": {
+    "message": "Min."
+  },
+  "settingsSchedulerMax": {
+    "message": "Max."
+  },
+  "settingsSchedulerHalfLifeTabs": {
+    "message": "Onglets de demi-vie de croissance du plafond"
+  },
+  "settingsSchedulerHalfLifeTabsDesc": {
+    "message": "Chaque fois que le nombre d’onglets augmente de cette valeur, le plafond total dynamique se rapproche de moitié du maximum. Une valeur plus basse le fait croître plus vite."
+  },
+  "settingsSchedulerPoolHours": {
+    "message": "Heures du pool"
+  },
+  "settingsSchedulerSegmentSeconds": {
+    "message": "Secondes par segment"
+  },
+  "settingsSchedulerMaxGapSeconds": {
+    "message": "?cart maximal en secondes"
+  },
+  "settingsSchedulerInputWindowSeconds": {
+    "message": "Fen?tre de saisie en secondes"
+  },
+  "settingsSchedulerMediaWeight": {
+    "message": "Poids vid?o"
+  },
+  "settingsSchedulerAudioWeight": {
+    "message": "Poids audio"
+  },
+  "settingsAiPredictionAssistant": {
+    "message": "Assistant de pr?diction IA"
+  },
+  "settingsAiPredictionAssistantDesc": {
+    "message": "Choisissez un fournisseur d?IA externe et un mod?le pour le score des mots-cl?s. L?extension utilise directement votre cl? API; elle ne t?l?charge ni ne g?re de mod?les locaux."
+  },
+  "settingsAiProviderApiKey": {
+    "message": "Cl? API du fournisseur"
+  },
+  "settingsAiProviderApiKeyDesc": {
+    "message": "Stock?e dans le stockage local de l?extension et utilis?e uniquement par le service worker lorsque la pr?diction IA est activ?e. LM Studio ignore ce champ."
+  },
+  "settingsAiProviderEndpoint": {
+    "message": "Point de terminaison du fournisseur"
+  },
+  "settingsAiProviderEndpointDesc": {
+    "message": "Conservez la valeur par d?faut sauf si vous utilisez un service local compatible OpenAI comme LM Studio."
+  },
+  "settingsWindowWatchdog": {
+    "message": "Surveillance de fen?tre"
+  },
+  "settingsWindowWatchdogDesc": {
+    "message": "Reconstruire la fen?tre de pr?chargement et r?parer les onglets manquants lorsque le conteneur est perdu."
+  },
+  "settingsWatchdogInterval": {
+    "message": "Intervalle de surveillance"
+  },
+  "settingsWatchdogIntervalDesc": {
+    "message": "Fr?quence ? laquelle l?extension v?rifie que la fen?tre de pr?chargement existe encore."
+  },
+  "settingsWatchdogIntervalOption1": {
+    "message": "1 seconde"
+  },
+  "settingsWatchdogIntervalOption2": {
+    "message": "2 secondes"
+  },
+  "settingsWatchdogIntervalOption3": {
+    "message": "3 secondes"
+  },
+  "settingsWatchdogIntervalOption5": {
+    "message": "5 secondes"
+  },
+  "settingsWatchdogIntervalOption10": {
+    "message": "10 secondes"
+  },
+  "settingsFullscreenPressurePolicy": {
+    "message": "Politique des onglets en arri?re-plan en plein ?cran/jeu"
+  },
+  "settingsFullscreenPressurePolicyDesc": {
+    "message": "Quand une autre application est en plein ?cran ou qu?un processus de jeu est d?tect?, choisissez comment traiter les vrais onglets de pr?chargement masqu?s."
+  },
+  "settingsFullscreenPressurePolicyClose": {
+    "message": "Fermer compl?tement"
+  },
+  "settingsFullscreenPressurePolicySleep": {
+    "message": "Mettre les onglets en veille"
+  },
+  "settingsFullscreenPressurePolicyIgnore": {
+    "message": "Aucune action"
+  },
+  "settingsSecond": {
+    "message": "{0} seconde"
+  },
+  "settingsSeconds": {
+    "message": "{0} secondes"
+  },
+  "settingsForceMinimize": {
+    "message": "Forcer la r?duction de la fen?tre de pr?chargement"
+  },
+  "settingsForceMinimizeDesc": {
+    "message": "R?duire imm?diatement ? nouveau la fen?tre de pr?chargement si elle est restaur?e ou redimensionn?e."
+  },
+  "settingsOrderingMeta": {
+    "message": "Les filtres de classement fixes gardent la premi?re version pr?visible. Des cha?nes de filtres programmables plus avanc?es pourront ?tre ajout?es sans modifier la forme de r?gle enregistr?e."
+  },
+  "settingsExperimentsMeta": {
+    "message": "Les interrupteurs actifs risqu?s se trouvent ici. Les interrupteurs r?serv?s restent aussi ici, mais ne sont qu?enregistr?s tant qu?ils ne sont pas reli?s au comportement d?ex?cution."
+  },
+  "settingsCrossSiteCurrentTabSwap": {
+    "message": "Remplacement forc? intersite dans l?onglet courant"
+  },
+  "settingsCrossSiteCurrentTabSwapDesc": {
+    "message": "Utiliser le chemin de remplacement par vraie page masqu?e pour les navigations intersites qui restent dans l?onglet courant. Plus rapide quand cela fonctionne, mais peut encore alt?rer l?historique et le bouton Retour. ? activer seulement si vous acceptez ces effets."
+  },
+  "settingsIdleWakeStrongDevices": {
+    "message": "R?veil en veille sur appareils puissants"
+  },
+  "settingsIdleWakeStrongDevicesDesc": {
+    "message": "Enregistr? uniquement pour un usage futur. Cela ne r?veille pas actuellement d?onglets candidats suppl?mentaires."
+  },
+  "settingsPointerProximityPrediction": {
+    "message": "Pr?diction par proximit? du pointeur"
+  },
+  "settingsPointerProximityPredictionDesc": {
+    "message": "Enregistr? uniquement pour un usage futur. Cela n?ajoute pas actuellement de pr?diction bas?e sur le pointeur."
+  },
+  "settingsAuthStateWarmup": {
+    "message": "Pr?paration de l??tat d?authentification"
+  },
+  "settingsAuthStateWarmupDesc": {
+    "message": "Enregistr? uniquement pour un usage futur. Cela ne change pas actuellement l?authentification ni la pr?paration."
+  },
+  "settingsNoUnsavedChanges": {
+    "message": "Aucune modification non enregistr?e."
+  },
+  "settingsResetDefaults": {
+    "message": "R?tablir les valeurs par d?faut"
+  },
+  "settingsSaveSettings": {
+    "message": "Enregistrer les param?tres"
+  },
+  "settingsAiModelTask": {
+    "message": "T?che du mod?le IA"
+  },
+  "settingsReadingLocalSettings": {
+    "message": "Lecture des param?tres locaux de l?extension."
+  },
+  "settingsCouldNotLoad": {
+    "message": "Impossible de charger les param?tres depuis le stockage."
+  },
+  "settingsCouldNotLoadAiStatus": {
+    "message": "Impossible de charger l??tat du mod?le IA."
+  },
+  "settingsDefaultsRestored": {
+    "message": "Valeurs par d?faut restaur?es dans le formulaire. Enregistrez pour appliquer."
+  },
+  "settingsUnsavedReady": {
+    "message": "Les modifications non enregistr?es sont pr?tes ? ?tre appliqu?es."
+  },
+  "settingsWritingLocalSettings": {
+    "message": "?criture des param?tres dans le stockage local de l?extension."
+  },
+  "settingsWrittenSuccessfully": {
+    "message": "Param?tres ?crits avec succ?s."
+  },
+  "settingsCouldNotSave": {
+    "message": "Impossible d?enregistrer les param?tres."
+  },
+  "settingsPreparingRuntime": {
+    "message": "Pr?paration du runtime portable si n?cessaire."
+  },
+  "settingsRemovingSelectedModel": {
+    "message": "Suppression du mod?le s?lectionn?."
+  },
+  "settingsInstallingModel": {
+    "message": "Installation du runtime si n?cessaire, puis t?l?chargement du mod?le s?lectionn?."
+  },
+  "settingsRemovingModelAndRuntime": {
+    "message": "Suppression du mod?le s?lectionn? et nettoyage du runtime portable s?il est inutilis?."
+  },
+  "settingsAiModelActionFailed": {
+    "message": "?chec de l?action sur le mod?le IA."
+  },
+  "settingsModelStateUpdatedDirty": {
+    "message": "?tat du mod?le mis ? jour. D?autres modifications non enregistr?es sont encore en attente."
+  },
+  "settingsPortableModelUpdated": {
+    "message": "Runtime portable et ?tat du mod?le mis ? jour."
+  },
+  "settingsModelDownloaded": {
+    "message": "Mod?le t?l?charg?."
+  },
+  "settingsModelRemoved": {
+    "message": "Mod?le supprim?."
+  },
+  "settingsCouldNotUpdateModel": {
+    "message": "Impossible de mettre ? jour le mod?le s?lectionn?."
+  },
+  "settingsHardwareMeta": {
+    "message": "{0} c?urs | indication m?moire {1} Go"
+  },
+  "settingsEffectivePreloadMeta": {
+    "message": "Limites de cr?neaux natifs / onglets. Les r?gles utilisent {0}."
+  },
+  "settingsWatchdogChecksEvery": {
+    "message": "V?rifie toutes les {0} seconde(s)."
+  },
+  "settingsWindowRepairDisabled": {
+    "message": "La r?paration de fen?tre est d?sactiv?e."
+  },
+  "settingsSystemHidingUnsupported": {
+    "message": "Le masquage au niveau syst?me n?est pas pris en charge sur {0}."
+  },
+  "settingsSystemHidingActive": {
+    "message": "Le masquage au niveau syst?me est actif."
+  },
+  "settingsNativeAppOffline": {
+    "message": "Application locale non d?tect?e. Utilisation du repli par minimisation."
+  },
+  "settingsConnected": {
+    "message": "Connect?"
+  },
+  "settingsOffline": {
+    "message": "Hors ligne"
+  },
+  "settingsInstallingModelLabel": {
+    "message": "Installation de {0}"
+  },
+  "settingsRemovingModelLabel": {
+    "message": "Suppression de {0}"
+  },
+  "settingsModelReady": {
+    "message": "Mod?le pr?t"
+  },
+  "settingsUninstallFailed": {
+    "message": "?chec de la d?sinstallation"
+  },
+  "settingsInstallFailed": {
+    "message": "?chec de l?installation"
+  },
+  "settingsTaskDidNotFinish": {
+    "message": "La t?che ne s?est pas termin?e."
+  },
+  "settingsAiProviderMissingWarning": {
+    "message": "Le scoring IA restera d?sactiv? tant que {0} n?a pas de mod?le, endpoint et cl? API."
+  },
+  "settingsAiKeyOptionalPlaceholder": {
+    "message": "Facultatif pour les endpoints locaux compatibles"
+  },
+  "settingsAiLmStudioKeyIgnoredPlaceholder": {
+    "message": "Ignor? pour LM Studio"
+  },
+  "settingsAiLmStudioLoadingModel": {
+    "message": "Chargement du mod?le LM Studio : {0}"
+  },
+  "settingsAiKeyRequiredPlaceholder": {
+    "message": "Obligatoire"
+  },
+  "settingsAiEnterKeyToLoadModels": {
+    "message": "Saisissez une cl? API pour charger les mod?les"
+  },
+  "settingsAiLoadingModels": {
+    "message": "Chargement des mod?les pris en charge..."
+  },
+  "settingsAiSelectProviderFirst": {
+    "message": "S?lectionnez d?abord un fournisseur"
+  },
+  "settingsAiNoSupportedModels": {
+    "message": "Aucun mod?le l?ger pris en charge trouv?"
+  },
+  "commonProvider": {
+    "message": "fournisseur"
+  },
+  "transitionWindowTotal": {
+    "message": "Total"
+  },
+  "transitionWindow365d": {
+    "message": "L?ann?e derni?re"
+  },
+  "transitionWindow30d": {
+    "message": "Le mois dernier"
+  },
+  "transitionWindow7d": {
+    "message": "Les 7 derniers jours"
+  },
+  "transitionWindow1d": {
+    "message": "Le dernier jour"
+  },
+  "ruleOperatorDisabled": {
+    "message": "D?sactiv?"
+  },
+  "ruleFieldValueA": {
+    "message": "Valeur A"
+  },
+  "ruleFieldCompareA": {
+    "message": "Comparaison A"
+  },
+  "ruleFieldCompareB": {
+    "message": "Comparaison B"
+  },
+  "ruleFieldValueC": {
+    "message": "Valeur C"
+  },
+  "ruleFieldStatus": {
+    "message": "?tat"
+  },
+  "ruleTokenFixed": {
+    "message": "jeton fixe {0}"
+  },
+  "ruleNativePerPageTitle": {
+    "message": "Limite a de cr?neaux de page du groupe de pr?chargement natif"
+  },
+  "ruleNativePerPageDesc": {
+    "message": "S?applique aux candidats natifs `prefetch` / `prerender`. D?finit combien de candidats de page ce groupe peut conserver pour l?ex?cution finale."
+  },
+  "ruleTabPerPageTitle": {
+    "message": "Limite a de cr?neaux de page du groupe de vrais onglets pr?charg?s"
+  },
+  "ruleTabPerPageDesc": {
+    "message": "S?applique aux candidats qui n?cessitent de vrais onglets en arri?re-plan. D?finit combien de candidats de page ce groupe peut conserver pour l?ex?cution finale."
+  },
+  "ruleNativeSiteTitle": {
+    "message": "Nombre x de sites ? poids ?lev? du groupe de pr?chargement natif"
+  },
+  "ruleNativeSiteDesc": {
+    "message": "S?applique aux candidats natifs `prefetch` / `prerender`. D?finit combien de sites ? poids ?lev? entrent dans l??tape d?allocation des cr?neaux de site."
+  },
+  "ruleTabSiteTitle": {
+    "message": "Nombre x de sites ? poids ?lev? du groupe de vrais onglets pr?charg?s"
+  },
+  "ruleTabSiteDesc": {
+    "message": "S?applique aux candidats qui n?cessitent de vrais onglets en arri?re-plan, y compris le pr?chargement intersite en nouvel onglet et les candidats intersites du remplacement forc? de l?onglet courant rout?s vers hidden-tab."
+  },
+  "ruleGoogleBookmarkRankTitle": {
+    "message": "Rang x de pr?chargement des favoris sur Google Search"
+  },
+  "ruleGoogleBookmarkRankDesc": {
+    "message": "S?applique uniquement aux pages de recherche Google. Quand l?option est activ?e, les favoris Chrome sont conserv?s par cette r?gle de rang comme cibles de pr?chargement persistantes ind?pendantes."
+  },
+  "deviceProfileBalanced": {
+    "message": "?quilibr?"
+  },
+  "deviceProfileHighEnd": {
+    "message": "Haut de gamme"
+  },
+  "deviceProfileStrong": {
+    "message": "Puissant"
+  },
+  "deviceProfileConstrained": {
+    "message": "Limit?"
+  },
+  "settingsDiagnosticsLogging": {
+    "message": "Mode journal"
+  },
+  "settingsDiagnosticsLoggingDesc": {
+    "message": "Une fois activ?, les diagnostics d?ex?cution sont ?crits en JSONL dans le dossier portable logs de l?application locale."
+  }
+}

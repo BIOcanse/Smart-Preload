@@ -3,29 +3,26 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title data-i18n="settingsPageTitle">Zero-Latency Web Settings</title>
+    <title data-i18n="settingsPageTitle">Smart Preload Settings</title>
     <link rel="stylesheet" href="settings.css" />
   </head>
   <body>
     <div class="settings-shell">
       <aside class="settings-nav">
         <div class="settings-brand">
-          <p class="settings-eyebrow" data-i18n="appName">Zero-Latency Web</p>
+          <p class="settings-eyebrow" data-i18n="appName">Smart Preload</p>
           <h1 data-i18n="settingsTitle">Settings</h1>
         </div>
 
         <nav class="settings-nav-list" aria-label="Settings sections" data-i18n-aria-label="settingsNavAriaLabel">
           <button class="settings-nav-item active" data-section-target="tracking">
             <span class="settings-nav-title" data-i18n="settingsTracking">Tracking</span>
-            <span class="settings-nav-sub" data-i18n="settingsTrackingSub">Directional graph and search-page handling</span>
           </button>
           <button class="settings-nav-item" data-section-target="preload">
             <span class="settings-nav-title" data-i18n="settingsPreload">Preload</span>
-            <span class="settings-nav-sub" data-i18n="settingsPreloadSub">Window policy, cadence, and tab budget</span>
           </button>
           <button class="settings-nav-item" data-section-target="experiments">
             <span class="settings-nav-title" data-i18n="settingsExperiments">Experiments</span>
-            <span class="settings-nav-sub" data-i18n="settingsExperimentsSub">Risky live switches and reserved placeholders</span>
           </button>
         </nav>
 
@@ -39,9 +36,6 @@
         <section class="settings-section" id="tracking">
           <header class="settings-section-header">
             <p class="settings-section-title" data-i18n="settingsTracking">Tracking</p>
-            <p class="settings-section-meta" data-i18n="settingsTrackingMeta">
-              Controls for how navigation nodes are normalized and added into the directional graph.
-            </p>
           </header>
 
           <div class="settings-list">
@@ -87,9 +81,6 @@
         <section class="settings-section" id="preload">
           <header class="settings-section-header">
             <p class="settings-section-title" data-i18n="settingsPreload">Preload</p>
-            <p class="settings-section-meta" data-i18n="settingsPreloadMeta">
-              Controls for tab priming, watchdog repair, and preload window behavior.
-            </p>
           </header>
 
           <div class="settings-list">
@@ -109,6 +100,9 @@
                 </label>
               </div>
             </article>
+            <p class="settings-item-warning settings-runtime-warning is-hidden" id="settings-performance-warning" data-i18n="performanceInsufficientReducePreloadCaps">
+              Performance pressure detected. Lower the preload limits.
+            </p>
             <article class="settings-item">
               <div class="settings-item-info">
                 <label class="settings-item-label" for="ignore-waterfall-dynamic-links" data-i18n="settingsIgnoreWaterfallDynamicLinks">
@@ -122,6 +116,22 @@
               <div class="settings-item-control">
                 <label class="switch">
                   <input id="ignore-waterfall-dynamic-links" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="exclude-incognito-windows" data-i18n="settingsExcludeIncognitoWindows">
+                  Exclude incognito windows from preloading
+                </label>
+                <p class="settings-item-desc" data-i18n="settingsExcludeIncognitoWindowsDesc">
+                  Keep incognito windows outside preload learning, scoring, allocation, and interaction preloads.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="exclude-incognito-windows" type="checkbox" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -164,8 +174,8 @@
                     <span data-i18n="settingsSchedulerMax">Max</span>
                     <input id="scheduler-tab-total-max" class="number-input" type="number" min="1" max="64" step="1" />
                   </label>
-                  <label class="scheduler-field" for="scheduler-tab-half-life-tabs">
-                    <span data-i18n="settingsSchedulerHalfLifeTabs">Half-life tabs</span>
+                  <label class="scheduler-field" for="scheduler-tab-half-life-tabs" data-i18n-title="settingsSchedulerHalfLifeTabsDesc">
+                    <span data-i18n="settingsSchedulerHalfLifeTabs">Cap growth half-life tabs</span>
                     <input id="scheduler-tab-half-life-tabs" class="number-input" type="number" min="1" max="100" step="1" />
                   </label>
                 </fieldset>
@@ -179,8 +189,8 @@
                     <span data-i18n="settingsSchedulerMax">Max</span>
                     <input id="scheduler-native-total-max" class="number-input" type="number" min="1" max="128" step="1" />
                   </label>
-                  <label class="scheduler-field" for="scheduler-native-half-life-tabs">
-                    <span data-i18n="settingsSchedulerHalfLifeTabs">Half-life tabs</span>
+                  <label class="scheduler-field" for="scheduler-native-half-life-tabs" data-i18n-title="settingsSchedulerHalfLifeTabsDesc">
+                    <span data-i18n="settingsSchedulerHalfLifeTabs">Cap growth half-life tabs</span>
                     <input id="scheduler-native-half-life-tabs" class="number-input" type="number" min="1" max="100" step="1" />
                   </label>
                 </fieldset>
@@ -300,6 +310,24 @@
 
             <article class="settings-item">
               <div class="settings-item-info">
+                <label class="settings-item-label" for="fullscreen-pressure-policy" data-i18n="settingsFullscreenPressurePolicy">
+                  Fullscreen/game background tab policy
+                </label>
+                <p class="settings-item-desc" data-i18n="settingsFullscreenPressurePolicyDesc">
+                  When another app is fullscreen or a game process is running, choose how hidden real-page preload tabs are handled.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <select id="fullscreen-pressure-policy" class="select-input">
+                  <option value="close" data-i18n="settingsFullscreenPressurePolicyClose">Close completely</option>
+                  <option value="sleep" data-i18n="settingsFullscreenPressurePolicySleep">Sleep tabs</option>
+                  <option value="ignore" data-i18n="settingsFullscreenPressurePolicyIgnore">No operation</option>
+                </select>
+              </div>
+            </article>
+
+            <article class="settings-item">
+              <div class="settings-item-info">
                 <label class="settings-item-label" for="force-minimize" data-i18n="settingsForceMinimize">
                   Force minimize preload window
                 </label>
@@ -320,10 +348,6 @@
         <section class="settings-section" id="experiments">
           <header class="settings-section-header">
             <p class="settings-section-title" data-i18n="settingsExperiments">Experiments</p>
-            <p class="settings-section-meta" data-i18n="settingsExperimentsMeta">
-              Risky live switches belong here. Placeholder switches stay here too, but they remain
-              stored-only until they are actually wired into runtime behavior.
-            </p>
           </header>
 
           <div class="settings-list">

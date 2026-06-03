@@ -200,7 +200,20 @@ $installExit = $LASTEXITCODE
 
 Write-Host ""
 Write-Host "[Zero-Latency Web] Current registration status:"
-& $AppExe --status
+$statusOutput = & $AppExe --status
+$statusOutput | Write-Host
+
+try {
+  $status = $statusOutput | ConvertFrom-Json
+  if ($status.nativeMessagingRegistered -ne $true) {
+    Write-Host ""
+    Write-Host "[Zero-Latency Web] Native Messaging is not registered yet."
+    Write-Host "[Zero-Latency Web] Install or enable the browser extension first, then run install-register.cmd again."
+    Write-Host "[Zero-Latency Web] The extension cannot wake the local app until this registration exists."
+  }
+} catch {
+  Write-Host "[Zero-Latency Web] Could not parse registration status for Native Messaging diagnostics."
+}
 
 Write-Host ""
 if ($installExit -ne 0) {

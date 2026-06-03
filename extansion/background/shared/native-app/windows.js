@@ -82,3 +82,78 @@ async function nativeAppGetHiddenWindowMonitor() {
     return null;
   }
 }
+
+async function nativeAppGetSystemActivitySnapshot(options = {}) {
+  if (
+    options.requireCachedAvailability !== false &&
+    typeof isNativeAppAvailableCached === "function" &&
+    !isNativeAppAvailableCached()
+  ) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("native-app.system.activity.skip", {
+      reason: "native-app-not-available-cached",
+    });
+    return null;
+  }
+
+  try {
+    const response = await fetchNativeApp("/api/v1/system/activity", {
+      method: "GET",
+      timeoutMs: options.timeoutMs ?? 1500,
+      skipRegistration: options.skipRegistration !== false,
+    });
+    globalThis.ZeroLatencyDebugEvents?.record?.("native-app.system.activity.result", {
+      ok: response != null,
+      chromeRunning: response?.chromeRunning === true,
+      nonChromeFullscreen: response?.nonChromeFullscreen === true,
+      gameProcessRunning: response?.gameProcessRunning === true,
+      professionalProcessRunning: response?.professionalProcessRunning === true,
+      foregroundProcess: response?.foreground?.processName ?? null,
+      gameProcess: response?.gameProcess?.processName ?? null,
+      professionalProcess: response?.professionalProcess?.processName ?? null,
+    });
+    return response;
+  } catch (error) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("native-app.system.activity.error", {
+      error: String(error?.message || error),
+    });
+    return null;
+  }
+}
+
+async function nativeAppGetSystemPerformanceSnapshot(options = {}) {
+  if (
+    options.requireCachedAvailability !== false &&
+    typeof isNativeAppAvailableCached === "function" &&
+    !isNativeAppAvailableCached()
+  ) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("native-app.system.performance.skip", {
+      reason: "native-app-not-available-cached",
+    });
+    return null;
+  }
+
+  try {
+    const response = await fetchNativeApp("/api/v1/system/performance", {
+      method: "GET",
+      timeoutMs: options.timeoutMs ?? 1500,
+      skipRegistration: options.skipRegistration !== false,
+    });
+    globalThis.ZeroLatencyDebugEvents?.record?.("native-app.system.performance.result", {
+      ok: response != null,
+      cpuUsagePercent: response?.system?.cpuUsagePercent ?? null,
+      memoryUsageRatio: response?.system?.memoryUsageRatio ?? null,
+      availableMemoryBytes: response?.system?.availableMemoryBytes ?? null,
+      gpuUsagePercent: response?.system?.gpuUsagePercent ?? null,
+      gpuDedicatedMemoryUsageRatio:
+        response?.system?.gpuDedicatedMemory?.usageRatio ?? null,
+      gpuDedicatedMemoryAvailableBytes:
+        response?.system?.gpuDedicatedMemory?.availableBytes ?? null,
+    });
+    return response;
+  } catch (error) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("native-app.system.performance.error", {
+      error: String(error?.message || error),
+    });
+    return null;
+  }
+}

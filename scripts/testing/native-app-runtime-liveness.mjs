@@ -70,6 +70,10 @@ async function assertPreloadingDisabledKeepsNativeAppLiveness() {
   assert.ok(
     calls.indexOf("heartbeatAlarm:true") < calls.indexOf("probeNativeAppAvailability")
   );
+  assert.ok(
+    calls.indexOf("heartbeatSend:runtime-settings") <
+      calls.indexOf("probeNativeAppAvailability")
+  );
   assert.ok(calls.includes("unloadLmStudio:preloading-disabled"));
   assert.ok(calls.includes("resetPreloads"));
   assert.equal(calls.includes("ensureWarmWindows"), false);

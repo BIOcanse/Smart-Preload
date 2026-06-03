@@ -108,7 +108,7 @@
     }
 
     if (providerId === "openrouter") {
-      headers["x-title"] = "Zero-Latency Web";
+      headers["x-title"] = "Smart Preload";
     }
 
     const body = {

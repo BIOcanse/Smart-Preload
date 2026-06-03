@@ -70,7 +70,13 @@ function buildPreloadCandidateScoreMultipliers({
 }
 
 async function scorePreloadCandidatePool(candidatePool, context = {}) {
-  const candidatePoolWithAi = await appendAiKeywordScoreMultipliers(candidatePool, context);
+  const scorableCandidatePool = (Array.isArray(candidatePool) ? candidatePool : []).filter(
+    (candidate) => !candidate?.bookmarkPreload
+  );
+  const candidatePoolWithAi = await appendAiKeywordScoreMultipliers(
+    scorableCandidatePool,
+    context
+  );
   const scoreInputs = candidatePoolWithAi.map((candidate) => ({
     baseScore: candidate.baseScore,
     multipliers: candidate.scoreMultipliers,

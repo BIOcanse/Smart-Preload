@@ -56,27 +56,14 @@ function buildPreloadRuleFilterInput(candidatePool, settings, maxTargets) {
       score: candidate.score,
       visibilityScore: candidate.visibilityScore,
       linkIndex: candidate.linkIndex,
-      bookmarkRank: clampNonNegativeInt(candidate?.bookmarkPreload?.rank, 0),
-      googleBookmarkCandidate: Boolean(candidate?.bookmarkPreload),
+      bookmarkRank: 0,
+      googleBookmarkCandidate: false,
     })),
   };
 }
 
 function applyOrderedPreloadRulesFallback(candidatePool, settings, maxTargets) {
   let workingPool = [...candidatePool];
-  const ruleItems = settings?.layout?.ruleCards?.items ?? {};
-  const bookmarkRuleCardState = ruleItems.googleBookmarkRank;
-
-  if (settingsApi.isRuleCardEnabled(bookmarkRuleCardState)) {
-    workingPool = workingPool.filter(
-      (candidate) =>
-        !candidate.bookmarkPreload ||
-        settingsApi.evaluateRuleCardMetric(
-          bookmarkRuleCardState,
-          clampNonNegativeInt(candidate.bookmarkPreload.rank, 0)
-        )
-    );
-  }
 
   workingPool.sort(comparePreloadCandidatePriority);
   const normalizedMaxTargets = normalizeOptionalMaxTargets(maxTargets);

@@ -44,6 +44,10 @@
       );
     }
 
+    async handleTabCreated(tab) {
+      await globalThis.ZeroLatencyRouterNavigation.dispatchNavigationEvent("tab-created", tab);
+    }
+
     async handleTabRemoved(tabId) {
       await globalThis.ZeroLatencyRouterNavigation.dispatchNavigationEvent("tab-removed", { tabId });
     }

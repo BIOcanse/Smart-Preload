@@ -1,5 +1,19 @@
 (function () {
   async function handleDebugSnapshot(message) {
+    if (message?.mode === "popup") {
+      return handlePopupDebugSnapshot(message);
+    }
+
+    if (message?.mode === "performance-warning") {
+      return {
+        performanceWarning: await resolvePreloadPerformanceWarning({
+          allowRefresh: true,
+          timeoutMs: 1000,
+        }),
+        mode: "performance-warning",
+      };
+    }
+
     const trackingState = await loadTrackingState();
     const preloadState = await loadPreloadState();
     const serviceState = await loadServiceState();
@@ -25,6 +39,10 @@
       knownPreloadRuntime: globalThis.snapshotKnownPreloadRuntime?.() ?? null,
       featureSupport: globalThis.ZeroLatencySupport?.getBackgroundFeatureSupport?.() ?? {},
       hiddenWindowMonitor,
+      performanceWarning: await resolvePreloadPerformanceWarning({
+        allowRefresh: true,
+        timeoutMs: 1000,
+      }),
       currentPreloadWindowMonitor: resolveCurrentPreloadWindowMonitor(
         pageContext,
         hiddenWindowMonitor
@@ -32,12 +50,33 @@
     };
   }
 
+  async function handlePopupDebugSnapshot(message) {
+    const snapshot = await loadTrackingSnapshotForPopup();
+    const pageContext = buildPageContext(
+      { tabState: snapshot.tabState },
+      snapshot.preloadState,
+      message?.tabId,
+      message?.pageUrl
+    );
+
+    return {
+      summary: snapshot.summary,
+      serviceState: snapshot.serviceState,
+      pageContext,
+      currentTopTargets: buildCurrentPreloads(snapshot.preloadState, message?.tabId),
+      performanceWarning: await resolvePreloadPerformanceWarning({
+        allowRefresh: false,
+      }),
+      mode: "popup",
+    };
+  }
+
   async function handleReset() {
     await resetPreloads();
-    await chrome.storage.local.set({
-      [GRAPH_KEY]: createEmptyGraph(),
-      [TAB_STATE_KEY]: {},
-      [PENDING_SOURCE_KEY]: {},
+    await saveTrackingState({
+      graph: createEmptyGraph(),
+      tabState: {},
+      pendingSources: {},
     });
     globalThis.ZeroLatencyDebugEvents?.clear?.();
 
@@ -60,5 +99,23 @@
     }
 
     return null;
+  }
+
+  async function resolvePreloadPerformanceWarning(options = {}) {
+    const warningApi =
+      globalThis.ZeroLatencyPreloadWindowPolicy?.getPreloadPerformanceWarningState;
+
+    if (typeof warningApi !== "function") {
+      return null;
+    }
+
+    try {
+      return await warningApi(options);
+    } catch (error) {
+      globalThis.ZeroLatencyDebugEvents?.record?.("debug.performance-warning.error", {
+        error: String(error?.message || error),
+      });
+      return null;
+    }
   }
 })();

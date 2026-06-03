@@ -4,6 +4,7 @@ const edgeCountElement = document.getElementById("edge-count");
 const updatedAtElement = document.getElementById("updated-at");
 const topTargetsElement = document.getElementById("top-edges");
 const topTargetsEmptyElement = document.getElementById("top-edges-empty");
+const performanceWarningElement = document.getElementById("performance-warning");
 const refreshButton = document.getElementById("refresh-button");
 const serviceToggleButton = document.getElementById("service-toggle-button");
 const settingsButton = document.getElementById("settings-button");
@@ -13,6 +14,9 @@ const t = (key, substitutions = [], fallback = "") =>
   i18n?.t?.(key, substitutions, fallback) || fallback || key;
 let servicePaused = false;
 let snapshotReloadTimerId = null;
+let snapshotLoadInFlight = false;
+let snapshotReloadQueued = false;
+let performanceWarningRefreshInFlight = false;
 
 i18n?.applyDocument?.(document);
 
@@ -65,33 +69,46 @@ function scheduleSnapshotReload() {
 }
 
 async function loadSnapshot() {
-  setBusy(true, t("popupLoadingVisitGraph", [], "Loading visit graph..."));
+  if (snapshotLoadInFlight) {
+    snapshotReloadQueued = true;
+    return;
+  }
+
+  snapshotLoadInFlight = true;
+  let statusMessage = t("popupVisitGraphLoaded", [], "Visit graph loaded.");
+  statusTextElement.textContent = t("popupLoadingVisitGraph", [], "Loading visit graph...");
 
   try {
-    const [activeTab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
-    const snapshot = await chrome.runtime.sendMessage({
-      type: "visit-graph:get-debug-snapshot",
-      tabId: activeTab?.id ?? null,
-      pageUrl: activeTab?.url ?? null,
-    });
+    do {
+      snapshotReloadQueued = false;
+      const [activeTab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+      const snapshot = await chrome.runtime.sendMessage({
+        type: "visit-graph:get-debug-snapshot",
+        mode: "popup",
+        tabId: activeTab?.id ?? null,
+        pageUrl: activeTab?.url ?? null,
+      });
 
-    if (snapshot?.ok === false) {
-      throw new Error(snapshot.error || "Unknown snapshot error");
-    }
+      if (snapshot?.ok === false) {
+        throw new Error(snapshot.error || "Unknown snapshot error");
+      }
 
-    renderSnapshot(snapshot);
-    setBusy(
-      false,
-      snapshot?.serviceState?.paused === true
-        ? t("popupPausedMessage", [], "Plugin stopped: prediction and preloading are disabled.")
-        : t("popupVisitGraphLoaded", [], "Visit graph loaded.")
-    );
+      renderSnapshot(snapshot);
+      statusMessage =
+        snapshot?.serviceState?.paused === true
+          ? t("popupPausedMessage", [], "Plugin stopped: prediction and preloading are disabled.")
+          : t("popupVisitGraphLoaded", [], "Visit graph loaded.");
+    } while (snapshotReloadQueued);
   } catch (error) {
     console.error(error);
-    setBusy(false, t("popupLoadVisitGraphFailed", [], "Failed to load visit graph."));
+    statusMessage = t("popupLoadVisitGraphFailed", [], "Failed to load visit graph.");
+  } finally {
+    snapshotLoadInFlight = false;
+    snapshotReloadQueued = false;
+    statusTextElement.textContent = statusMessage;
   }
 }
 
@@ -104,7 +121,52 @@ function renderSnapshot(snapshot) {
     ? snapshot?.pageContext?.pageLabel || t("popupCurrentPage", [], "Current page")
     : t("popupCurrentPageNotTracked", [], "Current page is not tracked");
 
+  renderPerformanceWarning(snapshot?.performanceWarning);
+  refreshPerformanceWarningIfCacheMissing(snapshot?.performanceWarning);
   renderTopTargets(snapshot?.currentTopTargets ?? [], snapshot?.pageContext, snapshot?.serviceState);
+}
+
+function renderPerformanceWarning(performanceWarning) {
+  if (!performanceWarningElement) {
+    return;
+  }
+
+  if (performanceWarning?.active !== true) {
+    performanceWarningElement.classList.add("hidden");
+    return;
+  }
+
+  performanceWarningElement.textContent = t(
+    performanceWarning.messageKey || "performanceInsufficientReducePreloadCaps",
+    [],
+    "Performance pressure detected. Lower the preload limits."
+  );
+  performanceWarningElement.classList.remove("hidden");
+}
+
+function refreshPerformanceWarningIfCacheMissing(performanceWarning) {
+  if (
+    performanceWarning?.reason !== "cache-unavailable" ||
+    performanceWarningRefreshInFlight
+  ) {
+    return;
+  }
+
+  performanceWarningRefreshInFlight = true;
+  chrome.runtime
+    .sendMessage({
+      type: "visit-graph:get-debug-snapshot",
+      mode: "performance-warning",
+    })
+    .then((snapshot) => {
+      renderPerformanceWarning(snapshot?.performanceWarning);
+    })
+    .catch((error) => {
+      console.error(error);
+    })
+    .finally(() => {
+      performanceWarningRefreshInFlight = false;
+    });
 }
 
 function renderTopTargets(topTargets, pageContext, serviceState) {
@@ -162,16 +224,21 @@ function renderTopTargets(topTargets, pageContext, serviceState) {
 
 function setBusy(isBusy, message) {
   refreshButton.disabled = isBusy;
+  serviceToggleButton.disabled = isBusy;
+  settingsButton.disabled = isBusy;
   statusTextElement.textContent = message;
 }
 
 async function toggleServicePaused() {
   const nextPaused = !servicePaused;
+  let statusMessage = "";
 
-  serviceToggleButton.disabled = true;
-  statusTextElement.textContent = nextPaused
-    ? t("popupStoppingService", [], "Stopping prediction and preloading...")
-    : t("popupStartingService", [], "Starting prediction and preloading...");
+  setBusy(
+    true,
+    nextPaused
+      ? t("popupStoppingService", [], "Stopping prediction and preloading...")
+      : t("popupStartingService", [], "Starting prediction and preloading...")
+  );
 
   try {
     const response = await chrome.runtime.sendMessage({
@@ -185,11 +252,12 @@ async function toggleServicePaused() {
 
     renderServiceState(response?.serviceState);
     await loadSnapshot();
+    statusMessage = statusTextElement.textContent;
   } catch (error) {
     console.error(error);
-    statusTextElement.textContent = t("popupUpdateStateFailed", [], "Failed to update plugin state.");
+    statusMessage = t("popupUpdateStateFailed", [], "Failed to update plugin state.");
   } finally {
-    serviceToggleButton.disabled = false;
+    setBusy(false, statusMessage || statusTextElement.textContent);
   }
 }
 

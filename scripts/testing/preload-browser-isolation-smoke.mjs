@@ -15,7 +15,8 @@ const appDir = path.join(
   repoRoot,
   "dist",
   "staging",
-  "zero-latency-web-app-v1.0.5"
+  "release-v1.0.9",
+  "zero-latency-web-app-v1.0.9"
 );
 const appExe = path.join(appDir, "zero-latency-web-app.exe");
 const portableDir = path.join(appDir, "portable");
@@ -229,10 +230,22 @@ async function runBrowserPreloadScenario(session, webPort, debugToken) {
   const hiddenUrls = new Set(hiddenEntries.map((entry) => entry.requestedUrl));
   const nativeUrls = new Set(nativeEntries.map((entry) => entry.requestedUrl));
   const overlap = [...hiddenUrls].filter((url) => nativeUrls.has(url));
+  const contextMenuNewTab = await runContextMenuNavigationScenario(session, source, {
+    mode: "new-tab",
+    linkId: "hidden-link-1",
+    targetUrl: `http://${session.hiddenHost}:${webPort}/hidden/${session.name}/1`,
+  });
+  const contextMenuNewWindow = await runContextMenuNavigationScenario(session, source, {
+    mode: "new-window",
+    linkId: "hidden-link-2",
+    targetUrl: `http://${session.hiddenHost}:${webPort}/hidden/${session.name}/2`,
+  });
   const ok =
     hiddenEntries.length > 0 &&
     nativeEntries.length > 0 &&
     overlap.length === 0 &&
+    contextMenuNewTab.ok &&
+    contextMenuNewWindow.ok &&
     state.preloadWindow.windowId !== null &&
     state.preloadWindow.hiddenBySystem === true &&
     state.preloadWindow.hwnd !== null &&
@@ -253,11 +266,149 @@ async function runBrowserPreloadScenario(session, webPort, debugToken) {
     hiddenUrls: [...hiddenUrls],
     nativeUrls: [...nativeUrls],
     overlap,
+    contextMenuNewTab,
+    contextMenuNewWindow,
     schedulerSignals: state.scoreSignals,
     eventNames,
     appTrackedHiddenWindowCount: Array.isArray(appMonitor?.trackedWindows)
       ? appMonitor.trackedWindows.length
       : null,
+  };
+}
+
+async function runContextMenuNavigationScenario(session, source, scenario) {
+  await swEval(
+    session.serviceWorker,
+    async ({ tabId, windowId }) => {
+      await chrome.tabs.update(tabId, { active: true });
+      await chrome.windows.update(windowId, { focused: true });
+      return true;
+    },
+    { tabId: source.tabId, windowId: source.windowId }
+  );
+  const pageTarget = await waitForTarget(
+    session.debugPort,
+    (target) => target.type === "page" && stripHash(target.url) === stripHash(session.sourceUrl)
+  );
+  const page = await CdpClient.connect(pageTarget.webSocketDebuggerUrl);
+  session.clients.push(page);
+  await page.send("Runtime.enable");
+  await page.send("Page.enable");
+  await page.send("Page.bringToFront");
+
+  const point = await waitForLinkPoint(page, scenario.linkId);
+  await dispatchRightClick(page, point);
+  await closeNativeContextMenu(page);
+
+  let contextMenuDispatchMode = "cdp-right-click";
+  let contextMenuEntry = await waitForContextMenuHiddenEntry(
+    session.serviceWorker,
+    source.tabId,
+    scenario.targetUrl,
+    2500
+  ).catch(async () => {
+    contextMenuDispatchMode = "dom-contextmenu-fallback";
+    await dispatchSyntheticContextMenu(page, scenario.linkId);
+    return waitForContextMenuHiddenEntry(session.serviceWorker, source.tabId, scenario.targetUrl);
+  });
+  const createdTarget = await swEval(
+    session.serviceWorker,
+    async ({ mode, sourceTabId, sourceWindowId, targetUrl }) => {
+      let tab = null;
+      let windowId = sourceWindowId;
+
+      if (mode === "new-window") {
+        const createdWindow = await chrome.windows.create({
+          url: targetUrl,
+          focused: false,
+        });
+        windowId = createdWindow.id;
+        tab =
+          (Array.isArray(createdWindow.tabs) && createdWindow.tabs[0]) ||
+          (await chrome.tabs.query({ windowId }).then((tabs) => tabs[0]));
+      } else {
+        tab = await chrome.tabs.create({
+          url: targetUrl,
+          openerTabId: sourceTabId,
+          active: false,
+        });
+      }
+
+      const eventTab = {
+        ...tab,
+        openerTabId: sourceTabId,
+        pendingUrl: tab.pendingUrl || tab.url || targetUrl,
+      };
+      await globalThis.ZeroLatencyRouterNavigation.dispatchNavigationEvent("tab-created", eventTab);
+      return {
+        tabId: tab.id,
+        windowId,
+        openerTabId: tab.openerTabId ?? null,
+        url: tab.pendingUrl || tab.url || "",
+        simulatedCreatedEvent: true,
+      };
+    },
+    {
+      mode: scenario.mode,
+      sourceTabId: source.tabId,
+      sourceWindowId: source.windowId,
+      targetUrl: scenario.targetUrl,
+    }
+  );
+  const expectedWindowId =
+    scenario.mode === "new-window" ? createdTarget.windowId : source.windowId;
+  const finalState = await waitForContextMenuFallbackActivation(
+    session.serviceWorker,
+    {
+      windowId: expectedWindowId,
+      createdTabId: createdTarget.tabId,
+      targetUrl: scenario.targetUrl,
+    }
+  );
+  const finalPreloadState = await readPreloadState(session.serviceWorker, source);
+  const finalHiddenUrls = new Set(
+    finalPreloadState.hiddenEntries.map((entry) => entry.requestedUrl)
+  );
+  const finalNativeUrls = new Set(
+    [...finalPreloadState.prerenderEntries, ...finalPreloadState.prefetchEntries].map(
+      (entry) => entry.requestedUrl
+    )
+  );
+  const finalOverlap = [...finalHiddenUrls].filter((url) => finalNativeUrls.has(url));
+  const relatedEvents = finalPreloadState.events.filter((event) =>
+    JSON.stringify(event).includes(scenario.targetUrl)
+  );
+  const fallbackActivated = relatedEvents.some((event) =>
+    getEventName(event).includes("contextmenu-preload-activated")
+  );
+  const activationSucceeded = relatedEvents.some((event) =>
+    getEventName(event).includes("preload-activation.success")
+  );
+  const ok =
+    contextMenuEntry.found &&
+    (scenario.mode === "new-window" || createdTarget.openerTabId === source.tabId) &&
+    finalState.createdTabClosed &&
+    finalState.activeTarget &&
+    finalState.activeTargetWindowId === expectedWindowId &&
+    finalOverlap.length === 0 &&
+    (fallbackActivated || activationSucceeded);
+
+  return {
+    ok,
+    mode: scenario.mode,
+    targetUrl: scenario.targetUrl,
+    expectedWindowId,
+    contextMenuDispatchMode,
+    contextMenuEntry,
+    createdTarget,
+    createdTabClosed: finalState.createdTabClosed,
+    activeTarget: finalState.activeTarget,
+    activeTargetTabId: finalState.activeTargetTabId,
+    activeTargetWindowId: finalState.activeTargetWindowId,
+    finalOverlap,
+    fallbackActivated,
+    activationSucceeded,
+    eventNames: relatedEvents.map(getEventName).filter(Boolean),
   };
 }
 
@@ -285,6 +436,93 @@ async function waitForPreloadState(session, source, webPort, timeoutMs = 16000) 
   throw new Error(
     `${session.name} preload state did not converge: ${JSON.stringify(lastState, null, 2)}`
   );
+}
+
+async function waitForContextMenuHiddenEntry(serviceWorker, sourceTabId, targetUrl, timeoutMs = 8000) {
+  const startedAt = Date.now();
+  let lastEntry = null;
+
+  while (Date.now() - startedAt < timeoutMs) {
+    lastEntry = await swEval(
+      serviceWorker,
+      async ({ sourceTabId, targetUrl }) => {
+        const preloadState = await loadPreloadState();
+        const runtimeEntry = findSourceTabRuntime(preloadState, sourceTabId);
+        const entry =
+          runtimeEntry?.sourceTabRuntime?.hiddenTabEntriesByUrl?.[targetUrl] ?? null;
+        return entry
+          ? {
+              found: true,
+              tabId: entry.tabId ?? null,
+              status: entry.status ?? null,
+              trigger: entry.interactionPreload?.trigger ?? null,
+              requestedUrl: entry.requestedUrl ?? null,
+            }
+          : { found: false };
+      },
+      { sourceTabId, targetUrl }
+    );
+
+    if (lastEntry?.found === true && lastEntry.trigger === "contextmenu") {
+      return lastEntry;
+    }
+
+    await sleep(200);
+  }
+
+  throw new Error(
+    `Timed out waiting for contextmenu hidden preload: ${JSON.stringify(lastEntry)}`
+  );
+}
+
+async function waitForContextMenuFallbackActivation(
+  serviceWorker,
+  { windowId, createdTabId, targetUrl },
+  timeoutMs = 8000
+) {
+  const startedAt = Date.now();
+  let lastState = null;
+
+  while (Date.now() - startedAt < timeoutMs) {
+    lastState = await swEval(
+      serviceWorker,
+      async ({ windowId, createdTabId, targetUrl }) => {
+        const tabs = await chrome.tabs.query({ windowId });
+        const createdTab = Number.isFinite(createdTabId)
+          ? await chrome.tabs.get(createdTabId).catch(() => null)
+          : null;
+        const activeTarget = tabs.find(
+          (tab) => tab.active === true && stripHashForSmoke(tab.url) === stripHashForSmoke(targetUrl)
+        );
+        return {
+          createdTabClosed: createdTab === null,
+          activeTarget: Boolean(activeTarget),
+          activeTargetTabId: activeTarget?.id ?? null,
+          activeTargetWindowId: activeTarget?.windowId ?? null,
+          activeUrl: activeTarget?.url ?? null,
+        };
+
+        function stripHashForSmoke(value) {
+          try {
+            const parsedUrl = new URL(value);
+            parsedUrl.hash = "";
+            return parsedUrl.href;
+          } catch {
+            return String(value || "");
+          }
+        }
+      },
+      { windowId, createdTabId, targetUrl }
+    );
+
+    if (lastState.createdTabClosed && lastState.activeTarget) {
+      return lastState;
+    }
+
+    await sleep(200);
+  }
+
+  return lastState || { createdTabClosed: false, activeTarget: false, activeTargetWindowId: null };
 }
 
 async function readPreloadState(serviceWorker, source) {
@@ -755,8 +993,12 @@ function renderSourcePage(hostHeader, pathname) {
     (_, index) => `http://${hiddenHost}:${port}/hidden/${browserName}/${index + 1}`
   );
   const links = [
-    ...nativeUrls.map((url, index) => `<a href="${url}">Native ${index + 1}</a>`),
-    ...hiddenUrls.map((url, index) => `<a href="${url}">Hidden ${index + 1}</a>`),
+    ...nativeUrls.map(
+      (url, index) => `<a id="native-link-${index + 1}" href="${url}">Native ${index + 1}</a>`
+    ),
+    ...hiddenUrls.map(
+      (url, index) => `<a id="hidden-link-${index + 1}" href="${url}">Hidden ${index + 1}</a>`
+    ),
   ].join("\n");
 
   return `<!doctype html>
@@ -799,6 +1041,157 @@ function escapeHtml(value) {
 
 function getEventName(event) {
   return String(event?.eventName || event?.event || event?.name || event?.type || "");
+}
+
+async function waitForLinkPoint(page, linkId, timeoutMs = 5000) {
+  const startedAt = Date.now();
+  let lastState = null;
+
+  while (Date.now() - startedAt < timeoutMs) {
+    lastState = await pageEval(page, (id) => {
+      const link = document.getElementById(id);
+
+      if (!link) {
+        return {
+          found: false,
+          readyState: document.readyState,
+          bodyText: document.body?.innerText?.slice(0, 300) || "",
+        };
+      }
+
+      const rect = link.getBoundingClientRect();
+      return {
+        found: true,
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+        href: link.href,
+      };
+    }, linkId);
+
+    if (lastState?.found === true) {
+      return lastState;
+    }
+
+    await sleep(100);
+  }
+
+  throw new Error(`Timed out waiting for ${linkId}: ${JSON.stringify(lastState)}`);
+}
+
+async function dispatchRightClick(page, point) {
+  await dispatchMouseMove(page, point);
+  await page.send("Input.dispatchMouseEvent", {
+    type: "mousePressed",
+    x: point.x,
+    y: point.y,
+    button: "right",
+    buttons: 2,
+    clickCount: 1,
+  });
+  await page.send("Input.dispatchMouseEvent", {
+    type: "mouseReleased",
+    x: point.x,
+    y: point.y,
+    button: "right",
+    buttons: 0,
+    clickCount: 1,
+  });
+}
+
+async function dispatchMouseMove(page, point) {
+  await page.send("Input.dispatchMouseEvent", {
+    type: "mouseMoved",
+    x: point.x,
+    y: point.y,
+    button: "none",
+    buttons: 0,
+  });
+}
+
+async function closeNativeContextMenu(page) {
+  await page.send("Input.dispatchKeyEvent", {
+    type: "keyDown",
+    key: "Escape",
+    code: "Escape",
+    windowsVirtualKeyCode: 27,
+    nativeVirtualKeyCode: 27,
+  });
+  await page.send("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key: "Escape",
+    code: "Escape",
+    windowsVirtualKeyCode: 27,
+    nativeVirtualKeyCode: 27,
+  });
+}
+
+async function dispatchSyntheticContextMenu(page, linkId) {
+  await pageEval(page, (id) => {
+    const link = document.getElementById(id);
+    if (!link) {
+      throw new Error(`link missing: ${id}`);
+    }
+    const rect = link.getBoundingClientRect();
+    link.dispatchEvent(
+      new MouseEvent("contextmenu", {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        button: 2,
+        buttons: 2,
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+      })
+    );
+  }, linkId);
+}
+
+async function pageEval(client, fn, arg = {}) {
+  return runtimeEval(client, `(${fn.toString()})(${JSON.stringify(arg)})`);
+}
+
+async function waitForTarget(debugPort, predicate, timeoutMs = 15000) {
+  const startedAt = Date.now();
+  let lastTargets = [];
+
+  while (Date.now() - startedAt < timeoutMs) {
+    let targets = [];
+    try {
+      targets = await fetchJson(`http://127.0.0.1:${debugPort}/json/list`);
+      lastTargets = targets;
+    } catch (_error) {
+      await sleep(250);
+      continue;
+    }
+
+    const target = targets.find(predicate);
+    if (target?.webSocketDebuggerUrl) {
+      return target;
+    }
+    await sleep(250);
+  }
+
+  throw new Error(
+    `Timed out waiting for CDP target. Last targets: ${JSON.stringify(
+      lastTargets.map((target) => ({
+        type: target.type,
+        url: target.url,
+        title: target.title,
+      })),
+      null,
+      2
+    )}`
+  );
+}
+
+function stripHash(value) {
+  try {
+    const parsedUrl = new URL(value);
+    parsedUrl.hash = "";
+    return parsedUrl.href;
+  } catch {
+    return String(value || "");
+  }
 }
 
 async function fetchJson(url) {

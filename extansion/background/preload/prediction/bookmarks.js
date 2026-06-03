@@ -5,17 +5,14 @@ const BOOKMARK_PRELOAD_CACHE_TTL_MS = 5_000;
 let cachedBookmarkEntries = null;
 let cachedBookmarkEntriesExpiresAt = 0;
 
-async function buildGoogleBookmarkPreloadCandidateEntries({
-  sourceNodeId,
+async function buildGoogleBookmarkPreloadTargets({
   sourceUrl,
   sourceWindowId,
   sourceTabId,
   graph,
   settings,
-  transitionWindowKey,
-  linkIndexOffset = 0,
 }) {
-  const context = await resolveGoogleBookmarkPreloadCandidateContext({
+  const context = await resolveGoogleBookmarkPreloadTargetContext({
     settings,
     sourceUrl,
     sourceTabId,
@@ -31,27 +28,28 @@ async function buildGoogleBookmarkPreloadCandidateEntries({
     graph,
     context.bucketKey
   );
-  recordGoogleBookmarkPreloadCandidateDiagnostic({
+  const selectedEntries = filterGoogleBookmarkPreloadEntriesByRankRule(
+    rankedEntries,
+    settings
+  );
+
+  recordGoogleBookmarkPreloadTargetDiagnostic({
     sourceUrl,
     bucketKey: context.bucketKey,
     bookmarkEntries: context.bookmarkEntries,
     rankedEntries,
+    selectedEntries,
   });
 
-  return rankedEntries.map((entry, index) =>
-    buildGoogleBookmarkPreloadCandidateEntry({
+  return selectedEntries.map((entry) =>
+    buildGoogleBookmarkPreloadTarget({
       entry,
-      index,
       bucketKey: context.bucketKey,
-      sourceNodeId,
-      sourceUrl,
-      transitionWindowKey,
-      linkIndexOffset,
     })
   );
 }
 
-async function resolveGoogleBookmarkPreloadCandidateContext({
+async function resolveGoogleBookmarkPreloadTargetContext({
   settings,
   sourceUrl,
   sourceTabId,
@@ -104,18 +102,35 @@ function rankGoogleBookmarkPreloadEntries(bookmarkEntries, graph, bucketKey) {
     }));
 }
 
-function recordGoogleBookmarkPreloadCandidateDiagnostic({
+function filterGoogleBookmarkPreloadEntriesByRankRule(rankedEntries, settings) {
+  const bookmarkRuleCardState = getGoogleBookmarkPreloadRuleCardState(settings);
+
+  if (!settingsApi.isRuleCardEnabled(bookmarkRuleCardState)) {
+    return [];
+  }
+
+  return (Array.isArray(rankedEntries) ? rankedEntries : []).filter((entry) =>
+    settingsApi.evaluateRuleCardMetric(
+      bookmarkRuleCardState,
+      clampNonNegativeInt(entry?.rank, 0)
+    )
+  );
+}
+
+function recordGoogleBookmarkPreloadTargetDiagnostic({
   sourceUrl,
   bucketKey,
   bookmarkEntries,
   rankedEntries,
+  selectedEntries,
 }) {
-  recordGoogleBookmarkPreloadDiagnostic("prediction.google-bookmarks.candidates", {
+  recordGoogleBookmarkPreloadDiagnostic("prediction.google-bookmarks.targets", {
     sourceUrl,
     bucketKey,
     bookmarkCount: bookmarkEntries.length,
     rankedCount: rankedEntries.length,
-    topBookmarks: rankedEntries.slice(0, 8).map((entry) => ({
+    selectedCount: selectedEntries.length,
+    topBookmarks: selectedEntries.slice(0, 8).map((entry) => ({
       rank: entry.rank,
       url: entry.url,
       count: entry.count,
@@ -124,40 +139,28 @@ function recordGoogleBookmarkPreloadCandidateDiagnostic({
   });
 }
 
-function buildGoogleBookmarkPreloadCandidateEntry({
+function buildGoogleBookmarkPreloadTarget({
   entry,
-  index,
   bucketKey,
-  sourceNodeId,
-  sourceUrl,
-  transitionWindowKey,
-  linkIndexOffset,
 }) {
   const targetNodeId = buildNodeSeed(entry.url).nodeId;
 
   return {
     url: entry.url,
     nodeId: targetNodeId,
+    score: 0,
+    scoreBreakdown: null,
+    transitionMetrics: null,
     targetHint: "_self",
-    isSameOrigin: isSameOriginUrl(sourceUrl, entry.url),
-    isSameSite: sourceNodeId === targetNodeId,
-    targetPageUrl: entry.targetPageUrl,
-    transitionWindowKey,
-    visibilityScore: Math.max(1, 1000 - entry.rank),
-    linkIndex: linkIndexOffset + index,
-    anchorText: entry.title,
-    nearbyText: "Chrome bookmark",
-    titleAttr: entry.title,
-    ariaLabel: "",
-    imageAlt: "",
-    hrefPathTokens: buildHrefPathTokens(entry.url),
-    extraScoreMultipliers: [buildTransitionFrequencyScoreMultiplier(entry.count)],
+    aiKeywordMatch: null,
     bookmarkPreload: {
       bucketKey,
       count: entry.count,
       rank: entry.rank,
       title: entry.title,
     },
+    siteSelection: null,
+    strategy: "hidden-tab",
   };
 }
 

@@ -19,6 +19,10 @@
     return requireBackgroundState().loadTrackingState();
   };
 
+  globalThis.loadTrackingSnapshotForPopup = function loadTrackingSnapshotForPopup() {
+    return requireBackgroundState().loadTrackingSnapshotForPopup();
+  };
+
   globalThis.saveTrackingState = function saveTrackingState(state) {
     return requireBackgroundState().saveTrackingState(state);
   };

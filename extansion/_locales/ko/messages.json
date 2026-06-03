@@ -1,0 +1,653 @@
+{
+  "appName": {
+    "message": "스마트 프리로드"
+  },
+  "appDescription": {
+    "message": "다음에 열 가능성이 높은 페이지를 더 스마트하고 더 적극적으로 프리로드합니다."
+  },
+  "commonReady": {
+    "message": "???"
+  },
+  "commonLoading": {
+    "message": "?? ?"
+  },
+  "commonFailed": {
+    "message": "??"
+  },
+  "commonSaving": {
+    "message": "?? ?"
+  },
+  "commonSaved": {
+    "message": "???"
+  },
+  "commonUnsaved": {
+    "message": "???? ??"
+  },
+  "commonDownloading": {
+    "message": "???? ?"
+  },
+  "commonDownloaded": {
+    "message": "?????"
+  },
+  "commonRemoving": {
+    "message": "?? ?"
+  },
+  "commonRemoved": {
+    "message": "???"
+  },
+  "commonOn": {
+    "message": "??"
+  },
+  "commonOff": {
+    "message": "??"
+  },
+  "commonUnknown": {
+    "message": "? ? ??"
+  },
+  "commonThisPlatform": {
+    "message": "? ???"
+  },
+  "commonModel": {
+    "message": "??"
+  },
+  "commonDone": {
+    "message": "??."
+  },
+  "commonWorking": {
+    "message": "?? ?..."
+  },
+  "commonDismiss": {
+    "message": "??"
+  },
+  "commonHelp": {
+    "message": "???"
+  },
+  "popupCurrentPage": {
+    "message": "?? ???"
+  },
+  "popupNodes": {
+    "message": "??"
+  },
+  "popupEdges": {
+    "message": "??"
+  },
+  "popupUpdated": {
+    "message": "????"
+  },
+  "popupTop": {
+    "message": "??"
+  },
+  "popupNoPreloadQualifiedLinks": {
+    "message": "? ????? ?? ???? ??? ??? ????."
+  },
+  "popupRefresh": {
+    "message": "?? ??"
+  },
+  "popupStop": {
+    "message": "??"
+  },
+  "popupStart": {
+    "message": "??"
+  },
+  "popupSettings": {
+    "message": "??"
+  },
+  "popupWaitingForData": {
+    "message": "??? ?? ?."
+  },
+  "popupOpenSettingsFailed": {
+    "message": "?? ???? ? ? ????."
+  },
+  "popupLoadingVisitGraph": {
+    "message": "?? ??? ?? ?..."
+  },
+  "popupPausedMessage": {
+    "message": "?? ????? ???: ??? ????? ?????????."
+  },
+  "popupVisitGraphLoaded": {
+    "message": "?? ???? ???????."
+  },
+  "popupLoadVisitGraphFailed": {
+    "message": "?? ???? ???? ?????."
+  },
+  "performanceInsufficientReducePreloadCaps": {
+    "message": "??? ?????. ???? ??? ????."
+  },
+  "popupCurrentPageNotTracked": {
+    "message": "?? ???? ???? ????"
+  },
+  "popupCurrentPageNotTrackable": {
+    "message": "?? ???? ??? ? ????."
+  },
+  "popupStoppingService": {
+    "message": "??? ???? ?? ?..."
+  },
+  "popupStartingService": {
+    "message": "??? ???? ?? ?..."
+  },
+  "popupUpdateStateFailed": {
+    "message": "?? ??? ?????? ?????."
+  },
+  "popupRestoreServiceTitle": {
+    "message": "??? ???? ??"
+  },
+  "popupStopServiceTitle": {
+    "message": "??? ????? ???? ????? ???? ?? ????"
+  },
+  "popupWeightLabel": {
+    "message": "???: {0}"
+  },
+  "popupSiteMeta": {
+    "message": "???: {0} (#{1}, {2}/{3})"
+  },
+  "popupFreqMeta": {
+    "message": "??: site {0}, out {1}, in {2}"
+  },
+  "popupBookmarkMeta": {
+    "message": "???: {0}, ?? {1}"
+  },
+  "settingsPageTitle": {
+    "message": "스마트 프리로드 설정"
+  },
+  "settingsTitle": {
+    "message": "??"
+  },
+  "settingsNavAriaLabel": {
+    "message": "?? ??"
+  },
+  "settingsOverview": {
+    "message": "개요"
+  },
+  "settingsTracking": {
+    "message": "??"
+  },
+  "settingsPreload": {
+    "message": "????"
+  },
+  "settingsOrdering": {
+    "message": "정렬"
+  },
+  "settingsExperiments": {
+    "message": "??"
+  },
+  "settingsOverviewSub": {
+    "message": "런타임 프로필 및 자동 조정"
+  },
+  "settingsOrderingSub": {
+    "message": "간단한 순위 필터"
+  },
+  "settingsStorageFooter": {
+    "message": "?? ?? ???? ?????."
+  },
+  "settingsLoadingSettings": {
+    "message": "?? ?? ?..."
+  },
+  "settingsHeroKicker": {
+    "message": "스마트 프리로드 제어"
+  },
+  "settingsHeroTitle": {
+    "message": "더 스마트하고 더 적극적인 프리로드"
+  },
+  "settingsHeroCopy": {
+    "message": "스마트 프리로드는 페이지 신호, 최근 주목도, 장치 부담을 바탕으로 여러 활성 탭에 프리로드 슬롯을 배분하면서도 상한은 직접 설정할 수 있게 합니다."
+  },
+  "settingsDeviceProfile": {
+    "message": "장치 프로필"
+  },
+  "settingsDetectingHardware": {
+    "message": "하드웨어 감지 중..."
+  },
+  "settingsEffectiveGroupCaps": {
+    "message": "적용 중인 그룹 상한"
+  },
+  "settingsWaitingForSettings": {
+    "message": "설정 대기 중..."
+  },
+  "settingsWatchdog": {
+    "message": "워치독"
+  },
+  "settingsNativeApp": {
+    "message": "로컬 앱"
+  },
+  "settingsCheckingConnection": {
+    "message": "연결 확인 중..."
+  },
+  "settingsOverviewMeta": {
+    "message": "확장 프로그램이 현재 장치에 얼마나 적극적으로 적응할지에 영향을 주는 상위 설정입니다."
+  },
+  "settingsAutomaticDeviceTuning": {
+    "message": "자동 장치 조정"
+  },
+  "settingsAutomaticDeviceTuningDesc": {
+    "message": "향후 하드웨어 인식 스케줄링을 위해 예약된 스위치입니다. 현재는 저장만 되며 런타임 동작은 아직 바꾸지 않습니다."
+  },
+  "settingsPreloadMode": {
+    "message": "프리로드 모드"
+  },
+  "settingsPreloadModeDesc": {
+    "message": "향후 전략 단계용으로 예약된 선택 항목입니다. 현재는 저장만 되며 런타임 동작은 아직 바꾸지 않습니다."
+  },
+  "settingsModeConservative": {
+    "message": "보수적"
+  },
+  "settingsModeBalanced": {
+    "message": "균형"
+  },
+  "settingsModeAggressive": {
+    "message": "공격적"
+  },
+  "settingsTrackingMeta": {
+    "message": "?? ??? ????? ?? ???? ???? ??? ?????."
+  },
+  "settingsSeparateGoogleSearchPages": {
+    "message": "Google ?? ??? ??"
+  },
+  "settingsSeparateGoogleSearchPagesDesc": {
+    "message": "`google/search` ?? ???? ?? ??? ???? ?? ????? ???? ?? ??? ?????."
+  },
+  "settingsSkipGoogleInternalPages": {
+    "message": "Google ?? ??? ????"
+  },
+  "settingsSkipGoogleInternalPagesDesc": {
+    "message": "Chrome Web Store, Google 계정 및 비밀번호 관리자, Chrome 동기화, chromestatus 및 유사한 Google 관리 페이지에서는 추적하거나 프리로드하지 않습니다. Gemini와 일반 Google 제품은 계속 추적됩니다."
+  },
+  "settingsPreloadMeta": {
+    "message": "? ??, ??? ??, ???? ? ??? ?????."
+  },
+  "settingsEnablePreloading": {
+    "message": "???? ??"
+  },
+  "settingsEnablePreloadingDesc": {
+    "message": "?? ??, ????? ?, ? ??? ??? ??????."
+  },
+  "settingsIgnoreWaterfallDynamicLinks": {
+    "message": "워터폴 동적 링크 무시"
+  },
+  "settingsIgnoreWaterfallDynamicLinksDesc": {
+    "message": "무한 스크롤 또는 워터폴 페이지에서는 첫 번째 안정적인 링크 집합만 예측에 사용하고, 이후 스트리밍 로드로 추가된 링크는 무시합니다."
+  },
+  "settingsExcludeIncognitoWindows": {
+    "message": "??? ?? ?????? ??"
+  },
+  "settingsExcludeIncognitoWindowsDesc": {
+    "message": "???? ??? ?? ??, ?? ??, ?? ??, ???? ?????? ?????. ?? ?? ?? ???? ??? ?? ?? ??? ????? ??? ??? ??? ???? ?? ?????."
+  },
+  "settingsTransitionFrequencyWindow": {
+    "message": "전환 빈도 시간 창"
+  },
+  "settingsTransitionFrequencyWindowDesc": {
+    "message": "활성화하면 전환 빈도 가중치가 전체 누적값 대신 선택한 시간 창을 사용합니다."
+  },
+  "settingsGlobalPreloadScheduler": {
+    "message": "?? ???? ????"
+  },
+  "settingsGlobalPreloadSchedulerDesc": {
+    "message": "후보가 있는 모든 원본 탭에 프리로드 슬롯을 배분하기 위한 계정 단위 제한입니다."
+  },
+  "settingsSchedulerHiddenTabs": {
+    "message": "??? ?? ?"
+  },
+  "settingsSchedulerNativePreload": {
+    "message": "네이티브 프리로드"
+  },
+  "settingsSchedulerAttentionPool": {
+    "message": "?? ?? ?"
+  },
+  "settingsSchedulerMin": {
+    "message": "??"
+  },
+  "settingsSchedulerMax": {
+    "message": "??"
+  },
+  "settingsSchedulerHalfLifeTabs": {
+    "message": "상한 증가 반감 탭 수"
+  },
+  "settingsSchedulerHalfLifeTabsDesc": {
+    "message": "탭 수가 이 값만큼 늘어날 때마다 동적 총 상한이 최대값에 절반 더 가까워집니다. 값이 작을수록 탭이 많아질 때 상한이 더 빠르게 증가합니다."
+  },
+  "settingsSchedulerPoolHours": {
+    "message": "풀 시간"
+  },
+  "settingsSchedulerSegmentSeconds": {
+    "message": "세그먼트 초"
+  },
+  "settingsSchedulerMaxGapSeconds": {
+    "message": "최대 간격 초"
+  },
+  "settingsSchedulerInputWindowSeconds": {
+    "message": "입력 창 초"
+  },
+  "settingsSchedulerMediaWeight": {
+    "message": "비디오 가중치"
+  },
+  "settingsSchedulerAudioWeight": {
+    "message": "오디오 가중치"
+  },
+  "settingsAiPredictionAssistant": {
+    "message": "AI ?? ???"
+  },
+  "settingsAiPredictionAssistantDesc": {
+    "message": "키워드 점수 계산에 사용할 외부 AI 제공자와 모델을 선택합니다. 확장 프로그램은 API 키를 직접 사용하며 로컬 모델을 다운로드하거나 관리하지 않습니다."
+  },
+  "settingsAiProviderApiKey": {
+    "message": "??? API ?"
+  },
+  "settingsAiProviderApiKeyDesc": {
+    "message": "로컬 확장 프로그램 저장소에 저장되며 AI 예측이 활성화된 경우 서비스 워커에서만 사용됩니다. LM Studio는 이 필드를 무시합니다."
+  },
+  "settingsAiProviderEndpoint": {
+    "message": "??? ?????"
+  },
+  "settingsAiProviderEndpointDesc": {
+    "message": "LM Studio 같은 OpenAI 호환 로컬 서비스를 사용하는 경우가 아니면 기본값을 유지하세요."
+  },
+  "settingsWindowWatchdog": {
+    "message": "? ???"
+  },
+  "settingsWindowWatchdogDesc": {
+    "message": "컨테이너가 사라졌을 때 프리로드 창을 다시 만들고 누락된 탭을 복구합니다."
+  },
+  "settingsWatchdogInterval": {
+    "message": "??? ??"
+  },
+  "settingsWatchdogIntervalDesc": {
+    "message": "확장 프로그램이 프리로드 창이 아직 존재하는지 확인하는 주기입니다."
+  },
+  "settingsWatchdogIntervalOption1": {
+    "message": "1초"
+  },
+  "settingsWatchdogIntervalOption2": {
+    "message": "2초"
+  },
+  "settingsWatchdogIntervalOption3": {
+    "message": "3초"
+  },
+  "settingsWatchdogIntervalOption5": {
+    "message": "5초"
+  },
+  "settingsWatchdogIntervalOption10": {
+    "message": "10초"
+  },
+  "settingsFullscreenPressurePolicy": {
+    "message": "?? ??/?? ????? ? ??"
+  },
+  "settingsFullscreenPressurePolicyDesc": {
+    "message": "다른 앱이 전체 화면이거나 게임 프로세스가 실행 중일 때 숨겨진 실제 프리로드 탭을 처리하는 방식을 선택합니다."
+  },
+  "settingsFullscreenPressurePolicyClose": {
+    "message": "??? ??"
+  },
+  "settingsFullscreenPressurePolicySleep": {
+    "message": "? ??"
+  },
+  "settingsFullscreenPressurePolicyIgnore": {
+    "message": "?? ??"
+  },
+  "settingsSecond": {
+    "message": "{0}초"
+  },
+  "settingsSeconds": {
+    "message": "{0}초"
+  },
+  "settingsForceMinimize": {
+    "message": "???? ? ?? ???"
+  },
+  "settingsForceMinimizeDesc": {
+    "message": "프리로드 창이 복원되거나 크기가 변경되면 즉시 다시 최소화합니다."
+  },
+  "settingsOrderingMeta": {
+    "message": "고정 순위 필터는 첫 버전의 동작을 예측 가능하게 유지합니다. 저장된 규칙 형식을 바꾸지 않고 나중에 고급 프로그래밍 필터 체인을 추가할 수 있습니다."
+  },
+  "settingsExperimentsMeta": {
+    "message": "위험한 실시간 스위치는 여기에 둡니다. 자리표시자 스위치도 여기에 남지만 실제 런타임 동작에 연결되기 전까지는 저장만 됩니다."
+  },
+  "settingsCrossSiteCurrentTabSwap": {
+    "message": "현재 탭의 크로스 사이트 강제 교체"
+  },
+  "settingsCrossSiteCurrentTabSwapDesc": {
+    "message": "현재 탭에 머무르는 크로스 사이트 탐색에 숨겨진 실제 페이지 교체 경로를 사용합니다. 동작하면 더 빠르지만 기록과 뒤로 가기 동작을 손상시킬 수 있습니다. 이러한 부작용을 감수할 때만 켜세요."
+  },
+  "settingsIdleWakeStrongDevices": {
+    "message": "강한 장치에서 유휴 깨우기"
+  },
+  "settingsIdleWakeStrongDevicesDesc": {
+    "message": "향후 사용을 위해 저장만 됩니다. 현재는 추가 후보 탭을 깨우지 않습니다."
+  },
+  "settingsPointerProximityPrediction": {
+    "message": "포인터 근접 예측"
+  },
+  "settingsPointerProximityPredictionDesc": {
+    "message": "향후 사용을 위해 저장만 됩니다. 현재는 포인터 기반 예측을 추가하지 않습니다."
+  },
+  "settingsAuthStateWarmup": {
+    "message": "인증 상태 워밍업"
+  },
+  "settingsAuthStateWarmupDesc": {
+    "message": "향후 사용을 위해 저장만 됩니다. 현재는 인증이나 워밍업 동작을 바꾸지 않습니다."
+  },
+  "settingsNoUnsavedChanges": {
+    "message": "???? ?? ?? ??? ????."
+  },
+  "settingsResetDefaults": {
+    "message": "??? ??"
+  },
+  "settingsSaveSettings": {
+    "message": "?? ??"
+  },
+  "settingsAiModelTask": {
+    "message": "AI 모델 작업"
+  },
+  "settingsReadingLocalSettings": {
+    "message": "?? ?? ??? ?? ?."
+  },
+  "settingsCouldNotLoad": {
+    "message": "????? ??? ??? ? ????."
+  },
+  "settingsCouldNotLoadAiStatus": {
+    "message": "AI 모델 상태를 불러올 수 없습니다."
+  },
+  "settingsDefaultsRestored": {
+    "message": "양식에 기본값을 복원했습니다. 적용하려면 저장하세요."
+  },
+  "settingsUnsavedReady": {
+    "message": "???? ?? ?? ??? ??? ??? ?????."
+  },
+  "settingsWritingLocalSettings": {
+    "message": "?? ?? ???? ??? ?? ?."
+  },
+  "settingsWrittenSuccessfully": {
+    "message": "??? ???????."
+  },
+  "settingsCouldNotSave": {
+    "message": "??? ??? ? ????."
+  },
+  "settingsPreparingRuntime": {
+    "message": "필요한 경우 포터블 런타임을 준비합니다."
+  },
+  "settingsRemovingSelectedModel": {
+    "message": "선택한 모델을 제거하는 중입니다."
+  },
+  "settingsInstallingModel": {
+    "message": "필요한 경우 런타임을 설치한 뒤 선택한 모델을 다운로드합니다."
+  },
+  "settingsRemovingModelAndRuntime": {
+    "message": "선택한 모델을 제거하고 사용하지 않는 포터블 런타임을 정리합니다."
+  },
+  "settingsAiModelActionFailed": {
+    "message": "AI 모델 작업에 실패했습니다."
+  },
+  "settingsModelStateUpdatedDirty": {
+    "message": "모델 상태가 업데이트되었습니다. 다른 저장되지 않은 변경 사항이 아직 남아 있습니다."
+  },
+  "settingsPortableModelUpdated": {
+    "message": "포터블 런타임과 모델 상태가 업데이트되었습니다."
+  },
+  "settingsModelDownloaded": {
+    "message": "모델을 다운로드했습니다."
+  },
+  "settingsModelRemoved": {
+    "message": "모델을 제거했습니다."
+  },
+  "settingsCouldNotUpdateModel": {
+    "message": "선택한 모델을 업데이트할 수 없습니다."
+  },
+  "settingsHardwareMeta": {
+    "message": "{0}코어 | 메모리 힌트 {1}GB"
+  },
+  "settingsEffectivePreloadMeta": {
+    "message": "네이티브 / 탭 슬롯 상한. 규칙은 {0}을 사용합니다."
+  },
+  "settingsWatchdogChecksEvery": {
+    "message": "{0}초마다 확인합니다."
+  },
+  "settingsWindowRepairDisabled": {
+    "message": "창 복구가 비활성화되어 있습니다."
+  },
+  "settingsSystemHidingUnsupported": {
+    "message": "{0}에서는 시스템 수준 숨김이 지원되지 않습니다."
+  },
+  "settingsSystemHidingActive": {
+    "message": "시스템 수준 창 숨김이 활성화되어 있습니다."
+  },
+  "settingsNativeAppOffline": {
+    "message": "로컬 앱이 감지되지 않았습니다. 최소화 대체 방식을 사용합니다."
+  },
+  "settingsConnected": {
+    "message": "???"
+  },
+  "settingsOffline": {
+    "message": "????"
+  },
+  "settingsInstallingModelLabel": {
+    "message": "{0} 설치 중"
+  },
+  "settingsRemovingModelLabel": {
+    "message": "{0} 제거 중"
+  },
+  "settingsModelReady": {
+    "message": "모델 준비됨"
+  },
+  "settingsUninstallFailed": {
+    "message": "제거 실패"
+  },
+  "settingsInstallFailed": {
+    "message": "설치 실패"
+  },
+  "settingsTaskDidNotFinish": {
+    "message": "작업이 완료되지 않았습니다."
+  },
+  "settingsAiProviderMissingWarning": {
+    "message": "{0}에 모델, 엔드포인트, API 키가 모두 있어야 AI 점수 계산이 활성화됩니다."
+  },
+  "settingsAiKeyOptionalPlaceholder": {
+    "message": "로컬 호환 엔드포인트에서는 선택 사항"
+  },
+  "settingsAiLmStudioKeyIgnoredPlaceholder": {
+    "message": "LM Studio에서는 무시됨"
+  },
+  "settingsAiLmStudioLoadingModel": {
+    "message": "LM Studio 모델 로드 중: {0}"
+  },
+  "settingsAiKeyRequiredPlaceholder": {
+    "message": "??"
+  },
+  "settingsAiEnterKeyToLoadModels": {
+    "message": "??? ????? API ?? ?????"
+  },
+  "settingsAiLoadingModels": {
+    "message": "?? ?? ?? ?..."
+  },
+  "settingsAiSelectProviderFirst": {
+    "message": "?? ???? ?????"
+  },
+  "settingsAiNoSupportedModels": {
+    "message": "???? ?? ??? ?? ? ????"
+  },
+  "commonProvider": {
+    "message": "???"
+  },
+  "transitionWindowTotal": {
+    "message": "??"
+  },
+  "transitionWindow365d": {
+    "message": "?? 1?"
+  },
+  "transitionWindow30d": {
+    "message": "???"
+  },
+  "transitionWindow7d": {
+    "message": "?? 7?"
+  },
+  "transitionWindow1d": {
+    "message": "?? ??"
+  },
+  "ruleOperatorDisabled": {
+    "message": "????"
+  },
+  "ruleFieldValueA": {
+    "message": "? A"
+  },
+  "ruleFieldCompareA": {
+    "message": "?? A"
+  },
+  "ruleFieldCompareB": {
+    "message": "?? B"
+  },
+  "ruleFieldValueC": {
+    "message": "? C"
+  },
+  "ruleFieldStatus": {
+    "message": "??"
+  },
+  "ruleTokenFixed": {
+    "message": "?? ?? {0}"
+  },
+  "ruleNativePerPageTitle": {
+    "message": "네이티브 프리로드 그룹의 페이지 슬롯 상한 a"
+  },
+  "ruleNativePerPageDesc": {
+    "message": "네이티브 `prefetch` / `prerender` 후보에 적용됩니다. 이 그룹이 최종 실행을 위해 유지할 수 있는 페이지 후보 수를 결정합니다."
+  },
+  "ruleTabPerPageTitle": {
+    "message": "실제 탭 프리로드 그룹의 페이지 슬롯 상한 a"
+  },
+  "ruleTabPerPageDesc": {
+    "message": "실제 백그라운드 탭이 필요한 후보에 적용됩니다. 이 그룹이 최종 실행을 위해 유지할 수 있는 페이지 후보 수를 결정합니다."
+  },
+  "ruleNativeSiteTitle": {
+    "message": "네이티브 프리로드 그룹의 고가중치 사이트 수 x"
+  },
+  "ruleNativeSiteDesc": {
+    "message": "네이티브 `prefetch` / `prerender` 후보에 적용됩니다. 사이트 슬롯 할당 단계에 들어갈 고가중치 사이트 수를 결정합니다."
+  },
+  "ruleTabSiteTitle": {
+    "message": "실제 탭 프리로드 그룹의 고가중치 사이트 수 x"
+  },
+  "ruleTabSiteDesc": {
+    "message": "실제 백그라운드 탭이 필요한 후보에 적용됩니다. 크로스 사이트 새 탭 프리로드와 hidden-tab으로 라우팅되는 현재 탭 강제 교체의 크로스 사이트 후보를 포함합니다."
+  },
+  "ruleGoogleBookmarkRankTitle": {
+    "message": "Google 검색 북마크 프리로드 순위 x"
+  },
+  "ruleGoogleBookmarkRankDesc": {
+    "message": "Google 검색 페이지에서만 적용됩니다. 활성화하면 Chrome 북마크가 이 순위 규칙에 따라 독립적인 상시 프리로드 대상으로 유지됩니다."
+  },
+  "deviceProfileBalanced": {
+    "message": "??"
+  },
+  "deviceProfileHighEnd": {
+    "message": "??"
+  },
+  "deviceProfileStrong": {
+    "message": "???"
+  },
+  "deviceProfileConstrained": {
+    "message": "???"
+  },
+  "settingsDiagnosticsLogging": {
+    "message": "로그 모드"
+  },
+  "settingsDiagnosticsLoggingDesc": {
+    "message": "활성화하면 런타임 진단이 로컬 앱의 포터블 로그 폴더에 JSONL 파일로 기록됩니다."
+  }
+}

@@ -109,6 +109,7 @@
         graph,
         settings,
         slotLimits: buildSchedulerDiscoverySlotLimits(settings),
+        ignoreConfiguredSourceSlotCaps: true,
       });
     } catch (error) {
       console.warn("Failed to build wide scheduler snapshot selection.", error);
@@ -206,6 +207,11 @@
     }
 
     const schedulerSettings = getEffectiveSchedulerSettings(settings);
+    const pressureState =
+      typeof getPreloadResourcePressureState === "function"
+        ? await getPreloadResourcePressureState(settings).catch(() => null)
+        : null;
+    const shouldDeferHiddenTabs = pressureState?.shouldDeferHiddenTabs === true;
     const dwellShares =
       globalThis.ZeroLatencyPreloadSchedulerAttention.computePreloadAttentionDwellShares(
         preloadState?.scheduler?.attentionPool,
@@ -216,18 +222,30 @@
       );
     const nativeAllocations = allocateSchedulerGroupSlots({
       snapshots: normalizedSnapshots,
-      settings: schedulerSettings,
+      schedulerSettings,
+      runtimeSettings: settings,
       group: "native",
       dwellShares,
       preloadState,
     });
-    const tabAllocations = allocateSchedulerGroupSlots({
-      snapshots: normalizedSnapshots,
-      settings: schedulerSettings,
-      group: "tab",
-      dwellShares,
-      preloadState,
-    });
+    const tabAllocations = shouldDeferHiddenTabs
+      ? new Map()
+      : allocateSchedulerGroupSlots({
+          snapshots: normalizedSnapshots,
+          schedulerSettings,
+          runtimeSettings: settings,
+          group: "tab",
+          dwellShares,
+          preloadState,
+        });
+
+    if (shouldDeferHiddenTabs) {
+      recordSchedulerEvent("scheduler.resource-pressure.hidden-tab-deferred", {
+        policy: pressureState.policy,
+        reason: pressureState.reason,
+        snapshotCount: normalizedSnapshots.length,
+      });
+    }
 
     return Promise.all(normalizedSnapshots.map(async (snapshot) => {
       const sourceTabId = String(snapshot.sourceTabId);
@@ -236,14 +254,19 @@
       const fallbackSelection = buildLimitedSelectionFromSnapshot(snapshot, {
         nativeSlots,
         tabSlots,
+        settings,
       });
-      const selection = await buildScheduledSelectionForSnapshot(snapshot, {
+      let selection = await buildScheduledSelectionForSnapshot(snapshot, {
         nativeSlots,
         tabSlots,
         fallbackSelection,
         graph,
         settings,
       });
+
+      if (shouldDeferHiddenTabs) {
+        selection = stripHiddenTabTargetsForResourcePressure(selection);
+      }
       recordSchedulerEvent("scheduler.selection.result", {
         mode: graph ? "candidate-rebuild" : "stored-snapshot",
         sourceTabId: snapshot.sourceTabId,
@@ -268,12 +291,13 @@
 
   function allocateSchedulerGroupSlots({
     snapshots,
-    settings,
+    schedulerSettings,
+    runtimeSettings,
     group,
     dwellShares,
     preloadState,
   }) {
-    const totalCap = resolveSchedulerGroupTotalCap(settings, group, snapshots.length);
+    const totalCap = resolveSchedulerGroupTotalCap(schedulerSettings, group, snapshots.length);
     const allocationInputs = snapshots
       .map((snapshot, index) => {
         const scoreSignal = getSnapshotScoreSignalForGroup(snapshot, group);
@@ -283,6 +307,11 @@
           scoreSignal.candidateCount > 0 && dwellShare > 0
             ? linkValueMultiplier * dwellShare
             : 0;
+        const sourceSlotCap = resolveSchedulerGroupSourceSlotCap(
+          runtimeSettings,
+          group,
+          scoreSignal.candidateCount
+        );
 
         return {
           tabId: snapshot.sourceTabId,
@@ -292,7 +321,8 @@
           scoreSum: scoreSignal.scoreSum,
           linkValueMultiplier,
           dwellShare,
-          cap: scoreSignal.candidateCount,
+          candidateCount: scoreSignal.candidateCount,
+          cap: sourceSlotCap,
           active: isActiveAttentionCursorSnapshot(snapshot, preloadState),
           lastActiveAt: getSnapshotLastActiveAt(snapshot, preloadState),
           order: index,
@@ -313,7 +343,8 @@
         tabId: input.tabId,
         sourceWindowId: input.sourceWindowId,
         sourcePageUrl: input.sourcePageUrl,
-        candidateCount: input.cap,
+        candidateCount: input.candidateCount,
+        sourceSlotCap: input.cap,
         scoreSum: input.scoreSum,
         linkValueMultiplier: input.linkValueMultiplier,
         dwellShare: input.dwellShare,
@@ -356,15 +387,46 @@
     });
   }
 
+  function resolveSchedulerGroupSourceSlotCap(settings, group, candidateCount) {
+    const normalizedCandidateCount = Math.max(0, Math.trunc(Number(candidateCount) || 0));
+
+    if (normalizedCandidateCount <= 0) {
+      return 0;
+    }
+
+    const configuredLimit =
+      group === "tab"
+        ? Number(settings?.preloading?.effectiveTabMaxPreloadsPerSource)
+        : Number(settings?.preloading?.effectiveNativeMaxPreloadsPerSource);
+
+    if (Number.isFinite(configuredLimit)) {
+      return Math.min(normalizedCandidateCount, Math.max(1, Math.trunc(configuredLimit)));
+    }
+
+    const fallbackLimit =
+      group === "tab"
+        ? settingsApi.DEFAULT_SETTINGS.preloading.maxTabsPerSource
+        : settingsApi.DEFAULT_SETTINGS.preloading.nativeMaxPreloadsPerSource ??
+          settingsApi.DEFAULT_SETTINGS.preloading.maxTabsPerSource;
+
+    return Math.min(normalizedCandidateCount, Math.max(1, Math.trunc(fallbackLimit)));
+  }
+
   function buildLimitedSelectionFromSnapshot(snapshot, limits) {
     const selectedTargets = [];
-    const nativeTargets = getSnapshotTargetsForGroup(snapshot, "native").slice(
-      0,
-      limits.nativeSlots
+    const nativeTargets = getSnapshotTargetsForGroup(snapshot, "native");
+    const tabTargets = getSnapshotTargetsForGroup(snapshot, "tab");
+    const nativeQuotaTargets = nativeTargets
+      .filter((target) => !isIndependentBookmarkPreloadTarget(target))
+      .slice(0, limits.nativeSlots);
+    const tabQuotaTargets = tabTargets
+      .filter((target) => !isIndependentBookmarkPreloadTarget(target))
+      .slice(0, limits.tabSlots);
+    const independentTargets = [...nativeTargets, ...tabTargets].filter(
+      (target) => shouldKeepIndependentBookmarkPreloadTarget(target, snapshot, limits?.settings)
     );
-    const tabTargets = getSnapshotTargetsForGroup(snapshot, "tab").slice(0, limits.tabSlots);
 
-    selectedTargets.push(...nativeTargets, ...tabTargets);
+    selectedTargets.push(...nativeQuotaTargets, ...tabQuotaTargets, ...independentTargets);
     selectedTargets.sort(compareStoredSelectionTargetPriority);
 
     return buildSelectionFromTargets(selectedTargets);
@@ -374,10 +436,6 @@
     const nativeSlots = Math.max(0, Math.trunc(Number(context?.nativeSlots) || 0));
     const tabSlots = Math.max(0, Math.trunc(Number(context?.tabSlots) || 0));
 
-    if (nativeSlots <= 0 && tabSlots <= 0) {
-      return buildSelectionFromTargets([]);
-    }
-
     if (
       !context?.graph ||
       typeof selectPreloadTargets !== "function" ||
@@ -386,6 +444,7 @@
       return context?.fallbackSelection ?? buildLimitedSelectionFromSnapshot(snapshot, {
         nativeSlots,
         tabSlots,
+        settings: context?.settings,
       });
     }
 
@@ -411,6 +470,7 @@
       return context?.fallbackSelection ?? buildLimitedSelectionFromSnapshot(snapshot, {
         nativeSlots,
         tabSlots,
+        settings: context?.settings,
       });
     }
   }
@@ -566,6 +626,15 @@
     };
   }
 
+  function stripHiddenTabTargetsForResourcePressure(selection) {
+    const selectedTargets = (Array.isArray(selection?.selectedTargets)
+      ? selection.selectedTargets
+      : []
+    ).filter((target) => target?.strategy !== "hidden-tab");
+
+    return buildSelectionFromTargets(selectedTargets);
+  }
+
   function getSnapshotTargetsForGroup(snapshot, group) {
     const targets = Array.isArray(snapshot?.selectedTargets) ? snapshot.selectedTargets : [];
 
@@ -584,7 +653,9 @@
       return signal;
     }
 
-    const targets = getSnapshotTargetsForGroup(snapshot, group);
+    const targets = getSnapshotTargetsForGroup(snapshot, group).filter(
+      (target) => !isIndependentBookmarkPreloadTarget(target)
+    );
 
     return {
       scoreSum: sumSelectionTargetScores(targets),
@@ -604,6 +675,10 @@
 
   function sumSelectionTargetScores(targets) {
     return (Array.isArray(targets) ? targets : []).reduce((sum, target) => {
+      if (isIndependentBookmarkPreloadTarget(target)) {
+        return sum;
+      }
+
       const score = Number(target?.score);
       return sum + buildSchedulerLinkScoreSignal(score);
     }, 0);
@@ -719,6 +794,16 @@
   }
 
   function compareStoredSelectionTargetPriority(left, right) {
+    if (isIndependentBookmarkPreloadTarget(left) && isIndependentBookmarkPreloadTarget(right)) {
+      const rankDelta =
+        clampNonNegativeInt(left?.bookmarkPreload?.rank, 0) -
+        clampNonNegativeInt(right?.bookmarkPreload?.rank, 0);
+
+      if (rankDelta !== 0) {
+        return rankDelta;
+      }
+    }
+
     const scoreDelta = (Number(right?.score) || 0) - (Number(left?.score) || 0);
 
     if (scoreDelta !== 0) {
@@ -728,6 +813,39 @@
     const leftUrl = String(left?.url || "");
     const rightUrl = String(right?.url || "");
     return leftUrl.localeCompare(rightUrl);
+  }
+
+  function isIndependentBookmarkPreloadTarget(target) {
+    return Boolean(target?.bookmarkPreload);
+  }
+
+  function shouldKeepIndependentBookmarkPreloadTarget(target, snapshot, settings) {
+    if (!isIndependentBookmarkPreloadTarget(target)) {
+      return false;
+    }
+
+    if (!settings) {
+      return true;
+    }
+
+    const bookmarkRuleCardState =
+      settings?.layout?.ruleCards?.items?.googleBookmarkRank ?? null;
+
+    if (!settingsApi.isRuleCardEnabled(bookmarkRuleCardState)) {
+      return false;
+    }
+
+    if (
+      typeof isGoogleSearchPageForBookmarkPreload === "function" &&
+      !isGoogleSearchPageForBookmarkPreload(snapshot?.sourcePageUrl || "")
+    ) {
+      return false;
+    }
+
+    return settingsApi.evaluateRuleCardMetric(
+      bookmarkRuleCardState,
+      clampNonNegativeInt(target?.bookmarkPreload?.rank, 0)
+    );
   }
 
   function getEffectiveSchedulerSettings(settings) {
@@ -744,9 +862,21 @@
 
   async function queryOpenNormalTabs() {
     try {
-      return await chrome.tabs.query({
+      const tabs = await chrome.tabs.query({
         windowType: "normal",
       });
+      const settings =
+        typeof getEffectiveExtensionSettings === "function"
+          ? getEffectiveExtensionSettings()
+          : null;
+
+      return tabs.filter(
+        (tab) =>
+          globalThis.ZeroLatencyPreloadIncognitoPolicy?.shouldExcludeIncognitoPreloadSource?.(
+            tab,
+            settings
+          ) !== true
+      );
     } catch (_error) {
       return [];
     }

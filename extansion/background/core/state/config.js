@@ -3,6 +3,7 @@
     return {
       SETTINGS_STORAGE_KEY: settingsApi.SETTINGS_STORAGE_KEY,
       GRAPH_KEY: "visitGraphV1",
+      GRAPH_SUMMARY_KEY: "visitGraphSummaryV1",
       TAB_STATE_KEY: "tabVisitStateV1",
       PENDING_SOURCE_KEY: "pendingVisitSourcesV1",
       PRELOAD_STATE_KEY: "preloadStateV1",

@@ -7,7 +7,15 @@ async function activatePreloadedPage(message, sender) {
     return request.response;
   }
 
-  const { sourceTab, sourceTabId, openInNewTab, resolutionExpiresAt, targetUrl } = request;
+  const {
+    sourceTab,
+    sourceTabId,
+    openInNewTab,
+    targetWindowId,
+    targetIndex,
+    resolutionExpiresAt,
+    targetUrl,
+  } = request;
   const activationResolution = await resolveActivatablePreloadedEntry({
     normalWindowId: sourceTab.windowId,
     sourceTabId,
@@ -66,6 +74,34 @@ async function activatePreloadedPage(message, sender) {
 
   const activatedWhileLoading = resolvedEntryStatus !== "complete";
   const trackingTargetUrl = resolveActivatedTrackingTargetUrl(targetUrl, preloadedTab, entry);
+  const destinationWindowId = targetWindowId ?? sourceTab.windowId;
+  const destinationWindow = await getWindowMaybe(destinationWindowId);
+  const sourceDestinationMatch =
+    globalThis.ZeroLatencyPreloadIncognitoPolicy?.resolveSourceTargetIncognitoMatch?.(
+      sourceTab,
+      null,
+      destinationWindow
+    );
+  const sourcePreloadMatch =
+    globalThis.ZeroLatencyPreloadIncognitoPolicy?.resolveSourceTargetIncognitoMatch?.(
+      sourceTab,
+      preloadedTab,
+      null
+    );
+
+  if (sourceDestinationMatch?.matches === false || sourcePreloadMatch?.matches === false) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-activation.incognito-mismatch", {
+      sourceTabId: sourceTab.id,
+      sourceWindowId: sourceTab.windowId,
+      targetUrl,
+      preloadedTabId: preloadedTab.id,
+      targetWindowId: destinationWindowId,
+      sourceIncognito: sourcePreloadMatch?.sourceIncognito ?? sourceTab?.incognito === true,
+      preloadedIncognito: preloadedTab?.incognito === true,
+      destinationIncognito: destinationWindow?.incognito === true,
+    });
+    return { handled: false, reason: "incognito-context-mismatch" };
+  }
 
   if (activatedWhileLoading) {
     globalThis.ZeroLatencyDebugEvents?.record?.("preload-activation.loading-promoted", {
@@ -105,6 +141,8 @@ async function activatePreloadedPage(message, sender) {
     preloadedTab,
     targetUrl,
     openInNewTab,
+    targetWindowId,
+    targetIndex,
   });
 
   preloadState = await clearSourceTabPreloadsAfterActivation({
@@ -123,6 +161,7 @@ async function activatePreloadedPage(message, sender) {
     activatedWhileLoading,
     preloadedTabStatus: resolvedEntryStatus,
     openInNewTab,
+    targetWindowId,
   });
 
   return {

@@ -36,6 +36,7 @@
       status: typeof nextEntry.status === "string" ? nextEntry.status : "queued",
       aiKeywordMatch: normalizeAiKeywordMatch(nextEntry.aiKeywordMatch),
       bookmarkPreload: normalizeBookmarkPreloadMetadata(nextEntry.bookmarkPreload),
+      interactionPreload: normalizeInteractionPreloadMetadata(nextEntry.interactionPreload),
       siteSelection: normalizeSiteSelection(nextEntry.siteSelection),
       createdAt: typeof nextEntry.createdAt === "string" ? nextEntry.createdAt : null,
       updatedAt: typeof nextEntry.updatedAt === "string" ? nextEntry.updatedAt : null,
@@ -56,8 +57,27 @@
       targetHint: typeof nextEntry.targetHint === "string" ? nextEntry.targetHint : null,
       aiKeywordMatch: normalizeAiKeywordMatch(nextEntry.aiKeywordMatch),
       bookmarkPreload: normalizeBookmarkPreloadMetadata(nextEntry.bookmarkPreload),
+      interactionPreload: normalizeInteractionPreloadMetadata(nextEntry.interactionPreload),
       siteSelection: normalizeSiteSelection(nextEntry.siteSelection),
       updatedAt: typeof nextEntry.updatedAt === "string" ? nextEntry.updatedAt : null,
+    };
+  }
+
+  function normalizeInteractionPreloadMetadata(rawValue) {
+    const nextValue = isPlainObject(rawValue) ? rawValue : null;
+
+    if (!nextValue) {
+      return null;
+    }
+
+    const trigger = nextValue.trigger === "contextmenu" ? "contextmenu" : "hover";
+    const targetHint = nextValue.targetHint === "_blank" ? "_blank" : "_self";
+
+    return {
+      trigger,
+      targetHint,
+      startedAt: typeof nextValue.startedAt === "string" ? nextValue.startedAt : null,
+      updatedAt: typeof nextValue.updatedAt === "string" ? nextValue.updatedAt : null,
     };
   }
 

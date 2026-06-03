@@ -7,5 +7,10 @@
     cleanupErroneousPreloadWindows,
     runErroneousPreloadWindowCleanup,
     ensurePreloadWindowWatchdog,
+    resolvePreloadFullscreenPressurePolicy,
+    getPreloadResourcePressureState,
+    getPreloadPerformanceWarningState,
+    shouldDeferHiddenTabPreloadsForResourcePressure,
+    applyPreloadResourcePressurePolicy,
   };
 })();

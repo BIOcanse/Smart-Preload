@@ -3,11 +3,18 @@ async function promotePreloadedTabToSourceWindow({
   preloadedTab,
   targetUrl,
   openInNewTab,
+  targetWindowId = null,
+  targetIndex = null,
 }) {
   globalThis.clearKnownPreloadTab?.(preloadedTab.id);
+  const destinationWindowId = normalizePositiveInteger(targetWindowId) ?? sourceTab.windowId;
+  const destinationIndex =
+    normalizePositiveInteger(targetIndex) ?? (destinationWindowId === sourceTab.windowId
+      ? (sourceTab.index ?? 0) + 1
+      : 0);
   const movedTab = await chrome.tabs.move(preloadedTab.id, {
-    windowId: sourceTab.windowId,
-    index: (sourceTab.index ?? 0) + 1,
+    windowId: destinationWindowId,
+    index: destinationIndex,
   });
   const activatedTab = Array.isArray(movedTab) ? movedTab[0] : movedTab;
 

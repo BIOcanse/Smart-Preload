@@ -1,0 +1,653 @@
+{
+  "appName": {
+    "message": "Pré-carregamento inteligente"
+  },
+  "appDescription": {
+    "message": "Pré-carrega de forma mais inteligente e ativa as páginas que você provavelmente abrirá em seguida."
+  },
+  "commonReady": {
+    "message": "Pronto"
+  },
+  "commonLoading": {
+    "message": "Carregando"
+  },
+  "commonFailed": {
+    "message": "Falhou"
+  },
+  "commonSaving": {
+    "message": "Salvando"
+  },
+  "commonSaved": {
+    "message": "Salvo"
+  },
+  "commonUnsaved": {
+    "message": "N?o salvo"
+  },
+  "commonDownloading": {
+    "message": "Baixando"
+  },
+  "commonDownloaded": {
+    "message": "Baixado"
+  },
+  "commonRemoving": {
+    "message": "Removendo"
+  },
+  "commonRemoved": {
+    "message": "Removido"
+  },
+  "commonOn": {
+    "message": "Ativado"
+  },
+  "commonOff": {
+    "message": "Desativado"
+  },
+  "commonUnknown": {
+    "message": "Desconhecido"
+  },
+  "commonThisPlatform": {
+    "message": "esta plataforma"
+  },
+  "commonModel": {
+    "message": "modelo"
+  },
+  "commonDone": {
+    "message": "Conclu?do."
+  },
+  "commonWorking": {
+    "message": "Trabalhando..."
+  },
+  "commonDismiss": {
+    "message": "Fechar"
+  },
+  "commonHelp": {
+    "message": "Ajuda"
+  },
+  "popupCurrentPage": {
+    "message": "P?gina atual"
+  },
+  "popupNodes": {
+    "message": "N?s"
+  },
+  "popupEdges": {
+    "message": "Arestas"
+  },
+  "popupUpdated": {
+    "message": "Atualizado"
+  },
+  "popupTop": {
+    "message": "Principais"
+  },
+  "popupNoPreloadQualifiedLinks": {
+    "message": "Ainda n?o h? links qualificados para pr?-carregamento nesta p?gina."
+  },
+  "popupRefresh": {
+    "message": "Atualizar"
+  },
+  "popupStop": {
+    "message": "Parar"
+  },
+  "popupStart": {
+    "message": "Iniciar"
+  },
+  "popupSettings": {
+    "message": "Configura??es"
+  },
+  "popupWaitingForData": {
+    "message": "Aguardando dados."
+  },
+  "popupOpenSettingsFailed": {
+    "message": "Falha ao abrir a p?gina de configura??es."
+  },
+  "popupLoadingVisitGraph": {
+    "message": "Carregando grafo de visitas..."
+  },
+  "popupPausedMessage": {
+    "message": "Extens?o parada: previs?o e pr?-carregamento est?o desativados."
+  },
+  "popupVisitGraphLoaded": {
+    "message": "Grafo de visitas carregado."
+  },
+  "popupLoadVisitGraphFailed": {
+    "message": "Falha ao carregar o grafo de visitas."
+  },
+  "performanceInsufficientReducePreloadCaps": {
+    "message": "Press?o de desempenho detectada. Reduza os limites de pr?-carregamento."
+  },
+  "popupCurrentPageNotTracked": {
+    "message": "A página atual não está sendo rastreada"
+  },
+  "popupCurrentPageNotTrackable": {
+    "message": "A página atual não pode ser rastreada."
+  },
+  "popupStoppingService": {
+    "message": "Parando previsão e pré-carregamento..."
+  },
+  "popupStartingService": {
+    "message": "Iniciando previsão e pré-carregamento..."
+  },
+  "popupUpdateStateFailed": {
+    "message": "Falha ao atualizar o estado da extensão."
+  },
+  "popupRestoreServiceTitle": {
+    "message": "Retomar previsão e pré-carregamento"
+  },
+  "popupStopServiceTitle": {
+    "message": "Parar previsão e pré-carregamento e fechar a janela de pré-carregamento em segundo plano"
+  },
+  "popupWeightLabel": {
+    "message": "Peso: {0}"
+  },
+  "popupSiteMeta": {
+    "message": "Site: {0} (nº {1}, {2}/{3})"
+  },
+  "popupFreqMeta": {
+    "message": "Freq.: site {0}, saída {1}, entrada {2}"
+  },
+  "popupBookmarkMeta": {
+    "message": "Favorito: {0}, posição {1}"
+  },
+  "settingsPageTitle": {
+    "message": "Configurações do Pré-carregamento inteligente"
+  },
+  "settingsTitle": {
+    "message": "Configura??es"
+  },
+  "settingsNavAriaLabel": {
+    "message": "Seções de configurações"
+  },
+  "settingsOverview": {
+    "message": "Visão geral"
+  },
+  "settingsTracking": {
+    "message": "Rastreamento"
+  },
+  "settingsPreload": {
+    "message": "Pr?-carregamento"
+  },
+  "settingsOrdering": {
+    "message": "Ordenação"
+  },
+  "settingsExperiments": {
+    "message": "Experimentos"
+  },
+  "settingsOverviewSub": {
+    "message": "Perfil de execução e ajuste automático"
+  },
+  "settingsOrderingSub": {
+    "message": "Filtros simples de classificação"
+  },
+  "settingsStorageFooter": {
+    "message": "Armazenado no armazenamento local da extens?o."
+  },
+  "settingsLoadingSettings": {
+    "message": "Carregando configura??es..."
+  },
+  "settingsHeroKicker": {
+    "message": "Controle de pré-carregamento inteligente"
+  },
+  "settingsHeroTitle": {
+    "message": "Pré-carregamento mais inteligente e mais ativo"
+  },
+  "settingsHeroCopy": {
+    "message": "O Pré-carregamento inteligente distribui slots entre abas ativas usando sinais da página, atenção recente e pressão do dispositivo, mantendo a opção de definir limites manualmente."
+  },
+  "settingsDeviceProfile": {
+    "message": "Perfil do dispositivo"
+  },
+  "settingsDetectingHardware": {
+    "message": "Detectando hardware..."
+  },
+  "settingsEffectiveGroupCaps": {
+    "message": "Limites efetivos de grupo"
+  },
+  "settingsWaitingForSettings": {
+    "message": "Aguardando configurações..."
+  },
+  "settingsWatchdog": {
+    "message": "Vigilância"
+  },
+  "settingsNativeApp": {
+    "message": "Aplicativo local"
+  },
+  "settingsCheckingConnection": {
+    "message": "Verificando conexão..."
+  },
+  "settingsOverviewMeta": {
+    "message": "Controles gerais que influenciam quão agressivamente a extensão se adapta à máquina atual."
+  },
+  "settingsAutomaticDeviceTuning": {
+    "message": "Ajuste automático do dispositivo"
+  },
+  "settingsAutomaticDeviceTuningDesc": {
+    "message": "Interruptor reservado para agendamento futuro sensível ao hardware. Ele é salvo agora, mas ainda não muda o comportamento em execução."
+  },
+  "settingsPreloadMode": {
+    "message": "Modo de pré-carregamento"
+  },
+  "settingsPreloadModeDesc": {
+    "message": "Seletor reservado para níveis futuros de estratégia. Ele é salvo agora, mas ainda não muda o comportamento em execução."
+  },
+  "settingsModeConservative": {
+    "message": "Conservador"
+  },
+  "settingsModeBalanced": {
+    "message": "Equilibrado"
+  },
+  "settingsModeAggressive": {
+    "message": "Agressivo"
+  },
+  "settingsTrackingMeta": {
+    "message": "Controles de como os nós de navegação são normalizados e adicionados ao grafo direcional."
+  },
+  "settingsSeparateGoogleSearchPages": {
+    "message": "Separar páginas de busca do Google"
+  },
+  "settingsSeparateGoogleSearchPagesDesc": {
+    "message": "Rastreia páginas de resultados `google/search` como um nó próprio para que o grafo aprenda transições da busca para destinos."
+  },
+  "settingsSkipGoogleInternalPages": {
+    "message": "Ignorar páginas internas do Google"
+  },
+  "settingsSkipGoogleInternalPagesDesc": {
+    "message": "Não rastrear nem pré-carregar Chrome Web Store, conta e gerenciador de senhas do Google, Chrome sync, chromestatus e páginas administrativas semelhantes do Google. Gemini e produtos comuns do Google continuam rastreados."
+  },
+  "settingsPreloadMeta": {
+    "message": "Controles para preparar abas, reparar com vigilância e definir o comportamento da janela de pré-carregamento."
+  },
+  "settingsEnablePreloading": {
+    "message": "Ativar pr?-carregamento"
+  },
+  "settingsEnablePreloadingDesc": {
+    "message": "Interruptor principal para registro de candidatos, abas em segundo plano e troca de abas."
+  },
+  "settingsIgnoreWaterfallDynamicLinks": {
+    "message": "Ignorar links dinâmicos em cascata"
+  },
+  "settingsIgnoreWaterfallDynamicLinksDesc": {
+    "message": "Em páginas de rolagem infinita ou em cascata, manter a previsão no primeiro conjunto estável de links e ignorar links adicionados depois por carregamento contínuo."
+  },
+  "settingsExcludeIncognitoWindows": {
+    "message": "Excluir janelas an?nimas do pr?-carregamento"
+  },
+  "settingsExcludeIncognitoWindowsDesc": {
+    "message": "Quando ativado, janelas anônimas ficam fora de aprendizado, pontuação, alocação de slots e pré-carregamentos por interação. Quando desativado, fontes anônimas e normais compartilham os limites da conta, mas fontes anônimas usam apenas janelas anônimas de pré-carregamento."
+  },
+  "settingsTransitionFrequencyWindow": {
+    "message": "Janela de frequência de transição"
+  },
+  "settingsTransitionFrequencyWindowDesc": {
+    "message": "Quando ativado, o peso da frequência de transição usa a janela selecionada em vez do total histórico."
+  },
+  "settingsGlobalPreloadScheduler": {
+    "message": "Agendador global de pr?-carregamento"
+  },
+  "settingsGlobalPreloadSchedulerDesc": {
+    "message": "Limites em nível de conta para distribuir slots de pré-carregamento entre todas as abas de origem com candidatos."
+  },
+  "settingsSchedulerHiddenTabs": {
+    "message": "Abas reais ocultas"
+  },
+  "settingsSchedulerNativePreload": {
+    "message": "Pré-carregamento nativo"
+  },
+  "settingsSchedulerAttentionPool": {
+    "message": "Pool de atenção"
+  },
+  "settingsSchedulerMin": {
+    "message": "Mín."
+  },
+  "settingsSchedulerMax": {
+    "message": "Máx."
+  },
+  "settingsSchedulerHalfLifeTabs": {
+    "message": "Abas de meia-vida do crescimento do limite"
+  },
+  "settingsSchedulerHalfLifeTabsDesc": {
+    "message": "Sempre que o número de abas aumenta por este valor, o limite total dinâmico avança metade do caminho até o máximo. Valores menores fazem o limite crescer mais rápido."
+  },
+  "settingsSchedulerPoolHours": {
+    "message": "Horas do pool"
+  },
+  "settingsSchedulerSegmentSeconds": {
+    "message": "Segundos por segmento"
+  },
+  "settingsSchedulerMaxGapSeconds": {
+    "message": "Intervalo máximo em segundos"
+  },
+  "settingsSchedulerInputWindowSeconds": {
+    "message": "Janela de entrada em segundos"
+  },
+  "settingsSchedulerMediaWeight": {
+    "message": "Peso do vídeo"
+  },
+  "settingsSchedulerAudioWeight": {
+    "message": "Peso do áudio"
+  },
+  "settingsAiPredictionAssistant": {
+    "message": "Assistente de previs?o por IA"
+  },
+  "settingsAiPredictionAssistantDesc": {
+    "message": "Escolha um provedor externo de IA e um modelo para pontuação de palavras-chave. A extensão usa sua chave de API diretamente; ela não baixa nem gerencia modelos locais."
+  },
+  "settingsAiProviderApiKey": {
+    "message": "Chave de API do provedor"
+  },
+  "settingsAiProviderApiKeyDesc": {
+    "message": "Armazenada no armazenamento local da extensão e usada apenas pelo service worker quando a previsão por IA está ativada. O LM Studio ignora este campo."
+  },
+  "settingsAiProviderEndpoint": {
+    "message": "Endpoint do provedor"
+  },
+  "settingsAiProviderEndpointDesc": {
+    "message": "Mantenha o padrão, a menos que você use um serviço local compatível com OpenAI, como LM Studio."
+  },
+  "settingsWindowWatchdog": {
+    "message": "Watchdog de janela"
+  },
+  "settingsWindowWatchdogDesc": {
+    "message": "Reconstruir a janela de pré-carregamento e reparar abas ausentes quando o contêiner for perdido."
+  },
+  "settingsWatchdogInterval": {
+    "message": "Intervalo do watchdog"
+  },
+  "settingsWatchdogIntervalDesc": {
+    "message": "Com que frequência a extensão verifica se a janela de pré-carregamento ainda está presente."
+  },
+  "settingsWatchdogIntervalOption1": {
+    "message": "1 segundo"
+  },
+  "settingsWatchdogIntervalOption2": {
+    "message": "2 segundos"
+  },
+  "settingsWatchdogIntervalOption3": {
+    "message": "3 segundos"
+  },
+  "settingsWatchdogIntervalOption5": {
+    "message": "5 segundos"
+  },
+  "settingsWatchdogIntervalOption10": {
+    "message": "10 segundos"
+  },
+  "settingsFullscreenPressurePolicy": {
+    "message": "Pol?tica de abas em segundo plano para tela cheia/jogos"
+  },
+  "settingsFullscreenPressurePolicyDesc": {
+    "message": "Quando outro aplicativo está em tela cheia ou um processo de jogo é detectado, escolha como as abas reais ocultas de pré-carregamento serão tratadas."
+  },
+  "settingsFullscreenPressurePolicyClose": {
+    "message": "Fechar completamente"
+  },
+  "settingsFullscreenPressurePolicySleep": {
+    "message": "Suspender abas"
+  },
+  "settingsFullscreenPressurePolicyIgnore": {
+    "message": "Nenhuma a??o"
+  },
+  "settingsSecond": {
+    "message": "{0} segundo"
+  },
+  "settingsSeconds": {
+    "message": "{0} segundos"
+  },
+  "settingsForceMinimize": {
+    "message": "For?ar minimizar janela de pr?-carregamento"
+  },
+  "settingsForceMinimizeDesc": {
+    "message": "Minimizar imediatamente de novo a janela de pré-carregamento se ela for restaurada ou redimensionada."
+  },
+  "settingsOrderingMeta": {
+    "message": "Filtros fixos de classificação mantêm a primeira versão previsível. Cadeias avançadas de filtros programáveis podem ser adicionadas depois sem mudar o formato salvo da regra."
+  },
+  "settingsExperimentsMeta": {
+    "message": "Interruptores ativos de risco ficam aqui. Interruptores placeholder também ficam aqui, mas permanecem apenas salvos até serem conectados ao comportamento em execução."
+  },
+  "settingsCrossSiteCurrentTabSwap": {
+    "message": "Troca forçada entre sites na aba atual"
+  },
+  "settingsCrossSiteCurrentTabSwapDesc": {
+    "message": "Usa o caminho de troca por página real oculta para navegações entre sites que permanecem na aba atual. É mais rápido quando funciona, mas ainda pode danificar o histórico e o botão Voltar. Ative apenas se aceitar esses efeitos."
+  },
+  "settingsIdleWakeStrongDevices": {
+    "message": "Acordar em ociosidade em dispositivos fortes"
+  },
+  "settingsIdleWakeStrongDevicesDesc": {
+    "message": "Salvo apenas para uso futuro. Atualmente não acorda abas candidatas extras."
+  },
+  "settingsPointerProximityPrediction": {
+    "message": "Previsão por proximidade do ponteiro"
+  },
+  "settingsPointerProximityPredictionDesc": {
+    "message": "Salvo apenas para uso futuro. Atualmente não adiciona previsão baseada no ponteiro."
+  },
+  "settingsAuthStateWarmup": {
+    "message": "Aquecimento do estado de autenticação"
+  },
+  "settingsAuthStateWarmupDesc": {
+    "message": "Salvo apenas para uso futuro. Atualmente não altera autenticação nem aquecimento."
+  },
+  "settingsNoUnsavedChanges": {
+    "message": "Nenhuma altera??o n?o salva."
+  },
+  "settingsResetDefaults": {
+    "message": "Restaurar padr?es"
+  },
+  "settingsSaveSettings": {
+    "message": "Salvar configura??es"
+  },
+  "settingsAiModelTask": {
+    "message": "Tarefa do modelo de IA"
+  },
+  "settingsReadingLocalSettings": {
+    "message": "Lendo configurações locais da extensão."
+  },
+  "settingsCouldNotLoad": {
+    "message": "Não foi possível carregar as configurações do armazenamento."
+  },
+  "settingsCouldNotLoadAiStatus": {
+    "message": "Não foi possível carregar o estado do modelo de IA."
+  },
+  "settingsDefaultsRestored": {
+    "message": "Padrões restaurados no formulário. Salve para aplicar."
+  },
+  "settingsUnsavedReady": {
+    "message": "Alterações não salvas estão prontas para serem aplicadas."
+  },
+  "settingsWritingLocalSettings": {
+    "message": "Gravando configurações no armazenamento local da extensão."
+  },
+  "settingsWrittenSuccessfully": {
+    "message": "Configurações gravadas com sucesso."
+  },
+  "settingsCouldNotSave": {
+    "message": "Não foi possível salvar as configurações."
+  },
+  "settingsPreparingRuntime": {
+    "message": "Preparando o runtime portátil se necessário."
+  },
+  "settingsRemovingSelectedModel": {
+    "message": "Removendo o modelo selecionado."
+  },
+  "settingsInstallingModel": {
+    "message": "Instalando o runtime se necessário e baixando o modelo selecionado."
+  },
+  "settingsRemovingModelAndRuntime": {
+    "message": "Removendo o modelo selecionado e limpando o runtime portátil se não estiver em uso."
+  },
+  "settingsAiModelActionFailed": {
+    "message": "Falha na ação do modelo de IA."
+  },
+  "settingsModelStateUpdatedDirty": {
+    "message": "Estado do modelo atualizado. Outras alterações não salvas ainda estão pendentes."
+  },
+  "settingsPortableModelUpdated": {
+    "message": "Runtime portátil e estado do modelo atualizados."
+  },
+  "settingsModelDownloaded": {
+    "message": "Modelo baixado."
+  },
+  "settingsModelRemoved": {
+    "message": "Modelo removido."
+  },
+  "settingsCouldNotUpdateModel": {
+    "message": "Não foi possível atualizar o modelo selecionado."
+  },
+  "settingsHardwareMeta": {
+    "message": "{0} núcleos | dica de memória {1} GB"
+  },
+  "settingsEffectivePreloadMeta": {
+    "message": "Limites de slots nativos / de abas. As regras usam {0}."
+  },
+  "settingsWatchdogChecksEvery": {
+    "message": "Verifica a cada {0} segundo(s)."
+  },
+  "settingsWindowRepairDisabled": {
+    "message": "O reparo de janela está desativado."
+  },
+  "settingsSystemHidingUnsupported": {
+    "message": "Ocultação em nível de sistema não é compatível com {0}."
+  },
+  "settingsSystemHidingActive": {
+    "message": "A ocultação de janela em nível de sistema está ativa."
+  },
+  "settingsNativeAppOffline": {
+    "message": "Aplicativo local não detectado. Usando alternativa de minimizar."
+  },
+  "settingsConnected": {
+    "message": "Conectado"
+  },
+  "settingsOffline": {
+    "message": "Offline"
+  },
+  "settingsInstallingModelLabel": {
+    "message": "Instalando {0}"
+  },
+  "settingsRemovingModelLabel": {
+    "message": "Removendo {0}"
+  },
+  "settingsModelReady": {
+    "message": "Modelo pronto"
+  },
+  "settingsUninstallFailed": {
+    "message": "Falha ao desinstalar"
+  },
+  "settingsInstallFailed": {
+    "message": "Falha ao instalar"
+  },
+  "settingsTaskDidNotFinish": {
+    "message": "A tarefa não foi concluída."
+  },
+  "settingsAiProviderMissingWarning": {
+    "message": "A pontuação por IA ficará desativada até que {0} tenha modelo, endpoint e chave de API."
+  },
+  "settingsAiKeyOptionalPlaceholder": {
+    "message": "Opcional para endpoints locais compatíveis"
+  },
+  "settingsAiLmStudioKeyIgnoredPlaceholder": {
+    "message": "Ignorado pelo LM Studio"
+  },
+  "settingsAiLmStudioLoadingModel": {
+    "message": "Carregando modelo do LM Studio: {0}"
+  },
+  "settingsAiKeyRequiredPlaceholder": {
+    "message": "Obrigat?rio"
+  },
+  "settingsAiEnterKeyToLoadModels": {
+    "message": "Insira uma chave de API para carregar modelos"
+  },
+  "settingsAiLoadingModels": {
+    "message": "Carregando modelos compat?veis..."
+  },
+  "settingsAiSelectProviderFirst": {
+    "message": "Selecione um provedor primeiro"
+  },
+  "settingsAiNoSupportedModels": {
+    "message": "Nenhum modelo leve compat?vel encontrado"
+  },
+  "commonProvider": {
+    "message": "provedor"
+  },
+  "transitionWindowTotal": {
+    "message": "Total"
+  },
+  "transitionWindow365d": {
+    "message": "?ltimo ano"
+  },
+  "transitionWindow30d": {
+    "message": "?ltimo m?s"
+  },
+  "transitionWindow7d": {
+    "message": "?ltimos 7 dias"
+  },
+  "transitionWindow1d": {
+    "message": "?ltimo dia"
+  },
+  "ruleOperatorDisabled": {
+    "message": "Desativado"
+  },
+  "ruleFieldValueA": {
+    "message": "Valor A"
+  },
+  "ruleFieldCompareA": {
+    "message": "Comparar A"
+  },
+  "ruleFieldCompareB": {
+    "message": "Comparar B"
+  },
+  "ruleFieldValueC": {
+    "message": "Valor C"
+  },
+  "ruleFieldStatus": {
+    "message": "Status"
+  },
+  "ruleTokenFixed": {
+    "message": "token fixo {0}"
+  },
+  "ruleNativePerPageTitle": {
+    "message": "Limite a de slots de página do grupo de pré-carregamento nativo"
+  },
+  "ruleNativePerPageDesc": {
+    "message": "Aplica-se a candidatos nativos `prefetch` / `prerender`. Decide quantos candidatos de página este grupo pode manter para a execução final."
+  },
+  "ruleTabPerPageTitle": {
+    "message": "Limite a de slots de página do grupo de pré-carregamento com abas reais"
+  },
+  "ruleTabPerPageDesc": {
+    "message": "Aplica-se a candidatos que precisam de abas reais em segundo plano. Decide quantos candidatos de página este grupo pode manter para a execução final."
+  },
+  "ruleNativeSiteTitle": {
+    "message": "Quantidade x de sites de alto peso do grupo de pré-carregamento nativo"
+  },
+  "ruleNativeSiteDesc": {
+    "message": "Aplica-se a candidatos nativos `prefetch` / `prerender`. Decide quantos sites de alto peso entram na etapa de alocação de slots por site."
+  },
+  "ruleTabSiteTitle": {
+    "message": "Quantidade x de sites de alto peso do grupo de pré-carregamento com abas reais"
+  },
+  "ruleTabSiteDesc": {
+    "message": "Aplica-se a candidatos que precisam de abas reais em segundo plano, incluindo pré-carregamento entre sites em nova aba e candidatos entre sites da troca forçada da aba atual roteados para hidden-tab."
+  },
+  "ruleGoogleBookmarkRankTitle": {
+    "message": "Posição x de pré-carregamento de favoritos na busca Google"
+  },
+  "ruleGoogleBookmarkRankDesc": {
+    "message": "Aplica-se apenas em páginas de busca do Google. Quando ativado, favoritos do Chrome são mantidos por esta regra de posição como alvos independentes de pré-carregamento persistente."
+  },
+  "deviceProfileBalanced": {
+    "message": "Equilibrado"
+  },
+  "deviceProfileHighEnd": {
+    "message": "Topo de linha"
+  },
+  "deviceProfileStrong": {
+    "message": "Forte"
+  },
+  "deviceProfileConstrained": {
+    "message": "Limitado"
+  },
+  "settingsDiagnosticsLogging": {
+    "message": "Modo de log"
+  },
+  "settingsDiagnosticsLoggingDesc": {
+    "message": "Quando ativado, os diagn?sticos de runtime s?o gravados como JSONL na pasta portable logs do app local."
+  }
+}

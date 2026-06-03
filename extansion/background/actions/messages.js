@@ -11,6 +11,14 @@
     const message = envelope?.raw?.message;
     const sender = envelope?.raw?.sender;
 
+    if (await shouldSkipMessageForExcludedIncognitoSource(decision.actionKey, sender)) {
+      return {
+        ok: true,
+        skipped: true,
+        reason: "incognito-excluded",
+      };
+    }
+
     switch (decision.actionKey) {
       case "debug-snapshot":
         return globalThis.ZeroLatencyCoreMessages.handleDebugSnapshot(message);
@@ -33,6 +41,21 @@
           console.debug("Failed to record preload candidate attention.", error);
         });
         return globalThis.ZeroLatencyPreloadRuntimeManager.registerCandidates(message, sender);
+      case "preload-interaction-status":
+        return globalThis.ZeroLatencyPreloadRuntimeManager.getInteractionPreloadStatus(
+          message,
+          sender
+        );
+      case "preload-interaction-start":
+        return globalThis.ZeroLatencyPreloadRuntimeManager.startInteractionPreload(
+          message,
+          sender
+        );
+      case "preload-interaction-cancel":
+        return globalThis.ZeroLatencyPreloadRuntimeManager.cancelInteractionPreloads(
+          message,
+          sender
+        );
       case "report-foreground-page-digest":
         void globalThis.ZeroLatencyPreloadSchedulerAttention?.recordActiveTabAttentionFromSender?.(
           sender,
@@ -68,6 +91,63 @@
       default:
         return { ok: true, skipped: true };
     }
+  }
+
+  async function shouldSkipMessageForExcludedIncognitoSource(actionKey, sender) {
+    if (!shouldApplyIncognitoSourceSkipToMessageAction(actionKey)) {
+      return false;
+    }
+
+    const sourceTab = sender?.tab ?? null;
+
+    if (
+      globalThis.ZeroLatencyPreloadIncognitoPolicy?.shouldExcludeIncognitoPreloadSource?.(
+        sourceTab,
+        getEffectiveExtensionSettings()
+      ) !== true
+    ) {
+      return false;
+    }
+
+    const preloadState = await loadPreloadState();
+    const cleanup =
+      await globalThis.ZeroLatencyPreloadIncognitoPolicy.clearExcludedIncognitoPreloadState(
+        preloadState,
+        getEffectiveExtensionSettings(),
+        {
+          tabs: [sourceTab],
+          reason: `message:${actionKey}`,
+        }
+      );
+
+    if (cleanup.mutated) {
+      await savePreloadState(cleanup.preloadState);
+    }
+
+    globalThis.ZeroLatencyDebugEvents?.record?.("message.skip-incognito-source", {
+      actionKey,
+      sourceTabId: sourceTab?.id ?? null,
+      sourceWindowId: sourceTab?.windowId ?? null,
+      sourceUrl: sourceTab?.url || "",
+    });
+    return true;
+  }
+
+  function shouldApplyIncognitoSourceSkipToMessageAction(actionKey) {
+    return [
+      "register-preload-candidates",
+      "preload-interaction-status",
+      "preload-interaction-start",
+      "preload-interaction-cancel",
+      "report-foreground-page-digest",
+      "record-attention-activity",
+      "remember-source-page",
+      "record-link-behavior",
+      "navigation-prime-source",
+      "navigation-record-link-intent",
+      "navigation-resolve-click",
+      "activate-preloaded-page",
+    ].includes(actionKey);
   }
 
   globalThis.ZeroLatencyMessageActions = {

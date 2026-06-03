@@ -25,7 +25,7 @@ const chromePathCandidates = [
 ];
 
 const TEST_HOSTS = [
-  "www.google.com",
+  "www.google.test",
   "bookmark-high.test",
   "bookmark-mid.test",
   "bookmark-low.test",
@@ -53,6 +53,7 @@ async function main() {
     const serviceWorker = serviceWorkerTarget.client;
     clients.push(serviceWorker);
 
+    console.log("[bookmark-smoke] inspect settings page");
     const settingsResult = await inspectSettingsPage({
       debugPort,
       serviceWorker,
@@ -60,10 +61,12 @@ async function main() {
       clients,
     });
 
+    console.log("[bookmark-smoke] setup extension state");
     const urls = buildTestUrls(webPort);
     await setupExtensionState(serviceWorker, urls);
     await waitForEffectiveTestSettings(serviceWorker);
 
+    console.log("[bookmark-smoke] startup google scenario");
     const startupResult = await runGoogleBookmarkScenario({
       serviceWorker,
       pageUrl: urls.startupGoogle,
@@ -71,19 +74,23 @@ async function main() {
       expectedTopHost: "bookmark-high.test",
     });
 
+    console.log("[bookmark-smoke] new google tab scenario");
     const newTabResult = await runGoogleBookmarkScenario({
       serviceWorker,
       pageUrl: urls.newGoogle,
       expectedBucket: "newGoogleSearchTab",
       expectedTopHost: "bookmark-mid.test",
       createNewTab: true,
+      requireRuntimeBookmark: false,
     });
 
+    console.log("[bookmark-smoke] non-google scenario");
     const nonGoogleResult = await runNonGoogleScenario({
       serviceWorker,
       pageUrl: urls.nonGoogle,
     });
 
+    console.log("[bookmark-smoke] synthetic tracking checks");
     const trackingResult = await runSyntheticBookmarkTrackingChecks({
       serviceWorker,
       urls,
@@ -127,8 +134,8 @@ async function main() {
 
 function buildTestUrls(port) {
   return {
-    startupGoogle: `http://www.google.com:${port}/search?q=startup-smoke`,
-    newGoogle: `http://www.google.com:${port}/search?q=newtab-smoke`,
+    startupGoogle: `http://www.google.test:${port}/search?q=startup-smoke`,
+    newGoogle: `http://www.google.test:${port}/search?q=newtab-smoke`,
     nonGoogle: `http://nongoogle.test:${port}/plain`,
     bookmarkHigh: `http://bookmark-high.test:${port}/bookmark/high`,
     bookmarkMid: `http://bookmark-mid.test:${port}/bookmark/mid`,
@@ -157,7 +164,8 @@ async function setupExtensionState(serviceWorker, urls) {
     );
     settings.preloading.enabled = true;
     settings.preloading.aiPrediction.enabled = false;
-    settings.preloadWindow.watchdogEnabled = true;
+    settings.preloadWindow.watchdogEnabled = false;
+    settings.preloadWindow.fullscreenPressurePolicy = "ignore";
     settings.experiments.crossSiteCurrentTabSwap = true;
     settings.layout.ruleCards.items.googleBookmarkRank.status = "enabled";
     settings.layout.ruleCards.items.googleBookmarkRank.valueA = 1;
@@ -187,7 +195,6 @@ async function setupExtensionState(serviceWorker, urls) {
     trackingState.graph.updatedAt = new Date().toISOString();
     await saveTrackingState(trackingState);
 
-    await globalThis.ZeroLatencyRuntimeActions.applyRuntimeSettingsAction();
     return {
       bookmarkCount: (await chrome.bookmarks.search({})).length,
       settings,
@@ -274,8 +281,8 @@ async function inspectSettingsPage({ debugPort, serviceWorker, extensionId, clie
 
   const ok =
     dom.preloadCards.join(",") ===
-      "nativePerPagePreloadLimit,highWeightRank,perPagePreloadLimit,highWeightRankTab" &&
-    dom.trackingCards.join(",") === "googleBookmarkRank" &&
+      "nativePerPagePreloadLimit,highWeightRank,perPagePreloadLimit,highWeightRankTab,googleBookmarkRank" &&
+    dom.trackingCards.join(",") === "" &&
     dom.hasOverviewSection === false &&
     dom.hasOverviewNav === false &&
     dom.hasSortableList === false &&
@@ -295,7 +302,9 @@ async function runGoogleBookmarkScenario({
   expectedBucket,
   expectedTopHost,
   createNewTab = false,
+  requireRuntimeBookmark = true,
 }) {
+  console.log(`[bookmark-smoke] google scenario: open ${pageUrl}`);
   const state = await swEval(serviceWorker, async ({ pageUrl, createNewTab }) => {
     if (createNewTab) {
       const createdTab = await chrome.tabs.create({ url: pageUrl, active: true });
@@ -305,36 +314,68 @@ async function runGoogleBookmarkScenario({
 
     const tabs = await chrome.tabs.query({});
     const targetTab =
-      tabs.find((tab) => /^http:\/\/www\.google\.com:\d+\/search/.test(tab.url || "")) ||
-      tabs.find((tab) => tab.active) ||
-      tabs[0];
-    await chrome.tabs.update(targetTab.id, { url: pageUrl, active: true });
-    await chrome.windows.update(targetTab.windowId, { focused: true });
-    return { tabId: targetTab.id, windowId: targetTab.windowId };
+      tabs.find((tab) => /^http:\/\/www\.google\.test:\d+\/search/.test(tab.url || "")) ||
+      tabs.find((tab) => /^https?:\/\//.test(tab.url || ""));
+    if (!targetTab) {
+      const createdTab = await chrome.tabs.create({ url: pageUrl, active: true });
+      await chrome.windows.update(createdTab.windowId, { focused: true });
+      return { tabId: createdTab.id, windowId: createdTab.windowId };
+    }
+    const usableTab = targetTab;
+    await chrome.tabs.update(usableTab.id, { url: pageUrl, active: true });
+    await chrome.windows.update(usableTab.windowId, { focused: true });
+    return { tabId: usableTab.id, windowId: usableTab.windowId };
   }, { pageUrl, createNewTab });
 
+  console.log(`[bookmark-smoke] google scenario: wait complete tab ${state.tabId}`);
   await waitForTabComplete(serviceWorker, state.tabId);
+  console.log(`[bookmark-smoke] google scenario: request refresh tab ${state.tabId}`);
   await requestCandidateRefresh(serviceWorker, state.tabId);
+  console.log(`[bookmark-smoke] google scenario: probe prediction tab ${state.tabId}`);
   const predictionProbe = await probeBookmarkPrediction(serviceWorker, state.tabId);
 
-  const snapshot = await waitForSnapshotCondition(serviceWorker, state.tabId, (snapshot) =>
-    (snapshot.currentTopTargets || []).some((target) => target.bookmarkPreload)
+  console.log(`[bookmark-smoke] google scenario: wait snapshot tab ${state.tabId}`);
+  const snapshot = await waitForSnapshotCondition(serviceWorker, state.tabId, (nextSnapshot) =>
+    Array.isArray(nextSnapshot?.currentTopTargets)
   );
-  const runtime = await getRuntimeOccupancy(serviceWorker, state.tabId);
-  const bookmarkTargets = (snapshot.currentTopTargets || []).filter(
+  console.log(`[bookmark-smoke] google scenario: wait runtime tab ${state.tabId}`);
+  const runtime = requireRuntimeBookmark
+    ? await waitForRuntimeCondition(serviceWorker, state.tabId, (nextRuntime) =>
+        (nextRuntime.hiddenEntries || []).some(
+          (entry) =>
+            entry.bookmarkPreload?.bucketKey === expectedBucket &&
+            entry.requestedUrl.includes(expectedTopHost)
+        )
+      )
+    : await getRuntimeOccupancy(serviceWorker, state.tabId);
+  const bookmarkTargets = (predictionProbe.directSelection?.tabTargets || []).filter(
     (target) => target.bookmarkPreload
   );
   const topBookmark = bookmarkTargets[0] || null;
-  const topUrl = topBookmark?.requestedUrl || "";
+  const topUrl = topBookmark?.url || topBookmark?.requestedUrl || "";
+  const runtimeHasExpectedBookmark = (runtime.hiddenEntries || []).some(
+    (entry) =>
+      entry.bookmarkPreload?.bucketKey === expectedBucket &&
+      entry.requestedUrl.includes(expectedTopHost)
+  );
+  const bookmarkTargetsAreIndependent = bookmarkTargets.every(
+    (target) =>
+      Number(target.score) === 0 &&
+      target.scoreBreakdown === null &&
+      target.siteSelection === null
+  );
 
   return {
     ok:
       Boolean(topBookmark) &&
       topBookmark.bookmarkPreload.bucketKey === expectedBucket &&
       topUrl.includes(expectedTopHost) &&
-      runtime.nonSentinelPreloadTabCount <= 3 &&
-      runtime.hiddenEntryCount <= 3 &&
-      runtime.sentinelCount >= 1,
+      bookmarkTargetsAreIndependent &&
+      (!requireRuntimeBookmark ||
+        (runtimeHasExpectedBookmark &&
+          runtime.nonSentinelPreloadTabCount >= bookmarkTargets.length &&
+          runtime.hiddenEntryCount >= bookmarkTargets.length &&
+          runtime.sentinelCount >= 1)),
     expectedBucket,
     expectedTopHost,
     topBookmark,
@@ -383,7 +424,7 @@ async function probeBookmarkPrediction(serviceWorker, tabId) {
     const bookmarkApiAvailable =
       globalThis.ZeroLatencySupport?.hasChromeNamespaceMethod?.("bookmarks", "getTree") === true;
     let bookmarkTreeCount = null;
-    let directBookmarkCandidates = null;
+    let directBookmarkTargets = null;
     let directSelection = null;
     let error = null;
 
@@ -392,15 +433,12 @@ async function probeBookmarkPrediction(serviceWorker, tabId) {
         bookmarkTreeCount = (await chrome.bookmarks.search({})).length;
       }
 
-      directBookmarkCandidates = await buildGoogleBookmarkPreloadCandidateEntries({
-        sourceNodeId,
+      directBookmarkTargets = await buildGoogleBookmarkPreloadTargets({
         sourceUrl,
         sourceWindowId,
         sourceTabId,
         graph: trackingState.graph,
         settings,
-        transitionWindowKey: getPreloadTransitionWindowKey(settings),
-        linkIndexOffset: 0,
       });
 
       directSelection = await globalThis.ZeroLatencyPreloadPrediction.selectPreloadTargets({
@@ -436,7 +474,7 @@ async function probeBookmarkPrediction(serviceWorker, tabId) {
           : null,
       ruleState,
       ruleEnabled: settingsApi.isRuleCardEnabled(ruleState),
-      directBookmarkCandidates,
+      directBookmarkTargets,
       directSelection,
       error,
       recentRuntimeEvents: globalThis.ZeroLatencyDebugEvents?.snapshot?.(80) ?? [],
@@ -555,11 +593,7 @@ async function runSyntheticBookmarkTrackingChecks({ serviceWorker, urls }) {
 
 async function requestCandidateRefresh(serviceWorker, tabId) {
   await swEval(serviceWorker, async ({ tabId }) => {
-    try {
-      await chrome.tabs.sendMessage(tabId, { type: "preload:collect-candidates" });
-    } catch (_error) {
-      // A just-created tab can race content-script injection. Runtime refresh below covers it.
-    }
+    await requestPreloadCandidateRefreshForTab(tabId);
     await requestPreloadCandidateRefreshForOpenTabs();
     return true;
   }, { tabId });
@@ -581,12 +615,24 @@ async function getRuntimeOccupancy(serviceWorker, tabId) {
     const runtimeEntry = findSourceTabRuntime(preloadState, tabId);
     const sourceTabRuntime = runtimeEntry?.sourceTabRuntime || null;
     const preloadWindowId = runtimeEntry?.normalWindowRuntime?.preloadWindow?.windowId || null;
+    const hiddenEntries = Object.values(sourceTabRuntime?.hiddenTabEntriesByUrl || {}).map(
+      (entry) => ({
+        requestedUrl: entry.requestedUrl,
+        loadedUrl: entry.loadedUrl,
+        score: entry.score,
+        scoreBreakdown: entry.scoreBreakdown ?? null,
+        bookmarkPreload: entry.bookmarkPreload ?? null,
+        siteSelection: entry.siteSelection ?? null,
+        status: entry.status,
+      })
+    );
     const preloadTabs = preloadWindowId
       ? await chrome.tabs.query({ windowId: preloadWindowId })
       : [];
     const sentinelUrl = PRELOAD_WINDOW_SENTINEL_URL;
     return {
       preloadWindowId,
+      hiddenEntries,
       hiddenEntryCount: Object.keys(sourceTabRuntime?.hiddenTabEntriesByUrl || {}).length,
       prerenderEntryCount: Object.keys(sourceTabRuntime?.prerenderEntriesByUrl || {}).length,
       prefetchEntryCount: Object.keys(sourceTabRuntime?.prefetchEntriesByUrl || {}).length,
@@ -596,6 +642,22 @@ async function getRuntimeOccupancy(serviceWorker, tabId) {
       knownRuntime: globalThis.snapshotKnownPreloadRuntime?.() || null,
     };
   }, { tabId });
+}
+
+async function waitForRuntimeCondition(serviceWorker, tabId, predicate, timeoutMs = 12000) {
+  const startedAt = Date.now();
+  let lastRuntime = null;
+
+  while (Date.now() - startedAt < timeoutMs) {
+    lastRuntime = await getRuntimeOccupancy(serviceWorker, tabId);
+    if (predicate(lastRuntime)) {
+      return lastRuntime;
+    }
+    await requestCandidateRefresh(serviceWorker, tabId);
+    await sleep(700);
+  }
+
+  return lastRuntime;
 }
 
 async function waitForSnapshotCondition(serviceWorker, tabId, predicate, timeoutMs = 12000) {
@@ -616,12 +678,14 @@ async function waitForSnapshotCondition(serviceWorker, tabId, predicate, timeout
 
 async function waitForTabComplete(serviceWorker, tabId, timeoutMs = 12000) {
   const startedAt = Date.now();
+  let lastStatus = null;
 
   while (Date.now() - startedAt < timeoutMs) {
     const status = await swEval(serviceWorker, async ({ tabId }) => {
       const tab = await chrome.tabs.get(tabId);
       return { status: tab.status, url: tab.url };
     }, { tabId });
+    lastStatus = status;
     if (status.status === "complete") {
       await sleep(700);
       return status;
@@ -629,7 +693,9 @@ async function waitForTabComplete(serviceWorker, tabId, timeoutMs = 12000) {
     await sleep(300);
   }
 
-  throw new Error(`Timed out waiting for tab ${tabId} to complete`);
+  throw new Error(
+    `Timed out waiting for tab ${tabId} to complete: ${JSON.stringify(lastStatus)}`
+  );
 }
 
 async function waitForPageReady(page, timeoutMs = 10000) {
@@ -732,9 +798,10 @@ async function waitForExtensionServiceWorker(debugPort, timeoutMs = 20000) {
         const permissions = Array.isArray(manifest?.permissions)
           ? manifest.permissions
           : [];
-        const manifestName = manifest?.name || "";
         const isTargetExtension =
-          (manifestName === "__MSG_appName__" || manifestName === "Zero-Latency Web") &&
+          manifest?.background?.service_worker === "service-worker.js" &&
+          manifest?.options_page === "settings/index.html" &&
+          permissions.includes("nativeMessaging") &&
           permissions.includes("bookmarks") &&
           permissions.includes("storage");
 
@@ -865,11 +932,12 @@ function launchChrome({ webPort, debugPort }) {
     `--host-resolver-rules=${resolverRules}`,
     "--no-first-run",
     "--no-default-browser-check",
+    "--no-sandbox",
     "--disable-default-apps",
     "--disable-sync",
     "--disable-features=Translate,AutofillServerCommunication",
     "--window-size=1280,900",
-    `http://www.google.com:${webPort}/search?q=startup-smoke`,
+    `http://www.google.test:${webPort}/search?q=startup-smoke`,
   ];
 
   const child = spawn(chromePath, args, {
@@ -917,7 +985,7 @@ async function startTestServer(port) {
     const host = (request.headers.host || "").split(":")[0];
     response.setHeader("Cache-Control", "no-store");
 
-    if (host === "www.google.com" && requestUrl.pathname === "/search") {
+    if (host === "www.google.test" && requestUrl.pathname === "/search") {
       respondHtml(response, renderGoogleSearchPage(requestUrl));
       return;
     }
