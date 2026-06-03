@@ -23,10 +23,10 @@ function createHarness(overrides = {}) {
   const modules = {
     NATIVE_APP_EXTENSION_HEARTBEAT_PATH: "/api/v1/extension/heartbeat",
     NATIVE_APP_HEARTBEAT_ALARM: "native-app-heartbeat",
-    NATIVE_APP_HEARTBEAT_INTERVAL_SECONDS: 10,
+    NATIVE_APP_HEARTBEAT_INTERVAL_SECONDS: 5,
     NATIVE_APP_HEARTBEAT_RECOVERY_DELAYS_MS: [0],
     NATIVE_APP_WAKE_RETRY_ALARM: "native-app-wake-retry",
-    NATIVE_APP_WAKE_RETRY_INTERVAL_SECONDS: 10,
+    NATIVE_APP_WAKE_RETRY_INTERVAL_SECONDS: 5,
     collectNativeAppHeartbeatBrowserActivity: async () => ({
       clientId: "zlw:test",
       normalWindowCount: 1,

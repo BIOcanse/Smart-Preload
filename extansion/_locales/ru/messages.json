@@ -1,0 +1,653 @@
+{
+  "appName": {
+    "message": "Умная предзагрузка"
+  },
+  "appDescription": {
+    "message": "Более умно и активно предзагружает страницы, которые вы, вероятно, откроете дальше."
+  },
+  "commonReady": {
+    "message": "??????"
+  },
+  "commonLoading": {
+    "message": "????????"
+  },
+  "commonFailed": {
+    "message": "??????"
+  },
+  "commonSaving": {
+    "message": "??????????"
+  },
+  "commonSaved": {
+    "message": "?????????"
+  },
+  "commonUnsaved": {
+    "message": "?? ?????????"
+  },
+  "commonDownloading": {
+    "message": "????????"
+  },
+  "commonDownloaded": {
+    "message": "?????????"
+  },
+  "commonRemoving": {
+    "message": "????????"
+  },
+  "commonRemoved": {
+    "message": "???????"
+  },
+  "commonOn": {
+    "message": "???."
+  },
+  "commonOff": {
+    "message": "????."
+  },
+  "commonUnknown": {
+    "message": "??????????"
+  },
+  "commonThisPlatform": {
+    "message": "??? ?????????"
+  },
+  "commonModel": {
+    "message": "??????"
+  },
+  "commonDone": {
+    "message": "??????."
+  },
+  "commonWorking": {
+    "message": "???????????..."
+  },
+  "commonDismiss": {
+    "message": "???????"
+  },
+  "commonHelp": {
+    "message": "???????"
+  },
+  "popupCurrentPage": {
+    "message": "??????? ????????"
+  },
+  "popupNodes": {
+    "message": "????"
+  },
+  "popupEdges": {
+    "message": "?????"
+  },
+  "popupUpdated": {
+    "message": "?????????"
+  },
+  "popupTop": {
+    "message": "???"
+  },
+  "popupNoPreloadQualifiedLinks": {
+    "message": "?? ???? ???????? ???? ??? ??????, ?????????? ??? ????????????."
+  },
+  "popupRefresh": {
+    "message": "????????"
+  },
+  "popupStop": {
+    "message": "??????????"
+  },
+  "popupStart": {
+    "message": "?????????"
+  },
+  "popupSettings": {
+    "message": "?????????"
+  },
+  "popupWaitingForData": {
+    "message": "???????? ??????."
+  },
+  "popupOpenSettingsFailed": {
+    "message": "?? ??????? ??????? ???????? ????????."
+  },
+  "popupLoadingVisitGraph": {
+    "message": "???????? ????? ?????????..."
+  },
+  "popupPausedMessage": {
+    "message": "?????????? ???????????: ??????????????? ? ???????????? ?????????."
+  },
+  "popupVisitGraphLoaded": {
+    "message": "???? ????????? ????????."
+  },
+  "popupLoadVisitGraphFailed": {
+    "message": "?? ??????? ????????? ???? ?????????."
+  },
+  "performanceInsufficientReducePreloadCaps": {
+    "message": "?????????? ???????? ??????????????????. ????????? ?????? ????????????."
+  },
+  "popupCurrentPageNotTracked": {
+    "message": "Текущая страница не отслеживается"
+  },
+  "popupCurrentPageNotTrackable": {
+    "message": "Текущую страницу нельзя отслеживать."
+  },
+  "popupStoppingService": {
+    "message": "Остановка прогнозирования и предзагрузки..."
+  },
+  "popupStartingService": {
+    "message": "Запуск прогнозирования и предзагрузки..."
+  },
+  "popupUpdateStateFailed": {
+    "message": "Не удалось обновить состояние расширения."
+  },
+  "popupRestoreServiceTitle": {
+    "message": "Возобновить прогнозирование и предзагрузку"
+  },
+  "popupStopServiceTitle": {
+    "message": "Остановить прогнозирование и предзагрузку и закрыть фоновое окно предзагрузки"
+  },
+  "popupWeightLabel": {
+    "message": "Вес: {0}"
+  },
+  "popupSiteMeta": {
+    "message": "Сайт: {0} (#{1}, {2}/{3})"
+  },
+  "popupFreqMeta": {
+    "message": "Частота: сайт {0}, исход. {1}, вход. {2}"
+  },
+  "popupBookmarkMeta": {
+    "message": "Закладка: {0}, ранг {1}"
+  },
+  "settingsPageTitle": {
+    "message": "Настройки умной предзагрузки"
+  },
+  "settingsTitle": {
+    "message": "?????????"
+  },
+  "settingsNavAriaLabel": {
+    "message": "Разделы настроек"
+  },
+  "settingsOverview": {
+    "message": "Обзор"
+  },
+  "settingsTracking": {
+    "message": "????????????"
+  },
+  "settingsPreload": {
+    "message": "????????????"
+  },
+  "settingsOrdering": {
+    "message": "Сортировка"
+  },
+  "settingsExperiments": {
+    "message": "????????????"
+  },
+  "settingsOverviewSub": {
+    "message": "Профиль выполнения и автонастройка"
+  },
+  "settingsOrderingSub": {
+    "message": "Простые фильтры ранжирования"
+  },
+  "settingsStorageFooter": {
+    "message": "??????????? ? ????????? ????????? ??????????."
+  },
+  "settingsLoadingSettings": {
+    "message": "???????? ????????..."
+  },
+  "settingsHeroKicker": {
+    "message": "Управление умной предзагрузкой"
+  },
+  "settingsHeroTitle": {
+    "message": "Более умная и более активная предзагрузка"
+  },
+  "settingsHeroCopy": {
+    "message": "Умная предзагрузка распределяет слоты между активными вкладками по сигналам страницы, недавнему вниманию и нагрузке устройства, при этом лимиты можно задавать вручную."
+  },
+  "settingsDeviceProfile": {
+    "message": "Профиль устройства"
+  },
+  "settingsDetectingHardware": {
+    "message": "Определение оборудования..."
+  },
+  "settingsEffectiveGroupCaps": {
+    "message": "Действующие лимиты групп"
+  },
+  "settingsWaitingForSettings": {
+    "message": "Ожидание настроек..."
+  },
+  "settingsWatchdog": {
+    "message": "Сторожевой контроль"
+  },
+  "settingsNativeApp": {
+    "message": "Локальное приложение"
+  },
+  "settingsCheckingConnection": {
+    "message": "Проверка соединения..."
+  },
+  "settingsOverviewMeta": {
+    "message": "Общие элементы управления, влияющие на то, насколько активно расширение адаптируется к текущей машине."
+  },
+  "settingsAutomaticDeviceTuning": {
+    "message": "Автоматическая настройка устройства"
+  },
+  "settingsAutomaticDeviceTuningDesc": {
+    "message": "Переключатель зарезервирован для будущего планирования с учетом оборудования. Сейчас он сохраняется, но пока не меняет поведение во время работы."
+  },
+  "settingsPreloadMode": {
+    "message": "Режим предзагрузки"
+  },
+  "settingsPreloadModeDesc": {
+    "message": "Выбор зарезервирован для будущих уровней стратегии. Сейчас он сохраняется, но пока не меняет поведение во время работы."
+  },
+  "settingsModeConservative": {
+    "message": "Консервативный"
+  },
+  "settingsModeBalanced": {
+    "message": "Сбалансированный"
+  },
+  "settingsModeAggressive": {
+    "message": "Агрессивный"
+  },
+  "settingsTrackingMeta": {
+    "message": "Настройки нормализации навигационных узлов и добавления их в направленный граф."
+  },
+  "settingsSeparateGoogleSearchPages": {
+    "message": "Разделять страницы поиска Google"
+  },
+  "settingsSeparateGoogleSearchPagesDesc": {
+    "message": "Отслеживать страницы результатов `google/search` как отдельный узел, чтобы граф мог изучать переходы со страницы поиска к целям."
+  },
+  "settingsSkipGoogleInternalPages": {
+    "message": "Пропускать внутренние страницы Google"
+  },
+  "settingsSkipGoogleInternalPagesDesc": {
+    "message": "Не отслеживать и не предзагружать Chrome Web Store, страницы аккаунта и менеджера паролей Google, Chrome sync, chromestatus и похожие административные страницы Google. Gemini и обычные продукты Google остаются в отслеживании."
+  },
+  "settingsPreloadMeta": {
+    "message": "Настройки подготовки вкладок, ремонта через сторожевой контроль и поведения окна предзагрузки."
+  },
+  "settingsEnablePreloading": {
+    "message": "???????? ????????????"
+  },
+  "settingsEnablePreloadingDesc": {
+    "message": "Главный переключатель регистрации кандидатов, фоновых вкладок и замены вкладок."
+  },
+  "settingsIgnoreWaterfallDynamicLinks": {
+    "message": "Игнорировать динамические ссылки waterfall"
+  },
+  "settingsIgnoreWaterfallDynamicLinksDesc": {
+    "message": "На страницах с бесконечной прокруткой или waterfall использовать для прогнозирования первый стабильный набор ссылок и игнорировать ссылки, добавленные позже потоковой загрузкой."
+  },
+  "settingsExcludeIncognitoWindows": {
+    "message": "????????? ???? ????????? ?? ????????????"
+  },
+  "settingsExcludeIncognitoWindowsDesc": {
+    "message": "Если включено, окна инкогнито не участвуют в обучении, оценке, распределении слотов и предзагрузках по взаимодействию. Если выключено, источники инкогнито и обычные источники делят лимиты аккаунта, но источники инкогнито используют только окна предзагрузки инкогнито."
+  },
+  "settingsTransitionFrequencyWindow": {
+    "message": "Окно частоты переходов"
+  },
+  "settingsTransitionFrequencyWindowDesc": {
+    "message": "Если включено, вес частоты переходов использует выбранное временное окно вместо общего значения за все время."
+  },
+  "settingsGlobalPreloadScheduler": {
+    "message": "?????????? ??????????? ????????????"
+  },
+  "settingsGlobalPreloadSchedulerDesc": {
+    "message": "Лимиты на уровне аккаунта для распределения слотов предзагрузки между всеми вкладками-источниками с кандидатами."
+  },
+  "settingsSchedulerHiddenTabs": {
+    "message": "Скрытые реальные вкладки"
+  },
+  "settingsSchedulerNativePreload": {
+    "message": "Нативная предзагрузка"
+  },
+  "settingsSchedulerAttentionPool": {
+    "message": "Пул внимания"
+  },
+  "settingsSchedulerMin": {
+    "message": "Мин."
+  },
+  "settingsSchedulerMax": {
+    "message": "Макс."
+  },
+  "settingsSchedulerHalfLifeTabs": {
+    "message": "Полупериод роста лимита, вкладки"
+  },
+  "settingsSchedulerHalfLifeTabsDesc": {
+    "message": "Когда число вкладок увеличивается на это значение, динамический общий лимит проходит половину оставшегося пути к максимуму. Чем меньше значение, тем быстрее растет лимит."
+  },
+  "settingsSchedulerPoolHours": {
+    "message": "Часы пула"
+  },
+  "settingsSchedulerSegmentSeconds": {
+    "message": "Секунды сегмента"
+  },
+  "settingsSchedulerMaxGapSeconds": {
+    "message": "Максимальный разрыв в секундах"
+  },
+  "settingsSchedulerInputWindowSeconds": {
+    "message": "Окно ввода в секундах"
+  },
+  "settingsSchedulerMediaWeight": {
+    "message": "Вес видео"
+  },
+  "settingsSchedulerAudioWeight": {
+    "message": "Вес аудио"
+  },
+  "settingsAiPredictionAssistant": {
+    "message": "AI-???????? ???????????????"
+  },
+  "settingsAiPredictionAssistantDesc": {
+    "message": "Выберите внешнего поставщика ИИ и модель для оценки ключевых слов. Расширение напрямую использует ваш API-ключ; оно не скачивает и не управляет локальными моделями."
+  },
+  "settingsAiProviderApiKey": {
+    "message": "API-???? ??????????"
+  },
+  "settingsAiProviderApiKeyDesc": {
+    "message": "Хранится в локальном хранилище расширения и используется только service worker, когда прогнозирование ИИ включено. LM Studio игнорирует это поле."
+  },
+  "settingsAiProviderEndpoint": {
+    "message": "Endpoint ??????????"
+  },
+  "settingsAiProviderEndpointDesc": {
+    "message": "Оставьте значение по умолчанию, если вы не используете локальный OpenAI-совместимый сервис вроде LM Studio."
+  },
+  "settingsWindowWatchdog": {
+    "message": "Watchdog ????"
+  },
+  "settingsWindowWatchdogDesc": {
+    "message": "Пересоздавать окно предзагрузки и восстанавливать отсутствующие вкладки, когда контейнер потерян."
+  },
+  "settingsWatchdogInterval": {
+    "message": "???????? watchdog"
+  },
+  "settingsWatchdogIntervalDesc": {
+    "message": "Как часто расширение проверяет, что окно предзагрузки все еще существует."
+  },
+  "settingsWatchdogIntervalOption1": {
+    "message": "1 секунда"
+  },
+  "settingsWatchdogIntervalOption2": {
+    "message": "2 секунды"
+  },
+  "settingsWatchdogIntervalOption3": {
+    "message": "3 секунды"
+  },
+  "settingsWatchdogIntervalOption5": {
+    "message": "5 секунд"
+  },
+  "settingsWatchdogIntervalOption10": {
+    "message": "10 секунд"
+  },
+  "settingsFullscreenPressurePolicy": {
+    "message": "???????? ??????? ??????? ??? ????????????? ??????/????"
+  },
+  "settingsFullscreenPressurePolicyDesc": {
+    "message": "Когда другое приложение в полноэкранном режиме или обнаружен процесс игры, выберите, как обрабатывать скрытые реальные вкладки предзагрузки."
+  },
+  "settingsFullscreenPressurePolicyClose": {
+    "message": "????????? ???????"
+  },
+  "settingsFullscreenPressurePolicySleep": {
+    "message": "??????? ???????"
+  },
+  "settingsFullscreenPressurePolicyIgnore": {
+    "message": "?????? ?? ??????"
+  },
+  "settingsSecond": {
+    "message": "{0} секунда"
+  },
+  "settingsSeconds": {
+    "message": "{0} секунд"
+  },
+  "settingsForceMinimize": {
+    "message": "????????????? ??????????? ???? ????????????"
+  },
+  "settingsForceMinimizeDesc": {
+    "message": "Сразу снова сворачивать окно предзагрузки, если оно восстановлено или изменило размер."
+  },
+  "settingsOrderingMeta": {
+    "message": "Фиксированные фильтры ранжирования делают первую версию предсказуемой. Более сложные программируемые цепочки фильтров можно добавить позже без изменения сохраненной формы правила."
+  },
+  "settingsExperimentsMeta": {
+    "message": "Рискованные живые переключатели находятся здесь. Переключатели-заготовки тоже остаются здесь, но только сохраняются, пока не будут реально подключены к поведению во время работы."
+  },
+  "settingsCrossSiteCurrentTabSwap": {
+    "message": "Жесткая замена текущей вкладки между сайтами"
+  },
+  "settingsCrossSiteCurrentTabSwapDesc": {
+    "message": "Использовать путь замены через скрытую реальную страницу для переходов между сайтами, остающихся в текущей вкладке. Быстрее, когда работает, но может повредить историю и кнопку Назад. Включайте только если принимаете эти эффекты."
+  },
+  "settingsIdleWakeStrongDevices": {
+    "message": "Пробуждение в простое на мощных устройствах"
+  },
+  "settingsIdleWakeStrongDevicesDesc": {
+    "message": "Сохранено только для будущего использования. Сейчас не пробуждает дополнительные вкладки-кандидаты."
+  },
+  "settingsPointerProximityPrediction": {
+    "message": "Прогноз по близости указателя"
+  },
+  "settingsPointerProximityPredictionDesc": {
+    "message": "Сохранено только для будущего использования. Сейчас не добавляет прогнозирование по указателю."
+  },
+  "settingsAuthStateWarmup": {
+    "message": "Прогрев состояния авторизации"
+  },
+  "settingsAuthStateWarmupDesc": {
+    "message": "Сохранено только для будущего использования. Сейчас не меняет авторизацию или прогрев."
+  },
+  "settingsNoUnsavedChanges": {
+    "message": "??? ????????????? ?????????."
+  },
+  "settingsResetDefaults": {
+    "message": "???????? ?????????"
+  },
+  "settingsSaveSettings": {
+    "message": "????????? ?????????"
+  },
+  "settingsAiModelTask": {
+    "message": "Задача модели ИИ"
+  },
+  "settingsReadingLocalSettings": {
+    "message": "Чтение локальных настроек расширения."
+  },
+  "settingsCouldNotLoad": {
+    "message": "Не удалось загрузить настройки из хранилища."
+  },
+  "settingsCouldNotLoadAiStatus": {
+    "message": "Не удалось загрузить состояние модели ИИ."
+  },
+  "settingsDefaultsRestored": {
+    "message": "Значения по умолчанию восстановлены в форме. Сохраните, чтобы применить."
+  },
+  "settingsUnsavedReady": {
+    "message": "Несохраненные изменения готовы к применению."
+  },
+  "settingsWritingLocalSettings": {
+    "message": "Запись настроек в локальное хранилище расширения."
+  },
+  "settingsWrittenSuccessfully": {
+    "message": "Настройки успешно записаны."
+  },
+  "settingsCouldNotSave": {
+    "message": "Не удалось сохранить настройки."
+  },
+  "settingsPreparingRuntime": {
+    "message": "Подготовка переносимого runtime при необходимости."
+  },
+  "settingsRemovingSelectedModel": {
+    "message": "Удаление выбранной модели."
+  },
+  "settingsInstallingModel": {
+    "message": "Установка runtime при необходимости, затем скачивание выбранной модели."
+  },
+  "settingsRemovingModelAndRuntime": {
+    "message": "Удаление выбранной модели и очистка переносимого runtime, если он не используется."
+  },
+  "settingsAiModelActionFailed": {
+    "message": "Действие модели ИИ завершилось ошибкой."
+  },
+  "settingsModelStateUpdatedDirty": {
+    "message": "Состояние модели обновлено. Другие несохраненные изменения все еще ожидают."
+  },
+  "settingsPortableModelUpdated": {
+    "message": "Переносимый runtime и состояние модели обновлены."
+  },
+  "settingsModelDownloaded": {
+    "message": "Модель скачана."
+  },
+  "settingsModelRemoved": {
+    "message": "Модель удалена."
+  },
+  "settingsCouldNotUpdateModel": {
+    "message": "Не удалось обновить выбранную модель."
+  },
+  "settingsHardwareMeta": {
+    "message": "{0} ядер | подсказка памяти {1} ГБ"
+  },
+  "settingsEffectivePreloadMeta": {
+    "message": "Лимиты нативных / вкладочных слотов. Правила используют {0}."
+  },
+  "settingsWatchdogChecksEvery": {
+    "message": "Проверка каждые {0} сек."
+  },
+  "settingsWindowRepairDisabled": {
+    "message": "Восстановление окна отключено."
+  },
+  "settingsSystemHidingUnsupported": {
+    "message": "Скрытие на уровне системы не поддерживается на {0}."
+  },
+  "settingsSystemHidingActive": {
+    "message": "Скрытие окна на уровне системы активно."
+  },
+  "settingsNativeAppOffline": {
+    "message": "Локальное приложение не обнаружено. Используется резервное сворачивание."
+  },
+  "settingsConnected": {
+    "message": "??????????"
+  },
+  "settingsOffline": {
+    "message": "??????"
+  },
+  "settingsInstallingModelLabel": {
+    "message": "Установка {0}"
+  },
+  "settingsRemovingModelLabel": {
+    "message": "Удаление {0}"
+  },
+  "settingsModelReady": {
+    "message": "Модель готова"
+  },
+  "settingsUninstallFailed": {
+    "message": "Удаление не удалось"
+  },
+  "settingsInstallFailed": {
+    "message": "Установка не удалась"
+  },
+  "settingsTaskDidNotFinish": {
+    "message": "Задача не завершилась."
+  },
+  "settingsAiProviderMissingWarning": {
+    "message": "Оценка ИИ останется отключенной, пока у {0} нет модели, endpoint и API-ключа."
+  },
+  "settingsAiKeyOptionalPlaceholder": {
+    "message": "Необязательно для локальных совместимых endpoint"
+  },
+  "settingsAiLmStudioKeyIgnoredPlaceholder": {
+    "message": "Игнорируется для LM Studio"
+  },
+  "settingsAiLmStudioLoadingModel": {
+    "message": "Загрузка модели LM Studio: {0}"
+  },
+  "settingsAiKeyRequiredPlaceholder": {
+    "message": "???????????"
+  },
+  "settingsAiEnterKeyToLoadModels": {
+    "message": "??????? API-???? ??? ???????? ???????"
+  },
+  "settingsAiLoadingModels": {
+    "message": "???????? ?????????????? ???????..."
+  },
+  "settingsAiSelectProviderFirst": {
+    "message": "??????? ???????? ??????????"
+  },
+  "settingsAiNoSupportedModels": {
+    "message": "?????????????? ?????? ?????? ?? ???????"
+  },
+  "commonProvider": {
+    "message": "?????????"
+  },
+  "transitionWindowTotal": {
+    "message": "?????"
+  },
+  "transitionWindow365d": {
+    "message": "????????? ???"
+  },
+  "transitionWindow30d": {
+    "message": "????????? ?????"
+  },
+  "transitionWindow7d": {
+    "message": "????????? 7 ????"
+  },
+  "transitionWindow1d": {
+    "message": "????????? ????"
+  },
+  "ruleOperatorDisabled": {
+    "message": "?????????"
+  },
+  "ruleFieldValueA": {
+    "message": "???????? A"
+  },
+  "ruleFieldCompareA": {
+    "message": "????????? A"
+  },
+  "ruleFieldCompareB": {
+    "message": "????????? B"
+  },
+  "ruleFieldValueC": {
+    "message": "???????? C"
+  },
+  "ruleFieldStatus": {
+    "message": "??????"
+  },
+  "ruleTokenFixed": {
+    "message": "????????????? ????? {0}"
+  },
+  "ruleNativePerPageTitle": {
+    "message": "Лимит a слотов страниц группы нативной предзагрузки"
+  },
+  "ruleNativePerPageDesc": {
+    "message": "Применяется к нативным кандидатам `prefetch` / `prerender`. Определяет, сколько кандидатов страниц эта группа может сохранить для финального выполнения."
+  },
+  "ruleTabPerPageTitle": {
+    "message": "Лимит a слотов страниц группы предзагрузки реальными вкладками"
+  },
+  "ruleTabPerPageDesc": {
+    "message": "Применяется к кандидатам, которым нужны реальные фоновые вкладки. Определяет, сколько кандидатов страниц эта группа может сохранить для финального выполнения."
+  },
+  "ruleNativeSiteTitle": {
+    "message": "Число x сайтов с высоким весом группы нативной предзагрузки"
+  },
+  "ruleNativeSiteDesc": {
+    "message": "Применяется к нативным кандидатам `prefetch` / `prerender`. Определяет, сколько сайтов с высоким весом попадут на этап распределения слотов сайтов."
+  },
+  "ruleTabSiteTitle": {
+    "message": "Число x сайтов с высоким весом группы предзагрузки реальными вкладками"
+  },
+  "ruleTabSiteDesc": {
+    "message": "Применяется к кандидатам, которым нужны реальные фоновые вкладки, включая межсайтовую предзагрузку новой вкладки и межсайтовые кандидаты жесткой замены текущей вкладки, направленные в hidden-tab."
+  },
+  "ruleGoogleBookmarkRankTitle": {
+    "message": "Ранг x предзагрузки закладок на странице поиска Google"
+  },
+  "ruleGoogleBookmarkRankDesc": {
+    "message": "Применяется только на страницах поиска Google. Если включено, закладки Chrome сохраняются этим правилом ранга как независимые постоянные цели предзагрузки."
+  },
+  "deviceProfileBalanced": {
+    "message": "????????????????"
+  },
+  "deviceProfileHighEnd": {
+    "message": "??????? ?????"
+  },
+  "deviceProfileStrong": {
+    "message": "??????"
+  },
+  "deviceProfileConstrained": {
+    "message": "????????????"
+  },
+  "settingsDiagnosticsLogging": {
+    "message": "????? ???????"
+  },
+  "settingsDiagnosticsLoggingDesc": {
+    "message": "???? ????????, ??????????? runtime ???????????? ??? JSONL ? ????? portable logs ?????????? ??????????."
+  }
+}

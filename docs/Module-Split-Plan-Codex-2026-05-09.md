@@ -570,8 +570,8 @@ Rust 侧：
 
 已完成：
 
-- `extansion/background/preload/prediction/bookmarks.js` 不拆文件，内部拆出书签预加载上下文解析、书签频数排名、候选诊断、候选对象构造。
-- `extansion/background/preload/prediction/candidate-pool.js` 不拆文件，内部拆出页面链接候选构造、书签候选合并、候选 Map merge、metrics enrichment。
+- `extansion/background/preload/prediction/bookmarks.js` 不拆文件，内部拆出书签预加载上下文解析、书签频数排名、目标诊断、独立 hidden-tab 目标构造。
+- `extansion/background/preload/prediction/candidate-pool.js` 不拆文件，内部只处理页面链接候选构造、候选 Map merge、metrics enrichment。书签不是页面内链接，不再合并进普通候选池。
 - `extansion/background/learning/foreground-pages.js` 不拆文件，内部拆出前台页 digest 上下文解析、recent foreground record 写入、AI 关键词可用性判断、关键词生成、关键词写库。
 
 当前剩余：

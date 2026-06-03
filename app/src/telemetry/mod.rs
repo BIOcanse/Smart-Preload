@@ -10,12 +10,13 @@ pub use performance::{
     SystemSnapshotter,
 };
 pub use types::{
-    ChromePerformanceSnapshot, CpuHardwareSnapshot, DiskHardwareSnapshot, GpuHardwareSnapshot,
-    HardwareSnapshot, MemoryHardwareSnapshot, MemoryModuleSnapshot, PerformanceSnapshot,
-    SystemPerformanceSnapshot, SystemSnapshot,
+    ChromePerformanceSnapshot, CpuHardwareSnapshot, DiskHardwareSnapshot,
+    GpuDedicatedMemoryPerformanceSnapshot, GpuHardwareSnapshot, HardwareSnapshot,
+    MemoryHardwareSnapshot, MemoryModuleSnapshot, PerformanceSnapshot, SystemPerformanceSnapshot,
+    SystemSnapshot,
 };
 use types::{
-    ChromeProcessSnapshot, GpuEnginePerformanceRow, GpuMetrics, Win32DiskDriveRow,
-    Win32PhysicalMemoryRow, Win32ProcessorRow, Win32VideoControllerRow,
+    ChromeProcessSnapshot, GpuAdapterMemoryPerformanceRow, GpuEnginePerformanceRow, GpuMetrics,
+    Win32DiskDriveRow, Win32PhysicalMemoryRow, Win32ProcessorRow, Win32VideoControllerRow,
 };
 use utils::{chrono_like_now, memory_type_label, normalize_gpu_percent, ratio, wmi_connection};

@@ -65,6 +65,7 @@ impl SystemSnapshotter {
                     available_memory_bytes,
                     total_memory_bytes,
                     gpu_usage_percent: gpu_metrics.total_gpu_usage_percent,
+                    gpu_dedicated_memory: gpu_metrics.dedicated_memory,
                 },
                 chrome: ChromePerformanceSnapshot {
                     process_count: chrome_processes.len() as u32,
@@ -269,6 +270,51 @@ impl GpuMetrics {
         Ok(Self {
             total_gpu_usage_percent: normalize_gpu_percent(total),
             chrome_gpu_usage_percent: normalize_gpu_percent(chrome),
+            dedicated_memory: collect_gpu_dedicated_memory(&connection),
         })
     }
+}
+
+fn collect_gpu_dedicated_memory(
+    connection: &wmi::WMIConnection,
+) -> Option<GpuDedicatedMemoryPerformanceSnapshot> {
+    let rows: Vec<GpuAdapterMemoryPerformanceRow> = connection
+        .raw_query(
+            "SELECT DedicatedUsage, DedicatedLimit \
+             FROM Win32_PerfFormattedData_GPUPerformanceCounters_GPUAdapterMemory",
+        )
+        .unwrap_or_default();
+    let mut most_constrained: Option<GpuDedicatedMemoryPerformanceSnapshot> = None;
+
+    for row in rows {
+        let row_limit = row.dedicated_limit.unwrap_or(0);
+
+        if row_limit == 0 {
+            continue;
+        }
+
+        let used_bytes = row.dedicated_usage.unwrap_or(0).min(row_limit);
+        let available_bytes = row_limit.saturating_sub(used_bytes);
+        let snapshot = GpuDedicatedMemoryPerformanceSnapshot {
+            used_bytes,
+            limit_bytes: row_limit,
+            available_bytes,
+            usage_ratio: ratio(used_bytes, row_limit),
+        };
+
+        let should_replace = match most_constrained.as_ref() {
+            None => true,
+            Some(current) => {
+                snapshot.usage_ratio > current.usage_ratio
+                    || (snapshot.usage_ratio == current.usage_ratio
+                        && snapshot.used_bytes > current.used_bytes)
+            }
+        };
+
+        if should_replace {
+            most_constrained = Some(snapshot);
+        }
+    }
+
+    most_constrained
 }

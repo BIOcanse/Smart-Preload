@@ -37,6 +37,31 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
     };
   }
 
+  const runtimeSettings =
+    typeof getEffectiveExtensionSettings === "function"
+      ? getEffectiveExtensionSettings()
+      : null;
+  const sourceWindowContext =
+    await globalThis.ZeroLatencyPreloadIncognitoPolicy?.resolvePreloadWindowSourceContext?.(
+      normalWindowId,
+      runtimeSettings
+    );
+
+  if (sourceWindowContext && sourceWindowContext.ok !== true) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-window.ensure.skip-source-context", {
+      normalWindowId,
+      reason: sourceWindowContext.reason,
+      sourceIncognito: sourceWindowContext.incognito === true,
+    });
+    return {
+      windowId: null,
+      created: false,
+      supported: false,
+      reason: sourceWindowContext.reason,
+    };
+  }
+
+  const sourceWindowIncognito = sourceWindowContext?.incognito === true;
   const normalWindowRuntime = ensureNormalWindowRuntime(preloadState, normalWindowId);
   const existingWindowId = normalWindowRuntime.preloadWindow.windowId;
   const useSystemHiding = await resolveSystemHidingUsableForPreloadWindow();
@@ -45,6 +70,7 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
     normalWindowId,
     existingWindowId: normalizePositiveFiniteNumber(existingWindowId),
     useSystemHiding,
+    sourceIncognito: sourceWindowIncognito,
   });
 
   const trackedWindowResult = await tryReuseTrackedPreloadWindow({
@@ -53,6 +79,7 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
     normalWindowId,
     existingWindowId,
     useSystemHiding,
+    sourceWindowIncognito,
   });
 
   if (trackedWindowResult) {
@@ -64,6 +91,7 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
     normalWindowRuntime,
     normalWindowId,
     useSystemHiding,
+    sourceWindowIncognito,
   });
 
   if (discoveredWindowResult) {
@@ -75,6 +103,7 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
     normalWindowRuntime,
     normalWindowId,
     useSystemHiding,
+    sourceWindowIncognito,
   });
 }
 
@@ -83,6 +112,7 @@ async function tryReuseTrackedPreloadWindow({
   normalWindowId,
   existingWindowId,
   useSystemHiding,
+  sourceWindowIncognito,
 }) {
   if (Number.isFinite(existingWindowId)) {
     const existingWindow = await getWindowMaybe(existingWindowId);
@@ -90,6 +120,7 @@ async function tryReuseTrackedPreloadWindow({
     // Never hide a persisted window id unless the live window still proves it is ours.
     const existingWindowStillLooksLikePreloadWindow =
       existingWindow?.type === "normal" &&
+      existingWindow.incognito === sourceWindowIncognito &&
       (await isLivePreloadWindowForRuntime(normalWindowRuntime, existingWindow.id));
 
     if (existingWindowStillLooksLikePreloadWindow) {
@@ -110,6 +141,7 @@ async function tryReuseTrackedPreloadWindow({
         preloadWindowId: existingWindow.id,
         hiddenBySystem: normalWindowRuntime.preloadWindow.hiddenBySystem === true,
         hwnd: normalizePositiveFiniteNumber(normalWindowRuntime.preloadWindow.hwnd),
+        sourceIncognito: sourceWindowIncognito,
       });
 
       return {
@@ -122,7 +154,11 @@ async function tryReuseTrackedPreloadWindow({
     globalThis.ZeroLatencyDebugEvents?.record?.("preload-window.ensure.stale-window", {
       normalWindowId,
       existingWindowId,
-      reason: existingWindow?.type === "normal" ? "identity-mismatch" : "missing-window",
+      reason:
+        existingWindow?.type === "normal" &&
+        existingWindow.incognito !== sourceWindowIncognito
+          ? "incognito-mismatch"
+          : existingWindow?.type === "normal" ? "identity-mismatch" : "missing-window",
     });
     globalThis.clearKnownPreloadWindow?.(existingWindowId);
     resetPreloadWindowState(normalWindowRuntime.preloadWindow);
@@ -136,8 +172,13 @@ async function tryReuseDiscoveredPreloadWindow({
   normalWindowRuntime,
   normalWindowId,
   useSystemHiding,
+  sourceWindowIncognito,
 }) {
-  const reusableWindowId = await findReusablePreloadWindowId(preloadState, normalWindowId);
+  const reusableWindowId = await findReusablePreloadWindowId(
+    preloadState,
+    normalWindowId,
+    sourceWindowIncognito
+  );
 
   if (Number.isFinite(reusableWindowId)) {
     commitPreloadWindowRuntimeState(preloadState, normalWindowRuntime, reusableWindowId);
@@ -163,6 +204,7 @@ async function tryReuseDiscoveredPreloadWindow({
       preloadWindowId: reusableWindowId,
       hiddenBySystem: normalWindowRuntime.preloadWindow.hiddenBySystem === true,
       hwnd: normalizePositiveFiniteNumber(normalWindowRuntime.preloadWindow.hwnd),
+      sourceIncognito: sourceWindowIncognito,
     });
 
     return {
@@ -180,17 +222,24 @@ async function createPreloadWindowForRuntime({
   normalWindowRuntime,
   normalWindowId,
   useSystemHiding,
+  sourceWindowIncognito,
 }) {
   const previousChromeWindowHwnds = useSystemHiding
     ? await captureNativeChromeWindowHwnds()
     : null;
 
-  const createdWindow = await chrome.windows.create({
+  const createParams = {
     url: PRELOAD_WINDOW_SENTINEL_URL,
     focused: false,
     state: "minimized",
     type: "normal",
-  });
+  };
+
+  if (sourceWindowIncognito === true) {
+    createParams.incognito = true;
+  }
+
+  const createdWindow = await chrome.windows.create(createParams);
   await ensurePreloadWindowHiddenState({
     normalWindowRuntime,
     windowId: createdWindow.id,
@@ -213,6 +262,7 @@ async function createPreloadWindowForRuntime({
     useSystemHiding,
     hiddenBySystem: normalWindowRuntime.preloadWindow.hiddenBySystem === true,
     hwnd: normalizePositiveFiniteNumber(normalWindowRuntime.preloadWindow.hwnd),
+    sourceIncognito: sourceWindowIncognito,
   });
   return {
     windowId: createdWindow.id,
@@ -655,7 +705,11 @@ function normalizeFiniteNumber(value) {
   return Number.isFinite(numericValue) ? numericValue : null;
 }
 
-async function findReusablePreloadWindowId(preloadState, normalWindowId) {
+async function findReusablePreloadWindowId(
+  preloadState,
+  normalWindowId,
+  sourceWindowIncognito = false
+) {
   if (globalThis.ZeroLatencySupport?.supportsHiddenTabPreloadRuntime?.() !== true) {
     return null;
   }
@@ -698,7 +752,10 @@ async function findReusablePreloadWindowId(preloadState, normalWindowId) {
   for (const [windowId, trackedTabCount] of candidateWindowCounts.entries()) {
     const candidateWindow = await getWindowMaybe(windowId);
 
-    if (candidateWindow?.type !== "normal") {
+    if (
+      candidateWindow?.type !== "normal" ||
+      candidateWindow.incognito !== sourceWindowIncognito
+    ) {
       continue;
     }
 
@@ -730,6 +787,7 @@ async function findReusablePreloadWindowId(preloadState, normalWindowId) {
     normalWindowId,
     preloadWindowId: candidateWindows[0]?.windowId ?? null,
     candidateCount: candidateWindows.length,
+    sourceIncognito: sourceWindowIncognito,
   });
   return candidateWindows[0]?.windowId ?? null;
 }

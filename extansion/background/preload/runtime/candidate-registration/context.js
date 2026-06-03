@@ -41,6 +41,15 @@ async function resolvePreloadCandidateRegistrationContext(message, sender) {
     };
   }
 
+  const runtimeSettings = getEffectiveExtensionSettings();
+
+  if (!runtimeSettings.preloading.enabled) {
+    return {
+      ok: false,
+      response: { ok: true, preloadedCount: 0, skipped: true },
+    };
+  }
+
   const sourceWindow = await getWindowMaybe(sourceTab.windowId);
 
   if (!sourceWindow || sourceWindow.type !== "normal") {
@@ -50,18 +59,49 @@ async function resolvePreloadCandidateRegistrationContext(message, sender) {
     };
   }
 
-  const preloadState = await loadPreloadState();
+  if (
+    globalThis.ZeroLatencyPreloadIncognitoPolicy?.shouldExcludeIncognitoPreloadSource?.(
+      {
+        ...sourceTab,
+        incognito: sourceTab.incognito === true || sourceWindow.incognito === true,
+      },
+      runtimeSettings
+    )
+  ) {
+    const preloadState = await loadPreloadState();
+    const cleanup =
+      await globalThis.ZeroLatencyPreloadIncognitoPolicy.clearExcludedIncognitoPreloadState(
+        preloadState,
+        runtimeSettings,
+        {
+          tabs: [{ ...sourceTab, incognito: true }],
+          reason: "candidate-registration",
+        }
+      );
 
-  if (isPreloadTab(preloadState, sourceTab.id)) {
+    if (cleanup.mutated) {
+      await savePreloadState(cleanup.preloadState);
+    }
+
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-candidates.skip-incognito-source", {
+      sourceTabId: sourceTab.id,
+      sourceWindowId: sourceTab.windowId,
+      pageUrl: sourcePageUrl,
+    });
     return {
       ok: false,
-      response: { ok: true, preloadedCount: 0, skipped: true },
+      response: {
+        ok: true,
+        preloadedCount: 0,
+        skipped: true,
+        reason: "incognito-excluded",
+      },
     };
   }
 
-  const runtimeSettings = getEffectiveExtensionSettings();
+  const preloadState = await loadPreloadState();
 
-  if (!runtimeSettings.preloading.enabled) {
+  if (isPreloadTab(preloadState, sourceTab.id)) {
     return {
       ok: false,
       response: { ok: true, preloadedCount: 0, skipped: true },

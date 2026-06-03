@@ -12,7 +12,7 @@
       case "handle-installed":
         await initializeExtensionState();
         await applyRuntimeSettingsAction();
-        console.log("Zero-Latency Web visit tracker installed.");
+        console.log("Smart Preload extension installed.");
         return;
       case "handle-startup":
         await initializeExtensionState();
@@ -49,10 +49,10 @@
     }
 
     await globalThis.ZeroLatencyNativeAppHeartbeat?.ensureAlarm?.(true);
+    await sendImmediateNativeAppHeartbeat("runtime-settings");
     await globalThis.ZeroLatencySupport.probeNativeAppAvailability({
-      forceRefresh: false,
+      forceRefresh: true,
     });
-    void globalThis.ZeroLatencyNativeAppHeartbeat?.send?.("runtime-settings");
     await ensurePreloadWindowWatchdog();
 
     if (!runtimeSettings.preloading.enabled) {
@@ -69,9 +69,45 @@
 
     await globalThis.ZeroLatencyAiProviders?.ensureLmStudioLifecycleWatchdog?.(runtimeSettings);
 
+    await clearExcludedIncognitoPreloadStateForRuntime(runtimeSettings);
     await globalThis.ZeroLatencyPreloadRuntimeManager.ensureWarmWindows?.();
     await globalThis.ZeroLatencyPreloadRuntimeManager.maintain();
     await requestPreloadCandidateRefreshForOpenTabs();
+  }
+
+  async function clearExcludedIncognitoPreloadStateForRuntime(runtimeSettings) {
+    if (
+      globalThis.ZeroLatencyPreloadIncognitoPolicy?.isIncognitoPreloadExclusionEnabled?.(
+        runtimeSettings
+      ) !== true
+    ) {
+      return;
+    }
+
+    const preloadState = await loadPreloadState();
+    const cleanup =
+      await globalThis.ZeroLatencyPreloadIncognitoPolicy.clearExcludedIncognitoPreloadState(
+        preloadState,
+        runtimeSettings,
+        {
+          reason: "runtime-settings",
+        }
+      );
+
+    if (cleanup.mutated) {
+      await savePreloadState(cleanup.preloadState);
+    }
+  }
+
+  async function sendImmediateNativeAppHeartbeat(reason) {
+    try {
+      await globalThis.ZeroLatencyNativeAppHeartbeat?.send?.(reason);
+    } catch (error) {
+      globalThis.ZeroLatencyDebugEvents?.record?.("native-app.heartbeat.immediate-error", {
+        reason,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
 
   globalThis.ZeroLatencyRuntimeActions = {

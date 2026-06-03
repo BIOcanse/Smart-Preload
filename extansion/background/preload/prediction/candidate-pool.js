@@ -28,16 +28,6 @@ async function buildPreloadCandidatePool({
     sourceCandidateLinks,
     transitionWindowKey,
   });
-  await addBookmarkCandidatesToPool(candidatePoolByUrl, {
-    sourceNodeId,
-    sourceUrl,
-    sourceWindowId,
-    sourceTabId,
-    graph,
-    settings,
-    transitionWindowKey,
-    linkIndexOffset: sourceCandidateLinks.length,
-  });
 
   const candidatePool = filterSourceSpecificCandidatePool(
     [...candidatePoolByUrl.values()],
@@ -137,14 +127,6 @@ function buildLinkPreloadCandidate({
   };
 }
 
-async function addBookmarkCandidatesToPool(candidatePoolByUrl, context) {
-  const bookmarkCandidateEntries = await buildGoogleBookmarkPreloadCandidateEntries(context);
-
-  for (const bookmarkCandidate of bookmarkCandidateEntries) {
-    mergeCandidateIntoPool(candidatePoolByUrl, bookmarkCandidate.url, bookmarkCandidate);
-  }
-}
-
 function mergeCandidateIntoPool(candidatePoolByUrl, candidateUrl, nextCandidate) {
   const existingCandidate = candidatePoolByUrl.get(candidateUrl);
 
@@ -194,8 +176,6 @@ function mergeCandidatePoolEntry(existingCandidate, nextCandidate) {
       existingCandidate.extraScoreMultipliers,
       nextCandidate.extraScoreMultipliers
     ),
-    bookmarkPreload:
-      selectBookmarkPreloadMetadata(existingCandidate.bookmarkPreload, nextCandidate.bookmarkPreload),
   };
 }
 
@@ -204,21 +184,6 @@ function mergeCandidateScoreMultipliers(existingMultipliers, nextMultipliers) {
     ...(Array.isArray(existingMultipliers) ? existingMultipliers : []),
     ...(Array.isArray(nextMultipliers) ? nextMultipliers : []),
   ].filter((value) => Number.isFinite(Number(value)));
-}
-
-function selectBookmarkPreloadMetadata(existingMetadata, nextMetadata) {
-  if (!existingMetadata) {
-    return nextMetadata ?? null;
-  }
-
-  if (!nextMetadata) {
-    return existingMetadata;
-  }
-
-  return clampNonNegativeInt(nextMetadata.count, 0) >
-    clampNonNegativeInt(existingMetadata.count, 0)
-    ? nextMetadata
-    : existingMetadata;
 }
 
 function buildCandidateInstancePriority(candidate) {

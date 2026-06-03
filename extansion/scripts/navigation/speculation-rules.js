@@ -1,15 +1,66 @@
 (function () {
   const namespace = (globalThis.ZeroLatencyNavigationContent =
     globalThis.ZeroLatencyNavigationContent || {});
-  const { constants, normalizeNavigableHref } = namespace;
+  const { constants, state, normalizeNavigableHref } = namespace;
 
   function applySpeculationRules({ prerenderTargets = [], prefetchTargets = [] }) {
+    updateSpeculationRuleScope("scheduled", {
+      prerenderTargets,
+      prefetchTargets,
+    });
+    renderManagedSpeculationRules();
+  }
+
+  function applyInteractionSpeculationRules({ prerenderTargets = [], prefetchTargets = [] }) {
+    updateSpeculationRuleScope("interaction", {
+      prerenderTargets,
+      prefetchTargets,
+    });
+    renderManagedSpeculationRules();
+  }
+
+  function clearAllSpeculationRules() {
+    updateSpeculationRuleScope("scheduled", {
+      prerenderTargets: [],
+      prefetchTargets: [],
+    });
+    updateSpeculationRuleScope("interaction", {
+      prerenderTargets: [],
+      prefetchTargets: [],
+    });
+    renderManagedSpeculationRules();
+  }
+
+  function updateSpeculationRuleScope(scope, { prerenderTargets, prefetchTargets }) {
+    const normalizedScope = scope === "interaction" ? "interaction" : "scheduled";
+
+    if (normalizedScope === "interaction") {
+      state.interactionPrerenderTargets = Array.isArray(prerenderTargets)
+        ? prerenderTargets
+        : [];
+      state.interactionPrefetchTargets = Array.isArray(prefetchTargets)
+        ? prefetchTargets
+        : [];
+      return;
+    }
+
+    state.scheduledPrerenderTargets = Array.isArray(prerenderTargets) ? prerenderTargets : [];
+    state.scheduledPrefetchTargets = Array.isArray(prefetchTargets) ? prefetchTargets : [];
+  }
+
+  function renderManagedSpeculationRules() {
     const speculationRulesElement = document.getElementById(
       constants.SPECULATION_RULES_ELEMENT_ID
     );
     const serializedRules = buildSpeculationRulesPayload({
-      prerenderTargets,
-      prefetchTargets,
+      prerenderTargets: [
+        ...(state.scheduledPrerenderTargets || []),
+        ...(state.interactionPrerenderTargets || []),
+      ],
+      prefetchTargets: [
+        ...(state.scheduledPrefetchTargets || []),
+        ...(state.interactionPrefetchTargets || []),
+      ],
     });
 
     if (!serializedRules) {
@@ -120,6 +171,8 @@
 
   Object.assign(namespace, {
     applySpeculationRules,
+    applyInteractionSpeculationRules,
+    clearAllSpeculationRules,
     isExtensionOnlyMutation,
   });
 })();

@@ -12,6 +12,7 @@
     LINK_STABILITY_MAX_WAIT_MS: 900,
     BLANK_CLICK_RESOLUTION_TIMEOUT_MS: 500,
     CURRENT_TAB_CLICK_RESOLUTION_TIMEOUT_MS: 2500,
+    HOVER_PRELOAD_DELAY_MS: 80,
     WATERFALL_BASELINE_MAX_UNLOCKED_MS: 2500,
     RESCAN_DELAY_MS: 700,
     PAGE_DIGEST_DELAY_MS: 1500,
@@ -42,6 +43,12 @@
     lastUserInputAt: 0,
     lastAttentionActivityReportedAt: 0,
     lastAttentionActivitySignature: "",
+    hoverPreloadIntent: null,
+    hoverPreloadSequence: 0,
+    scheduledPrerenderTargets: [],
+    scheduledPrefetchTargets: [],
+    interactionPrerenderTargets: [],
+    interactionPrefetchTargets: [],
   };
 
   function sleep(ms) {

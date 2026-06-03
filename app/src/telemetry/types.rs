@@ -83,6 +83,7 @@ pub struct SystemPerformanceSnapshot {
     pub available_memory_bytes: u64,
     pub total_memory_bytes: u64,
     pub gpu_usage_percent: Option<f32>,
+    pub gpu_dedicated_memory: Option<GpuDedicatedMemoryPerformanceSnapshot>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -95,10 +96,20 @@ pub struct ChromePerformanceSnapshot {
     pub gpu_usage_percent: Option<f32>,
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GpuDedicatedMemoryPerformanceSnapshot {
+    pub used_bytes: u64,
+    pub limit_bytes: u64,
+    pub available_bytes: u64,
+    pub usage_ratio: f64,
+}
+
 #[derive(Debug, Default)]
 pub(super) struct GpuMetrics {
     pub total_gpu_usage_percent: Option<f32>,
     pub chrome_gpu_usage_percent: Option<f32>,
+    pub dedicated_memory: Option<GpuDedicatedMemoryPerformanceSnapshot>,
 }
 
 #[derive(Debug)]
@@ -154,4 +165,11 @@ pub(super) struct Win32DiskDriveRow {
 pub(super) struct GpuEnginePerformanceRow {
     pub name: Option<String>,
     pub utilization_percentage: Option<f32>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub(super) struct GpuAdapterMemoryPerformanceRow {
+    pub dedicated_usage: Option<u64>,
+    pub dedicated_limit: Option<u64>,
 }

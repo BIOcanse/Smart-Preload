@@ -12,6 +12,7 @@
     reportPageDigest,
     reportAttentionActivityToBackground,
     applySpeculationRules,
+    clearAllSpeculationRules,
   } = namespace;
 
   function scheduleCandidateScan(options = {}) {
@@ -212,6 +213,34 @@
       true
     );
 
+    document.addEventListener(
+      "pointerover",
+      (event) => {
+        namespace.handleLinkHover?.(event);
+      },
+      true
+    );
+
+    document.addEventListener(
+      "pointerout",
+      (event) => {
+        namespace.handleLinkHoverOut?.(event);
+      },
+      true
+    );
+
+    document.addEventListener(
+      "contextmenu",
+      (event) => {
+        namespace.handleLinkContextMenu?.(event);
+      },
+      true
+    );
+
+    document.addEventListener("selectionchange", () => {
+      namespace.cancelInteractionPreloadForSelection?.();
+    });
+
     document.addEventListener("DOMContentLoaded", () => {
       scheduleCandidateScan({
         delayMs: constants.EARLY_LINK_RESCAN_DELAY_MS,
@@ -362,10 +391,14 @@
       }
 
       if (message?.type === "preload:clear-speculation-rules") {
-        applySpeculationRules({
-          prerenderTargets: [],
-          prefetchTargets: [],
-        });
+        if (typeof clearAllSpeculationRules === "function") {
+          clearAllSpeculationRules();
+        } else {
+          applySpeculationRules({
+            prerenderTargets: [],
+            prefetchTargets: [],
+          });
+        }
         return;
       }
 

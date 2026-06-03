@@ -1,0 +1,653 @@
+{
+  "appName": {
+    "message": "Intelligentes Vorladen"
+  },
+  "appDescription": {
+    "message": "Lädt Seiten, die du wahrscheinlich als Nächstes öffnest, intelligenter und aktiver vor."
+  },
+  "commonReady": {
+    "message": "Bereit"
+  },
+  "commonLoading": {
+    "message": "Wird geladen"
+  },
+  "commonFailed": {
+    "message": "Fehlgeschlagen"
+  },
+  "commonSaving": {
+    "message": "Speichern"
+  },
+  "commonSaved": {
+    "message": "Gespeichert"
+  },
+  "commonUnsaved": {
+    "message": "Ungespeichert"
+  },
+  "commonDownloading": {
+    "message": "Wird heruntergeladen"
+  },
+  "commonDownloaded": {
+    "message": "Heruntergeladen"
+  },
+  "commonRemoving": {
+    "message": "Wird entfernt"
+  },
+  "commonRemoved": {
+    "message": "Entfernt"
+  },
+  "commonOn": {
+    "message": "Ein"
+  },
+  "commonOff": {
+    "message": "Aus"
+  },
+  "commonUnknown": {
+    "message": "Unbekannt"
+  },
+  "commonThisPlatform": {
+    "message": "diese Plattform"
+  },
+  "commonModel": {
+    "message": "Modell"
+  },
+  "commonDone": {
+    "message": "Fertig."
+  },
+  "commonWorking": {
+    "message": "In Arbeit..."
+  },
+  "commonDismiss": {
+    "message": "Schlie?en"
+  },
+  "commonHelp": {
+    "message": "Hilfe"
+  },
+  "popupCurrentPage": {
+    "message": "Aktuelle Seite"
+  },
+  "popupNodes": {
+    "message": "Knoten"
+  },
+  "popupEdges": {
+    "message": "Kanten"
+  },
+  "popupUpdated": {
+    "message": "Aktualisiert"
+  },
+  "popupTop": {
+    "message": "Beste"
+  },
+  "popupNoPreloadQualifiedLinks": {
+    "message": "Auf dieser Seite gibt es noch keine geeigneten Links zum Vorladen."
+  },
+  "popupRefresh": {
+    "message": "Aktualisieren"
+  },
+  "popupStop": {
+    "message": "Stopp"
+  },
+  "popupStart": {
+    "message": "Starten"
+  },
+  "popupSettings": {
+    "message": "Einstellungen"
+  },
+  "popupWaitingForData": {
+    "message": "Warten auf Daten."
+  },
+  "popupOpenSettingsFailed": {
+    "message": "Einstellungsseite konnte nicht ge?ffnet werden."
+  },
+  "popupLoadingVisitGraph": {
+    "message": "Besuchsgraph wird geladen..."
+  },
+  "popupPausedMessage": {
+    "message": "Erweiterung gestoppt: Vorhersage und Vorladen sind deaktiviert."
+  },
+  "popupVisitGraphLoaded": {
+    "message": "Besuchsgraph geladen."
+  },
+  "popupLoadVisitGraphFailed": {
+    "message": "Besuchsgraph konnte nicht geladen werden."
+  },
+  "performanceInsufficientReducePreloadCaps": {
+    "message": "Leistungsdruck erkannt. Senken Sie die Vorladegrenzen."
+  },
+  "popupCurrentPageNotTracked": {
+    "message": "Aktuelle Seite wird nicht verfolgt"
+  },
+  "popupCurrentPageNotTrackable": {
+    "message": "Aktuelle Seite kann nicht verfolgt werden."
+  },
+  "popupStoppingService": {
+    "message": "Vorhersage und Vorladen werden gestoppt..."
+  },
+  "popupStartingService": {
+    "message": "Vorhersage und Vorladen werden gestartet..."
+  },
+  "popupUpdateStateFailed": {
+    "message": "Erweiterungsstatus konnte nicht aktualisiert werden."
+  },
+  "popupRestoreServiceTitle": {
+    "message": "Vorhersage und Vorladen fortsetzen"
+  },
+  "popupStopServiceTitle": {
+    "message": "Vorhersage und Vorladen stoppen und das Hintergrund-Vorladefenster schlie?en"
+  },
+  "popupWeightLabel": {
+    "message": "Gewicht: {0}"
+  },
+  "popupSiteMeta": {
+    "message": "Website: {0} (#{1}, {2}/{3})"
+  },
+  "popupFreqMeta": {
+    "message": "Freq.: site {0}, out {1}, in {2}"
+  },
+  "popupBookmarkMeta": {
+    "message": "Lesezeichen: {0}, Rang {1}"
+  },
+  "settingsPageTitle": {
+    "message": "Einstellungen für intelligentes Vorladen"
+  },
+  "settingsTitle": {
+    "message": "Einstellungen"
+  },
+  "settingsNavAriaLabel": {
+    "message": "Einstellungsbereiche"
+  },
+  "settingsOverview": {
+    "message": "?bersicht"
+  },
+  "settingsTracking": {
+    "message": "Verfolgung"
+  },
+  "settingsPreload": {
+    "message": "Vorladen"
+  },
+  "settingsOrdering": {
+    "message": "Sortierung"
+  },
+  "settingsExperiments": {
+    "message": "Experimente"
+  },
+  "settingsOverviewSub": {
+    "message": "Laufzeitprofil und automatische Anpassung"
+  },
+  "settingsOrderingSub": {
+    "message": "Einfache Sortierfilter"
+  },
+  "settingsStorageFooter": {
+    "message": "In lokalem Erweiterungsspeicher gespeichert."
+  },
+  "settingsLoadingSettings": {
+    "message": "Einstellungen werden geladen..."
+  },
+  "settingsHeroKicker": {
+    "message": "Intelligente Vorlade-Steuerung"
+  },
+  "settingsHeroTitle": {
+    "message": "Intelligenteres, aktiveres Vorladen"
+  },
+  "settingsHeroCopy": {
+    "message": "Intelligentes Vorladen verteilt Preload-Slots über aktive Tabs anhand von Seitensignalen, aktueller Aufmerksamkeit und Gerätebelastung, während du die Limits weiterhin manuell festlegen kannst."
+  },
+  "settingsDeviceProfile": {
+    "message": "Ger?teprofil"
+  },
+  "settingsDetectingHardware": {
+    "message": "Hardware wird erkannt..."
+  },
+  "settingsEffectiveGroupCaps": {
+    "message": "Wirksame Gruppenlimits"
+  },
+  "settingsWaitingForSettings": {
+    "message": "Warte auf Einstellungen..."
+  },
+  "settingsWatchdog": {
+    "message": "Überwachung"
+  },
+  "settingsNativeApp": {
+    "message": "Lokale App"
+  },
+  "settingsCheckingConnection": {
+    "message": "Verbindung wird gepr?ft..."
+  },
+  "settingsOverviewMeta": {
+    "message": "?bergeordnete Schalter, die steuern, wie aggressiv sich die Erweiterung an dieses Ger?t anpasst."
+  },
+  "settingsAutomaticDeviceTuning": {
+    "message": "Automatische Ger?teanpassung"
+  },
+  "settingsAutomaticDeviceTuningDesc": {
+    "message": "Reservierter Schalter f?r zuk?nftige hardwarebewusste Planung. Er wird bereits gespeichert, ?ndert aber noch kein Laufzeitverhalten."
+  },
+  "settingsPreloadMode": {
+    "message": "Preload-Modus"
+  },
+  "settingsPreloadModeDesc": {
+    "message": "Reservierte Auswahl f?r zuk?nftige Strategiestufen. Sie wird bereits gespeichert, ?ndert aber noch kein Laufzeitverhalten."
+  },
+  "settingsModeConservative": {
+    "message": "Konservativ"
+  },
+  "settingsModeBalanced": {
+    "message": "Ausgewogen"
+  },
+  "settingsModeAggressive": {
+    "message": "Aggressiv"
+  },
+  "settingsTrackingMeta": {
+    "message": "Steuert, wie Navigationsknoten normalisiert und in den gerichteten Graphen aufgenommen werden."
+  },
+  "settingsSeparateGoogleSearchPages": {
+    "message": "Google-Suchseiten getrennt erfassen"
+  },
+  "settingsSeparateGoogleSearchPagesDesc": {
+    "message": "`google/search`-Ergebnisseiten als eigenen Knoten verfolgen, damit der Graph ?berg?nge von Suchseiten zu Zielen lernen kann."
+  },
+  "settingsSkipGoogleInternalPages": {
+    "message": "Interne Google-Seiten ?berspringen"
+  },
+  "settingsSkipGoogleInternalPagesDesc": {
+    "message": "Chrome Web Store, Google-Konto- und Passwortmanager, Chrome-Sync, chromestatus und ?hnliche Google-Verwaltungsseiten weder verfolgen noch vorladen. Gemini und normale Google-Produkte bleiben aktiv."
+  },
+  "settingsPreloadMeta": {
+    "message": "Steuert Tab-Vorbereitung, Watchdog-Reparatur und Verhalten des Vorladefensters."
+  },
+  "settingsEnablePreloading": {
+    "message": "Vorladen aktivieren"
+  },
+  "settingsEnablePreloadingDesc": {
+    "message": "Hauptschalter f?r Kandidatenregistrierung, Hintergrund-Tabs und Tab-Austausch."
+  },
+  "settingsIgnoreWaterfallDynamicLinks": {
+    "message": "Dynamische Waterfall-Links ignorieren"
+  },
+  "settingsIgnoreWaterfallDynamicLinksDesc": {
+    "message": "Auf Endlos-Scroll- oder Waterfall-Seiten nur den ersten stabilen Linkbestand f?r Vorhersagen verwenden und sp?ter per Streaming angeh?ngte Links ignorieren."
+  },
+  "settingsExcludeIncognitoWindows": {
+    "message": "Inkognito-Fenster vom Vorladen ausschlie?en"
+  },
+  "settingsExcludeIncognitoWindowsDesc": {
+    "message": "Wenn aktiviert, bleiben Inkognito-Fenster au?erhalb von Lernen, Bewertung, Slot-Zuweisung und Interaktions-Vorladen. Wenn deaktiviert, teilen sie sich die gleichen Konto-Obergrenzen mit normalen Seiten, verwenden aber nur Inkognito-Vorladefenster."
+  },
+  "settingsTransitionFrequencyWindow": {
+    "message": "Zeitfenster f?r ?bergangsh?ufigkeit"
+  },
+  "settingsTransitionFrequencyWindowDesc": {
+    "message": "Wenn aktiviert, nutzt die Gewichtung der ?bergangsh?ufigkeit das gew?hlte Zeitfenster statt der Gesamthistorie."
+  },
+  "settingsGlobalPreloadScheduler": {
+    "message": "Globaler Vorladeplaner"
+  },
+  "settingsGlobalPreloadSchedulerDesc": {
+    "message": "Kontoweite Limits zur Verteilung von Preload-Slots ?ber alle Quell-Tabs mit Kandidaten."
+  },
+  "settingsSchedulerHiddenTabs": {
+    "message": "Versteckte echte Tabs"
+  },
+  "settingsSchedulerNativePreload": {
+    "message": "Nativer Preload"
+  },
+  "settingsSchedulerAttentionPool": {
+    "message": "Aufmerksamkeitspool"
+  },
+  "settingsSchedulerMin": {
+    "message": "Min."
+  },
+  "settingsSchedulerMax": {
+    "message": "Max."
+  },
+  "settingsSchedulerHalfLifeTabs": {
+    "message": "Halbwerts-Tabs für Limitwachstum"
+  },
+  "settingsSchedulerHalfLifeTabsDesc": {
+    "message": "Wenn die Tab-Anzahl um diesen Wert steigt, bewegt sich das dynamische Gesamtlimit halb weiter zum Maximum. Kleinere Werte lassen das Limit schneller wachsen."
+  },
+  "settingsSchedulerPoolHours": {
+    "message": "Poolstunden"
+  },
+  "settingsSchedulerSegmentSeconds": {
+    "message": "Segmentsekunden"
+  },
+  "settingsSchedulerMaxGapSeconds": {
+    "message": "Maximale L?cke in Sekunden"
+  },
+  "settingsSchedulerInputWindowSeconds": {
+    "message": "Eingabefenster in Sekunden"
+  },
+  "settingsSchedulerMediaWeight": {
+    "message": "Videogewicht"
+  },
+  "settingsSchedulerAudioWeight": {
+    "message": "Audiogewicht"
+  },
+  "settingsAiPredictionAssistant": {
+    "message": "KI-Vorhersageassistent"
+  },
+  "settingsAiPredictionAssistantDesc": {
+    "message": "W?hle einen externen KI-Anbieter und ein Modell f?r Keyword-Scoring. Die Erweiterung verwendet deinen API-Schl?ssel direkt; lokale Modelle werden nicht heruntergeladen oder verwaltet."
+  },
+  "settingsAiProviderApiKey": {
+    "message": "Anbieter-API-Schl?ssel"
+  },
+  "settingsAiProviderApiKeyDesc": {
+    "message": "Wird im lokalen Erweiterungsspeicher abgelegt und nur vom Service Worker verwendet, wenn KI-Vorhersage aktiv ist. LM Studio ignoriert dieses Feld."
+  },
+  "settingsAiProviderEndpoint": {
+    "message": "Anbieter-Endpunkt"
+  },
+  "settingsAiProviderEndpointDesc": {
+    "message": "Standardwert beibehalten, au?er du nutzt einen OpenAI-kompatiblen lokalen Dienst wie LM Studio."
+  },
+  "settingsWindowWatchdog": {
+    "message": "Fenster-Watchdog"
+  },
+  "settingsWindowWatchdogDesc": {
+    "message": "Preload-Fenster neu erstellen und fehlende Tabs reparieren, wenn der Container verloren geht."
+  },
+  "settingsWatchdogInterval": {
+    "message": "Watchdog-Intervall"
+  },
+  "settingsWatchdogIntervalDesc": {
+    "message": "Wie oft die Erweiterung pr?ft, ob das Preload-Fenster noch vorhanden ist."
+  },
+  "settingsWatchdogIntervalOption1": {
+    "message": "1 Sekunde"
+  },
+  "settingsWatchdogIntervalOption2": {
+    "message": "2 Sekunden"
+  },
+  "settingsWatchdogIntervalOption3": {
+    "message": "3 Sekunden"
+  },
+  "settingsWatchdogIntervalOption5": {
+    "message": "5 Sekunden"
+  },
+  "settingsWatchdogIntervalOption10": {
+    "message": "10 Sekunden"
+  },
+  "settingsFullscreenPressurePolicy": {
+    "message": "Hintergrund-Tab-Richtlinie bei Vollbild/Spiel"
+  },
+  "settingsFullscreenPressurePolicyDesc": {
+    "message": "Wenn eine andere App im Vollbild l?uft oder ein Spielprozess erkannt wird, festlegen, wie versteckte echte Preload-Tabs behandelt werden."
+  },
+  "settingsFullscreenPressurePolicyClose": {
+    "message": "Vollst?ndig schlie?en"
+  },
+  "settingsFullscreenPressurePolicySleep": {
+    "message": "Tabs schlafen lassen"
+  },
+  "settingsFullscreenPressurePolicyIgnore": {
+    "message": "Keine Aktion"
+  },
+  "settingsSecond": {
+    "message": "{0} Sekunde"
+  },
+  "settingsSeconds": {
+    "message": "{0} Sekunden"
+  },
+  "settingsForceMinimize": {
+    "message": "Vorladefenster erzwingen minimieren"
+  },
+  "settingsForceMinimizeDesc": {
+    "message": "Das Preload-Fenster sofort wieder minimieren, wenn es wiederhergestellt oder vergr??ert wird."
+  },
+  "settingsOrderingMeta": {
+    "message": "Feste Sortierfilter halten die erste Version vorhersehbar. Erweiterte programmierbare Filterketten k?nnen sp?ter erg?nzt werden, ohne die gespeicherte Regelform zu ?ndern."
+  },
+  "settingsExperimentsMeta": {
+    "message": "Riskante Live-Schalter geh?ren hierher. Platzhalter-Schalter bleiben ebenfalls hier, werden aber nur gespeichert, bis sie wirklich an die Laufzeit angebunden sind."
+  },
+  "settingsCrossSiteCurrentTabSwap": {
+    "message": "Harter Wechsel im aktuellen Tab ?ber Websites hinweg"
+  },
+  "settingsCrossSiteCurrentTabSwapDesc": {
+    "message": "F?r website?bergreifende Navigationen im aktuellen Tab den versteckten echten Seitenwechsel verwenden. Schneller, wenn es funktioniert, kann aber Verlauf und Zur?ck-Schaltfl?che besch?digen. Nur aktivieren, wenn diese Nebenwirkungen akzeptabel sind."
+  },
+  "settingsIdleWakeStrongDevices": {
+    "message": "Idle-Wake auf starken Ger?ten"
+  },
+  "settingsIdleWakeStrongDevicesDesc": {
+    "message": "Nur f?r zuk?nftige Nutzung gespeichert. Derzeit werden dadurch keine zus?tzlichen Kandidaten-Tabs geweckt."
+  },
+  "settingsPointerProximityPrediction": {
+    "message": "Vorhersage nach Zeigern?he"
+  },
+  "settingsPointerProximityPredictionDesc": {
+    "message": "Nur f?r zuk?nftige Nutzung gespeichert. Derzeit wird keine zeigerbasierte Vorhersage hinzugef?gt."
+  },
+  "settingsAuthStateWarmup": {
+    "message": "Auth-State-Warmup"
+  },
+  "settingsAuthStateWarmupDesc": {
+    "message": "Nur f?r zuk?nftige Nutzung gespeichert. Derzeit ?ndert es Auth- oder Warmup-Verhalten nicht."
+  },
+  "settingsNoUnsavedChanges": {
+    "message": "Keine ungespeicherten ?nderungen."
+  },
+  "settingsResetDefaults": {
+    "message": "Standardwerte zur?cksetzen"
+  },
+  "settingsSaveSettings": {
+    "message": "Einstellungen speichern"
+  },
+  "settingsAiModelTask": {
+    "message": "KI-Modellaufgabe"
+  },
+  "settingsReadingLocalSettings": {
+    "message": "Lokale Erweiterungseinstellungen werden gelesen."
+  },
+  "settingsCouldNotLoad": {
+    "message": "Einstellungen konnten nicht aus dem Speicher geladen werden."
+  },
+  "settingsCouldNotLoadAiStatus": {
+    "message": "KI-Modellstatus konnte nicht geladen werden."
+  },
+  "settingsDefaultsRestored": {
+    "message": "Standards im Formular wiederhergestellt. Speichern, um sie anzuwenden."
+  },
+  "settingsUnsavedReady": {
+    "message": "Ungespeicherte ?nderungen k?nnen angewendet werden."
+  },
+  "settingsWritingLocalSettings": {
+    "message": "Einstellungen werden in den lokalen Erweiterungsspeicher geschrieben."
+  },
+  "settingsWrittenSuccessfully": {
+    "message": "Einstellungen erfolgreich geschrieben."
+  },
+  "settingsCouldNotSave": {
+    "message": "Einstellungen konnten nicht gespeichert werden."
+  },
+  "settingsPreparingRuntime": {
+    "message": "Portable Laufzeit wird bei Bedarf vorbereitet."
+  },
+  "settingsRemovingSelectedModel": {
+    "message": "Ausgew?hltes Modell wird entfernt."
+  },
+  "settingsInstallingModel": {
+    "message": "Laufzeit wird bei Bedarf installiert, dann wird das ausgew?hlte Modell heruntergeladen."
+  },
+  "settingsRemovingModelAndRuntime": {
+    "message": "Ausgew?hltes Modell wird entfernt und die portable Laufzeit bereinigt, falls ungenutzt."
+  },
+  "settingsAiModelActionFailed": {
+    "message": "KI-Modellaktion fehlgeschlagen."
+  },
+  "settingsModelStateUpdatedDirty": {
+    "message": "Modellstatus aktualisiert. Andere ungespeicherte ?nderungen stehen noch aus."
+  },
+  "settingsPortableModelUpdated": {
+    "message": "Portable Laufzeit und Modellstatus aktualisiert."
+  },
+  "settingsModelDownloaded": {
+    "message": "Modell heruntergeladen."
+  },
+  "settingsModelRemoved": {
+    "message": "Modell entfernt."
+  },
+  "settingsCouldNotUpdateModel": {
+    "message": "Ausgew?hltes Modell konnte nicht aktualisiert werden."
+  },
+  "settingsHardwareMeta": {
+    "message": "{0} Kerne | {1} GB Speicherhinweis"
+  },
+  "settingsEffectivePreloadMeta": {
+    "message": "Native / Tab-Slot-Limits. Regeln verwenden {0}."
+  },
+  "settingsWatchdogChecksEvery": {
+    "message": "Pr?ft alle {0} Sekunde(n)."
+  },
+  "settingsWindowRepairDisabled": {
+    "message": "Fensterreparatur ist deaktiviert."
+  },
+  "settingsSystemHidingUnsupported": {
+    "message": "Systemweites Verstecken wird auf {0} nicht unterst?tzt."
+  },
+  "settingsSystemHidingActive": {
+    "message": "Systemweites Verstecken ist aktiv."
+  },
+  "settingsNativeAppOffline": {
+    "message": "Lokale App nicht erkannt. Minimierungsfallback wird verwendet."
+  },
+  "settingsConnected": {
+    "message": "Verbunden"
+  },
+  "settingsOffline": {
+    "message": "Offline"
+  },
+  "settingsInstallingModelLabel": {
+    "message": "{0} wird installiert"
+  },
+  "settingsRemovingModelLabel": {
+    "message": "{0} wird entfernt"
+  },
+  "settingsModelReady": {
+    "message": "Modell bereit"
+  },
+  "settingsUninstallFailed": {
+    "message": "Deinstallation fehlgeschlagen"
+  },
+  "settingsInstallFailed": {
+    "message": "Installation fehlgeschlagen"
+  },
+  "settingsTaskDidNotFinish": {
+    "message": "Die Aufgabe wurde nicht abgeschlossen."
+  },
+  "settingsAiProviderMissingWarning": {
+    "message": "KI-Scoring bleibt deaktiviert, bis {0} ein Modell, einen Endpunkt und einen API-Schl?ssel hat."
+  },
+  "settingsAiKeyOptionalPlaceholder": {
+    "message": "Optional f?r lokale kompatible Endpunkte"
+  },
+  "settingsAiLmStudioKeyIgnoredPlaceholder": {
+    "message": "F?r LM Studio ignoriert"
+  },
+  "settingsAiLmStudioLoadingModel": {
+    "message": "LM-Studio-Modell wird geladen: {0}"
+  },
+  "settingsAiKeyRequiredPlaceholder": {
+    "message": "Erforderlich"
+  },
+  "settingsAiEnterKeyToLoadModels": {
+    "message": "API-Schl?ssel eingeben, um Modelle zu laden"
+  },
+  "settingsAiLoadingModels": {
+    "message": "Unterst?tzte Modelle werden geladen..."
+  },
+  "settingsAiSelectProviderFirst": {
+    "message": "Zuerst Anbieter ausw?hlen"
+  },
+  "settingsAiNoSupportedModels": {
+    "message": "Keine unterst?tzten leichten Modelle gefunden"
+  },
+  "commonProvider": {
+    "message": "Anbieter"
+  },
+  "transitionWindowTotal": {
+    "message": "Gesamt"
+  },
+  "transitionWindow365d": {
+    "message": "Letztes Jahr"
+  },
+  "transitionWindow30d": {
+    "message": "Letzter Monat"
+  },
+  "transitionWindow7d": {
+    "message": "Letzte 7 Tage"
+  },
+  "transitionWindow1d": {
+    "message": "Letzter Tag"
+  },
+  "ruleOperatorDisabled": {
+    "message": "Deaktiviert"
+  },
+  "ruleFieldValueA": {
+    "message": "Wert A"
+  },
+  "ruleFieldCompareA": {
+    "message": "Vergleich A"
+  },
+  "ruleFieldCompareB": {
+    "message": "Vergleich B"
+  },
+  "ruleFieldValueC": {
+    "message": "Wert C"
+  },
+  "ruleFieldStatus": {
+    "message": "Status"
+  },
+  "ruleTokenFixed": {
+    "message": "fester Token {0}"
+  },
+  "ruleNativePerPageTitle": {
+    "message": "Seiten-Slot-Limit a der nativen Preload-Gruppe"
+  },
+  "ruleNativePerPageDesc": {
+    "message": "Gilt f?r native `prefetch`- / `prerender`-Kandidaten. Legt fest, wie viele Seitenkandidaten diese Gruppe f?r die endg?ltige Ausf?hrung behalten kann."
+  },
+  "ruleTabPerPageTitle": {
+    "message": "Seiten-Slot-Limit a der echten Tab-Preload-Gruppe"
+  },
+  "ruleTabPerPageDesc": {
+    "message": "Gilt f?r Kandidaten, die echte Hintergrund-Tabs ben?tigen. Legt fest, wie viele Seitenkandidaten diese Gruppe f?r die endg?ltige Ausf?hrung behalten kann."
+  },
+  "ruleNativeSiteTitle": {
+    "message": "Anzahl x hochgewichteter Sites der nativen Preload-Gruppe"
+  },
+  "ruleNativeSiteDesc": {
+    "message": "Gilt f?r native `prefetch`- / `prerender`-Kandidaten. Legt fest, wie viele hochgewichtete Sites in die Site-Slot-Zuweisung gelangen."
+  },
+  "ruleTabSiteTitle": {
+    "message": "Anzahl x hochgewichteter Sites der echten Tab-Preload-Gruppe"
+  },
+  "ruleTabSiteDesc": {
+    "message": "Gilt f?r Kandidaten, die echte Hintergrund-Tabs ben?tigen, einschlie?lich website?bergreifendem New-Tab-Preload und Cross-Site-Kandidaten aus dem harten aktuellen Tab-Wechsel, die zu hidden-tab geleitet werden."
+  },
+  "ruleGoogleBookmarkRankTitle": {
+    "message": "Google-Suche-Lesezeichen-Preload-Rang x"
+  },
+  "ruleGoogleBookmarkRankDesc": {
+    "message": "Gilt nur auf Google-Suchseiten. Wenn aktiviert, werden Chrome-Lesezeichen durch diese Rangregel als unabh?ngige dauerhaft vorgeladene Ziele behalten."
+  },
+  "deviceProfileBalanced": {
+    "message": "Ausgewogen"
+  },
+  "deviceProfileHighEnd": {
+    "message": "High-End"
+  },
+  "deviceProfileStrong": {
+    "message": "Stark"
+  },
+  "deviceProfileConstrained": {
+    "message": "Eingeschr?nkt"
+  },
+  "settingsDiagnosticsLogging": {
+    "message": "Protokollmodus"
+  },
+  "settingsDiagnosticsLoggingDesc": {
+    "message": "Wenn aktiviert, werden Laufzeitdiagnosen als JSONL-Dateien in den portablen Logordner der lokalen App geschrieben."
+  }
+}

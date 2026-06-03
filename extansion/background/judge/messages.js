@@ -34,6 +34,18 @@
               preloadedCount: 0,
               skipped: true,
             });
+      case "preload:interaction-status":
+        return envelope.source.tabId && envelope.target.url
+          ? allowDecision("preload-interaction-status")
+          : ignoreDecision(envelope.messageType, { ok: false, preloaded: false });
+      case "preload:interaction-start":
+        return envelope.source.tabId && envelope.target.url
+          ? allowDecision("preload-interaction-start")
+          : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
+      case "preload:interaction-cancel":
+        return envelope.source.tabId
+          ? allowDecision("preload-interaction-cancel")
+          : ignoreDecision(envelope.messageType, { ok: true, skipped: true });
       case "ai:report-page-digest":
         return envelope.source.tabId
           ? allowAndLearnDecision("report-foreground-page-digest")

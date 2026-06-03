@@ -32,10 +32,9 @@ pub(crate) fn install_portable_app() -> Result<PortableInstallStatus> {
             )),
         );
     } else {
-        native_messaging::remove_native_messaging_registration()?;
         record_app_runtime_event(
             "installer",
-            "native-messaging-skipped-extension-missing",
+            "native-messaging-preserved-extension-missing",
             None,
         );
     }

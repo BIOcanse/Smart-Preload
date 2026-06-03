@@ -15,6 +15,8 @@ async function resolvePreloadActivationRequest(message, sender) {
 
   const sourceTab = sender?.tab;
   const openInNewTab = message?.openInNewTab === true;
+  const targetWindowId = normalizePositiveInteger(message?.targetWindowId);
+  const targetIndex = normalizePositiveInteger(message?.targetIndex);
   const resolutionExpiresAt = normalizeActivationDeadline(message?.resolutionExpiresAt);
 
   if (!sourceTab?.id || !sourceTab.windowId || !isTrackableAndAllowedUrl(message?.url || "")) {
@@ -50,11 +52,58 @@ async function resolvePreloadActivationRequest(message, sender) {
     return { ok: false, response: { handled: false } };
   }
 
+  const runtimeSettings =
+    typeof getEffectiveExtensionSettings === "function"
+      ? getEffectiveExtensionSettings()
+      : null;
+  const sourceIncognitoTab = {
+    ...sourceTab,
+    incognito: sourceTab.incognito === true || sourceWindow.incognito === true,
+  };
+
+  if (
+    globalThis.ZeroLatencyPreloadIncognitoPolicy?.shouldExcludeIncognitoPreloadSource?.(
+      sourceIncognitoTab,
+      runtimeSettings
+    ) === true
+  ) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-activation.incognito-excluded", {
+      sourceTabId: sourceTab.id,
+      sourceWindowId: sourceTab.windowId,
+      targetUrl: message.url,
+    });
+    return { ok: false, response: { handled: false, reason: "incognito-excluded" } };
+  }
+
+  if (targetWindowId !== null) {
+    const targetWindow = await getWindowMaybe(targetWindowId);
+    const incognitoMatch =
+      globalThis.ZeroLatencyPreloadIncognitoPolicy?.resolveSourceTargetIncognitoMatch?.(
+        sourceIncognitoTab,
+        null,
+        targetWindow
+      );
+
+    if (incognitoMatch?.matches === false) {
+      globalThis.ZeroLatencyDebugEvents?.record?.("preload-activation.incognito-mismatch", {
+        sourceTabId: sourceTab.id,
+        sourceWindowId: sourceTab.windowId,
+        targetWindowId,
+        targetUrl: message.url,
+        sourceIncognito: incognitoMatch.sourceIncognito,
+        targetIncognito: incognitoMatch.targetIncognito,
+      });
+      return { ok: false, response: { handled: false, reason: "incognito-context-mismatch" } };
+    }
+  }
+
   return {
     ok: true,
     sourceTab,
     sourceTabId: String(sourceTab.id),
     openInNewTab,
+    targetWindowId,
+    targetIndex,
     resolutionExpiresAt,
     targetUrl: message.url,
   };

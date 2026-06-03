@@ -63,6 +63,7 @@ importScripts(
   "background/preload/state/lookup.js",
   "background/preload/state/view.js",
   "background/preload/state.js",
+  "background/preload/incognito-policy.js",
   "background/tracking/graph/events/current-page.js",
   "background/tracking/graph/events/transitions.js",
   "background/tracking/graph/events/learning.js",
@@ -123,6 +124,7 @@ importScripts(
   "background/preload/runtime/source-tabs/hidden-tabs.js",
   "background/preload/runtime/source-tabs/speculation.js",
   "background/preload/runtime/source-tabs.js",
+  "background/preload/runtime/interaction.js",
   "background/preload/runtime/sync.js",
   "background/preload/runtime/activation/tracking.js",
   "background/preload/runtime/activation/request.js",
@@ -238,6 +240,12 @@ chrome.webNavigation.onCreatedNavigationTarget.addListener((details) => {
 chrome.webNavigation.onTabReplaced.addListener((details) => {
   queueMutation(async () => {
     await mainRouter.handleTabReplaced(details);
+  });
+});
+
+chrome.tabs.onCreated.addListener((tab) => {
+  queueMutation(async () => {
+    await mainRouter.handleTabCreated(tab);
   });
 });
 

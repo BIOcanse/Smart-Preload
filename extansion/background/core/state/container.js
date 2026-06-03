@@ -10,6 +10,10 @@
       this.visitGraphEnginePromise = null;
       this.expectedPreloadTabRemovals = new Set();
       this.cachedUserSettings = settingsApi.cloneSettings(settingsApi.DEFAULT_SETTINGS);
+      this.cachedTrackingGraphSummary = createEmptyTrackingGraphSummary();
+      this.cachedTrackingTabState = {};
+      this.cachedPreloadState = createEmptyPreloadState();
+      this.cachedServiceState = createDefaultServiceState();
     }
 
     queueMutation(task) {
@@ -37,6 +41,28 @@
       return this.cachedUserSettings;
     }
 
+    setCachedTrackingSnapshot({ summary, tabState }) {
+      this.cachedTrackingGraphSummary = normalizeTrackingGraphSummary(summary);
+      this.cachedTrackingTabState = normalizeTrackingTabStateMap(tabState);
+    }
+
+    setCachedPreloadState(preloadState) {
+      this.cachedPreloadState = normalizePreloadState(preloadState);
+    }
+
+    setCachedServiceState(serviceState) {
+      this.cachedServiceState = normalizeServiceState(serviceState);
+    }
+
+    getCachedPopupSnapshot() {
+      return {
+        summary: normalizeTrackingGraphSummary(this.cachedTrackingGraphSummary),
+        tabState: normalizeTrackingTabStateMap(this.cachedTrackingTabState),
+        preloadState: normalizePreloadState(this.cachedPreloadState),
+        serviceState: normalizeServiceState(this.cachedServiceState),
+      };
+    }
+
     getEffectiveExtensionSettings() {
       return this.settingsApi.resolveEffectiveSettings(this.cachedUserSettings);
     }
@@ -55,6 +81,10 @@
 
     async loadTrackingState() {
       return loadTrackingStateForBackgroundState(this);
+    }
+
+    async loadTrackingSnapshotForPopup() {
+      return loadTrackingSnapshotForPopupForBackgroundState(this);
     }
 
     async saveTrackingState(state) {

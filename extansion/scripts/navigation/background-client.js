@@ -67,6 +67,52 @@
     ]);
   }
 
+  async function requestInteractionPreloadStatus(payload) {
+    try {
+      return await chrome.runtime.sendMessage({
+        type: "preload:interaction-status",
+        sourcePageUrl: payload?.sourcePageUrl || location.href,
+        targetUrl: payload?.targetUrl || "",
+        targetHint: payload?.targetHint === "_blank" ? "_blank" : "_self",
+      });
+    } catch (_error) {
+      return {
+        ok: false,
+        preloaded: false,
+      };
+    }
+  }
+
+  async function requestInteractionPreload(payload) {
+    try {
+      return await chrome.runtime.sendMessage({
+        type: "preload:interaction-start",
+        sourcePageUrl: payload?.sourcePageUrl || location.href,
+        targetUrl: payload?.targetUrl || "",
+        targetHint: payload?.targetHint === "_blank" ? "_blank" : "_self",
+        trigger: payload?.trigger === "contextmenu" ? "contextmenu" : "hover",
+        forceNewTab: payload?.forceNewTab === true,
+      });
+    } catch (_error) {
+      return {
+        ok: false,
+        skipped: true,
+      };
+    }
+  }
+
+  async function cancelInteractionPreloads(payload = {}) {
+    try {
+      await chrome.runtime.sendMessage({
+        type: "preload:interaction-cancel",
+        sourcePageUrl: payload?.sourcePageUrl || location.href,
+        reason: typeof payload?.reason === "string" ? payload.reason : "selection",
+      });
+    } catch (_error) {
+      // Ignore transient background messaging failures.
+    }
+  }
+
   async function registerPreloadCandidates(payload) {
     return await chrome.runtime.sendMessage({
       type: "preload:register-candidates",
@@ -105,6 +151,9 @@
     sendNavigationPrimeSource,
     sendNavigationLinkIntent,
     requestClickNavigationResolutionWithTimeout,
+    requestInteractionPreloadStatus,
+    requestInteractionPreload,
+    cancelInteractionPreloads,
     registerPreloadCandidates,
     reportPageDigestToBackground,
     reportAttentionActivityToBackground,

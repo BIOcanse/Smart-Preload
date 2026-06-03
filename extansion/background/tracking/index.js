@@ -236,6 +236,38 @@ async function recordCreatedNavigationTarget(details) {
     return;
   }
 
+  const activation =
+    await globalThis.ZeroLatencyPreloadRuntimeManager.activateCreatedNavigationTarget?.(details);
+
+  if (activation?.handled === true) {
+    globalThis.ZeroLatencyDiagnostics?.record?.("tracking.created-target.preload-activated", {
+      sourceTabId: details.sourceTabId,
+      tabId: details.tabId,
+      activatedTabId: activation.tabId ?? null,
+      url: details.url || "",
+    });
+    return;
+  }
+
+  if (
+    (await shouldSkipTrackingForExcludedIncognitoTab(
+      details.sourceTabId,
+      "created-navigation-source"
+    )) ||
+    (await shouldSkipTrackingForExcludedIncognitoTab(
+      details.tabId,
+      "created-navigation-target"
+    ))
+  ) {
+    globalThis.ZeroLatencyDiagnostics?.record?.("tracking.created-target.ignored", {
+      reason: "incognito-excluded",
+      sourceTabId: details.sourceTabId,
+      tabId: details.tabId,
+      url: details.url || "",
+    });
+    return;
+  }
+
   const trackingState = await loadTrackingState();
   let nextTrackingState = trackingState;
   nextTrackingState =
@@ -257,6 +289,33 @@ async function recordCreatedNavigationTarget(details) {
     tabId: details.tabId,
     url: details.url || "",
   });
+}
+
+async function shouldSkipTrackingForExcludedIncognitoTab(tabId, reason) {
+  const normalizedTabId = normalizePositiveInteger(tabId);
+
+  if (normalizedTabId === null) {
+    return false;
+  }
+
+  const tab = await getTabMaybe(normalizedTabId);
+
+  if (
+    globalThis.ZeroLatencyPreloadIncognitoPolicy?.shouldExcludeIncognitoPreloadSource?.(
+      tab,
+      getEffectiveExtensionSettings()
+    ) !== true
+  ) {
+    return false;
+  }
+
+  globalThis.ZeroLatencyDebugEvents?.record?.("tracking.skip-incognito-source", {
+    tabId: normalizedTabId,
+    windowId: tab?.windowId ?? null,
+    url: tab?.url || "",
+    reason,
+  });
+  return true;
 }
 
 async function recordTabReplacement(details) {

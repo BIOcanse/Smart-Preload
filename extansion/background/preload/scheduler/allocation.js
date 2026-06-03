@@ -1,16 +1,21 @@
 (function () {
   const SLOT_ALLOCATION_EPSILON = 1e-9;
+  const DEFAULT_PRELOAD_CAP_GROWTH_TABS = 8;
 
   function resolveAsymptoticPreloadCap({
     tabCount,
     minCap,
     maxCap,
     halfLifeTabs,
+    growthTabs = DEFAULT_PRELOAD_CAP_GROWTH_TABS,
   } = {}) {
     const normalizedMinCap = normalizeSchedulerCap(minCap, 0);
     const normalizedMaxCap = Math.max(normalizedMinCap, normalizeSchedulerCap(maxCap, normalizedMinCap));
     const normalizedTabCount = Math.max(1, Math.trunc(Number(tabCount) || 1));
-    const normalizedHalfLifeTabs = Math.max(1, Number(halfLifeTabs) || 1);
+    const normalizedGrowthTabs = Math.max(
+      1,
+      Number(halfLifeTabs ?? growthTabs) || DEFAULT_PRELOAD_CAP_GROWTH_TABS
+    );
 
     if (normalizedMinCap === normalizedMaxCap) {
       return normalizedMinCap;
@@ -19,7 +24,7 @@
     const rawCap =
       normalizedMaxCap -
       (normalizedMaxCap - normalizedMinCap) *
-        2 ** (-(normalizedTabCount - 1) / normalizedHalfLifeTabs);
+        2 ** (-(normalizedTabCount - 1) / normalizedGrowthTabs);
 
     return Math.min(
       normalizedMaxCap,

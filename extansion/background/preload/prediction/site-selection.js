@@ -5,18 +5,30 @@ async function applySiteSelectionToPreloadCandidatePool(candidatePool, context =
     return [];
   }
 
+  const selectionCandidatePool = normalizedCandidatePool.filter(
+    (candidate) => !candidate?.bookmarkPreload
+  );
+
+  if (selectionCandidatePool.length === 0) {
+    return [];
+  }
+
   const settings = context?.settings ?? null;
+  const ignoreConfiguredSourceSlotCaps =
+    context?.ignoreConfiguredSourceSlotCaps === true;
   const nativePageSlotLimit = resolveNativePageSlotLimit(
     settings,
-    context?.slotLimits?.nativePageSlotLimit
+    context?.slotLimits?.nativePageSlotLimit,
+    { ignoreConfiguredSourceSlotCaps }
   );
   const tabPageSlotLimit = resolveTabPageSlotLimit(
     settings,
-    context?.slotLimits?.tabPageSlotLimit
+    context?.slotLimits?.tabPageSlotLimit,
+    { ignoreConfiguredSourceSlotCaps }
   );
   const getAiInterestContext = createSharedAiInterestContextLoader(context);
   const groupedCandidatePools = buildPreloadCandidateSiteSelectionGroups(
-    normalizedCandidatePool,
+    selectionCandidatePool,
     settings
   );
   const [selectedNativeCandidates, selectedTabCandidates] = await Promise.all([
@@ -571,13 +583,24 @@ function compareSiteClusterPriority(left, right) {
   return 0;
 }
 
-function resolveNativePageSlotLimit(settings, overrideValue = null) {
+function resolveNativePageSlotLimit(settings, overrideValue = null, options = {}) {
   const overridePageSlotLimit = Number(overrideValue);
+  const configuredPageSlotLimit = resolveConfiguredNativePageSlotLimit(settings);
 
   if (Number.isFinite(overridePageSlotLimit)) {
-    return Math.max(0, Math.trunc(overridePageSlotLimit));
+    const normalizedOverride = Math.max(0, Math.trunc(overridePageSlotLimit));
+
+    if (options?.ignoreConfiguredSourceSlotCaps === true) {
+      return normalizedOverride;
+    }
+
+    return Math.min(normalizedOverride, configuredPageSlotLimit);
   }
 
+  return configuredPageSlotLimit;
+}
+
+function resolveConfiguredNativePageSlotLimit(settings) {
   const configuredPageSlotLimit = Number(
     settings?.preloading?.effectiveNativeMaxPreloadsPerSource
   );
@@ -591,13 +614,24 @@ function resolveNativePageSlotLimit(settings, overrideValue = null) {
       );
 }
 
-function resolveTabPageSlotLimit(settings, overrideValue = null) {
+function resolveTabPageSlotLimit(settings, overrideValue = null, options = {}) {
   const overridePageSlotLimit = Number(overrideValue);
+  const configuredPageSlotLimit = resolveConfiguredTabPageSlotLimit(settings);
 
   if (Number.isFinite(overridePageSlotLimit)) {
-    return Math.max(0, Math.trunc(overridePageSlotLimit));
+    const normalizedOverride = Math.max(0, Math.trunc(overridePageSlotLimit));
+
+    if (options?.ignoreConfiguredSourceSlotCaps === true) {
+      return normalizedOverride;
+    }
+
+    return Math.min(normalizedOverride, configuredPageSlotLimit);
   }
 
+  return configuredPageSlotLimit;
+}
+
+function resolveConfiguredTabPageSlotLimit(settings) {
   const configuredPageSlotLimit = Number(settings?.preloading?.effectiveTabMaxPreloadsPerSource);
 
   return Number.isFinite(configuredPageSlotLimit)

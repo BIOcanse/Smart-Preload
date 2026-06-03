@@ -37,6 +37,8 @@ const context = {
     deviceMemory: 8,
     userAgent: "node-test",
   },
+  BOOKMARK_PRELOAD_BUCKET_STARTUP_GOOGLE_SEARCH: "startupGoogleSearch",
+  BOOKMARK_PRELOAD_BUCKET_NEW_GOOGLE_SEARCH_TAB: "newGoogleSearchTab",
 };
 context.globalThis = context;
 context.ZeroLatencySupport = {
@@ -69,37 +71,130 @@ const settings = context.ZeroLatencySettings.resolveEffectiveSettings({
     },
   },
 });
+const bookmarkEnabledSettings = context.ZeroLatencySettings.cloneSettings(settings);
+bookmarkEnabledSettings.layout.ruleCards.items.googleBookmarkRank.status = "enabled";
+bookmarkEnabledSettings.layout.ruleCards.items.googleBookmarkRank.valueA = 1;
+bookmarkEnabledSettings.layout.ruleCards.items.googleBookmarkRank.operatorA = "lte";
+bookmarkEnabledSettings.layout.ruleCards.items.googleBookmarkRank.operatorB = "lte";
+bookmarkEnabledSettings.layout.ruleCards.items.googleBookmarkRank.valueC = 5;
+const currentTabSwapSettings = context.ZeroLatencySettings.resolveEffectiveSettings({
+  ...context.ZeroLatencySettings.DEFAULT_SETTINGS,
+  experiments: {
+    ...context.ZeroLatencySettings.DEFAULT_SETTINGS.experiments,
+    crossSiteCurrentTabSwap: true,
+  },
+  preloading: {
+    ...context.ZeroLatencySettings.DEFAULT_SETTINGS.preloading,
+    scheduler: {
+      ...context.ZeroLatencySettings.DEFAULT_SETTINGS.preloading.scheduler,
+      nativeTotalMin: 4,
+      nativeTotalMax: 4,
+      tabTotalMin: 5,
+      tabTotalMax: 5,
+    },
+  },
+});
+
+assert.deepEqual(
+  JSON.parse(JSON.stringify(context.ZeroLatencySettings.FULLSCREEN_PRESSURE_POLICY_VALUES)),
+  ["close", "sleep", "ignore"]
+);
+assert.equal(
+  context.ZeroLatencySettings.normalizeStoredSettings({
+    preloadWindow: { fullscreenPressurePolicy: "close" },
+  }).preloadWindow.fullscreenPressurePolicy,
+  "close"
+);
+assert.equal(
+  context.ZeroLatencySettings.normalizeStoredSettings({
+    preloadWindow: { fullscreenPressurePolicy: "invalid" },
+  }).preloadWindow.fullscreenPressurePolicy,
+  "sleep"
+);
+assert.equal(
+  context.ZeroLatencySettings.normalizeStoredSettings({}).preloading.excludeIncognitoWindows,
+  true
+);
+assert.equal(
+  context.ZeroLatencySettings.normalizeStoredSettings({
+    preloading: { excludeIncognitoWindows: false },
+  }).preloading.excludeIncognitoWindows,
+  false
+);
+assert.equal(
+  context.ZeroLatencySettings.normalizeStoredSettings({}).experiments.crossSiteCurrentTabSwap,
+  false
+);
+assert.equal(
+  context.ZeroLatencySettings.normalizeStoredSettings({
+    experiments: { crossSiteCurrentTabSwap: true },
+  }).experiments.crossSiteCurrentTabSwap,
+  true
+);
 
 assert.deepEqual(JSON.parse(JSON.stringify(buildSchedulerDiscoverySlotLimits(settings))), {
   nativePageSlotLimit: 4,
   tabPageSlotLimit: 5,
 });
 
+const mixedCandidateLinks = [
+  {
+    isSameOrigin: true,
+    targetHint: "_self",
+    score: 2,
+  },
+  {
+    isSameOrigin: false,
+    targetHint: "_self",
+    outboundPageTransitionCount: 3,
+    score: 5,
+  },
+  {
+    isSameOrigin: false,
+    targetHint: "_blank",
+    outboundPageTransitionCount: 0,
+    score: 7,
+  },
+  {
+    isSameOrigin: false,
+    targetHint: "_blank",
+    outboundPageTransitionCount: 99,
+    score: 999,
+    bookmarkPreload: {
+      bucketKey: "startupGoogleSearch",
+      count: 10,
+      rank: 1,
+      title: "Bookmark target",
+    },
+  },
+];
+
 assert.deepEqual(
   JSON.parse(
     JSON.stringify(
-      context.buildPreloadSchedulerScoreSignals(
-        [
-          {
-            isSameOrigin: true,
-            targetHint: "_self",
-            score: 2,
-          },
-          {
-            isSameOrigin: false,
-            targetHint: "_self",
-            outboundPageTransitionCount: 3,
-            score: 5,
-          },
-          {
-            isSameOrigin: false,
-            targetHint: "_blank",
-            outboundPageTransitionCount: 0,
-            score: 7,
-          },
-        ],
-        settings
-      )
+      context.buildPreloadSchedulerScoreSignals(mixedCandidateLinks, settings)
+    )
+  ),
+  {
+    native: {
+      scoreSum: buildExpectedSchedulerScoreSum([2, 5, 7]),
+      candidateCount: 3,
+      linkValueMultiplier: context.buildSchedulerLinkValueMultiplier(
+        buildExpectedSchedulerScoreSum([2, 5, 7])
+      ),
+    },
+    tab: {
+      scoreSum: 0,
+      candidateCount: 0,
+      linkValueMultiplier: 1,
+    },
+  }
+);
+
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      context.buildPreloadSchedulerScoreSignals(mixedCandidateLinks, currentTabSwapSettings)
     )
   ),
   {
@@ -154,9 +249,172 @@ assert.deepEqual(
     )
   ),
   [
-    [1, 4, 0, 4, 0],
+    [1, 1, 0, 1, 0],
     [2, 1, 4, 1, 4],
   ]
+);
+
+context.getPreloadResourcePressureState = async () => ({
+  shouldDeferHiddenTabs: true,
+  policy: "sleep",
+  reason: "game-process",
+});
+
+const pressureScheduledSelections = await schedulePreloadCandidateSelectionSnapshots({
+  snapshots,
+  preloadState,
+  settings,
+});
+
+delete context.getPreloadResourcePressureState;
+
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      pressureScheduledSelections.map((entry) => [
+        entry.sourceTabId,
+        entry.tabSlots,
+        entry.nativeSlots,
+        entry.selection.tabTargets.length,
+        entry.selection.selectedTargets.some((target) => target.strategy === "hidden-tab"),
+      ])
+    )
+  ),
+  [
+    [1, 0, 0, 0, false],
+    [2, 0, 4, 0, false],
+  ]
+);
+
+const bookmarkOnlySelections = await schedulePreloadCandidateSelectionSnapshots({
+  snapshots: [
+    context.normalizePreloadCandidateSelectionSnapshot({
+      sourceTabId: 5,
+      sourceWindowId: 10,
+      sourcePageUrl: "https://www.google.com/search?q=bookmark-only",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      scoreSignals: {
+        tab: { scoreSum: 0, candidateCount: 0 },
+        native: { scoreSum: 0, candidateCount: 0 },
+      },
+      selectedTargets: [
+        buildTarget(5, "hidden-tab", 0, 0, {
+          bookmarkPreload: {
+            bucketKey: "startupGoogleSearch",
+            count: 12,
+            rank: 1,
+            title: "Bookmark target",
+          },
+        }),
+      ],
+    }),
+  ],
+  preloadState,
+  settings: bookmarkEnabledSettings,
+});
+
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      bookmarkOnlySelections.map((entry) => [
+        entry.sourceTabId,
+        entry.tabSlots,
+        entry.nativeSlots,
+        entry.selection.tabTargets.length,
+      ])
+    )
+  ),
+  [[5, 0, 0, 1]]
+);
+
+context.getPreloadResourcePressureState = async () => ({
+  shouldDeferHiddenTabs: true,
+  policy: "sleep",
+  reason: "non-chrome-fullscreen",
+});
+
+const bookmarkPressureSelections = await schedulePreloadCandidateSelectionSnapshots({
+  snapshots: [
+    context.normalizePreloadCandidateSelectionSnapshot({
+      sourceTabId: 6,
+      sourceWindowId: 10,
+      sourcePageUrl: "https://www.google.com/search?q=bookmark-pressure",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      scoreSignals: {
+        tab: { scoreSum: 0, candidateCount: 0 },
+        native: { scoreSum: 0, candidateCount: 0 },
+      },
+      selectedTargets: [
+        buildTarget(6, "hidden-tab", 0, 0, {
+          bookmarkPreload: {
+            bucketKey: "startupGoogleSearch",
+            count: 12,
+            rank: 1,
+            title: "Bookmark target",
+          },
+        }),
+      ],
+    }),
+  ],
+  preloadState,
+  settings: bookmarkEnabledSettings,
+});
+
+delete context.getPreloadResourcePressureState;
+
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      bookmarkPressureSelections.map((entry) => [
+        entry.sourceTabId,
+        entry.tabSlots,
+        entry.nativeSlots,
+        entry.selection.tabTargets.length,
+      ])
+    )
+  ),
+  [[6, 0, 0, 0]]
+);
+
+const bookmarkDisabledSelections = await schedulePreloadCandidateSelectionSnapshots({
+  snapshots: [
+    context.normalizePreloadCandidateSelectionSnapshot({
+      sourceTabId: 6,
+      sourceWindowId: 10,
+      sourcePageUrl: "https://www.google.com/search?q=bookmark-disabled",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      scoreSignals: {
+        tab: { scoreSum: 0, candidateCount: 0 },
+        native: { scoreSum: 0, candidateCount: 0 },
+      },
+      selectedTargets: [
+        buildTarget(6, "hidden-tab", 0, 0, {
+          bookmarkPreload: {
+            bucketKey: "startupGoogleSearch",
+            count: 12,
+            rank: 1,
+            title: "Bookmark target",
+          },
+        }),
+      ],
+    }),
+  ],
+  preloadState,
+  settings,
+});
+
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      bookmarkDisabledSelections.map((entry) => [
+        entry.sourceTabId,
+        entry.tabSlots,
+        entry.nativeSlots,
+        entry.selection.tabTargets.length,
+      ])
+    )
+  ),
+  [[6, 0, 0, 0]]
 );
 
 const signalDrivenSelections = await schedulePreloadCandidateSelectionSnapshots({
@@ -197,14 +455,16 @@ assert.deepEqual(
     )
   ),
   [
-    [3, 5, 5],
-    [4, 0, 0],
+    [3, 1, 1],
+    [4, 1, 1],
   ]
 );
 
 let rebuiltSlotLimits = null;
+let rebuiltIgnoredConfiguredSourceSlotCaps = null;
 context.selectPreloadTargets = async (request) => {
   rebuiltSlotLimits = request.slotLimits;
+  rebuiltIgnoredConfiguredSourceSlotCaps = request.ignoreConfiguredSourceSlotCaps === true;
   return context.ZeroLatencyPreloadSchedulerSelections.buildSelectionFromTargets([
     ...request.candidateLinks
       .filter((link) => link.url.includes("/hidden-tab/"))
@@ -244,8 +504,9 @@ const rebuiltSelections = await schedulePreloadCandidateSelectionSnapshots({
 
 assert.deepEqual(JSON.parse(JSON.stringify(rebuiltSlotLimits)), {
   nativePageSlotLimit: 1,
-  tabPageSlotLimit: 2,
+  tabPageSlotLimit: 1,
 });
+assert.equal(rebuiltIgnoredConfiguredSourceSlotCaps, false);
 assert.deepEqual(
   JSON.parse(
     JSON.stringify([
@@ -253,7 +514,7 @@ assert.deepEqual(
       rebuiltSelections[0].selection.prerenderTargets.length,
     ])
   ),
-  [2, 1]
+  [1, 1]
 );
 
 const rescheduleState = context.createEmptyPreloadState();
@@ -343,12 +604,12 @@ assert.deepEqual(
     )
   ),
   [
-    [30, 5, 5],
+    [30, 1, 1],
     [40, 0, 0],
   ]
 );
 assert.deepEqual(JSON.parse(JSON.stringify(synchronizedSelections)), [
-  ["hidden-tab", 10, 30, 5],
+  ["hidden-tab", 10, 30, 1],
   ["prerender", 10, 30, 0],
   ["prefetch", 10, 30, 0],
   ["hidden-tab", 10, 40, 0],
@@ -425,6 +686,7 @@ const rememberedSnapshot =
 
 assert.equal(wideSelectionRequest.slotLimits.nativePageSlotLimit, 4);
 assert.equal(wideSelectionRequest.slotLimits.tabPageSlotLimit, 5);
+assert.equal(wideSelectionRequest.ignoreConfiguredSourceSlotCaps, true);
 assert.equal(rememberedSnapshot.selectedTargets.length, 3);
 assert.equal(rememberedSnapshot.scoreSignals.tab.scoreSum, buildExpectedSchedulerScoreSum([100]));
 assert.equal(
@@ -450,13 +712,14 @@ function buildSnapshot({ sourceTabId, sourcePageUrl, hiddenScores, nativeScores,
   });
 }
 
-function buildTarget(sourceTabId, strategy, score, index) {
+function buildTarget(sourceTabId, strategy, score, index, extra = {}) {
   return {
     url: `https://target.example/${sourceTabId}/${strategy}/${index}`,
     nodeId: `https://target.example/${sourceTabId}`,
     score,
     targetHint: "_self",
     strategy,
+    ...extra,
   };
 }
 

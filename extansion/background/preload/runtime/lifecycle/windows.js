@@ -22,12 +22,20 @@ async function ensureWarmPreloadWindowsForActiveNormalWindows() {
     windowTypes: ["normal"],
   });
   const preloadState = await loadPreloadState();
+  const runtimeSettings = getEffectiveExtensionSettings();
   let didMutate = false;
 
   for (const window of windows) {
     const normalWindowId = normalizePositiveInteger(window?.id);
 
-    if (normalWindowId === null || isPreloadSentinelWindow(window)) {
+    if (
+      normalWindowId === null ||
+      isPreloadSentinelWindow(window) ||
+      (window.incognito === true &&
+        globalThis.ZeroLatencyPreloadIncognitoPolicy?.isIncognitoPreloadExclusionEnabled?.(
+          runtimeSettings
+        ) === true)
+    ) {
       continue;
     }
 

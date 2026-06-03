@@ -112,14 +112,6 @@ body {
   font-weight: 700;
 }
 
-.settings-nav-sub {
-  display: block;
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.45;
-}
-
 .settings-nav-footer {
   margin-top: auto;
   display: grid;
@@ -198,6 +190,70 @@ body {
 .settings-item-label {
   font-size: 15px;
   font-weight: 700;
+}
+
+.settings-item-label-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.settings-item-label-text {
+  min-width: 0;
+}
+
+.settings-help {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--surface-muted);
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: help;
+  user-select: none;
+}
+
+.settings-help-tooltip {
+  position: absolute;
+  z-index: 20;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 48px));
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface-strong);
+  box-shadow: 0 12px 28px rgba(35, 48, 41, 0.13);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(2px);
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+  white-space: normal;
+}
+
+.settings-help:hover .settings-help-tooltip,
+.settings-help:focus .settings-help-tooltip,
+.settings-help:focus-visible .settings-help-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 .settings-item-control {
@@ -487,6 +543,11 @@ body {
   border-color: #c0d7d0;
   background: #ecf3f1;
   color: #3a574e;
+}
+
+.settings-runtime-warning {
+  margin: 0;
+  font-weight: 700;
 }
 
 .is-hidden {

@@ -55,18 +55,20 @@
   }
 
   const SETTINGS_STORAGE_KEY = "userSettingsV1";
-  const SETTINGS_STORAGE_VERSION = 20;
+  const SETTINGS_STORAGE_VERSION = 23;
   const AI_MODEL_CATALOG = globalThis.ZeroLatencyAiModelCatalog ?? null;
   const PRELOAD_RULE_CARD_IDS = [
     "nativePerPagePreloadLimit",
     "highWeightRank",
     "perPagePreloadLimit",
     "highWeightRankTab",
+    "googleBookmarkRank",
   ];
-  const TRACKING_RULE_CARD_IDS = ["googleBookmarkRank"];
+  const TRACKING_RULE_CARD_IDS = [];
   const RULE_CARD_IDS = [...PRELOAD_RULE_CARD_IDS, ...TRACKING_RULE_CARD_IDS];
   const RULE_CONDITION_OPERATOR_VALUES = ["disabled", "gt", "gte", "eq", "lte", "lt"];
   const RULE_STATUS_VALUES = ["enabled", "disabled"];
+  const FULLSCREEN_PRESSURE_POLICY_VALUES = ["close", "sleep", "ignore"];
   const TRANSITION_WINDOW_VALUES = ["total", "last365d", "last30d", "last7d", "last1d"];
   const TRANSITION_WINDOW_OPTIONS = [
     { value: "total", label: localize("transitionWindowTotal", "Total") },
@@ -191,7 +193,7 @@
       title: localize("ruleGoogleBookmarkRankTitle", "Google search bookmark preload rank x"),
       description: localize(
         "ruleGoogleBookmarkRankDesc",
-        "Only applies on Google search pages. When enabled, Chrome bookmarks become preload candidates and this rank rule keeps the most-used bookmark candidates."
+        "Only applies on Google search pages. When enabled, Chrome bookmarks are kept as independent persistent preload targets by this rank rule."
       ),
       fields: createRuleFields("x"),
     },
@@ -206,21 +208,22 @@
     preloading: {
       enabled: true,
       mode: "balanced",
-      nativeMaxPreloadsPerSource: 7,
-      maxTabsPerSource: 3,
-      siteSelectionLimit: 5,
-      tabSiteSelectionLimit: 3,
+      nativeMaxPreloadsPerSource: 4,
+      maxTabsPerSource: 1,
+      siteSelectionLimit: 3,
+      tabSiteSelectionLimit: 2,
       ignoreWaterfallDynamicLinks: true,
+      excludeIncognitoWindows: true,
       transitionWindowScope: {
         enabled: false,
         windowKey: "total",
       },
       scheduler: {
-        nativeTotalMin: 7,
-        nativeTotalMax: 32,
+        nativeTotalMin: 3,
+        nativeTotalMax: 16,
         nativeHalfLifeTabs: 8,
-        tabTotalMin: 3,
-        tabTotalMax: 12,
+        tabTotalMin: 1,
+        tabTotalMax: 4,
         tabHalfLifeTabs: 8,
         attentionPoolHours: 5,
         attentionSegmentSeconds: 60,
@@ -241,6 +244,7 @@
     preloadWindow: {
       watchdogEnabled: true,
       watchdogIntervalSeconds: 1,
+      fullscreenPressurePolicy: "sleep",
       forceMinimize: true,
       systemLevelHiding: {
         support: {
@@ -252,7 +256,7 @@
       },
     },
     experiments: {
-      crossSiteCurrentTabSwap: true,
+      crossSiteCurrentTabSwap: false,
       idleWakeAggressive: false,
       pointerProximityPrediction: false,
       authStateWarmup: false,
@@ -268,7 +272,7 @@
             operatorA: "disabled",
             valueB: 1,
             operatorB: "lte",
-            valueC: 7,
+            valueC: 4,
             status: "enabled",
           },
           perPagePreloadLimit: {
@@ -276,7 +280,7 @@
             operatorA: "disabled",
             valueB: 1,
             operatorB: "lte",
-            valueC: 3,
+            valueC: 1,
             status: "enabled",
           },
           highWeightRank: {
@@ -284,7 +288,7 @@
             operatorA: "lte",
             valueB: 1,
             operatorB: "lte",
-            valueC: 5,
+            valueC: 3,
             status: "enabled",
           },
           highWeightRankTab: {
@@ -292,7 +296,7 @@
             operatorA: "lte",
             valueB: 1,
             operatorB: "lte",
-            valueC: 3,
+            valueC: 2,
             status: "enabled",
           },
           googleBookmarkRank: {
@@ -365,6 +369,8 @@
     delete normalized.preloading.modelManager;
     normalized.preloading.ignoreWaterfallDynamicLinks =
       normalized.preloading.ignoreWaterfallDynamicLinks !== false;
+    normalized.preloading.excludeIncognitoWindows =
+      normalized.preloading.excludeIncognitoWindows !== false;
     delete normalized.preloading.crossSiteCurrentTabSwap;
     normalized.preloadWindow.watchdogIntervalSeconds = clamp(
       normalized.preloadWindow.watchdogIntervalSeconds,
@@ -372,8 +378,11 @@
       10,
       DEFAULT_SETTINGS.preloadWindow.watchdogIntervalSeconds
     );
+    normalized.preloadWindow.fullscreenPressurePolicy = normalizeFullscreenPressurePolicy(
+      normalized.preloadWindow.fullscreenPressurePolicy
+    );
     normalized.experiments.crossSiteCurrentTabSwap =
-      normalized.experiments.crossSiteCurrentTabSwap !== false;
+      normalized.experiments.crossSiteCurrentTabSwap === true;
     normalized.diagnostics = {
       enabled: normalized.diagnostics?.enabled === true,
     };
@@ -464,6 +473,13 @@
 
   function normalizeRuleStatus(value, fallback) {
     return RULE_STATUS_VALUES.includes(value) ? value : fallback;
+  }
+
+  function normalizeFullscreenPressurePolicy(
+    value,
+    fallback = DEFAULT_SETTINGS.preloadWindow.fullscreenPressurePolicy
+  ) {
+    return FULLSCREEN_PRESSURE_POLICY_VALUES.includes(value) ? value : fallback;
   }
 
   function normalizeTransitionWindowKey(value, fallback = DEFAULT_SETTINGS.preloading.transitionWindowScope.windowKey) {
@@ -926,6 +942,7 @@
     RULE_CARD_IDS,
     RULE_CONDITION_OPERATOR_VALUES,
     RULE_STATUS_VALUES,
+    FULLSCREEN_PRESSURE_POLICY_VALUES,
     TRANSITION_WINDOW_VALUES,
     TRANSITION_WINDOW_OPTIONS,
     AI_PROVIDER_OPTIONS,
@@ -942,6 +959,7 @@
     isRuleCardEnabled,
     compareRuleValues,
     evaluateRuleCardMetric,
+    normalizeFullscreenPressurePolicy,
     normalizeTransitionWindowKey,
     getAiModelInfo,
     getAiProviderModels,

@@ -30,6 +30,71 @@ function buildDebugSnapshot(graph) {
   };
 }
 
+function buildTrackingGraphSummary(graph) {
+  const normalizedGraph = isPlainObject(graph) ? graph : createEmptyGraph();
+
+  return normalizeTrackingGraphSummary({
+    version: normalizedGraph.version,
+    nodeCount: Object.keys(normalizedGraph.nodes || {}).length,
+    edgeCount: Object.keys(normalizedGraph.edges || {}).length,
+    transitionMessageCount: Array.isArray(normalizedGraph.transitionMessages)
+      ? normalizedGraph.transitionMessages.length
+      : 0,
+    updatedAt: normalizedGraph.updatedAt,
+    transitionSequence: normalizedGraph.transitionSequence ?? 0,
+    learning: {
+      pageKeywordCount: Object.keys(normalizedGraph.pageKeywordStore || {}).length,
+      recentForegroundPageCount: Array.isArray(normalizedGraph.recentForegroundPages)
+        ? normalizedGraph.recentForegroundPages.length
+        : 0,
+      historyPagePoolSize: Array.isArray(normalizedGraph.historyPageUrls)
+        ? normalizedGraph.historyPageUrls.length
+        : 0,
+    },
+  });
+}
+
+function normalizeTrackingGraphSummary(rawSummary, fallbackGraph = null) {
+  if (!isPlainObject(rawSummary)) {
+    return fallbackGraph ? buildTrackingGraphSummary(fallbackGraph) : createEmptyTrackingGraphSummary();
+  }
+
+  const rawLearning = isPlainObject(rawSummary.learning) ? rawSummary.learning : {};
+
+  return {
+    version: clampNonNegativeInt(rawSummary.version, 0),
+    nodeCount: clampNonNegativeInt(rawSummary.nodeCount, 0),
+    edgeCount: clampNonNegativeInt(rawSummary.edgeCount, 0),
+    transitionMessageCount: clampNonNegativeInt(rawSummary.transitionMessageCount, 0),
+    updatedAt: typeof rawSummary.updatedAt === "string" ? rawSummary.updatedAt : null,
+    transitionSequence: clampNonNegativeInt(rawSummary.transitionSequence, 0),
+    learning: {
+      pageKeywordCount: clampNonNegativeInt(rawLearning.pageKeywordCount, 0),
+      recentForegroundPageCount: clampNonNegativeInt(
+        rawLearning.recentForegroundPageCount,
+        0
+      ),
+      historyPagePoolSize: clampNonNegativeInt(rawLearning.historyPagePoolSize, 0),
+    },
+  };
+}
+
+function createEmptyTrackingGraphSummary() {
+  return {
+    version: 0,
+    nodeCount: 0,
+    edgeCount: 0,
+    transitionMessageCount: 0,
+    updatedAt: null,
+    transitionSequence: 0,
+    learning: {
+      pageKeywordCount: 0,
+      recentForegroundPageCount: 0,
+      historyPagePoolSize: 0,
+    },
+  };
+}
+
 
 function buildCurrentTopDestinations(graph, nodeId, pageUrl) {
   if (!nodeId) {

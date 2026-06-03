@@ -50,12 +50,18 @@
       [backgroundState.keys.SERVICE_STATE_KEY]: createDefaultServiceState(),
     });
 
-    return normalizeServiceState(stored[backgroundState.keys.SERVICE_STATE_KEY]);
+    const serviceState = normalizeServiceState(stored[backgroundState.keys.SERVICE_STATE_KEY]);
+
+    backgroundState.setCachedServiceState(serviceState);
+    return serviceState;
   }
 
   async function saveServiceStateForBackgroundState(backgroundState, serviceState) {
+    const normalizedServiceState = normalizeServiceState(serviceState);
+
+    backgroundState.setCachedServiceState(normalizedServiceState);
     await backgroundState.chromeStorage.set({
-      [backgroundState.keys.SERVICE_STATE_KEY]: normalizeServiceState(serviceState),
+      [backgroundState.keys.SERVICE_STATE_KEY]: normalizedServiceState,
     });
   }
 

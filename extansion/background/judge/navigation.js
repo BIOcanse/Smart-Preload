@@ -12,6 +12,8 @@
         return allowNavigationDecision("record-created-navigation-target");
       case "tab-replaced":
         return allowNavigationDecision("record-tab-replacement");
+      case "tab-created":
+        return allowNavigationDecision("handle-created-tab");
       case "tab-removed":
         return allowNavigationDecision("handle-removed-tab");
       case "tab-updated":

@@ -40,7 +40,24 @@
   }
 
   function normalizeHtmlLanguage(language) {
-    return /^zh\b/i.test(language) ? "zh-CN" : "en";
+    const normalized = String(language || "")
+      .replace("_", "-")
+      .toLowerCase();
+
+    if (normalized.startsWith("zh-tw") || normalized.startsWith("zh-hk") || normalized.startsWith("zh-mo")) {
+      return "zh-TW";
+    }
+    if (normalized.startsWith("zh")) {
+      return "zh-CN";
+    }
+    if (normalized.startsWith("pt-br")) {
+      return "pt-BR";
+    }
+
+    const primaryLanguage = normalized.split("-")[0];
+    const supportedLanguages = new Set(["en", "ja", "ko", "de", "fr", "es", "ru"]);
+
+    return supportedLanguages.has(primaryLanguage) ? primaryLanguage : DEFAULT_LANGUAGE;
   }
 
   function applyDocument(root = globalThis.document) {

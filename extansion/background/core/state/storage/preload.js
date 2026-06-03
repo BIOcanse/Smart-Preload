@@ -4,12 +4,18 @@
       [backgroundState.keys.PRELOAD_STATE_KEY]: createEmptyPreloadState(),
     });
 
-    return normalizePreloadState(stored[backgroundState.keys.PRELOAD_STATE_KEY]);
+    const preloadState = normalizePreloadState(stored[backgroundState.keys.PRELOAD_STATE_KEY]);
+
+    backgroundState.setCachedPreloadState(preloadState);
+    return preloadState;
   }
 
   async function savePreloadStateForBackgroundState(backgroundState, preloadState) {
+    const normalizedPreloadState = normalizePreloadState(preloadState);
+
+    backgroundState.setCachedPreloadState(normalizedPreloadState);
     await backgroundState.chromeStorage.set({
-      [backgroundState.keys.PRELOAD_STATE_KEY]: normalizePreloadState(preloadState),
+      [backgroundState.keys.PRELOAD_STATE_KEY]: normalizedPreloadState,
     });
   }
 

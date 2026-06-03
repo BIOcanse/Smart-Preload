@@ -5,12 +5,14 @@ const t = (key, substitutions = [], fallback = "") =>
   i18n?.t?.(key, substitutions, fallback) || fallback || key;
 
 i18n?.applyDocument?.(document);
+compactInlineSettingDescriptions(document);
 
 const formElements = {
   trackGoogleSearchPages: document.getElementById("track-google-search-pages"),
   excludeGoogleInternalPages: document.getElementById("exclude-google-internal-pages"),
   preloadingEnabled: document.getElementById("preloading-enabled"),
   ignoreWaterfallDynamicLinks: document.getElementById("ignore-waterfall-dynamic-links"),
+  excludeIncognitoWindows: document.getElementById("exclude-incognito-windows"),
   transitionWindowScope: document.getElementById("transition-window-scope"),
   transitionWindowScopeEnabled: document.getElementById("transition-window-scope-enabled"),
   schedulerTabTotalMin: document.getElementById("scheduler-tab-total-min"),
@@ -35,6 +37,7 @@ const formElements = {
   crossSiteCurrentTabSwap: document.getElementById("cross-site-current-tab-swap"),
   watchdogEnabled: document.getElementById("watchdog-enabled"),
   watchdogIntervalSeconds: document.getElementById("watchdog-interval-seconds"),
+  fullscreenPressurePolicy: document.getElementById("fullscreen-pressure-policy"),
   forceMinimize: document.getElementById("force-minimize"),
   idleWakeAggressive: document.getElementById("idle-wake-aggressive"),
   pointerProximityPrediction: document.getElementById("pointer-proximity-prediction"),
@@ -46,15 +49,16 @@ const saveButton = document.getElementById("save-button");
 const resetButton = document.getElementById("reset-button");
 const navButtons = Array.from(document.querySelectorAll(".settings-nav-item"));
 const aiPredictionMismatchWarningElement = document.getElementById("ai-prediction-mismatch-warning");
+const performanceWarningElement = document.getElementById("settings-performance-warning");
 const PRELOAD_RULE_CARD_IDS =
   settingsApi.PRELOAD_RULE_CARD_IDS ?? [
     "nativePerPagePreloadLimit",
     "highWeightRank",
     "perPagePreloadLimit",
     "highWeightRankTab",
+    "googleBookmarkRank",
   ];
-const TRACKING_RULE_CARD_IDS =
-  settingsApi.TRACKING_RULE_CARD_IDS ?? ["googleBookmarkRank"];
+const TRACKING_RULE_CARD_IDS = settingsApi.TRACKING_RULE_CARD_IDS ?? [];
 const NAV_SECTION_IDS = ["tracking", "preload", "experiments"];
 const NAV_SECTION_GROUPS = {
   tracking: ["tracking"],
@@ -76,6 +80,7 @@ let draftSettings = settingsApi.cloneSettings(settingsApi.DEFAULT_SETTINGS);
 let pendingNavSyncFrame = null;
 let aiModelOptionsRequestId = 0;
 let pendingLmStudioModelLoadId = "";
+let performanceWarningRefreshTimerId = null;
 
 void initializeSettingsPage();
 
@@ -90,6 +95,8 @@ async function initializeSettingsPage() {
     draftSettings = settingsApi.cloneSettings(savedSettings);
     renderForm(draftSettings);
     queueNavScrollSync();
+    ensurePerformanceWarningRefresh();
+    void refreshPerformanceWarning();
     setStatus(t("commonReady", [], "Ready"), t("settingsNoUnsavedChanges", [], "No unsaved changes."));
   } catch (error) {
     console.error(error);
@@ -169,6 +176,16 @@ function bindUiEvents() {
   });
   window.addEventListener("resize", queueNavScrollSync);
 
+}
+
+function ensurePerformanceWarningRefresh() {
+  if (performanceWarningRefreshTimerId !== null) {
+    return;
+  }
+
+  performanceWarningRefreshTimerId = window.setInterval(() => {
+    void refreshPerformanceWarning();
+  }, 10000);
 }
 
 async function handleFormChange(event) {
@@ -255,6 +272,7 @@ function readFormSettings() {
       siteSelectionLimit: draftSettings.preloading.siteSelectionLimit,
       tabSiteSelectionLimit: draftSettings.preloading.tabSiteSelectionLimit,
       ignoreWaterfallDynamicLinks: formElements.ignoreWaterfallDynamicLinks.checked,
+      excludeIncognitoWindows: formElements.excludeIncognitoWindows.checked,
       transitionWindowScope: {
         enabled: formElements.transitionWindowScopeEnabled.checked,
         windowKey: formElements.transitionWindowScope.value,
@@ -272,6 +290,7 @@ function readFormSettings() {
     preloadWindow: {
       watchdogEnabled: formElements.watchdogEnabled.checked,
       watchdogIntervalSeconds: Number(formElements.watchdogIntervalSeconds.value) || 1,
+      fullscreenPressurePolicy: formElements.fullscreenPressurePolicy.value,
       forceMinimize: formElements.forceMinimize.checked,
     },
     experiments: {
@@ -305,6 +324,8 @@ function syncBaseControlsFromSettings(settings) {
   formElements.preloadingEnabled.checked = settings.preloading.enabled;
   formElements.ignoreWaterfallDynamicLinks.checked =
     settings.preloading.ignoreWaterfallDynamicLinks;
+  formElements.excludeIncognitoWindows.checked =
+    settings.preloading.excludeIncognitoWindows !== false;
   formElements.transitionWindowScopeEnabled.checked =
     settings.preloading.transitionWindowScope.enabled;
   formElements.transitionWindowScope.value = settings.preloading.transitionWindowScope.windowKey;
@@ -317,6 +338,10 @@ function syncBaseControlsFromSettings(settings) {
   formElements.watchdogIntervalSeconds.value = String(
     settings.preloadWindow.watchdogIntervalSeconds
   );
+  formElements.fullscreenPressurePolicy.value =
+    settingsApi.normalizeFullscreenPressurePolicy?.(
+      settings.preloadWindow.fullscreenPressurePolicy
+    ) || "sleep";
   formElements.forceMinimize.checked = settings.preloadWindow.forceMinimize;
   formElements.idleWakeAggressive.checked = settings.experiments.idleWakeAggressive;
   formElements.pointerProximityPrediction.checked =
@@ -799,21 +824,85 @@ function renderRuleCardList(container, cardIds, settings) {
     const info = document.createElement("div");
     info.className = "settings-item-info";
 
-    const title = document.createElement("p");
-    title.className = "settings-item-label";
-    title.textContent = cardSchema.title;
-
-    const description = document.createElement("p");
-    description.className = "settings-item-desc";
-    description.textContent = cardSchema.description;
-
-    info.append(title, description);
+    info.append(
+      createSettingLabelElement({
+        text: cardSchema.title,
+        helpText: cardSchema.description,
+      })
+    );
 
     const controlArea = document.createElement("div");
     controlArea.className = "settings-item-control rule-card-control";
     controlArea.append(createRuleControlWidget(cardId, cardSchema, cardState));
     item.append(info, controlArea);
     container.append(item);
+  }
+}
+
+function createSettingLabelElement({ text, helpText, htmlFor } = {}) {
+  const labelElement = document.createElement(htmlFor ? "label" : "p");
+  labelElement.className = "settings-item-label settings-item-label-row";
+
+  if (htmlFor) {
+    labelElement.setAttribute("for", htmlFor);
+  }
+
+  const textElement = document.createElement("span");
+  textElement.className = "settings-item-label-text";
+  textElement.textContent = String(text || "");
+  labelElement.append(textElement);
+
+  if (typeof helpText === "string" && helpText.trim()) {
+    labelElement.append(createSettingsHelpIcon(helpText.trim(), text));
+  }
+
+  return labelElement;
+}
+
+function createSettingsHelpIcon(helpText, labelText) {
+  const helpElement = document.createElement("span");
+  helpElement.className = "settings-help";
+  helpElement.tabIndex = 0;
+  helpElement.setAttribute("role", "img");
+  helpElement.setAttribute(
+    "aria-label",
+    `${labelText || t("commonHelp", [], "Help")}: ${helpText}`
+  );
+  helpElement.textContent = "?";
+  helpElement.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  });
+
+  const tooltip = document.createElement("span");
+  tooltip.className = "settings-help-tooltip";
+  tooltip.textContent = helpText;
+  helpElement.append(tooltip);
+
+  return helpElement;
+}
+
+function compactInlineSettingDescriptions(root = document) {
+  const infoBlocks = Array.from(root.querySelectorAll(".settings-item-info"));
+
+  for (const infoBlock of infoBlocks) {
+    const labelElement = infoBlock.querySelector(".settings-item-label");
+    const descriptionElement = infoBlock.querySelector(".settings-item-desc");
+
+    if (!labelElement || !descriptionElement || labelElement.querySelector(".settings-help")) {
+      continue;
+    }
+
+    const helpText = descriptionElement.textContent.trim();
+
+    if (!helpText) {
+      descriptionElement.remove();
+      continue;
+    }
+
+    labelElement.classList.add("settings-item-label-row");
+    labelElement.append(createSettingsHelpIcon(helpText, labelElement.textContent.trim()));
+    descriptionElement.remove();
   }
 }
 
@@ -995,4 +1084,39 @@ function syncAiPredictionMismatchWarning() {
 
   aiPredictionMismatchWarningElement.classList.add("is-hidden");
   aiPredictionMismatchWarningElement.textContent = "";
+}
+
+async function refreshPerformanceWarning() {
+  if (!performanceWarningElement) {
+    return;
+  }
+
+  try {
+    const snapshot = await chrome.runtime.sendMessage({
+      type: "visit-graph:get-debug-snapshot",
+      mode: "performance-warning",
+    });
+    renderPerformanceWarning(snapshot?.performanceWarning);
+  } catch (error) {
+    console.error(error);
+    renderPerformanceWarning(null);
+  }
+}
+
+function renderPerformanceWarning(performanceWarning) {
+  if (!performanceWarningElement) {
+    return;
+  }
+
+  if (performanceWarning?.active !== true) {
+    performanceWarningElement.classList.add("is-hidden");
+    return;
+  }
+
+  performanceWarningElement.textContent = t(
+    performanceWarning.messageKey || "performanceInsufficientReducePreloadCaps",
+    [],
+    "Performance pressure detected. Lower the preload limits."
+  );
+  performanceWarningElement.classList.remove("is-hidden");
 }

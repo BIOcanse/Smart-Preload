@@ -18,6 +18,14 @@ function synchronizePrerenderEntriesForSourceTab(
     existingRuntimeEntry ?? ensureSourceTabRuntime(preloadState, normalWindowId, sourceTabId);
   const nextEntries = {};
 
+  for (const [url, entry] of Object.entries(
+    sourceRuntimeEntry.sourceTabRuntime.prerenderEntriesByUrl || {}
+  )) {
+    if (entry?.interactionPreload) {
+      nextEntries[url] = entry;
+    }
+  }
+
   for (const target of targets) {
     nextEntries[target.url] = {
       requestedUrl: target.url,
@@ -27,6 +35,7 @@ function synchronizePrerenderEntriesForSourceTab(
       transitionMetrics: target.transitionMetrics ?? null,
       aiKeywordMatch: target.aiKeywordMatch ?? null,
       bookmarkPreload: target.bookmarkPreload ?? null,
+      interactionPreload: target.interactionPreload ?? null,
       siteSelection: target.siteSelection ?? null,
       status: "prerender",
       strategy: "prerender",
@@ -63,6 +72,14 @@ function synchronizePrefetchEntriesForSourceTab(
     existingRuntimeEntry ?? ensureSourceTabRuntime(preloadState, normalWindowId, sourceTabId);
   const nextEntries = {};
 
+  for (const [url, entry] of Object.entries(
+    sourceRuntimeEntry.sourceTabRuntime.prefetchEntriesByUrl || {}
+  )) {
+    if (entry?.interactionPreload) {
+      nextEntries[url] = entry;
+    }
+  }
+
   for (const target of targets) {
     nextEntries[target.url] = {
       requestedUrl: target.url,
@@ -72,6 +89,7 @@ function synchronizePrefetchEntriesForSourceTab(
       transitionMetrics: target.transitionMetrics ?? null,
       aiKeywordMatch: target.aiKeywordMatch ?? null,
       bookmarkPreload: target.bookmarkPreload ?? null,
+      interactionPreload: target.interactionPreload ?? null,
       siteSelection: target.siteSelection ?? null,
       status: "prefetch",
       strategy: "prefetch",

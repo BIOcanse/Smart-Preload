@@ -10,6 +10,7 @@ async function selectPreloadTargets({
   graph,
   settings,
   slotLimits,
+  ignoreConfiguredSourceSlotCaps = false,
 }) {
   const scoredCandidatePool = await buildScoredPreloadCandidatePool({
     currentNodeId,
@@ -35,6 +36,7 @@ async function selectPreloadTargets({
     graph,
     settings,
     slotLimits,
+    ignoreConfiguredSourceSlotCaps,
   });
 }
 
@@ -79,6 +81,7 @@ async function selectPreloadTargetsFromScoredCandidatePool({
   graph,
   settings,
   slotLimits,
+  ignoreConfiguredSourceSlotCaps = false,
 }) {
   const filteredCandidatePool = await applyOrderedPreloadRules(
     Array.isArray(scoredCandidatePool) ? scoredCandidatePool : [],
@@ -101,6 +104,7 @@ async function selectPreloadTargetsFromScoredCandidatePool({
       currentPageTextDigest,
       currentPageContentFingerprint,
       slotLimits,
+      ignoreConfiguredSourceSlotCaps,
     }
   );
   const selectedTargetsWithStrategy = candidatePoolWithSiteSelection.map((candidate) => ({
@@ -111,25 +115,36 @@ async function selectPreloadTargetsFromScoredCandidatePool({
     transitionMetrics: buildCandidateTransitionMetricSnapshot(candidate),
     targetHint: candidate.targetHint,
     aiKeywordMatch: candidate.aiKeywordMatch ?? null,
-    bookmarkPreload: candidate.bookmarkPreload ?? null,
+    bookmarkPreload: null,
     siteSelection: candidate.siteSelection ?? null,
     strategy: candidate.strategy ?? determinePreloadStrategy(candidate, settings),
   }));
+  const independentBookmarkTargets = await buildIndependentGoogleBookmarkPreloadTargets({
+    sourceUrl,
+    sourceWindowId,
+    sourceTabId,
+    graph,
+    settings,
+  });
+  const selectedTargets = [
+    ...selectedTargetsWithStrategy,
+    ...independentBookmarkTargets,
+  ];
 
   return {
-    selectedTargets: selectedTargetsWithStrategy,
-    prerenderTargets: selectedTargetsWithStrategy
+    selectedTargets,
+    prerenderTargets: selectedTargets
       .filter((candidate) => candidate.strategy === "prerender")
       .map((candidate) => ({
         url: candidate.url,
         targetHint: candidate.targetHint,
       })),
-    prefetchTargets: selectedTargetsWithStrategy
+    prefetchTargets: selectedTargets
       .filter((candidate) => candidate.strategy === "prefetch")
       .map((candidate) => ({
         url: candidate.url,
       })),
-    tabTargets: selectedTargetsWithStrategy
+    tabTargets: selectedTargets
       .filter((candidate) => candidate.strategy === "hidden-tab")
       .map((candidate) => ({
         url: candidate.url,
@@ -143,6 +158,22 @@ async function selectPreloadTargetsFromScoredCandidatePool({
         siteSelection: candidate.siteSelection ?? null,
       })),
   };
+}
+
+async function buildIndependentGoogleBookmarkPreloadTargets(context) {
+  if (typeof buildGoogleBookmarkPreloadTargets !== "function") {
+    return [];
+  }
+
+  try {
+    return await buildGoogleBookmarkPreloadTargets(context);
+  } catch (error) {
+    console.warn("Failed to build independent Google bookmark preload targets.", error);
+    globalThis.ZeroLatencyDebugEvents?.record?.("prediction.google-bookmarks.targets.error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return [];
+  }
 }
 
 function buildPreloadSchedulerScoreSignals(scoredCandidatePool, settings) {
@@ -160,6 +191,10 @@ function buildPreloadSchedulerScoreSignals(scoredCandidatePool, settings) {
   };
 
   for (const candidate of Array.isArray(scoredCandidatePool) ? scoredCandidatePool : []) {
+    if (candidate?.bookmarkPreload) {
+      continue;
+    }
+
     const selectionGroup =
       determinePreloadStrategy(candidate, settings) === "hidden-tab" ? "tab" : "native";
     const score = Number(candidate?.score);
