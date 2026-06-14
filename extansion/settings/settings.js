@@ -1,5 +1,6 @@
 const settingsApi = globalThis.ZeroLatencySettings;
 const settingsAiModels = globalThis.ZeroLatencySettingsAiModels;
+const settingsAppUpdates = globalThis.ZeroLatencySettingsAppUpdates;
 const i18n = globalThis.ZeroLatencyI18n;
 const t = (key, substitutions = [], fallback = "") =>
   i18n?.t?.(key, substitutions, fallback) || fallback || key;
@@ -10,9 +11,16 @@ compactInlineSettingDescriptions(document);
 const formElements = {
   trackGoogleSearchPages: document.getElementById("track-google-search-pages"),
   excludeGoogleInternalPages: document.getElementById("exclude-google-internal-pages"),
+  excludeLocalPages: document.getElementById("exclude-local-pages"),
+  excludePrivateNetworkPages: document.getElementById("exclude-private-network-pages"),
   preloadingEnabled: document.getElementById("preloading-enabled"),
+  interactionPreloadEnabled: document.getElementById("interaction-preload-enabled"),
+  allNativePreloadMode: document.getElementById("all-native-preload-mode"),
   ignoreWaterfallDynamicLinks: document.getElementById("ignore-waterfall-dynamic-links"),
   excludeIncognitoWindows: document.getElementById("exclude-incognito-windows"),
+  proxySkipEnabled: document.getElementById("proxy-skip-enabled"),
+  proxySkipMode: document.getElementById("proxy-skip-mode"),
+  proxySkipRules: document.getElementById("proxy-skip-rules"),
   transitionWindowScope: document.getElementById("transition-window-scope"),
   transitionWindowScopeEnabled: document.getElementById("transition-window-scope-enabled"),
   schedulerTabTotalMin: document.getElementById("scheduler-tab-total-min"),
@@ -50,6 +58,11 @@ const resetButton = document.getElementById("reset-button");
 const navButtons = Array.from(document.querySelectorAll(".settings-nav-item"));
 const aiPredictionMismatchWarningElement = document.getElementById("ai-prediction-mismatch-warning");
 const performanceWarningElement = document.getElementById("settings-performance-warning");
+const historyDeleteStartElement = document.getElementById("history-delete-start");
+const historyDeleteEndElement = document.getElementById("history-delete-end");
+const historyDeleteButtonElement = document.getElementById("history-delete-button");
+const historyDeleteStatusElement = document.getElementById("history-delete-status");
+const historyDeleteCurrentUtcElement = document.getElementById("history-delete-current-utc");
 const PRELOAD_RULE_CARD_IDS =
   settingsApi.PRELOAD_RULE_CARD_IDS ?? [
     "nativePerPagePreloadLimit",
@@ -70,6 +83,8 @@ const trackingRuleCardsListElement = document.getElementById("tracking-rule-card
 
 const watchdogIntervalRowElement = document.getElementById("watchdog-interval-row");
 const transitionWindowScopeRowElement = document.getElementById("transition-window-scope-row");
+const hiddenTabsSchedulerGroupElement = document.getElementById("scheduler-hidden-tabs-group");
+const crossSiteCurrentTabSwapRowElement = document.getElementById("cross-site-current-tab-swap-row");
 const footerStatusTitleElement = document.getElementById("footer-status-title");
 const footerStatusTextElement = document.getElementById("footer-status-text");
 const navStatusTextElement = document.getElementById("nav-status-text");
@@ -81,6 +96,7 @@ let pendingNavSyncFrame = null;
 let aiModelOptionsRequestId = 0;
 let pendingLmStudioModelLoadId = "";
 let performanceWarningRefreshTimerId = null;
+let historyUtcClockTimerId = null;
 
 void initializeSettingsPage();
 
@@ -88,6 +104,7 @@ async function initializeSettingsPage() {
   populateTransitionWindowOptions();
   populateAiProviderOptions();
   bindUiEvents();
+  startHistoryUtcClock();
   setStatus(t("commonLoading", [], "Loading"), t("settingsReadingLocalSettings", [], "Reading local extension settings."));
 
   try {
@@ -95,6 +112,7 @@ async function initializeSettingsPage() {
     draftSettings = settingsApi.cloneSettings(savedSettings);
     renderForm(draftSettings);
     queueNavScrollSync();
+    settingsAppUpdates?.initialize?.({ setStatus });
     ensurePerformanceWarningRefresh();
     void refreshPerformanceWarning();
     setStatus(t("commonReady", [], "Ready"), t("settingsNoUnsavedChanges", [], "No unsaved changes."));
@@ -163,6 +181,16 @@ function bindUiEvents() {
     }
   });
 
+  historyDeleteButtonElement?.addEventListener("click", () => {
+    void handleDeleteHistoryRange();
+  });
+
+  for (const element of [historyDeleteStartElement, historyDeleteEndElement]) {
+    element?.addEventListener("input", () => {
+      renderHistoryDeleteStatus("");
+    });
+  }
+
   for (const button of navButtons) {
     button.addEventListener("click", () => {
       const targetId = button.dataset.sectionTarget;
@@ -178,6 +206,203 @@ function bindUiEvents() {
 
 }
 
+async function handleDeleteHistoryRange() {
+  const rangeResult = readHistoryDeletionRangeFromForm();
+
+  if (!rangeResult.ok) {
+    renderHistoryDeleteStatus(rangeResult.error, true);
+    return;
+  }
+
+  const rangeLabel = formatHistoryDeletionRangeLabel(rangeResult.range);
+  const confirmed = window.confirm(
+    t(
+      "settingsHistoryDeletionConfirm",
+      [rangeLabel],
+      `Delete local history records for UTC range ${rangeLabel}? This cannot be undone.`
+    )
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  historyDeleteButtonElement.disabled = true;
+  renderHistoryDeleteStatus(
+    t("settingsHistoryDeletionDeleting", [], "Deleting selected history records...")
+  );
+  setStatus(
+    t("commonRemoving", [], "Removing"),
+    t("settingsHistoryDeletionDeleting", [], "Deleting selected history records...")
+  );
+
+  try {
+    const result = await chrome.runtime.sendMessage({
+      type: "visit-graph:delete-history-range",
+      range: rangeResult.range,
+    });
+
+    if (result?.ok !== true) {
+      throw new Error(result?.error || "history deletion failed");
+    }
+
+    const deleted = result.deleted ?? {};
+    const deletedTotal =
+      Number(deleted.transitionMessages || 0) +
+      Number(deleted.recentForegroundPages || 0) +
+      Number(deleted.pageKeywords || 0) +
+      Number(deleted.linkBehaviorRecords || 0);
+    const message = t(
+      "settingsHistoryDeletionDeletedSummary",
+      [
+        String(deletedTotal),
+        String(deleted.transitionMessages || 0),
+        String(deleted.recentForegroundPages || 0),
+        String(deleted.pageKeywords || 0),
+        String(deleted.linkBehaviorRecords || 0),
+      ],
+      `Deleted ${deletedTotal} history record(s): ${deleted.transitionMessages || 0} transitions, ${deleted.recentForegroundPages || 0} foreground pages, ${deleted.pageKeywords || 0} keyword records, ${deleted.linkBehaviorRecords || 0} link behavior records.`
+    );
+
+    renderHistoryDeleteStatus(message);
+    setStatus(t("commonRemoved", [], "Removed"), message);
+  } catch (error) {
+    console.error(error);
+    const message = t(
+      "settingsHistoryDeletionFailed",
+      [],
+      "Could not delete the selected history records."
+    );
+    renderHistoryDeleteStatus(message, true);
+    setStatus(t("commonFailed", [], "Failed"), message);
+  } finally {
+    historyDeleteButtonElement.disabled = false;
+  }
+}
+
+function readHistoryDeletionRangeFromForm() {
+  try {
+    const startDate = parseHistoryDeletionUtcDate(historyDeleteStartElement?.value || "");
+    const endDate = parseHistoryDeletionUtcDate(historyDeleteEndElement?.value || "");
+
+    if (!startDate || !endDate) {
+      return {
+        ok: false,
+        error: t(
+          "settingsHistoryDeletionNeedRange",
+          [],
+          "Select both UTC start date and UTC end date."
+        ),
+      };
+    }
+
+    if (startDate >= endDate) {
+      return {
+        ok: false,
+        error: t(
+          "settingsHistoryDeletionInvalidRange",
+          [],
+          "UTC start date must be earlier than UTC end date."
+        ),
+      };
+    }
+
+    return {
+      ok: true,
+      range: {
+        startDate,
+        endDate,
+      },
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+function parseHistoryDeletionUtcDate(value) {
+  const trimmedValue = String(value || "").trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmedValue);
+
+  if (!match) {
+    throw new Error(
+      t(
+        "settingsHistoryDeletionInvalidTime",
+        [],
+        "One of the selected UTC dates is invalid."
+      )
+    );
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const timestamp = Date.UTC(year, month - 1, day);
+  const parsed = new Date(timestamp);
+
+  if (
+    parsed.getUTCFullYear() !== year ||
+    parsed.getUTCMonth() !== month - 1 ||
+    parsed.getUTCDate() !== day
+  ) {
+    throw new Error(
+      t(
+        "settingsHistoryDeletionInvalidTime",
+        [],
+        "One of the selected UTC dates is invalid."
+      )
+    );
+  }
+
+  return trimmedValue;
+}
+
+function formatHistoryDeletionRangeLabel(range) {
+  const startLabel = `${range.startDate} 00:00:00 UTC`;
+  const endLabel = `${range.endDate} 00:00:00 UTC`;
+
+  return t(
+    "settingsHistoryDeletionRangeLabel",
+    [startLabel, endLabel],
+    `[${startLabel}, ${endLabel})`
+  );
+}
+
+function renderHistoryDeleteStatus(message, isError = false) {
+  if (!historyDeleteStatusElement) {
+    return;
+  }
+
+  const text = String(message || "").trim();
+  historyDeleteStatusElement.textContent = text;
+  historyDeleteStatusElement.classList.toggle("is-hidden", !text);
+  historyDeleteStatusElement.classList.toggle("is-info", !isError);
+}
+
+function startHistoryUtcClock() {
+  if (!historyDeleteCurrentUtcElement || historyUtcClockTimerId !== null) {
+    return;
+  }
+
+  updateHistoryUtcClock();
+  historyUtcClockTimerId = window.setInterval(updateHistoryUtcClock, 1000);
+}
+
+function updateHistoryUtcClock() {
+  if (!historyDeleteCurrentUtcElement) {
+    return;
+  }
+
+  historyDeleteCurrentUtcElement.textContent = new Date().toISOString().replace("T", " ").replace("Z", " UTC");
+}
+
 function ensurePerformanceWarningRefresh() {
   if (performanceWarningRefreshTimerId !== null) {
     return;
@@ -189,6 +414,8 @@ function ensurePerformanceWarningRefresh() {
 }
 
 async function handleFormChange(event) {
+  syncMutuallyExclusivePreloadModeControls(event?.target);
+
   if (event?.target === formElements.aiPredictionProvider) {
     syncAiProviderFieldsFromSettings(draftSettings);
   }
@@ -263,6 +490,8 @@ function readFormSettings() {
     tracking: {
       trackGoogleSearchPages: formElements.trackGoogleSearchPages.checked,
       excludeGoogleInternalPages: formElements.excludeGoogleInternalPages.checked,
+      excludeLocalPages: formElements.excludeLocalPages.checked,
+      excludePrivateNetworkPages: formElements.excludePrivateNetworkPages.checked,
     },
     preloading: {
       enabled: formElements.preloadingEnabled.checked,
@@ -271,8 +500,15 @@ function readFormSettings() {
       maxTabsPerSource: draftSettings.preloading.maxTabsPerSource,
       siteSelectionLimit: draftSettings.preloading.siteSelectionLimit,
       tabSiteSelectionLimit: draftSettings.preloading.tabSiteSelectionLimit,
+      interactionPreloadEnabled: formElements.interactionPreloadEnabled.checked,
+      allNativePreloadMode: formElements.allNativePreloadMode.checked,
       ignoreWaterfallDynamicLinks: formElements.ignoreWaterfallDynamicLinks.checked,
       excludeIncognitoWindows: formElements.excludeIncognitoWindows.checked,
+      proxySkip: {
+        enabled: formElements.proxySkipEnabled.checked,
+        mode: formElements.proxySkipMode.value,
+        rules: settingsApi.normalizeProxySkipRules?.(formElements.proxySkipRules.value) ?? [],
+      },
       transitionWindowScope: {
         enabled: formElements.transitionWindowScopeEnabled.checked,
         windowKey: formElements.transitionWindowScope.value,
@@ -294,7 +530,10 @@ function readFormSettings() {
       forceMinimize: formElements.forceMinimize.checked,
     },
     experiments: {
-      crossSiteCurrentTabSwap: formElements.crossSiteCurrentTabSwap.checked,
+      crossSiteCurrentTabSwap:
+        formElements.allNativePreloadMode.checked === true
+          ? false
+          : formElements.crossSiteCurrentTabSwap.checked,
       idleWakeAggressive: formElements.idleWakeAggressive.checked,
       pointerProximityPrediction: formElements.pointerProximityPrediction.checked,
       authStateWarmup: formElements.authStateWarmup.checked,
@@ -321,11 +560,28 @@ function renderForm(settings) {
 function syncBaseControlsFromSettings(settings) {
   formElements.trackGoogleSearchPages.checked = settings.tracking.trackGoogleSearchPages;
   formElements.excludeGoogleInternalPages.checked = settings.tracking.excludeGoogleInternalPages;
+  formElements.excludeLocalPages.checked = settings.tracking.excludeLocalPages !== false;
+  formElements.excludePrivateNetworkPages.checked =
+    settings.tracking.excludePrivateNetworkPages !== false;
   formElements.preloadingEnabled.checked = settings.preloading.enabled;
+  formElements.interactionPreloadEnabled.checked =
+    settings.preloading.interactionPreloadEnabled !== false;
+  formElements.allNativePreloadMode.checked =
+    settingsApi.isAllNativePreloadModeEnabled?.(settings) === true;
   formElements.ignoreWaterfallDynamicLinks.checked =
     settings.preloading.ignoreWaterfallDynamicLinks;
   formElements.excludeIncognitoWindows.checked =
     settings.preloading.excludeIncognitoWindows !== false;
+  const proxySkipSettings =
+    settingsApi.normalizeProxySkipSettings?.(settings.preloading.proxySkip) ??
+    settings.preloading.proxySkip ??
+    {};
+  formElements.proxySkipEnabled.checked = proxySkipSettings.enabled === true;
+  formElements.proxySkipMode.value =
+    settingsApi.normalizeProxySkipMode?.(proxySkipSettings.mode) || "blacklist";
+  formElements.proxySkipRules.value = Array.isArray(proxySkipSettings.rules)
+    ? proxySkipSettings.rules.join("\n")
+    : "";
   formElements.transitionWindowScopeEnabled.checked =
     settings.preloading.transitionWindowScope.enabled;
   formElements.transitionWindowScope.value = settings.preloading.transitionWindowScope.windowKey;
@@ -333,7 +589,10 @@ function syncBaseControlsFromSettings(settings) {
   formElements.aiPredictionEnabled.checked = settings.preloading.aiPrediction.enabled;
   formElements.aiPredictionProvider.value = settings.preloading.aiPrediction.providerId;
   syncAiProviderFieldsFromSettings(settings);
-  formElements.crossSiteCurrentTabSwap.checked = settings.experiments.crossSiteCurrentTabSwap;
+  formElements.crossSiteCurrentTabSwap.checked =
+    settingsApi.isAllNativePreloadModeEnabled?.(settings) === true
+      ? false
+      : settings.experiments.crossSiteCurrentTabSwap;
   formElements.watchdogEnabled.checked = settings.preloadWindow.watchdogEnabled;
   formElements.watchdogIntervalSeconds.value = String(
     settings.preloadWindow.watchdogIntervalSeconds
@@ -395,6 +654,23 @@ function syncSchedulerFieldsFromSettings(settings) {
   formElements.schedulerAttentionAudioWeight.value = String(
     schedulerSettings.attentionAudioPlaybackWeight
   );
+}
+
+function syncMutuallyExclusivePreloadModeControls(target) {
+  if (
+    target === formElements.allNativePreloadMode &&
+    formElements.allNativePreloadMode.checked === true
+  ) {
+    formElements.crossSiteCurrentTabSwap.checked = false;
+    return;
+  }
+
+  if (
+    target === formElements.crossSiteCurrentTabSwap &&
+    formElements.crossSiteCurrentTabSwap.checked === true
+  ) {
+    formElements.allNativePreloadMode.checked = false;
+  }
 }
 
 function syncAiProviderFieldsFromSettings(settings) {
@@ -591,16 +867,37 @@ function formatAiModelOptionLabel(model) {
 
 function updateComputedState(settings) {
   const effectiveSettings = settingsApi.resolveEffectiveSettings(settings);
+  const allNativePreloadMode =
+    settingsApi.isAllNativePreloadModeEnabled?.(effectiveSettings) === true;
+
   watchdogIntervalRowElement.classList.toggle(
     "is-disabled",
-    !effectiveSettings.preloadWindow.watchdogEnabled
+    !effectiveSettings.preloadWindow.watchdogEnabled || allNativePreloadMode
   );
+  watchdogIntervalRowElement.classList.toggle("has-disabled-select", allNativePreloadMode);
+  formElements.watchdogIntervalSeconds.disabled =
+    !effectiveSettings.preloadWindow.watchdogEnabled || allNativePreloadMode;
   transitionWindowScopeRowElement.classList.toggle(
     "has-disabled-select",
     !effectiveSettings.preloading.transitionWindowScope.enabled
   );
   formElements.transitionWindowScope.disabled =
     !effectiveSettings.preloading.transitionWindowScope.enabled;
+  crossSiteCurrentTabSwapRowElement?.classList.toggle("is-disabled", allNativePreloadMode);
+  formElements.crossSiteCurrentTabSwap.disabled = allNativePreloadMode;
+  hiddenTabsSchedulerGroupElement?.classList.toggle("is-disabled", allNativePreloadMode);
+  for (const element of [
+    formElements.schedulerTabTotalMin,
+    formElements.schedulerTabTotalMax,
+    formElements.schedulerTabHalfLifeTabs,
+    formElements.watchdogEnabled,
+    formElements.fullscreenPressurePolicy,
+    formElements.forceMinimize,
+  ]) {
+    if (element) {
+      element.disabled = allNativePreloadMode;
+    }
+  }
 }
 
 async function saveCurrentSettings() {
@@ -1096,11 +1393,22 @@ async function refreshPerformanceWarning() {
       type: "visit-graph:get-debug-snapshot",
       mode: "performance-warning",
     });
-    renderPerformanceWarning(snapshot?.performanceWarning);
+    renderPerformanceWarning(selectRuntimeWarningToDisplay(snapshot));
   } catch (error) {
     console.error(error);
     renderPerformanceWarning(null);
   }
+}
+
+function selectRuntimeWarningToDisplay(snapshot) {
+  if (
+    formElements.allNativePreloadMode.checked !== true &&
+    snapshot?.nativeAppModeWarning?.active === true
+  ) {
+    return snapshot.nativeAppModeWarning;
+  }
+
+  return snapshot?.performanceWarning;
 }
 
 function renderPerformanceWarning(performanceWarning) {
@@ -1116,7 +1424,8 @@ function renderPerformanceWarning(performanceWarning) {
   performanceWarningElement.textContent = t(
     performanceWarning.messageKey || "performanceInsufficientReducePreloadCaps",
     [],
-    "Performance pressure detected. Lower the preload limits."
+    performanceWarning.messageFallback ||
+      "Performance pressure detected. Lower the preload limits."
   );
   performanceWarningElement.classList.remove("is-hidden");
 }

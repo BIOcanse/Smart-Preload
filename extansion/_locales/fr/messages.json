@@ -113,6 +113,12 @@
   "performanceInsufficientReducePreloadCaps": {
     "message": "Performances insuffisantes. R?duisez les limites de pr?chargement."
   },
+  "nativeAppMissingEnableAllNativePreloadMode": {
+    "message": "Application native non détectée. Activez le mode de préchargement entièrement natif pour éviter les vrais onglets masqués."
+  },
+  "nativeAppMissingDownloadOrEnableAllNativePreloadMode": {
+    "message": "Application native non détectée depuis 1 minute. Téléchargez et installez l'application native, ou activez le mode de préchargement entièrement natif."
+  },
   "popupCurrentPageNotTracked": {
     "message": "La page actuelle n?est pas suivie"
   },
@@ -251,6 +257,18 @@
   "settingsSkipGoogleInternalPagesDesc": {
     "message": "Ne pas suivre ni précharger le Chrome Web Store, le compte Google, le gestionnaire de mots de passe, Chrome Sync, chromestatus et les pages administratives Google similaires. Gemini et les produits Google courants restent suivis."
   },
+  "settingsSkipLocalPages": {
+    "message": "Ignorer les pages locales"
+  },
+  "settingsSkipLocalPagesDesc": {
+    "message": "Ne pas suivre ni précharger les pages localhost, 127.0.0.0/8, 0.0.0.0, [::1] ou *.localhost."
+  },
+  "settingsSkipPrivateNetworkPages": {
+    "message": "Ignorer les pages de réseau privé"
+  },
+  "settingsSkipPrivateNetworkPagesDesc": {
+    "message": "Ne pas suivre ni précharger les pages de réseau privé telles que 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, fc00::/7 ou fe80::/10."
+  },
   "settingsPreloadMeta": {
     "message": "Contr?le la pr?paration des onglets, la r?paration watchdog et le comportement de la fen?tre de pr?chargement."
   },
@@ -259,6 +277,75 @@
   },
   "settingsEnablePreloadingDesc": {
     "message": "Interrupteur principal pour l?enregistrement des candidats, les onglets en arri?re-plan et les ?changes d?onglets."
+  },
+  "settingsInteractionPreload": {
+    "message": "Préchargement au survol et au menu contextuel"
+  },
+  "settingsInteractionPreloadDesc": {
+    "message": "Démarre un préchargement d'interaction après 80 ms de survol d'un lien, et prépare un préchargement de nouvel onglet à l'ouverture du menu contextuel du lien."
+  },
+  "settingsAllNativePreloadMode": {
+    "message": "Mode de préchargement entièrement natif"
+  },
+  "settingsAllNativePreloadModeDesc": {
+    "message": "Utilise uniquement le prefetch/prerender natif du navigateur. Les vrais onglets masqués et le hard swap sont désactivés."
+  },
+  "settingsNativeAppDownloadTitle": {
+    "message": "Téléchargement de l'application native"
+  },
+  "settingsNativeAppDownloadDesc": {
+    "message": "Téléchargez le paquet de l'application native depuis GitHub lorsque le masquage système des vrais onglets en arrière-plan est nécessaire."
+  },
+  "settingsNativeAppBindingOrder": {
+    "message": "Pour lier l'extension et l'application native, installez ou activez d'abord l'extension, puis lancez l'installateur ou l'application native. Une fois la liaison réussie, l'extension peut lancer l'application native automatiquement."
+  },
+  "settingsNativeAppDownloadLink": {
+    "message": "Versions GitHub"
+  },
+  "settingsNativeAppUpdateTitle": {
+    "message": "Mise à jour de l'app native"
+  },
+  "settingsNativeAppUpdateDesc": {
+    "message": "Sélectionnez une version disponible de l'app locale. Seules les mises à niveau depuis la version en cours sont autorisées."
+  },
+  "settingsNativeAppVersionsLoading": {
+    "message": "Chargement des versions..."
+  },
+  "settingsNativeAppRefreshVersions": {
+    "message": "Actualiser"
+  },
+  "settingsNativeAppUpdateButton": {
+    "message": "Mettre à niveau"
+  },
+  "settingsNativeAppVersionUnknown": {
+    "message": "La version de l'app native est indisponible."
+  },
+  "settingsNativeAppVersionsReady": {
+    "message": "App native {0}. Sélectionnez une version plus récente pour la mise à niveau."
+  },
+  "settingsNativeAppNoUpgrade": {
+    "message": "L'app native {0} est déjà la dernière version listée."
+  },
+  "settingsNativeAppVersionsFailed": {
+    "message": "Impossible de charger les versions de l'app. Démarrez l'app native ou utilisez les versions GitHub."
+  },
+  "settingsNativeAppNoVersions": {
+    "message": "Aucune version d'app disponible"
+  },
+  "settingsNativeAppCurrentVersionOption": {
+    "message": "v{0} (actuelle)"
+  },
+  "settingsNativeAppUpdateConfirm": {
+    "message": "Mettre à niveau l'app native vers v{0} ? L'app redémarrera après le début de la mise à jour."
+  },
+  "settingsNativeAppUpdateStarting": {
+    "message": "Démarrage de la mise à jour de l'app native vers v{0}..."
+  },
+  "settingsNativeAppUpdateAccepted": {
+    "message": "La mise à jour de l'app native vers v{0} a démarré."
+  },
+  "settingsNativeAppUpdateFailed": {
+    "message": "Impossible de démarrer la mise à jour de l'app native vers v{0}."
   },
   "settingsIgnoreWaterfallDynamicLinks": {
     "message": "Ignorer les liens dynamiques en flux"
@@ -271,6 +358,21 @@
   },
   "settingsExcludeIncognitoWindowsDesc": {
     "message": "Une fois activ?es, les fen?tres priv?es restent hors apprentissage, scoring, allocation de slots et pr?chargements d?interaction. D?sactiv?, elles partagent les m?mes limites de compte que les pages normales, mais les sources priv?es utilisent uniquement des fen?tres de pr?chargement priv?es."
+  },
+  "settingsProxySkipRules": {
+    "message": "Règles d'exclusion proxy"
+  },
+  "settingsProxySkipRulesDesc": {
+    "message": "Ignorez manuellement les onglets liés au proxy. Utilisez un domaine ou un motif d'URL par ligne; la liste noire ignore les correspondances, la liste blanche ne conserve que les correspondances."
+  },
+  "settingsProxySkipModeBlacklist": {
+    "message": "Liste noire"
+  },
+  "settingsProxySkipModeWhitelist": {
+    "message": "Liste blanche"
+  },
+  "settingsProxySkipRulesPlaceholder": {
+    "message": "example.com\n*.example.org\nhttps://example.net/docs/*"
   },
   "settingsTransitionFrequencyWindow": {
     "message": "Fen?tre de fr?quence de transition"
@@ -562,6 +664,48 @@
   },
   "settingsAiNoSupportedModels": {
     "message": "Aucun mod?le l?ger pris en charge trouv?"
+  },
+  "settingsHistoryDeletionTitle": {
+    "message": "Suppression des enregistrements d'historique"
+  },
+  "settingsHistoryDeletionDesc": {
+    "message": "Supprime les données locales du graphe de visites dans une plage de dates UTC. La date de début est incluse et la date de fin est exclue."
+  },
+  "settingsHistoryDeletionCurrentUtc": {
+    "message": "UTC actuel"
+  },
+  "settingsHistoryDeletionStartDate": {
+    "message": "Date de début UTC"
+  },
+  "settingsHistoryDeletionEndDate": {
+    "message": "Date de fin UTC"
+  },
+  "settingsHistoryDeletionDelete": {
+    "message": "Supprimer l'historique"
+  },
+  "settingsHistoryDeletionConfirm": {
+    "message": "Supprimer les enregistrements d'historique locaux pour la plage UTC {0} ? Cette action est irréversible."
+  },
+  "settingsHistoryDeletionDeleting": {
+    "message": "Suppression des enregistrements d'historique sélectionnés..."
+  },
+  "settingsHistoryDeletionDeletedSummary": {
+    "message": "{0} enregistrement(s) d'historique supprimé(s) : {1} transitions, {2} pages au premier plan, {3} enregistrements de mots-clés, {4} enregistrements de comportement de liens."
+  },
+  "settingsHistoryDeletionFailed": {
+    "message": "Impossible de supprimer les enregistrements d'historique sélectionnés."
+  },
+  "settingsHistoryDeletionNeedRange": {
+    "message": "Sélectionnez à la fois la date de début UTC et la date de fin UTC."
+  },
+  "settingsHistoryDeletionInvalidRange": {
+    "message": "La date de début UTC doit être antérieure à la date de fin UTC."
+  },
+  "settingsHistoryDeletionInvalidTime": {
+    "message": "L'une des dates UTC sélectionnées est invalide."
+  },
+  "settingsHistoryDeletionRangeLabel": {
+    "message": "[{0}, {1})"
   },
   "commonProvider": {
     "message": "fournisseur"

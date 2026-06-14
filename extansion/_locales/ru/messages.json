@@ -6,112 +6,118 @@
     "message": "Более умно и активно предзагружает страницы, которые вы, вероятно, откроете дальше."
   },
   "commonReady": {
-    "message": "??????"
+    "message": "Готово"
   },
   "commonLoading": {
-    "message": "????????"
+    "message": "Загрузка"
   },
   "commonFailed": {
-    "message": "??????"
+    "message": "Ошибка"
   },
   "commonSaving": {
-    "message": "??????????"
+    "message": "Сохранение"
   },
   "commonSaved": {
-    "message": "?????????"
+    "message": "Сохранено"
   },
   "commonUnsaved": {
-    "message": "?? ?????????"
+    "message": "Не сохранено"
   },
   "commonDownloading": {
-    "message": "????????"
+    "message": "Загрузка"
   },
   "commonDownloaded": {
-    "message": "?????????"
+    "message": "Загружено"
   },
   "commonRemoving": {
-    "message": "????????"
+    "message": "Удаление"
   },
   "commonRemoved": {
-    "message": "???????"
+    "message": "Удалено"
   },
   "commonOn": {
-    "message": "???."
+    "message": "Вкл."
   },
   "commonOff": {
-    "message": "????."
+    "message": "Выкл."
   },
   "commonUnknown": {
-    "message": "??????????"
+    "message": "Неизвестно"
   },
   "commonThisPlatform": {
-    "message": "??? ?????????"
+    "message": "эта платформа"
   },
   "commonModel": {
-    "message": "??????"
+    "message": "модель"
   },
   "commonDone": {
-    "message": "??????."
+    "message": "Готово."
   },
   "commonWorking": {
-    "message": "???????????..."
+    "message": "Выполняется..."
   },
   "commonDismiss": {
-    "message": "???????"
+    "message": "Закрыть"
   },
   "commonHelp": {
-    "message": "???????"
+    "message": "Справка"
   },
   "popupCurrentPage": {
-    "message": "??????? ????????"
+    "message": "Текущая страница"
   },
   "popupNodes": {
-    "message": "????"
+    "message": "Узлы"
   },
   "popupEdges": {
-    "message": "?????"
+    "message": "Ребра"
   },
   "popupUpdated": {
-    "message": "?????????"
+    "message": "Обновлено"
   },
   "popupTop": {
-    "message": "???"
+    "message": "Топ"
   },
   "popupNoPreloadQualifiedLinks": {
-    "message": "?? ???? ???????? ???? ??? ??????, ?????????? ??? ????????????."
+    "message": "На этой странице пока нет ссылок для предзагрузки."
   },
   "popupRefresh": {
-    "message": "????????"
+    "message": "Обновить"
   },
   "popupStop": {
-    "message": "??????????"
+    "message": "Остановить"
   },
   "popupStart": {
-    "message": "?????????"
+    "message": "Запустить"
   },
   "popupSettings": {
-    "message": "?????????"
+    "message": "Настройки"
   },
   "popupWaitingForData": {
-    "message": "???????? ??????."
+    "message": "Ожидание данных."
   },
   "popupOpenSettingsFailed": {
-    "message": "?? ??????? ??????? ???????? ????????."
+    "message": "Не удалось открыть страницу настроек."
   },
   "popupLoadingVisitGraph": {
-    "message": "???????? ????? ?????????..."
+    "message": "Загрузка графа посещений..."
   },
   "popupPausedMessage": {
-    "message": "?????????? ???????????: ??????????????? ? ???????????? ?????????."
+    "message": "Плагин остановлен: прогнозирование и предзагрузка отключены."
   },
   "popupVisitGraphLoaded": {
-    "message": "???? ????????? ????????."
+    "message": "Граф посещений загружен."
   },
   "popupLoadVisitGraphFailed": {
-    "message": "?? ??????? ????????? ???? ?????????."
+    "message": "Не удалось загрузить граф посещений."
   },
   "performanceInsufficientReducePreloadCaps": {
-    "message": "?????????? ???????? ??????????????????. ????????? ?????? ????????????."
+    "message": "Обнаружена нагрузка на производительность. Уменьшите лимиты предзагрузки."
+  },
+  "nativeAppMissingEnableAllNativePreloadMode": {
+    "message": "Нативное приложение не обнаружено. Включите полностью нативный режим предзагрузки, чтобы не использовать скрытые реальные вкладки."
+  },
+  "nativeAppMissingDownloadOrEnableAllNativePreloadMode": {
+    "message": "Нативное приложение не обнаружено в течение 1 минуты. Скачайте и установите нативное приложение или включите полностью нативный режим предзагрузки."
   },
   "popupCurrentPageNotTracked": {
     "message": "Текущая страница не отслеживается"
@@ -150,7 +156,7 @@
     "message": "Настройки умной предзагрузки"
   },
   "settingsTitle": {
-    "message": "?????????"
+    "message": "Настройки"
   },
   "settingsNavAriaLabel": {
     "message": "Разделы настроек"
@@ -159,16 +165,16 @@
     "message": "Обзор"
   },
   "settingsTracking": {
-    "message": "????????????"
+    "message": "Отслеживание"
   },
   "settingsPreload": {
-    "message": "????????????"
+    "message": "Предзагрузка"
   },
   "settingsOrdering": {
     "message": "Сортировка"
   },
   "settingsExperiments": {
-    "message": "????????????"
+    "message": "Эксперименты"
   },
   "settingsOverviewSub": {
     "message": "Профиль выполнения и автонастройка"
@@ -177,10 +183,10 @@
     "message": "Простые фильтры ранжирования"
   },
   "settingsStorageFooter": {
-    "message": "??????????? ? ????????? ????????? ??????????."
+    "message": "Сохраняется в локальном хранилище расширения."
   },
   "settingsLoadingSettings": {
-    "message": "???????? ????????..."
+    "message": "Загрузка настроек..."
   },
   "settingsHeroKicker": {
     "message": "Управление умной предзагрузкой"
@@ -251,14 +257,95 @@
   "settingsSkipGoogleInternalPagesDesc": {
     "message": "Не отслеживать и не предзагружать Chrome Web Store, страницы аккаунта и менеджера паролей Google, Chrome sync, chromestatus и похожие административные страницы Google. Gemini и обычные продукты Google остаются в отслеживании."
   },
+  "settingsSkipLocalPages": {
+    "message": "Пропускать локальные страницы"
+  },
+  "settingsSkipLocalPagesDesc": {
+    "message": "Не отслеживать и не предзагружать страницы localhost, 127.0.0.0/8, 0.0.0.0, [::1] или *.localhost."
+  },
+  "settingsSkipPrivateNetworkPages": {
+    "message": "Пропускать страницы частной сети"
+  },
+  "settingsSkipPrivateNetworkPagesDesc": {
+    "message": "Не отслеживать и не предзагружать страницы частной сети, например 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, fc00::/7 или fe80::/10."
+  },
   "settingsPreloadMeta": {
     "message": "Настройки подготовки вкладок, ремонта через сторожевой контроль и поведения окна предзагрузки."
   },
   "settingsEnablePreloading": {
-    "message": "???????? ????????????"
+    "message": "Включить предзагрузку"
   },
   "settingsEnablePreloadingDesc": {
     "message": "Главный переключатель регистрации кандидатов, фоновых вкладок и замены вкладок."
+  },
+  "settingsInteractionPreload": {
+    "message": "Предзагрузка при наведении и через контекстное меню"
+  },
+  "settingsInteractionPreloadDesc": {
+    "message": "Запускает интерактивную предзагрузку после 80 мс наведения на ссылку и готовит предзагрузку новой вкладки при открытии контекстного меню ссылки."
+  },
+  "settingsAllNativePreloadMode": {
+    "message": "Полностью нативный режим предзагрузки"
+  },
+  "settingsAllNativePreloadModeDesc": {
+    "message": "Использует только браузерные prefetch/prerender. Скрытые реальные фоновые вкладки и hard swap отключаются."
+  },
+  "settingsNativeAppDownloadTitle": {
+    "message": "Скачать нативное приложение"
+  },
+  "settingsNativeAppDownloadDesc": {
+    "message": "Скачайте пакет нативного приложения с GitHub, если требуется системное скрытие реальных фоновых вкладок."
+  },
+  "settingsNativeAppBindingOrder": {
+    "message": "Чтобы связать расширение и нативное приложение, сначала установите или включите расширение, затем запустите установщик нативного приложения или само приложение. После успешной привязки расширение сможет автоматически запускать нативное приложение."
+  },
+  "settingsNativeAppDownloadLink": {
+    "message": "Релизы GitHub"
+  },
+  "settingsNativeAppUpdateTitle": {
+    "message": "Обновление нативного приложения"
+  },
+  "settingsNativeAppUpdateDesc": {
+    "message": "Выберите доступную версию локального приложения. Разрешено только обновление с текущей запущенной версии."
+  },
+  "settingsNativeAppVersionsLoading": {
+    "message": "Загрузка версий..."
+  },
+  "settingsNativeAppRefreshVersions": {
+    "message": "Обновить"
+  },
+  "settingsNativeAppUpdateButton": {
+    "message": "Обновить приложение"
+  },
+  "settingsNativeAppVersionUnknown": {
+    "message": "Версия нативного приложения недоступна."
+  },
+  "settingsNativeAppVersionsReady": {
+    "message": "Нативное приложение {0}. Выберите более новую версию для обновления."
+  },
+  "settingsNativeAppNoUpgrade": {
+    "message": "Нативное приложение {0} уже на последней версии из списка."
+  },
+  "settingsNativeAppVersionsFailed": {
+    "message": "Не удалось загрузить версии приложения. Запустите нативное приложение или используйте релизы GitHub."
+  },
+  "settingsNativeAppNoVersions": {
+    "message": "Нет доступных версий приложения"
+  },
+  "settingsNativeAppCurrentVersionOption": {
+    "message": "v{0} (текущая)"
+  },
+  "settingsNativeAppUpdateConfirm": {
+    "message": "Обновить нативное приложение до v{0}? После начала обновления приложение перезапустится."
+  },
+  "settingsNativeAppUpdateStarting": {
+    "message": "Запуск обновления нативного приложения до v{0}..."
+  },
+  "settingsNativeAppUpdateAccepted": {
+    "message": "Обновление нативного приложения до v{0} запущено."
+  },
+  "settingsNativeAppUpdateFailed": {
+    "message": "Не удалось запустить обновление нативного приложения до v{0}."
   },
   "settingsIgnoreWaterfallDynamicLinks": {
     "message": "Игнорировать динамические ссылки waterfall"
@@ -267,10 +354,25 @@
     "message": "На страницах с бесконечной прокруткой или waterfall использовать для прогнозирования первый стабильный набор ссылок и игнорировать ссылки, добавленные позже потоковой загрузкой."
   },
   "settingsExcludeIncognitoWindows": {
-    "message": "????????? ???? ????????? ?? ????????????"
+    "message": "Исключить окна инкогнито из предзагрузки"
   },
   "settingsExcludeIncognitoWindowsDesc": {
     "message": "Если включено, окна инкогнито не участвуют в обучении, оценке, распределении слотов и предзагрузках по взаимодействию. Если выключено, источники инкогнито и обычные источники делят лимиты аккаунта, но источники инкогнито используют только окна предзагрузки инкогнито."
+  },
+  "settingsProxySkipRules": {
+    "message": "Правила пропуска прокси"
+  },
+  "settingsProxySkipRulesDesc": {
+    "message": "Вручную пропускайте вкладки, связанные с прокси. Укажите один домен или URL-шаблон на строку; черный список пропускает совпадения, белый список оставляет только совпадения."
+  },
+  "settingsProxySkipModeBlacklist": {
+    "message": "Черный список"
+  },
+  "settingsProxySkipModeWhitelist": {
+    "message": "Белый список"
+  },
+  "settingsProxySkipRulesPlaceholder": {
+    "message": "example.com\n*.example.org\nhttps://example.net/docs/*"
   },
   "settingsTransitionFrequencyWindow": {
     "message": "Окно частоты переходов"
@@ -279,7 +381,7 @@
     "message": "Если включено, вес частоты переходов использует выбранное временное окно вместо общего значения за все время."
   },
   "settingsGlobalPreloadScheduler": {
-    "message": "?????????? ??????????? ????????????"
+    "message": "Глобальный планировщик предзагрузки"
   },
   "settingsGlobalPreloadSchedulerDesc": {
     "message": "Лимиты на уровне аккаунта для распределения слотов предзагрузки между всеми вкладками-источниками с кандидатами."
@@ -324,31 +426,31 @@
     "message": "Вес аудио"
   },
   "settingsAiPredictionAssistant": {
-    "message": "AI-???????? ???????????????"
+    "message": "AI-помощник прогнозирования"
   },
   "settingsAiPredictionAssistantDesc": {
     "message": "Выберите внешнего поставщика ИИ и модель для оценки ключевых слов. Расширение напрямую использует ваш API-ключ; оно не скачивает и не управляет локальными моделями."
   },
   "settingsAiProviderApiKey": {
-    "message": "API-???? ??????????"
+    "message": "API-ключ провайдера"
   },
   "settingsAiProviderApiKeyDesc": {
     "message": "Хранится в локальном хранилище расширения и используется только service worker, когда прогнозирование ИИ включено. LM Studio игнорирует это поле."
   },
   "settingsAiProviderEndpoint": {
-    "message": "Endpoint ??????????"
+    "message": "Endpoint провайдера"
   },
   "settingsAiProviderEndpointDesc": {
     "message": "Оставьте значение по умолчанию, если вы не используете локальный OpenAI-совместимый сервис вроде LM Studio."
   },
   "settingsWindowWatchdog": {
-    "message": "Watchdog ????"
+    "message": "Watchdog окна"
   },
   "settingsWindowWatchdogDesc": {
     "message": "Пересоздавать окно предзагрузки и восстанавливать отсутствующие вкладки, когда контейнер потерян."
   },
   "settingsWatchdogInterval": {
-    "message": "???????? watchdog"
+    "message": "Интервал watchdog"
   },
   "settingsWatchdogIntervalDesc": {
     "message": "Как часто расширение проверяет, что окно предзагрузки все еще существует."
@@ -369,19 +471,19 @@
     "message": "10 секунд"
   },
   "settingsFullscreenPressurePolicy": {
-    "message": "???????? ??????? ??????? ??? ????????????? ??????/????"
+    "message": "Политика фоновых вкладок при полноэкранном режиме/игре"
   },
   "settingsFullscreenPressurePolicyDesc": {
     "message": "Когда другое приложение в полноэкранном режиме или обнаружен процесс игры, выберите, как обрабатывать скрытые реальные вкладки предзагрузки."
   },
   "settingsFullscreenPressurePolicyClose": {
-    "message": "????????? ???????"
+    "message": "Полностью закрыть"
   },
   "settingsFullscreenPressurePolicySleep": {
-    "message": "??????? ???????"
+    "message": "Перевести вкладки в сон"
   },
   "settingsFullscreenPressurePolicyIgnore": {
-    "message": "?????? ?? ??????"
+    "message": "Ничего не делать"
   },
   "settingsSecond": {
     "message": "{0} секунда"
@@ -390,7 +492,7 @@
     "message": "{0} секунд"
   },
   "settingsForceMinimize": {
-    "message": "????????????? ??????????? ???? ????????????"
+    "message": "Принудительно сворачивать окно предзагрузки"
   },
   "settingsForceMinimizeDesc": {
     "message": "Сразу снова сворачивать окно предзагрузки, если оно восстановлено или изменило размер."
@@ -426,13 +528,13 @@
     "message": "Сохранено только для будущего использования. Сейчас не меняет авторизацию или прогрев."
   },
   "settingsNoUnsavedChanges": {
-    "message": "??? ????????????? ?????????."
+    "message": "Нет несохраненных изменений."
   },
   "settingsResetDefaults": {
-    "message": "???????? ?????????"
+    "message": "Сбросить настройки"
   },
   "settingsSaveSettings": {
-    "message": "????????? ?????????"
+    "message": "Сохранить настройки"
   },
   "settingsAiModelTask": {
     "message": "Задача модели ИИ"
@@ -513,10 +615,10 @@
     "message": "Локальное приложение не обнаружено. Используется резервное сворачивание."
   },
   "settingsConnected": {
-    "message": "??????????"
+    "message": "Подключено"
   },
   "settingsOffline": {
-    "message": "??????"
+    "message": "Не в сети"
   },
   "settingsInstallingModelLabel": {
     "message": "Установка {0}"
@@ -549,58 +651,100 @@
     "message": "Загрузка модели LM Studio: {0}"
   },
   "settingsAiKeyRequiredPlaceholder": {
-    "message": "???????????"
+    "message": "Обязательно"
   },
   "settingsAiEnterKeyToLoadModels": {
-    "message": "??????? API-???? ??? ???????? ???????"
+    "message": "Введите API-ключ для загрузки моделей"
   },
   "settingsAiLoadingModels": {
-    "message": "???????? ?????????????? ???????..."
+    "message": "Загрузка поддерживаемых моделей..."
   },
   "settingsAiSelectProviderFirst": {
-    "message": "??????? ???????? ??????????"
+    "message": "Сначала выберите провайдера"
   },
   "settingsAiNoSupportedModels": {
-    "message": "?????????????? ?????? ?????? ?? ???????"
+    "message": "Поддерживаемые легкие модели не найдены"
+  },
+  "settingsHistoryDeletionTitle": {
+    "message": "Удаление записей истории"
+  },
+  "settingsHistoryDeletionDesc": {
+    "message": "Удаляет локальные записи графа посещений за диапазон дат UTC. Начальная дата включается, конечная дата исключается."
+  },
+  "settingsHistoryDeletionCurrentUtc": {
+    "message": "Текущее UTC"
+  },
+  "settingsHistoryDeletionStartDate": {
+    "message": "Начальная дата UTC"
+  },
+  "settingsHistoryDeletionEndDate": {
+    "message": "Конечная дата UTC"
+  },
+  "settingsHistoryDeletionDelete": {
+    "message": "Удалить историю"
+  },
+  "settingsHistoryDeletionConfirm": {
+    "message": "Удалить локальные записи истории за диапазон UTC {0}? Это действие нельзя отменить."
+  },
+  "settingsHistoryDeletionDeleting": {
+    "message": "Удаление выбранных записей истории..."
+  },
+  "settingsHistoryDeletionDeletedSummary": {
+    "message": "Удалено записей истории: {0}. Переходы: {1}, страницы на переднем плане: {2}, ключевые слова: {3}, поведение ссылок: {4}."
+  },
+  "settingsHistoryDeletionFailed": {
+    "message": "Не удалось удалить выбранные записи истории."
+  },
+  "settingsHistoryDeletionNeedRange": {
+    "message": "Выберите начальную и конечную даты UTC."
+  },
+  "settingsHistoryDeletionInvalidRange": {
+    "message": "Начальная дата UTC должна быть раньше конечной даты UTC."
+  },
+  "settingsHistoryDeletionInvalidTime": {
+    "message": "Одна из выбранных дат UTC недействительна."
+  },
+  "settingsHistoryDeletionRangeLabel": {
+    "message": "[{0}, {1})"
   },
   "commonProvider": {
-    "message": "?????????"
+    "message": "провайдер"
   },
   "transitionWindowTotal": {
-    "message": "?????"
+    "message": "Всего"
   },
   "transitionWindow365d": {
-    "message": "????????? ???"
+    "message": "Последний год"
   },
   "transitionWindow30d": {
-    "message": "????????? ?????"
+    "message": "Последний месяц"
   },
   "transitionWindow7d": {
-    "message": "????????? 7 ????"
+    "message": "Последние 7 дней"
   },
   "transitionWindow1d": {
-    "message": "????????? ????"
+    "message": "Последний день"
   },
   "ruleOperatorDisabled": {
-    "message": "?????????"
+    "message": "Отключено"
   },
   "ruleFieldValueA": {
-    "message": "???????? A"
+    "message": "Значение A"
   },
   "ruleFieldCompareA": {
-    "message": "????????? A"
+    "message": "Сравнение A"
   },
   "ruleFieldCompareB": {
-    "message": "????????? B"
+    "message": "Сравнение B"
   },
   "ruleFieldValueC": {
-    "message": "???????? C"
+    "message": "Значение C"
   },
   "ruleFieldStatus": {
-    "message": "??????"
+    "message": "Статус"
   },
   "ruleTokenFixed": {
-    "message": "????????????? ????? {0}"
+    "message": "фиксированный токен {0}"
   },
   "ruleNativePerPageTitle": {
     "message": "Лимит a слотов страниц группы нативной предзагрузки"
@@ -633,21 +777,21 @@
     "message": "Применяется только на страницах поиска Google. Если включено, закладки Chrome сохраняются этим правилом ранга как независимые постоянные цели предзагрузки."
   },
   "deviceProfileBalanced": {
-    "message": "????????????????"
+    "message": "Сбалансированный"
   },
   "deviceProfileHighEnd": {
-    "message": "??????? ?????"
+    "message": "Высокий класс"
   },
   "deviceProfileStrong": {
-    "message": "??????"
+    "message": "Мощный"
   },
   "deviceProfileConstrained": {
-    "message": "????????????"
+    "message": "Ограниченный"
   },
   "settingsDiagnosticsLogging": {
-    "message": "????? ???????"
+    "message": "Режим логирования"
   },
   "settingsDiagnosticsLoggingDesc": {
-    "message": "???? ????????, ??????????? runtime ???????????? ??? JSONL ? ????? portable logs ?????????? ??????????."
+    "message": "При включении runtime-диагностика записывается в папку portable logs локального приложения в виде файлов JSONL."
   }
 }

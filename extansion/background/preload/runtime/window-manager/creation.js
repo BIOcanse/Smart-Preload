@@ -41,6 +41,23 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
     typeof getEffectiveExtensionSettings === "function"
       ? getEffectiveExtensionSettings()
       : null;
+
+  if (
+    globalThis.ZeroLatencyPreloadNativeOnlyPolicy?.isAllNativePreloadModeEnabled?.(
+      runtimeSettings
+    ) === true
+  ) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-window.ensure.native-only-skip", {
+      normalWindowId,
+    });
+    return {
+      windowId: null,
+      created: false,
+      supported: false,
+      reason: "all-native-preload-mode",
+    };
+  }
+
   const sourceWindowContext =
     await globalThis.ZeroLatencyPreloadIncognitoPolicy?.resolvePreloadWindowSourceContext?.(
       normalWindowId,

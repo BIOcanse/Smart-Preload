@@ -193,8 +193,8 @@
       return { ok: false, reason: "invalid-target-url" };
     }
 
-    if (isExcludedGooglePage(sourcePageUrl) || isExcludedGooglePage(targetUrl)) {
-      return { ok: false, reason: "excluded-google-page" };
+    if (isExcludedTrackingPage(sourcePageUrl) || isExcludedTrackingPage(targetUrl)) {
+      return { ok: false, reason: "excluded-tracking-page" };
     }
 
     const sourceWindow = await getWindowMaybe(sourceTab.windowId);
@@ -204,6 +204,11 @@
     }
 
     const settings = getEffectiveExtensionSettings();
+
+    if (settings.preloading?.interactionPreloadEnabled === false) {
+      return { ok: false, reason: "interaction-preload-disabled" };
+    }
+
     const sourceIncognitoTab = {
       ...sourceTab,
       incognito: sourceTab.incognito === true || sourceWindow.incognito === true,
@@ -231,6 +236,39 @@
       }
 
       return { ok: false, reason: "incognito-excluded" };
+    }
+
+    if (
+      globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadSource?.(
+        sourceTab,
+        settings
+      )
+    ) {
+      const preloadState = await loadPreloadState();
+      const cleanup =
+        await globalThis.ZeroLatencyPreloadProxySkipPolicy.clearProxySkippedPreloadState(
+          preloadState,
+          settings,
+          {
+            tabs: [sourceTab],
+            reason: "interaction-preload",
+          }
+        );
+
+      if (cleanup.mutated) {
+        await savePreloadState(cleanup.preloadState);
+      }
+
+      return { ok: false, reason: "proxy-skip" };
+    }
+
+    if (
+      globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadCandidate?.(
+        targetUrl,
+        settings
+      )
+    ) {
+      return { ok: false, reason: "proxy-target-skip" };
     }
 
     const preloadState = await loadPreloadState();
@@ -310,7 +348,7 @@
       ...transitionMetrics,
     };
     const strategy = context.forceNewTab
-      ? resolveForcedNewTabInteractionStrategy()
+      ? resolveForcedNewTabInteractionStrategy(context.settings)
       : typeof determinePreloadStrategy === "function"
         ? determinePreloadStrategy(candidate, context.settings)
         : isSameOrigin
@@ -555,8 +593,8 @@
     preloadState.updatedAt = updatedAt;
   }
 
-  function resolveForcedNewTabInteractionStrategy() {
-    return supportsHiddenTabPreloadStrategy() ? "hidden-tab" : "prefetch";
+  function resolveForcedNewTabInteractionStrategy(settings) {
+    return supportsHiddenTabPreloadStrategy(settings) ? "hidden-tab" : "prefetch";
   }
 
   globalThis.ZeroLatencyPreloadInteraction = {

@@ -250,17 +250,17 @@ async function recordCreatedNavigationTarget(details) {
   }
 
   if (
-    (await shouldSkipTrackingForExcludedIncognitoTab(
+    (await shouldSkipTrackingForExcludedSourceTab(
       details.sourceTabId,
       "created-navigation-source"
     )) ||
-    (await shouldSkipTrackingForExcludedIncognitoTab(
+    (await shouldSkipTrackingForExcludedSourceTab(
       details.tabId,
       "created-navigation-target"
     ))
   ) {
     globalThis.ZeroLatencyDiagnostics?.record?.("tracking.created-target.ignored", {
-      reason: "incognito-excluded",
+      reason: "excluded-source",
       sourceTabId: details.sourceTabId,
       tabId: details.tabId,
       url: details.url || "",
@@ -291,7 +291,7 @@ async function recordCreatedNavigationTarget(details) {
   });
 }
 
-async function shouldSkipTrackingForExcludedIncognitoTab(tabId, reason) {
+async function shouldSkipTrackingForExcludedSourceTab(tabId, reason) {
   const normalizedTabId = normalizePositiveInteger(tabId);
 
   if (normalizedTabId === null) {
@@ -304,12 +304,27 @@ async function shouldSkipTrackingForExcludedIncognitoTab(tabId, reason) {
     globalThis.ZeroLatencyPreloadIncognitoPolicy?.shouldExcludeIncognitoPreloadSource?.(
       tab,
       getEffectiveExtensionSettings()
+    ) === true
+  ) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("tracking.skip-incognito-source", {
+      tabId: normalizedTabId,
+      windowId: tab?.windowId ?? null,
+      url: tab?.url || "",
+      reason,
+    });
+    return true;
+  }
+
+  if (
+    globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadSource?.(
+      tab,
+      getEffectiveExtensionSettings()
     ) !== true
   ) {
     return false;
   }
 
-  globalThis.ZeroLatencyDebugEvents?.record?.("tracking.skip-incognito-source", {
+  globalThis.ZeroLatencyDebugEvents?.record?.("tracking.skip-proxy-source", {
     tabId: normalizedTabId,
     windowId: tab?.windowId ?? null,
     url: tab?.url || "",

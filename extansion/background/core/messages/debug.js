@@ -10,6 +10,9 @@
           allowRefresh: true,
           timeoutMs: 1000,
         }),
+        nativeAppModeWarning: await resolveNativeAppModeWarning({
+          allowStorage: true,
+        }),
         mode: "performance-warning",
       };
     }
@@ -43,6 +46,9 @@
         allowRefresh: true,
         timeoutMs: 1000,
       }),
+      nativeAppModeWarning: await resolveNativeAppModeWarning({
+        allowStorage: true,
+      }),
       currentPreloadWindowMonitor: resolveCurrentPreloadWindowMonitor(
         pageContext,
         hiddenWindowMonitor
@@ -67,6 +73,9 @@
       performanceWarning: await resolvePreloadPerformanceWarning({
         allowRefresh: false,
       }),
+      nativeAppModeWarning: await resolveNativeAppModeWarning({
+        allowStorage: false,
+      }),
       mode: "popup",
     };
   }
@@ -83,9 +92,27 @@
     return { ok: true };
   }
 
+  async function handleDeleteHistoryRange(message) {
+    const trackingState = await loadTrackingState();
+    const deletion = globalThis.ZeroLatencyTrackingHistoryDeletion.deleteTrackingHistoryRange(
+      trackingState,
+      message?.range ?? message
+    );
+
+    await saveTrackingState(deletion.state);
+    globalThis.ZeroLatencyDebugEvents?.record?.("tracking.history.delete-range", {
+      range: deletion.result.range,
+      deleted: deletion.result.deleted,
+      after: deletion.result.after,
+    });
+
+    return deletion.result;
+  }
+
   globalThis.ZeroLatencyCoreDebugMessages = {
     handleDebugSnapshot,
     handleReset,
+    handleDeleteHistoryRange,
   };
 
   function resolveCurrentPreloadWindowMonitor(pageContext, hiddenWindowMonitor) {
@@ -113,6 +140,30 @@
       return await warningApi(options);
     } catch (error) {
       globalThis.ZeroLatencyDebugEvents?.record?.("debug.performance-warning.error", {
+        error: String(error?.message || error),
+      });
+      return null;
+    }
+  }
+
+  async function resolveNativeAppModeWarning(options = {}) {
+    try {
+      const settings =
+        typeof getEffectiveExtensionSettings === "function"
+          ? getEffectiveExtensionSettings()
+          : null;
+      const policyApi = globalThis.ZeroLatencyPreloadNativeOnlyPolicy;
+
+      if (
+        options.allowStorage === false &&
+        typeof policyApi?.peekNativeAppModeWarning === "function"
+      ) {
+        return policyApi.peekNativeAppModeWarning(settings);
+      }
+
+      return (await policyApi?.buildNativeAppModeWarning?.(settings)) ?? null;
+    } catch (error) {
+      globalThis.ZeroLatencyDebugEvents?.record?.("debug.native-app-mode-warning.error", {
         error: String(error?.message || error),
       });
       return null;

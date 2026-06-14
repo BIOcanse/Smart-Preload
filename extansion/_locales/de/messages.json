@@ -113,6 +113,12 @@
   "performanceInsufficientReducePreloadCaps": {
     "message": "Leistungsdruck erkannt. Senken Sie die Vorladegrenzen."
   },
+  "nativeAppMissingEnableAllNativePreloadMode": {
+    "message": "Native App nicht erkannt. Aktivieren Sie den rein nativen Vorlademodus, um versteckte echte Tabs zu vermeiden."
+  },
+  "nativeAppMissingDownloadOrEnableAllNativePreloadMode": {
+    "message": "Native App wurde seit 1 Minute nicht erkannt. Laden und installieren Sie die native App oder aktivieren Sie den rein nativen Vorlademodus."
+  },
   "popupCurrentPageNotTracked": {
     "message": "Aktuelle Seite wird nicht verfolgt"
   },
@@ -251,6 +257,18 @@
   "settingsSkipGoogleInternalPagesDesc": {
     "message": "Chrome Web Store, Google-Konto- und Passwortmanager, Chrome-Sync, chromestatus und ?hnliche Google-Verwaltungsseiten weder verfolgen noch vorladen. Gemini und normale Google-Produkte bleiben aktiv."
   },
+  "settingsSkipLocalPages": {
+    "message": "Lokale Seiten überspringen"
+  },
+  "settingsSkipLocalPagesDesc": {
+    "message": "localhost-, 127.0.0.0/8-, 0.0.0.0-, [::1]- und *.localhost-Seiten weder verfolgen noch vorladen."
+  },
+  "settingsSkipPrivateNetworkPages": {
+    "message": "Private Netzwerkseiten überspringen"
+  },
+  "settingsSkipPrivateNetworkPagesDesc": {
+    "message": "Private Netzwerkseiten wie 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, fc00::/7 oder fe80::/10 weder verfolgen noch vorladen."
+  },
   "settingsPreloadMeta": {
     "message": "Steuert Tab-Vorbereitung, Watchdog-Reparatur und Verhalten des Vorladefensters."
   },
@@ -259,6 +277,75 @@
   },
   "settingsEnablePreloadingDesc": {
     "message": "Hauptschalter f?r Kandidatenregistrierung, Hintergrund-Tabs und Tab-Austausch."
+  },
+  "settingsInteractionPreload": {
+    "message": "Hover- und Kontextmenü-Vorladen"
+  },
+  "settingsInteractionPreloadDesc": {
+    "message": "Startet nach 80 ms Hover über einem Link ein Interaktions-Vorladen und bereitet beim Öffnen des Link-Kontextmenüs ein Vorladen für einen neuen Tab vor."
+  },
+  "settingsAllNativePreloadMode": {
+    "message": "Rein nativer Vorlademodus"
+  },
+  "settingsAllNativePreloadModeDesc": {
+    "message": "Nur browsernatives Prefetch/Prerender verwenden. Versteckte echte Hintergrund-Tabs und Hard-Swap sind deaktiviert."
+  },
+  "settingsNativeAppDownloadTitle": {
+    "message": "Native App herunterladen"
+  },
+  "settingsNativeAppDownloadDesc": {
+    "message": "Laden Sie das Native-App-Paket von GitHub herunter, wenn systemweites Verbergen echter Hintergrund-Tabs erforderlich ist."
+  },
+  "settingsNativeAppBindingOrder": {
+    "message": "Zum Verbinden von Erweiterung und nativer App installieren oder aktivieren Sie zuerst die Erweiterung und starten danach den Native-App-Installer oder die native App. Nach erfolgreicher Verbindung kann die Erweiterung die native App automatisch starten."
+  },
+  "settingsNativeAppDownloadLink": {
+    "message": "GitHub-Releases"
+  },
+  "settingsNativeAppUpdateTitle": {
+    "message": "Native App aktualisieren"
+  },
+  "settingsNativeAppUpdateDesc": {
+    "message": "Wählen Sie eine verfügbare lokale App-Version. Erlaubt sind nur Upgrades von der laufenden App-Version."
+  },
+  "settingsNativeAppVersionsLoading": {
+    "message": "Versionen werden geladen..."
+  },
+  "settingsNativeAppRefreshVersions": {
+    "message": "Aktualisieren"
+  },
+  "settingsNativeAppUpdateButton": {
+    "message": "App upgraden"
+  },
+  "settingsNativeAppVersionUnknown": {
+    "message": "Die native App-Version ist nicht verfügbar."
+  },
+  "settingsNativeAppVersionsReady": {
+    "message": "Native App {0}. Wählen Sie eine neuere Version zum Upgrade."
+  },
+  "settingsNativeAppNoUpgrade": {
+    "message": "Native App {0} ist bereits die neueste gelistete Version."
+  },
+  "settingsNativeAppVersionsFailed": {
+    "message": "App-Versionen konnten nicht geladen werden. Starten Sie die native App oder nutzen Sie GitHub-Releases."
+  },
+  "settingsNativeAppNoVersions": {
+    "message": "Keine App-Versionen verfügbar"
+  },
+  "settingsNativeAppCurrentVersionOption": {
+    "message": "v{0} (aktuell)"
+  },
+  "settingsNativeAppUpdateConfirm": {
+    "message": "Native App auf v{0} upgraden? Die App startet neu, nachdem das Update beginnt."
+  },
+  "settingsNativeAppUpdateStarting": {
+    "message": "Native-App-Update auf v{0} wird gestartet..."
+  },
+  "settingsNativeAppUpdateAccepted": {
+    "message": "Native-App-Update auf v{0} wurde gestartet."
+  },
+  "settingsNativeAppUpdateFailed": {
+    "message": "Native-App-Update auf v{0} konnte nicht gestartet werden."
   },
   "settingsIgnoreWaterfallDynamicLinks": {
     "message": "Dynamische Waterfall-Links ignorieren"
@@ -271,6 +358,21 @@
   },
   "settingsExcludeIncognitoWindowsDesc": {
     "message": "Wenn aktiviert, bleiben Inkognito-Fenster au?erhalb von Lernen, Bewertung, Slot-Zuweisung und Interaktions-Vorladen. Wenn deaktiviert, teilen sie sich die gleichen Konto-Obergrenzen mit normalen Seiten, verwenden aber nur Inkognito-Vorladefenster."
+  },
+  "settingsProxySkipRules": {
+    "message": "Proxy-Übersprungregeln"
+  },
+  "settingsProxySkipRulesDesc": {
+    "message": "Proxybezogene Tabs manuell überspringen. Pro Zeile eine Domain oder ein URL-Muster; die schwarze Liste überspringt Treffer, die weiße Liste behält nur Treffer."
+  },
+  "settingsProxySkipModeBlacklist": {
+    "message": "Schwarze Liste"
+  },
+  "settingsProxySkipModeWhitelist": {
+    "message": "Weiße Liste"
+  },
+  "settingsProxySkipRulesPlaceholder": {
+    "message": "example.com\n*.example.org\nhttps://example.net/docs/*"
   },
   "settingsTransitionFrequencyWindow": {
     "message": "Zeitfenster f?r ?bergangsh?ufigkeit"
@@ -562,6 +664,48 @@
   },
   "settingsAiNoSupportedModels": {
     "message": "Keine unterst?tzten leichten Modelle gefunden"
+  },
+  "settingsHistoryDeletionTitle": {
+    "message": "Verlaufseinträge löschen"
+  },
+  "settingsHistoryDeletionDesc": {
+    "message": "Löscht lokale Besuchsgraph-Daten in einem UTC-Datumsbereich. Das Startdatum ist eingeschlossen, das Enddatum ausgeschlossen."
+  },
+  "settingsHistoryDeletionCurrentUtc": {
+    "message": "Aktuelle UTC"
+  },
+  "settingsHistoryDeletionStartDate": {
+    "message": "Startdatum UTC"
+  },
+  "settingsHistoryDeletionEndDate": {
+    "message": "Enddatum UTC"
+  },
+  "settingsHistoryDeletionDelete": {
+    "message": "Verlauf löschen"
+  },
+  "settingsHistoryDeletionConfirm": {
+    "message": "Lokale Verlaufseinträge für den UTC-Bereich {0} löschen? Dies kann nicht rückgängig gemacht werden."
+  },
+  "settingsHistoryDeletionDeleting": {
+    "message": "Ausgewählte Verlaufseinträge werden gelöscht..."
+  },
+  "settingsHistoryDeletionDeletedSummary": {
+    "message": "{0} Verlaufseintrag/-einträge gelöscht: {1} Übergänge, {2} Vordergrundseiten, {3} Schlüsselwort-Einträge, {4} Linkverhalten-Einträge."
+  },
+  "settingsHistoryDeletionFailed": {
+    "message": "Die ausgewählten Verlaufseinträge konnten nicht gelöscht werden."
+  },
+  "settingsHistoryDeletionNeedRange": {
+    "message": "Wähle sowohl UTC-Startdatum als auch UTC-Enddatum."
+  },
+  "settingsHistoryDeletionInvalidRange": {
+    "message": "Das UTC-Startdatum muss vor dem UTC-Enddatum liegen."
+  },
+  "settingsHistoryDeletionInvalidTime": {
+    "message": "Eines der ausgewählten UTC-Daten ist ungültig."
+  },
+  "settingsHistoryDeletionRangeLabel": {
+    "message": "[{0}, {1})"
   },
   "commonProvider": {
     "message": "Anbieter"

@@ -187,7 +187,14 @@
   }) {
     const normalizedSnapshots = (Array.isArray(snapshots) ? snapshots : [])
       .map((snapshot) => normalizePreloadCandidateSelectionSnapshot(snapshot))
-      .filter(Boolean);
+      .filter(Boolean)
+      .filter(
+        (snapshot) =>
+          globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadUrl?.(
+            snapshot.sourcePageUrl,
+            settings
+          ) !== true
+      );
 
     recordSchedulerEvent("scheduler.schedule.start", {
       mode: graph ? "candidate-rebuild" : "stored-snapshot",
@@ -211,6 +218,10 @@
       typeof getPreloadResourcePressureState === "function"
         ? await getPreloadResourcePressureState(settings).catch(() => null)
         : null;
+    const allNativePreloadMode =
+      globalThis.ZeroLatencyPreloadNativeOnlyPolicy?.isAllNativePreloadModeEnabled?.(
+        settings
+      ) === true;
     const shouldDeferHiddenTabs = pressureState?.shouldDeferHiddenTabs === true;
     const dwellShares =
       globalThis.ZeroLatencyPreloadSchedulerAttention.computePreloadAttentionDwellShares(
@@ -228,7 +239,7 @@
       dwellShares,
       preloadState,
     });
-    const tabAllocations = shouldDeferHiddenTabs
+    const tabAllocations = shouldDeferHiddenTabs || allNativePreloadMode
       ? new Map()
       : allocateSchedulerGroupSlots({
           snapshots: normalizedSnapshots,
@@ -243,6 +254,11 @@
       recordSchedulerEvent("scheduler.resource-pressure.hidden-tab-deferred", {
         policy: pressureState.policy,
         reason: pressureState.reason,
+        snapshotCount: normalizedSnapshots.length,
+      });
+    }
+    if (allNativePreloadMode) {
+      recordSchedulerEvent("scheduler.native-only.hidden-tab-deferred", {
         snapshotCount: normalizedSnapshots.length,
       });
     }
@@ -264,7 +280,7 @@
         settings,
       });
 
-      if (shouldDeferHiddenTabs) {
+      if (shouldDeferHiddenTabs || allNativePreloadMode) {
         selection = stripHiddenTabTargetsForResourcePressure(selection);
       }
       recordSchedulerEvent("scheduler.selection.result", {
@@ -300,7 +316,11 @@
     const totalCap = resolveSchedulerGroupTotalCap(schedulerSettings, group, snapshots.length);
     const allocationInputs = snapshots
       .map((snapshot, index) => {
-        const scoreSignal = getSnapshotScoreSignalForGroup(snapshot, group);
+        const scoreSignal = getSnapshotScoreSignalForGroup(
+          snapshot,
+          group,
+          runtimeSettings
+        );
         const dwellShare = resolveSnapshotDwellShare(snapshot, dwellShares, preloadState);
         const linkValueMultiplier = resolveSnapshotLinkValueMultiplier(scoreSignal);
         const finalScore =
@@ -414,8 +434,16 @@
 
   function buildLimitedSelectionFromSnapshot(snapshot, limits) {
     const selectedTargets = [];
-    const nativeTargets = getSnapshotTargetsForGroup(snapshot, "native");
-    const tabTargets = getSnapshotTargetsForGroup(snapshot, "tab");
+    const nativeTargets = getSnapshotTargetsForGroup(
+      snapshot,
+      "native",
+      limits?.settings
+    ).filter((target) => shouldKeepProxyAllowedSnapshotTarget(target, limits?.settings));
+    const tabTargets = getSnapshotTargetsForGroup(
+      snapshot,
+      "tab",
+      limits?.settings
+    ).filter((target) => shouldKeepProxyAllowedSnapshotTarget(target, limits?.settings));
     const nativeQuotaTargets = nativeTargets
       .filter((target) => !isIndependentBookmarkPreloadTarget(target))
       .slice(0, limits.nativeSlots);
@@ -430,6 +458,15 @@
     selectedTargets.sort(compareStoredSelectionTargetPriority);
 
     return buildSelectionFromTargets(selectedTargets);
+  }
+
+  function shouldKeepProxyAllowedSnapshotTarget(target, settings) {
+    return (
+      globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadCandidate?.(
+        target?.url,
+        settings
+      ) !== true
+    );
   }
 
   async function buildScheduledSelectionForSnapshot(snapshot, context) {
@@ -635,31 +672,87 @@
     return buildSelectionFromTargets(selectedTargets);
   }
 
-  function getSnapshotTargetsForGroup(snapshot, group) {
+  function getSnapshotTargetsForGroup(snapshot, group, settings) {
     const targets = Array.isArray(snapshot?.selectedTargets) ? snapshot.selectedTargets : [];
+    const allNativePreloadMode =
+      globalThis.ZeroLatencyPreloadNativeOnlyPolicy?.isAllNativePreloadModeEnabled?.(
+        settings
+      ) === true;
+
+    if (allNativePreloadMode && group === "tab") {
+      return [];
+    }
 
     return targets
-      .filter((target) =>
-        group === "tab" ? target.strategy === "hidden-tab" : target.strategy !== "hidden-tab"
-      )
+      .filter((target) => {
+        if (allNativePreloadMode && group === "native") {
+          return true;
+        }
+
+        return group === "tab"
+          ? target.strategy === "hidden-tab"
+          : target.strategy !== "hidden-tab";
+      })
+      .map((target) => normalizeSnapshotTargetForNativeOnlyMode(target, settings))
       .sort(compareStoredSelectionTargetPriority);
   }
 
-  function getSnapshotScoreSignalForGroup(snapshot, group) {
+  function getSnapshotScoreSignalForGroup(snapshot, group, settings) {
     const scoreSignals = normalizePreloadSchedulerScoreSignals(snapshot?.scoreSignals);
+    const allNativePreloadMode =
+      globalThis.ZeroLatencyPreloadNativeOnlyPolicy?.isAllNativePreloadModeEnabled?.(
+        settings
+      ) === true;
+
+    if (allNativePreloadMode && group === "tab") {
+      return {
+        scoreSum: 0,
+        candidateCount: 0,
+      };
+    }
+
+    if (allNativePreloadMode && group === "native") {
+      const mergedSignal = {
+        scoreSum: scoreSignals.native.scoreSum + scoreSignals.tab.scoreSum,
+        candidateCount:
+          scoreSignals.native.candidateCount + scoreSignals.tab.candidateCount,
+      };
+
+      if (mergedSignal.candidateCount > 0) {
+        return mergedSignal;
+      }
+    }
+
     const signal = group === "tab" ? scoreSignals.tab : scoreSignals.native;
 
     if (signal.candidateCount > 0) {
       return signal;
     }
 
-    const targets = getSnapshotTargetsForGroup(snapshot, group).filter(
+    const targets = getSnapshotTargetsForGroup(snapshot, group, settings).filter(
       (target) => !isIndependentBookmarkPreloadTarget(target)
     );
 
     return {
       scoreSum: sumSelectionTargetScores(targets),
       candidateCount: targets.length,
+    };
+  }
+
+  function normalizeSnapshotTargetForNativeOnlyMode(target, settings) {
+    const strategy =
+      globalThis.ZeroLatencyPreloadNativeOnlyPolicy?.resolveHiddenTabStrategyForNativeOnlyMode?.(
+        target?.strategy,
+        settings
+      ) ?? target?.strategy;
+
+    if (strategy === target?.strategy) {
+      return target;
+    }
+
+    return {
+      ...target,
+      strategy,
     };
   }
 
@@ -873,6 +966,10 @@
       return tabs.filter(
         (tab) =>
           globalThis.ZeroLatencyPreloadIncognitoPolicy?.shouldExcludeIncognitoPreloadSource?.(
+            tab,
+            settings
+          ) !== true &&
+          globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadSource?.(
             tab,
             settings
           ) !== true

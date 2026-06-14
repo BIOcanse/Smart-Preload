@@ -74,7 +74,72 @@
                 </label>
               </div>
             </article>
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="exclude-local-pages" data-i18n="settingsSkipLocalPages">
+                  Skip local pages
+                </label>
+                <p class="settings-item-desc" data-i18n="settingsSkipLocalPagesDesc">
+                  Do not track or preload localhost, 127.0.0.0/8, 0.0.0.0, [::1], or *.localhost pages.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="exclude-local-pages" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="exclude-private-network-pages" data-i18n="settingsSkipPrivateNetworkPages">
+                  Skip private network pages
+                </label>
+                <p class="settings-item-desc" data-i18n="settingsSkipPrivateNetworkPagesDesc">
+                  Do not track or preload private network pages such as 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, fc00::/7, or fe80::/10.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="exclude-private-network-pages" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
             <div class="rule-cards-board" id="tracking-rule-cards-list"></div>
+            <article class="settings-item is-wide history-delete-item">
+              <div class="settings-item-info">
+                <p class="settings-item-label" data-i18n="settingsHistoryDeletionTitle">
+                  History record deletion
+                </p>
+                <p class="settings-item-desc" data-i18n="settingsHistoryDeletionDesc">
+                  Delete local visit graph records in a UTC date range. The start date is included and the end date is excluded.
+                </p>
+                <p class="settings-item-desc history-utc-now">
+                  <span data-i18n="settingsHistoryDeletionCurrentUtc">Current UTC</span>:
+                  <span id="history-delete-current-utc">--</span>
+                </p>
+                <p class="settings-item-warning is-info is-hidden" id="history-delete-status"></p>
+              </div>
+              <div class="settings-item-control history-delete-control">
+                <label class="history-delete-field" for="history-delete-start">
+                  <span data-i18n="settingsHistoryDeletionStartDate">Start UTC date</span>
+                  <input id="history-delete-start" class="text-input" type="date" />
+                </label>
+                <label class="history-delete-field" for="history-delete-end">
+                  <span data-i18n="settingsHistoryDeletionEndDate">End UTC date</span>
+                  <input id="history-delete-end" class="text-input" type="date" />
+                </label>
+                <button
+                  id="history-delete-button"
+                  class="danger-button"
+                  type="button"
+                  data-i18n="settingsHistoryDeletionDelete"
+                >
+                  Delete History
+                </button>
+              </div>
+            </article>
           </div>
         </section>
 
@@ -98,6 +163,95 @@
                   <input id="preloading-enabled" type="checkbox" />
                   <span class="switch-track"></span>
                 </label>
+              </div>
+            </article>
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="interaction-preload-enabled" data-i18n="settingsInteractionPreload">
+                  Hover and context-menu preload
+                </label>
+                <p class="settings-item-desc" data-i18n="settingsInteractionPreloadDesc">
+                  Start an interaction preload after hovering a link for 80 ms, and prepare a new-tab preload when opening a link context menu.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="interaction-preload-enabled" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="all-native-preload-mode" data-i18n="settingsAllNativePreloadMode">
+                  All-native preload mode
+                </label>
+                <p class="settings-item-desc" data-i18n="settingsAllNativePreloadModeDesc">
+                  Use only browser-native prefetch/prerender. Hidden real background tabs and hard swap are disabled.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="all-native-preload-mode" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+            <article class="settings-item is-wide native-app-download-item">
+              <div class="settings-item-info">
+                <p class="settings-item-label" data-i18n="settingsNativeAppDownloadTitle">
+                  Native app download
+                </p>
+                <p class="settings-item-desc" data-i18n="settingsNativeAppDownloadDesc">
+                  Download the local app package from GitHub when system-level hidden real tabs are needed.
+                </p>
+                <p class="settings-item-desc" data-i18n="settingsNativeAppBindingOrder">
+                  To bind the extension and native app, install or enable the extension first, then run the native app installer or start the native app. After binding succeeds, the extension can wake the native app automatically.
+                </p>
+              </div>
+              <div class="settings-item-control native-app-download-control">
+                <a
+                  class="settings-link-button"
+                  href="https://github.com/kingstonwang114514-cloud/zero-latency-web/releases"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-i18n="settingsNativeAppDownloadLink"
+                >
+                  GitHub releases
+                </a>
+              </div>
+            </article>
+            <article class="settings-item is-wide native-app-update-item">
+              <div class="settings-item-info">
+                <p class="settings-item-label" data-i18n="settingsNativeAppUpdateTitle">
+                  Native app update
+                </p>
+                <p class="settings-item-desc" data-i18n="settingsNativeAppUpdateDesc">
+                  Select an available local app version. Only upgrades from the running app version are allowed.
+                </p>
+                <p class="settings-item-warning is-info is-hidden" id="native-app-update-status"></p>
+              </div>
+              <div class="settings-item-control native-app-update-control">
+                <select id="native-app-version-select" class="select-input" disabled>
+                  <option value="" data-i18n="settingsNativeAppVersionsLoading">Loading versions...</option>
+                </select>
+                <button
+                  id="native-app-refresh-versions"
+                  class="ghost-button"
+                  type="button"
+                  data-i18n="settingsNativeAppRefreshVersions"
+                >
+                  Refresh
+                </button>
+                <button
+                  id="native-app-update-button"
+                  class="primary-button"
+                  type="button"
+                  disabled
+                  data-i18n="settingsNativeAppUpdateButton"
+                >
+                  Upgrade App
+                </button>
               </div>
             </article>
             <p class="settings-item-warning settings-runtime-warning is-hidden" id="settings-performance-warning" data-i18n="performanceInsufficientReducePreloadCaps">
@@ -136,6 +290,35 @@
                 </label>
               </div>
             </article>
+            <article class="settings-item is-wide">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="proxy-skip-rules" data-i18n="settingsProxySkipRules">
+                  Proxy skip rules
+                </label>
+                <p class="settings-item-desc" data-i18n="settingsProxySkipRulesDesc">
+                  Manually skip proxy-related tabs. Use one domain or URL pattern per line; blacklist skips matches, whitelist keeps only matches.
+                </p>
+              </div>
+              <div class="settings-item-control proxy-skip-control">
+                <select id="proxy-skip-mode" class="select-input">
+                  <option value="blacklist" data-i18n="settingsProxySkipModeBlacklist">Blacklist</option>
+                  <option value="whitelist" data-i18n="settingsProxySkipModeWhitelist">Whitelist</option>
+                </select>
+                <textarea
+                  id="proxy-skip-rules"
+                  class="text-input proxy-skip-rules-input"
+                  rows="5"
+                  spellcheck="false"
+                  data-i18n-placeholder="settingsProxySkipRulesPlaceholder"
+                  data-i18n-placeholder-fallback="example.com&#10;*.example.org&#10;https://example.net/docs/*"
+                  placeholder="example.com&#10;*.example.org&#10;https://example.net/docs/*"
+                ></textarea>
+                <label class="switch">
+                  <input id="proxy-skip-enabled" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
             <article class="settings-item" id="transition-window-scope-row">
               <div class="settings-item-info">
                 <label class="settings-item-label" for="transition-window-scope" data-i18n="settingsTransitionFrequencyWindow">
@@ -164,7 +347,7 @@
                 </p>
               </div>
               <div class="settings-item-control scheduler-grid">
-                <fieldset class="scheduler-group">
+                <fieldset class="scheduler-group" id="scheduler-hidden-tabs-group">
                   <legend data-i18n="settingsSchedulerHiddenTabs">Hidden real tabs</legend>
                   <label class="scheduler-field" for="scheduler-tab-total-min">
                     <span data-i18n="settingsSchedulerMin">Min</span>
@@ -351,7 +534,7 @@
           </header>
 
           <div class="settings-list">
-            <article class="settings-item">
+            <article class="settings-item" id="cross-site-current-tab-swap-row">
               <div class="settings-item-info">
                 <label class="settings-item-label" for="cross-site-current-tab-swap" data-i18n="settingsCrossSiteCurrentTabSwap">
                   Cross-site current-tab hard swap
@@ -457,6 +640,7 @@
     <script src="../shared/lmstudio.js"></script>
     <script src="../shared/settings.js"></script>
     <script src="ai-models.js"></script>
+    <script src="app-updates.js"></script>
     <script src="settings.js"></script>
   </body>
 </html>

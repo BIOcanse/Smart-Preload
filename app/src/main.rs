@@ -93,9 +93,9 @@ fn run_host() -> Result<()> {
         info!("host was woken through Native Messaging; bypassing only the initial extension scan");
     }
 
-    let snapshotter = Arc::new(Mutex::new(SystemSnapshotter::new()?));
-    let state = ApiState::new(snapshotter);
     let (shutdown_tx, shutdown_rx) = watch::channel(false);
+    let snapshotter = Arc::new(Mutex::new(SystemSnapshotter::new()?));
+    let state = ApiState::new(snapshotter, shutdown_tx.clone());
     let server_handle = api::spawn_server(state.clone(), shutdown_rx);
     let tray_shutdown_rx = shutdown_tx.subscribe();
     lifecycle::spawn_chrome_shutdown_monitor(shutdown_tx.clone());

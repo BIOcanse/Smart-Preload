@@ -34,24 +34,10 @@
   function buildCurrentPreloads(preloadState, tabId) {
     const sourceTabRuntimeEntry = findSourceTabRuntime(preloadState, tabId);
     const sourceTabRuntime = sourceTabRuntimeEntry?.sourceTabRuntime;
-    const hiddenTabEntries = Object.values(sourceTabRuntime?.hiddenTabEntriesByUrl || {}).map(
-      (entry) => ({
-        requestedUrl: entry.requestedUrl,
-        loadedUrl: entry.loadedUrl,
-        score: entry.score,
-        scoreBreakdown: entry.scoreBreakdown ?? null,
-        transitionMetrics: entry.transitionMetrics ?? null,
-        aiKeywordMatch: entry.aiKeywordMatch ?? null,
-        bookmarkPreload: entry.bookmarkPreload ?? null,
-        interactionPreload: entry.interactionPreload ?? null,
-        siteSelection: entry.siteSelection ?? null,
-        status: entry.status,
-        strategy: "hidden-tab",
-        nodeLabel: deriveNodeLabel(entry.nodeId),
-      })
-    );
-    const prerenderEntries = Object.values(sourceTabRuntime?.prerenderEntriesByUrl || {}).map(
-      (entry) => ({
+    const topEntries = [];
+
+    for (const entry of Object.values(sourceTabRuntime?.prerenderEntriesByUrl || {})) {
+      pushCurrentPreloadViewEntry(topEntries, {
         requestedUrl: entry.requestedUrl,
         loadedUrl: entry.requestedUrl,
         score: entry.score,
@@ -64,10 +50,11 @@
         status: entry.status,
         strategy: "prerender",
         nodeLabel: derivePageLabel(entry.requestedUrl),
-      })
-    );
-    const prefetchEntries = Object.values(sourceTabRuntime?.prefetchEntriesByUrl || {}).map(
-      (entry) => ({
+      });
+    }
+
+    for (const entry of Object.values(sourceTabRuntime?.prefetchEntriesByUrl || {})) {
+      pushCurrentPreloadViewEntry(topEntries, {
         requestedUrl: entry.requestedUrl,
         loadedUrl: entry.requestedUrl,
         score: entry.score,
@@ -80,13 +67,11 @@
         status: entry.status,
         strategy: "prefetch",
         nodeLabel: derivePageLabel(entry.requestedUrl),
-      })
-    );
+      });
+    }
 
-    return [...prerenderEntries, ...prefetchEntries, ...hiddenTabEntries]
-      .sort(compareCurrentPreloadViewPriority)
-      .slice(0, 3)
-      .map((entry) => ({
+    for (const entry of Object.values(sourceTabRuntime?.hiddenTabEntriesByUrl || {})) {
+      pushCurrentPreloadViewEntry(topEntries, {
         requestedUrl: entry.requestedUrl,
         loadedUrl: entry.loadedUrl,
         score: entry.score,
@@ -97,9 +82,34 @@
         interactionPreload: entry.interactionPreload ?? null,
         siteSelection: entry.siteSelection ?? null,
         status: entry.status,
-        strategy: entry.strategy,
-        nodeLabel: entry.nodeLabel,
-      }));
+        strategy: "hidden-tab",
+        nodeLabel: deriveNodeLabel(entry.nodeId),
+      });
+    }
+
+    return topEntries.map((entry) => ({
+      requestedUrl: entry.requestedUrl,
+      loadedUrl: entry.loadedUrl,
+      score: entry.score,
+      scoreBreakdown: entry.scoreBreakdown ?? null,
+      transitionMetrics: entry.transitionMetrics ?? null,
+      aiKeywordMatch: entry.aiKeywordMatch ?? null,
+      bookmarkPreload: entry.bookmarkPreload ?? null,
+      interactionPreload: entry.interactionPreload ?? null,
+      siteSelection: entry.siteSelection ?? null,
+      status: entry.status,
+      strategy: entry.strategy,
+      nodeLabel: entry.nodeLabel,
+    }));
+  }
+
+  function pushCurrentPreloadViewEntry(topEntries, entry) {
+    topEntries.push(entry);
+    topEntries.sort(compareCurrentPreloadViewPriority);
+
+    if (topEntries.length > 3) {
+      topEntries.length = 3;
+    }
   }
 
   function compareCurrentPreloadViewPriority(left, right) {

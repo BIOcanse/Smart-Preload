@@ -48,7 +48,7 @@
       return { ok: true, skipped: true };
     }
 
-    if (isExcludedGooglePage(sourcePageUrl) || isExcludedGooglePage(targetUrl)) {
+    if (isExcludedTrackingPage(sourcePageUrl) || isExcludedTrackingPage(targetUrl)) {
       return { ok: true, skipped: true };
     }
 
@@ -100,7 +100,7 @@
       trackingState?.tabState?.[String(details.sourceTabId)]?.url || ""
     );
 
-    if (!sourcePageUrl) {
+    if (!sourcePageUrl || !targetUrl || isExcludedTrackingPage(sourcePageUrl) || isExcludedTrackingPage(targetUrl)) {
       return trackingState;
     }
 

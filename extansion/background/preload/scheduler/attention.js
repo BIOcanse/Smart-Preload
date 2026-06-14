@@ -564,11 +564,17 @@
         },
         settings
       ) === true;
+    const proxySkipped =
+      globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadSource?.(
+        tab,
+        settings
+      ) === true;
     const canCount =
       sourceWindow?.type === "normal" &&
       sourceWindow?.focused === true &&
       tab?.active === true &&
       incognitoExcluded !== true &&
+      proxySkipped !== true &&
       pageUrl &&
       isTrackableAndAllowedUrl(pageUrl) &&
       activity.weight > 0;

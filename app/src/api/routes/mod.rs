@@ -1,8 +1,10 @@
+mod app_update;
 mod diagnostics;
 mod extension;
 mod system;
 mod windows;
 
+pub(crate) use app_update::{app_update_status, request_app_update};
 pub(crate) use diagnostics::append_diagnostics_log;
 pub(crate) use extension::{extension_heartbeat, register_extension};
 pub(crate) use system::{

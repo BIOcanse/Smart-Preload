@@ -24,6 +24,7 @@ async function buildPreloadCandidatePool({
     sourceNodeId,
     sourceUrl,
     graph,
+    settings,
     sourcePageUrl,
     sourceCandidateLinks,
     transitionWindowKey,
@@ -61,6 +62,7 @@ function buildLinkCandidatePoolByUrl({
   sourceNodeId,
   sourceUrl,
   graph,
+  settings,
   sourcePageUrl,
   sourceCandidateLinks,
   transitionWindowKey,
@@ -74,6 +76,7 @@ function buildLinkCandidatePoolByUrl({
       sourceNodeId,
       sourceUrl,
       graph,
+      settings,
       sourcePageUrl,
       transitionWindowKey,
     });
@@ -92,12 +95,22 @@ function buildLinkPreloadCandidate({
   sourceNodeId,
   sourceUrl,
   graph,
+  settings,
   sourcePageUrl,
   transitionWindowKey,
 }) {
   const candidateUrl = normalizeNavigableUrl(candidate?.url, sourceUrl);
 
-  if (!candidateUrl || candidateUrl === sourceUrl || isExcludedGooglePage(candidateUrl)) {
+  if (!candidateUrl || candidateUrl === sourceUrl || isExcludedTrackingPage(candidateUrl)) {
+    return null;
+  }
+
+  if (
+    globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadCandidate?.(
+      candidateUrl,
+      settings
+    ) === true
+  ) {
     return null;
   }
 

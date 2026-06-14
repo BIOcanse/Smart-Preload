@@ -4,10 +4,11 @@ async function requestPreloadCandidateRefreshForOpenTabs() {
   const preloadState = await loadPreloadState();
   const runtimeSettings = getEffectiveExtensionSettings();
   const incognitoPolicy = globalThis.ZeroLatencyPreloadIncognitoPolicy;
+  const proxySkipPolicy = globalThis.ZeroLatencyPreloadProxySkipPolicy;
   const tabs = await chrome.tabs.query({
     windowType: "normal",
   });
-  const cleanup = await incognitoPolicy?.clearExcludedIncognitoPreloadState?.(
+  const incognitoCleanup = await incognitoPolicy?.clearExcludedIncognitoPreloadState?.(
     preloadState,
     runtimeSettings,
     {
@@ -15,15 +16,24 @@ async function requestPreloadCandidateRefreshForOpenTabs() {
       reason: "open-tabs-refresh",
     }
   );
+  const proxyCleanup = await proxySkipPolicy?.clearProxySkippedPreloadState?.(
+    incognitoCleanup?.preloadState ?? preloadState,
+    runtimeSettings,
+    {
+      tabs,
+      reason: "open-tabs-refresh",
+    }
+  );
 
-  if (cleanup?.mutated === true) {
-    await savePreloadState(cleanup.preloadState);
+  if (incognitoCleanup?.mutated === true || proxyCleanup?.mutated === true) {
+    await savePreloadState(proxyCleanup?.preloadState ?? incognitoCleanup?.preloadState);
   }
 
   for (const tab of tabs) {
     if (
       !tab.id ||
       incognitoPolicy?.shouldExcludeIncognitoPreloadSource?.(tab, runtimeSettings) === true ||
+      proxySkipPolicy?.shouldSkipProxyPreloadSource?.(tab, runtimeSettings) === true ||
       !isTrackableAndAllowedUrl(tab.url || "") ||
       isPreloadTab(preloadState, tab.id)
     ) {
@@ -54,16 +64,21 @@ async function requestPreloadCandidateRefreshForTab(tabId) {
   const tab = await getTabMaybe(normalizedTabId);
   const runtimeSettings = getEffectiveExtensionSettings();
   const incognitoPolicy = globalThis.ZeroLatencyPreloadIncognitoPolicy;
+  const proxySkipPolicy = globalThis.ZeroLatencyPreloadProxySkipPolicy;
 
   if (
     !tab?.id ||
     incognitoPolicy?.shouldExcludeIncognitoPreloadSource?.(tab, runtimeSettings) === true ||
+    proxySkipPolicy?.shouldSkipProxyPreloadSource?.(tab, runtimeSettings) === true ||
     !isTrackableAndAllowedUrl(tab.url || "") ||
     isPreloadTab(preloadState, tab.id)
   ) {
+    let cleanupState = preloadState;
+    let cleanupMutated = false;
+
     if (incognitoPolicy?.shouldExcludeIncognitoPreloadSource?.(tab, runtimeSettings) === true) {
       const cleanup = await incognitoPolicy.clearExcludedIncognitoPreloadState(
-        preloadState,
+        cleanupState,
         runtimeSettings,
         {
           tabs: [tab],
@@ -72,8 +87,27 @@ async function requestPreloadCandidateRefreshForTab(tabId) {
       );
 
       if (cleanup.mutated) {
-        await savePreloadState(cleanup.preloadState);
+        cleanupState = cleanup.preloadState;
+        cleanupMutated = true;
       }
+    }
+    if (proxySkipPolicy?.shouldSkipProxyPreloadSource?.(tab, runtimeSettings) === true) {
+      const cleanup = await proxySkipPolicy.clearProxySkippedPreloadState(
+        cleanupState,
+        runtimeSettings,
+        {
+          tabs: [tab],
+          reason: "single-tab-refresh",
+        }
+      );
+
+      if (cleanup.mutated) {
+        cleanupState = cleanup.preloadState;
+        cleanupMutated = true;
+      }
+    }
+    if (cleanupMutated) {
+      await savePreloadState(cleanupState);
     }
     return;
   }
@@ -199,6 +233,15 @@ function shouldRunIndependentBackgroundPreloadCandidateRefresh(tab) {
 
   if (
     globalThis.ZeroLatencyPreloadIncognitoPolicy?.shouldExcludeIncognitoPreloadSource?.(
+      tab,
+      getEffectiveExtensionSettings()
+    ) === true
+  ) {
+    return false;
+  }
+
+  if (
+    globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadSource?.(
       tab,
       getEffectiveExtensionSettings()
     ) === true

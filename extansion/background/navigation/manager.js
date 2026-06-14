@@ -18,7 +18,7 @@
       };
     }
 
-    if (isExcludedGooglePage(sourcePageUrl) || isExcludedGooglePage(targetUrl)) {
+    if (isExcludedTrackingPage(sourcePageUrl) || isExcludedTrackingPage(targetUrl)) {
       return {
         handled: false,
         action: "skip",
