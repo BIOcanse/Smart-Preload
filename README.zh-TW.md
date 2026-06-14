@@ -6,34 +6,63 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | 繁體中文 | [日本語](README.ja.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
-智慧預載會提前準備你很可能下一步開啟的網頁，讓瀏覽體驗更接近「點開就到」。它適合資料搜尋、辦公、多分頁閱讀、購物比價、查文件等經常在多個頁面之間切換的場景。
+智慧預載會提前準備你很可能下一步開啟的頁面，讓連續瀏覽、資料搜尋、頁面比較和文件閱讀少一點等待感。
 
-它會在不打斷瀏覽的情況下，把可能馬上會用到的頁面提前準備好，同時保留隱私、效能和瀏覽行為上的控制權。
+它最適合多分頁工作、查資料、看搜尋結果、比價、查文件，以及經常在相關頁面之間切換的場景。
 
-## 你能獲得什麼
+![預載排行](assets/readme/popup-ranking.png)
 
-- 如果下一頁已經準備好，頁面跳轉會更快、更跟手。
-- 對多分頁工作更友好，不再只圍繞目前頁面工作。
-- 滑鼠懸停連結、右鍵連結時，可以提前為即將開啟的頁面做準備。
-- 普通預載和更積極的背景預載可以分開控制。
-- 可以跳過本機網頁、內網頁面、Google 頁面、無痕視窗，以及依設定跳過走代理的瀏覽。
-- 支援自動識別介面語言，也支援手動選擇語言。
-- 歷史資料可以隨資料夾遷移，換電腦或升級版本時更容易繼承使用習慣。
+## 排行有什麼用
 
-## 下載
+擴充功能彈窗裡的排行只針對目前分頁，不是全域熱門頁面。
+
+- `前幾項` 是目前分頁最可能被提前準備的頁面。
+- `Weight` 是目前優先級。
+- `Freq` 是從目前頁面或目前站點跳過去的歷史頻次。
+- `prerender`、`prefetch`、`hidden-tab` 表示頁面準備方式。
+- 狀態會告訴你候選頁面已準備好、已載入，或仍在等待。
+
+這個排行主要用來判斷擴充功能現在正在準備什麼，也可以用來排查某個連結為什麼沒有被選中。
+
+## 什麼時候要暫停
+
+線上考試、遠端監考、公司受控瀏覽器、網銀流程、強風控頁面等場景，建議先暫停智慧預載。這些場景可能不接受擴充功能、背景分頁或提前載入頁面。
+
+臨時暫停可以點彈窗裡的 `停止`。也可以在設定裡關閉 `啟用預載`。如果考試或安全工具還會檢查背景程式，開始前也可以從系統匣退出 Windows 配套 app。
+
+![設定控制項](assets/readme/settings-preload-controls.png)
+
+## 歷史資料和遷移方式
+
+智慧預載的學習歷史保存在瀏覽器擴充功能儲存裡，不在 Windows app 資料夾裡。
+
+常見路徑：
+
+- Chrome：`%LOCALAPPDATA%\Google\Chrome\User Data\<Profile>\Local Extension Settings\<extension-id>\`
+- Edge：`%LOCALAPPDATA%\Microsoft\Edge\User Data\<Profile>\Local Extension Settings\<extension-id>\`
+
+`<Profile>` 通常是 `Default` 或 `Profile 1`。擴充功能 ID 可以在 `chrome://extensions` 或 `edge://extensions` 的擴充功能詳情裡看到。
+
+遷移到新電腦或新瀏覽器 profile：
+
+1. 先在目標瀏覽器安裝或載入一次擴充功能。
+2. 完全關閉目標瀏覽器。
+3. 把舊的 `<extension-id>` 資料夾內容複製到目標瀏覽器對應的擴充功能儲存資料夾。
+4. 如果擴充功能 ID 變了，把舊資料夾內容複製進新的擴充功能 ID 資料夾。
+5. 重新啟動瀏覽器。
+
+Windows app 的 `portable` 資料夾保存的是 app 綁定檔案和日誌，不是瀏覽歷史。設定頁裡也可以按 UTC 日期區間刪除學習記錄。
+
+## 安裝
 
 請從 [GitHub Releases](https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/latest) 下載最新版。
 
-智慧預載可以只作為瀏覽器擴充功能執行。選用的 Windows app 會提供更好的本機配合能力，並協助擴充功能和 app 在需要時自動重新連接。app 僅支援 Windows。
+1. 先在 Chrome 或 Edge 中安裝或載入擴充功能。
+2. 選用：解壓縮 Windows 配套 app。
+3. 在 app 資料夾中執行 `install-register.cmd`，或啟動一次 app。
+4. app 資料夾放好後不要隨意移動。
 
-## 首次設定
-
-1. 先在 Chrome 或 Edge 中安裝或啟用擴充功能。
-2. 如果要使用 Windows 配套 app，解壓縮 app 包。
-3. 在解壓後的 app 資料夾中執行 `install-register.cmd`，或啟動一次 app。
-4. 首次綁定成功後，後續啟動可以自動重新連接。
-
-如果擴充功能約 1 分鐘仍偵測不到 app，會提示下載 app 或改用純瀏覽器預載模式。
+擴充功能可以不依賴 Windows app 單獨執行。Windows app 僅支援 Windows，主要用於更強的本機瀏覽器配合。
 
 ## 瀏覽器支援
 

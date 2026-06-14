@@ -6,36 +6,65 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | Français | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
-Smart Preload prepare les pages que vous avez le plus de chances d'ouvrir ensuite, afin que la navigation paraisse plus rapide. Il convient a la recherche, au travail, a la lecture avec de nombreux onglets, aux comparaisons d'achat et a la consultation de documentation.
+Smart Preload prepare les pages que vous avez le plus de chances d'ouvrir ensuite, afin que la recherche, la comparaison, la lecture de documentation et le travail avec de nombreux onglets soient moins interrompus.
 
-Smart Preload travaille discretement pendant la navigation, prepare plus tot les pages probablement utiles et garde des controles pour la confidentialite, les performances et le comportement du navigateur.
+Il est surtout utile lorsque vous parcourez des resultats de recherche, comparez des pages ou passez souvent entre des sites lies.
 
-## Ce que vous obtenez
+![Classement du popup](assets/readme/popup-ranking.png)
 
-- Des changements de page plus rapides quand la page suivante est deja preparee.
-- Une meilleure experience pour les personnes qui travaillent avec beaucoup d'onglets.
-- Les liens peuvent etre prepares des le survol ou le clic droit.
-- Les modes de prechargement normal et de prechargement plus actif en arriere-plan peuvent etre regles separement.
-- Vous pouvez exclure les pages locales, les pages de reseau prive, les pages Google, les fenetres privees et la navigation liee a un proxy configure.
-- La langue de l'interface peut etre detectee automatiquement ou choisie manuellement.
-- Les donnees d'historique peuvent etre copiees avec leur dossier vers un nouvel ordinateur ou une nouvelle version.
+## A Quoi Sert Le Classement
 
-## Telechargement
+Le classement du popup concerne l'onglet courant. Ce n'est pas une liste globale de popularite.
+
+- `Top` montre les pages que Smart Preload est le plus susceptible de preparer pour cet onglet.
+- `Weight` est la priorite actuelle.
+- `Freq` indique la frequence de navigation apprise depuis cette page ou ce site.
+- `prerender`, `prefetch` et `hidden-tab` indiquent la methode de preparation.
+- Le statut indique si le candidat est pret, charge ou encore en attente.
+
+Utilisez cette liste pour comprendre ce que l'extension prepare et verifier pourquoi un lien a ete choisi ou non.
+
+## Quand Le Mettre En Pause
+
+Mettez Smart Preload en pause avant les examens en ligne, les sessions surveillees, les navigateurs d'entreprise verrouilles, les operations bancaires ou les pages a controle de securite fort. Ces environnements peuvent refuser les extensions, les onglets en arriere-plan ou les pages prechargees.
+
+Utilisez le bouton `Stop` du popup pour une pause rapide. Vous pouvez aussi desactiver `Enable preloading` dans les parametres. Si un outil d'examen ou de securite verifie aussi les applications en arriere-plan, quittez l'application Windows depuis la zone de notification avant de commencer.
+
+![Controles des parametres](assets/readme/settings-preload-controls.png)
+
+## Donnees D'Historique Et Migration
+
+L'historique appris est stocke dans le stockage de l'extension du navigateur, pas dans le dossier de l'application Windows.
+
+Chemins habituels :
+
+- Chrome : `%LOCALAPPDATA%\Google\Chrome\User Data\<Profile>\Local Extension Settings\<extension-id>\`
+- Edge : `%LOCALAPPDATA%\Microsoft\Edge\User Data\<Profile>\Local Extension Settings\<extension-id>\`
+
+`<Profile>` est souvent `Default` ou `Profile 1`. L'ID de l'extension est visible dans les details de `chrome://extensions` ou `edge://extensions`.
+
+Pour migrer vers un autre ordinateur ou profil :
+
+1. Installez ou chargez l'extension une fois dans le navigateur cible.
+2. Fermez completement ce navigateur.
+3. Copiez le contenu de l'ancien dossier `<extension-id>` dans le dossier de stockage correspondant du navigateur cible.
+4. Si l'ID de l'extension a change, copiez le contenu dans le dossier du nouvel ID.
+5. Redemarrez le navigateur.
+
+Le dossier `portable` de l'application Windows contient les fichiers de liaison et les logs, pas l'historique de navigation. Dans les parametres, vous pouvez supprimer les donnees apprises par plage de dates UTC.
+
+## Installation
 
 Telechargez la derniere version depuis [GitHub Releases](https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/latest).
 
-Smart Preload peut fonctionner uniquement comme extension de navigateur. L'application Windows optionnelle ameliore l'integration locale et aide l'extension et l'application a se reconnecter automatiquement quand c'est necessaire. L'application est disponible uniquement pour Windows.
+1. Installez ou chargez l'extension dans Chrome ou Edge.
+2. Facultatif : extrayez l'application Windows.
+3. Executez `install-register.cmd` dans le dossier app, ou lancez l'application une fois.
+4. Gardez le dossier app a son emplacement final.
 
-## Premiere configuration
+L'extension peut fonctionner sans l'application Windows. L'application est uniquement pour Windows et sert a une integration locale plus forte avec le navigateur.
 
-1. Installez ou activez d'abord l'extension dans Chrome ou Edge.
-2. Si vous voulez utiliser l'application Windows, extrayez le package de l'application.
-3. Executez `install-register.cmd` dans le dossier app extrait, ou lancez l'application une fois.
-4. Apres la premiere liaison reussie, les lancements suivants peuvent se reconnecter automatiquement.
-
-Si l'application n'est pas detectee pendant environ une minute, l'extension peut proposer de telecharger l'application ou d'utiliser un mode de prechargement uniquement navigateur.
-
-## Navigateurs pris en charge
+## Navigateurs Pris En Charge
 
 - Google Chrome
 - Microsoft Edge

@@ -6,34 +6,63 @@
 
 [English](README.md) | 简体中文 | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
-智能预加载会提前准备你很可能下一步打开的网页，让浏览体验更接近“点开就到”。它适合资料检索、办公、多标签阅读、购物比价、查文档等经常在多个页面之间来回切换的场景。
+智能预加载会提前准备你很可能下一步打开的页面，让连续浏览、资料检索、页面对比和文档阅读少一点等待感。
 
-它会在不打断浏览的情况下，把可能马上会用到的页面提前准备好，同时给你保留隐私、性能和浏览行为上的控制权。
+它最适合多标签办公、查资料、看搜索结果、比价、查文档，以及经常在相关页面之间来回跳转的场景。
 
-## 你能获得什么
+![预加载排行](assets/readme/popup-ranking.png)
 
-- 如果下一页已经准备好，页面跳转会更快、更跟手。
-- 对多标签页办公更友好，不再只围绕当前页面工作。
-- 鼠标悬停链接、右键链接时，可以提前为即将打开的页面做准备。
-- 普通预加载和更积极的后台预加载可以分开控制。
-- 可以跳过本地网页、内网页面、Google 页面、无痕窗口，以及按配置跳过走代理的浏览。
-- 支持自动识别界面语言，也支持手动选择语言。
-- 历史数据可以随文件夹迁移，换电脑或升级版本时更容易继承使用习惯。
+## 排行有什么用
 
-## 下载
+插件弹窗里的排行只针对当前标签页，不是全局热门页面。
+
+- `前几项` 是当前标签页最可能被提前准备的页面。
+- `Weight` 是当前优先级。
+- `Freq` 是从当前页面或当前站点跳过去的历史频次。
+- `prerender`、`prefetch`、`hidden-tab` 表示页面准备方式。
+- 状态会告诉你候选页面已经准备好、已经加载，还是仍在等待。
+
+这个排行主要用来判断插件现在正在准备什么，也可以用来排查某个链接为什么没有被选中。
+
+## 什么时候要暂停
+
+在线考试、远程监考、公司受控浏览器、网银流程、强风控页面等场景，建议先暂停智能预加载。这些场景可能不接受扩展、后台标签页或提前加载页面。
+
+临时暂停可以点弹窗里的 `停止`。也可以在设置里关闭 `启用预加载`。如果考试或安全工具还会检查后台程序，开始前也可以从托盘退出 Windows 配套 app。
+
+![设置控制项](assets/readme/settings-preload-controls.png)
+
+## 历史数据和迁移方式
+
+智能预加载的学习历史保存在浏览器扩展存储里，不在 Windows app 文件夹里。
+
+常见路径：
+
+- Chrome：`%LOCALAPPDATA%\Google\Chrome\User Data\<Profile>\Local Extension Settings\<extension-id>\`
+- Edge：`%LOCALAPPDATA%\Microsoft\Edge\User Data\<Profile>\Local Extension Settings\<extension-id>\`
+
+`<Profile>` 通常是 `Default` 或 `Profile 1`。扩展 ID 可以在 `chrome://extensions` 或 `edge://extensions` 的扩展详情里看到。
+
+迁移到新电脑或新浏览器 profile：
+
+1. 先在目标浏览器安装或加载一次扩展。
+2. 完全关闭目标浏览器。
+3. 把旧的 `<extension-id>` 文件夹内容复制到目标浏览器对应的扩展存储文件夹。
+4. 如果扩展 ID 变了，把旧文件夹内容复制进新的扩展 ID 文件夹。
+5. 重新启动浏览器。
+
+Windows app 的 `portable` 文件夹保存的是 app 绑定文件和日志，不是浏览历史。设置页里也可以按 UTC 日期区间删除学习记录。
+
+## 安装
 
 请从 [GitHub Releases](https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/latest) 下载最新版。
 
-智能预加载可以只作为浏览器扩展运行。可选的 Windows app 会提供更好的本地配合能力，并帮助扩展和 app 在需要时自动重新连接。app 仅支持 Windows。
+1. 先在 Chrome 或 Edge 中安装或加载扩展。
+2. 可选：解压 Windows 配套 app。
+3. 在 app 文件夹中运行 `install-register.cmd`，或者启动一次 app。
+4. app 文件夹放好后不要随意移动。
 
-## 首次设置
-
-1. 先在 Chrome 或 Edge 中安装或启用扩展。
-2. 如果要使用 Windows 配套 app，解压 app 包。
-3. 在解压后的 app 文件夹中运行 `install-register.cmd`，或者启动一次 app。
-4. 首次绑定成功后，后续启动可以自动重新连接。
-
-如果扩展约 1 分钟仍检测不到 app，会提示下载 app 或改用纯浏览器预加载模式。
+扩展可以不依赖 Windows app 单独运行。Windows app 仅支持 Windows，主要用于更强的本地浏览器配合。
 
 ## 浏览器支持
 

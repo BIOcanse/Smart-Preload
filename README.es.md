@@ -6,36 +6,65 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | Español | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
-Smart Preload prepara las paginas que probablemente abriras a continuacion para que la navegacion se sienta mas rapida. Esta pensado para investigacion, trabajo, lectura con muchas pestanas, comparacion de compras y consulta de documentacion.
+Smart Preload prepara las paginas que probablemente abriras a continuacion, para que investigar, comparar, leer documentacion y trabajar con muchas pestanas se sienta menos interrumpido.
 
-Smart Preload trabaja de forma discreta mientras navegas, prepara antes las paginas que podrian ser utiles y mantiene controles para privacidad, rendimiento y comportamiento del navegador.
+Es mas util cuando revisas resultados de busqueda, comparas paginas o saltas con frecuencia entre sitios relacionados.
 
-## Que obtienes
+![Ranking del popup](assets/readme/popup-ranking.png)
 
-- Cambios de pagina mas rapidos cuando la siguiente pagina ya esta preparada.
-- Mejor experiencia para quienes trabajan con muchas pestanas, no solo con la pagina actual.
-- Los enlaces pueden prepararse al pasar el cursor o al hacer clic derecho.
-- Puedes controlar por separado la precarga normal y la precarga mas activa en segundo plano.
-- Puedes excluir paginas locales, paginas de red privada, paginas de Google, ventanas de incognito y navegacion relacionada con un proxy configurado.
-- El idioma de la interfaz puede detectarse automaticamente o elegirse manualmente.
-- Los datos historicos pueden copiarse con su carpeta a otro equipo o a una nueva version.
+## Para Que Sirve El Ranking
 
-## Descarga
+El ranking del popup corresponde a la pestana actual. No es una lista global de popularidad.
+
+- `Top` muestra las paginas que Smart Preload probablemente preparara para esta pestana.
+- `Weight` es la prioridad actual.
+- `Freq` muestra la frecuencia aprendida de navegacion desde esta pagina o sitio.
+- `prerender`, `prefetch` y `hidden-tab` muestran como se prepara la pagina.
+- El estado indica si el candidato esta listo, cargado o en espera.
+
+Usa esta lista para entender que esta preparando la extension y comprobar por que un enlace fue elegido o no.
+
+## Cuando Pausarlo
+
+Pausa Smart Preload antes de examenes en linea, sesiones supervisadas, navegadores corporativos bloqueados, banca en linea u otras paginas con controles fuertes. Estos entornos pueden rechazar extensiones, pestanas en segundo plano o paginas precargadas.
+
+Usa el boton `Stop` del popup para una pausa rapida. Tambien puedes desactivar `Enable preloading` en Configuracion. Si una herramienta de examen o seguridad tambien revisa apps en segundo plano, sal de la app de Windows desde la bandeja antes de empezar.
+
+![Controles de configuracion](assets/readme/settings-preload-controls.png)
+
+## Datos Historicos Y Migracion
+
+El historial aprendido se guarda en el almacenamiento de la extension del navegador, no en la carpeta de la app de Windows.
+
+Rutas habituales:
+
+- Chrome: `%LOCALAPPDATA%\Google\Chrome\User Data\<Profile>\Local Extension Settings\<extension-id>\`
+- Edge: `%LOCALAPPDATA%\Microsoft\Edge\User Data\<Profile>\Local Extension Settings\<extension-id>\`
+
+`<Profile>` suele ser `Default` o `Profile 1`. El ID de la extension se ve en los detalles de `chrome://extensions` o `edge://extensions`.
+
+Para migrar a otro equipo o perfil:
+
+1. Instala o carga la extension una vez en el navegador de destino.
+2. Cierra completamente ese navegador.
+3. Copia el contenido de la antigua carpeta `<extension-id>` en la carpeta de almacenamiento correspondiente del navegador de destino.
+4. Si el ID de la extension cambio, copia el contenido dentro de la carpeta del nuevo ID.
+5. Inicia el navegador de nuevo.
+
+La carpeta `portable` de la app de Windows guarda archivos de vinculacion y logs, no el historial de navegacion. En Configuracion puedes borrar registros aprendidos por rango de fechas UTC.
+
+## Instalacion
 
 Descarga la version mas reciente desde [GitHub Releases](https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/latest).
 
-Smart Preload puede funcionar solo como extension del navegador. La app opcional de Windows mejora la integracion local y ayuda a que la extension y la app se reconecten automaticamente cuando sea necesario. La app solo esta disponible para Windows.
+1. Instala o carga la extension en Chrome o Edge.
+2. Opcional: extrae la app complementaria de Windows.
+3. Ejecuta `install-register.cmd` desde la carpeta app, o inicia la app una vez.
+4. Mantén la carpeta app en su ubicacion final.
 
-## Primera configuracion
+La extension puede funcionar sin la app de Windows. La app es solo para Windows y sirve para una integracion local mas fuerte con el navegador.
 
-1. Instala o activa primero la extension en Chrome o Edge.
-2. Si quieres usar la app complementaria de Windows, extrae el paquete de la app.
-3. Ejecuta `install-register.cmd` desde la carpeta app extraida, o inicia la app una vez.
-4. Despues del primer enlace correcto, los siguientes inicios pueden reconectarse automaticamente.
-
-Si la app no se detecta durante aproximadamente un minuto, la extension puede sugerir descargar la app o usar un modo de precarga solo con el navegador.
-
-## Navegadores compatibles
+## Navegadores Compatibles
 
 - Google Chrome
 - Microsoft Edge

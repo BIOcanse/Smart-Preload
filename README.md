@@ -6,36 +6,65 @@
 
 English | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
-Smart Preload makes browsing feel faster by preparing pages you are likely to open next. It is designed for research, work, shopping, reading documentation, and any workflow where you keep many tabs open and move between pages often.
+Smart Preload prepares pages you are likely to open next, so repeated browsing, research, comparison, and documentation reading feel less interrupted.
 
-It works quietly while you browse: likely next pages are prepared earlier, and you keep clear controls for privacy, performance, and browser behavior.
+It is most useful when you keep many tabs open, move through search results, compare pages, or repeatedly jump between related sites.
 
-## What you get
+![Popup ranking](assets/readme/popup-ranking.png)
 
-- Faster-feeling page jumps when the next page has already been prepared.
-- Smarter handling for people who work across many tabs, not just the current page.
-- Hover and right-click assistance so links can be prepared before you finish opening them.
-- Separate controls for normal preloading and stronger background preloading.
-- Options to avoid local pages, private-network pages, Google pages, incognito windows, and proxy-related browsing.
-- Automatic or manual interface language selection.
-- Portable history data that can be copied to a new computer or a new version.
+## What The Ranking Means
 
-## Download
+The popup shows the top preload candidates for the current tab. It is not a global popularity chart.
+
+- `Top` shows the pages Smart Preload is currently most likely to prepare for this tab.
+- `Weight` is the current priority score.
+- `Freq` shows learned navigation frequency from this page or site.
+- `prerender`, `prefetch`, and `hidden-tab` show how the page is being prepared.
+- The status tells you whether the candidate is ready, loaded, or still waiting.
+
+Use this list to understand what the extension is preparing and to check why a link was or was not selected.
+
+## When To Pause It
+
+Pause Smart Preload before online exams, proctored sessions, locked-down corporate browsers, banking flows, or other pages that may object to extensions, background tabs, or preloaded pages.
+
+Use the popup `Stop` button for a quick pause. You can also turn off `Enable preloading` in Settings. If a test or secure tool also checks background apps, exit the Windows companion app from the tray before starting.
+
+![Settings controls](assets/readme/settings-preload-controls.png)
+
+## History Data And Migration
+
+Smart Preload's learned history is stored in browser extension storage, not in the Windows app folder.
+
+Typical paths:
+
+- Chrome: `%LOCALAPPDATA%\Google\Chrome\User Data\<Profile>\Local Extension Settings\<extension-id>\`
+- Edge: `%LOCALAPPDATA%\Microsoft\Edge\User Data\<Profile>\Local Extension Settings\<extension-id>\`
+
+`<Profile>` is often `Default` or `Profile 1`. The extension ID is visible on `chrome://extensions` or `edge://extensions` after enabling developer details.
+
+To move history to another computer or profile:
+
+1. Install or load the extension once on the target browser.
+2. Close that browser completely.
+3. Copy the old `<extension-id>` folder contents into the target browser's matching extension storage folder.
+4. If the extension ID changed, copy the contents into the new extension ID folder instead.
+5. Start the browser again.
+
+The Windows app's `portable` folder stores app binding files and logs. It is not the browsing history store. In Settings, you can delete learned records by UTC date range.
+
+## Install
 
 Download the latest version from [GitHub Releases](https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/latest).
 
-Smart Preload can run as a browser extension. The optional Windows app gives the extension better local integration and helps it recover automatically when the browser and app need to reconnect. The app is Windows-only.
+1. Install or load the extension in Chrome or Edge.
+2. Optional: extract the Windows companion app.
+3. Run `install-register.cmd` from the app folder, or start the app once.
+4. Keep the app folder in its final location.
 
-## First setup
+The extension can run without the Windows app. The app is Windows-only and is useful when you want stronger local browser integration.
 
-1. Install or enable the extension in Chrome or Edge.
-2. If you want the Windows companion app, extract the app package.
-3. Run `install-register.cmd` from the extracted app folder, or start the app once.
-4. After the first successful binding, later launches can reconnect automatically.
-
-If the app is not detected after about one minute, the extension can suggest downloading the app or using a browser-only preload mode.
-
-## Browser support
+## Browser Support
 
 - Google Chrome
 - Microsoft Edge
