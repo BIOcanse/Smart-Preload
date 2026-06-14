@@ -1,5 +1,14 @@
 # Smart Preload v1.0.11
 
+<!--
+GitHub source Markdown language switch:
+This document uses <details><summary> sections so users can click a language
+section directly on the GitHub-rendered Markdown source page. GitHub does not
+provide native Markdown tabs in repository source pages. The name attribute is
+best-effort accordion behavior; if GitHub/browser support changes, the page
+still degrades to normal expandable sections.
+-->
+
 Click a language section to switch the visible release notes.
 
 <details name="release-language" open>
@@ -20,8 +29,6 @@ First binding order: install or enable the extension first, then run the Windows
 New in this version:
 
 - Added manual UI language selection: automatic, English, Simplified Chinese, Traditional Chinese, Japanese, Korean, German, French, Spanish, Portuguese (Brazil), and Russian.
-- Release notes use clickable language sections on the source Markdown page.
-- Public GitHub release assets are limited to the full package, extension-only package, and Windows app-only package.
 
 </details>
 
@@ -43,8 +50,6 @@ New in this version:
 本版更新：
 
 - 新增手动界面语言选择：自动、英语、简体中文、繁体中文、日语、韩语、德语、法语、西班牙语、葡萄牙语（巴西）、俄语。
-- 发布说明改成源码页可点击语言区域，不再跳到多个文件。
-- GitHub 公开 release 只上传组合包、单扩展包、单 Windows app 包。
 
 </details>
 
@@ -66,8 +71,6 @@ Smart Preload 是用於更智慧、更積極預載網頁的瀏覽器擴充功能
 本版更新：
 
 - 新增手動介面語言選擇：自動、英文、簡體中文、繁體中文、日文、韓文、德文、法文、西班牙文、葡萄牙文（巴西）、俄文。
-- 發布說明改成原始碼頁可點擊語言區域，不再跳到多個文件。
-- GitHub 公開 release 只上傳組合包、單擴充功能包、單 Windows app 包。
 
 </details>
 
@@ -89,8 +92,6 @@ Smart Preload は、次に開く可能性が高いページをより賢く積極
 このバージョンの変更:
 
 - UI 言語を手動選択できるようになりました。
-- リリースノートをソース Markdown ページ内のクリック可能な言語セクションに変更しました。
-- 公開 GitHub release のアセットは、フルパッケージ、拡張機能のみ、Windows アプリのみの 3 種類です。
 
 </details>
 
@@ -112,8 +113,6 @@ Smart Preload는 다음에 열 가능성이 높은 페이지를 더 스마트하
 이번 버전 변경:
 
 - UI 언어를 수동으로 선택할 수 있습니다.
-- 릴리스 노트를 소스 Markdown 페이지 안의 클릭 가능한 언어 섹션으로 바꿨습니다.
-- 공개 GitHub release 자산은 전체 패키지, 확장 프로그램 전용, Windows 앱 전용 세 가지입니다.
 
 </details>
 
@@ -135,8 +134,6 @@ Erste Kopplung: Installieren oder aktivieren Sie zuerst die Erweiterung, starten
 Neu in dieser Version:
 
 - Manuelle Auswahl der UI-Sprache wurde hinzugefuegt.
-- Release Notes verwenden klickbare Sprachbereiche auf der Source-Markdown-Seite.
-- Oeffentliche GitHub Release Assets sind auf Komplettpaket, Erweiterung und Windows App begrenzt.
 
 </details>
 
@@ -158,8 +155,6 @@ Premier lien : installez ou activez d'abord l'extension, puis lancez le script d
 Nouveautes :
 
 - Ajout de la selection manuelle de la langue de l'interface.
-- Les notes de version utilisent des sections de langue cliquables sur la page Markdown source.
-- Les assets publics GitHub release sont limites au package complet, a l'extension seule et a l'application Windows seule.
 
 </details>
 
@@ -181,8 +176,6 @@ Primer enlace: instala o habilita primero la extension y despues ejecuta el inst
 Nuevo en esta version:
 
 - Se agrego seleccion manual del idioma de la interfaz.
-- Las notas de version usan secciones de idioma clicables en la pagina Markdown fuente.
-- Los assets publicos de GitHub release se limitan al paquete completo, extension sola y app de Windows sola.
 
 </details>
 
@@ -204,8 +197,6 @@ Primeira vinculacao: instale ou ative primeiro a extensao e depois execute o ins
 Novidades:
 
 - Adicionada selecao manual do idioma da interface.
-- As notas de versao usam secoes de idioma clicaveis na pagina Markdown fonte.
-- Os assets publicos do GitHub release se limitam ao pacote completo, extensao somente e app Windows somente.
 
 </details>
 
@@ -227,7 +218,5 @@ Smart Preload - расширение браузера для более умно
 Новое в версии:
 
 - Добавлен ручной выбор языка интерфейса.
-- Примечания к выпуску используют кликабельные языковые секции на исходной Markdown-странице.
-- Публичные assets GitHub release ограничены полным пакетом, расширением и Windows-приложением.
 
 </details>
