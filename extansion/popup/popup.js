@@ -121,8 +121,8 @@ function renderSnapshot(snapshot) {
     ? snapshot?.pageContext?.pageLabel || t("popupCurrentPage", [], "Current page")
     : t("popupCurrentPageNotTracked", [], "Current page is not tracked");
 
-  renderPerformanceWarning(snapshot?.performanceWarning);
-  refreshPerformanceWarningIfCacheMissing(snapshot?.performanceWarning);
+  renderPerformanceWarning(selectRuntimeWarningToDisplay(snapshot));
+  refreshRuntimeWarningsIfNeeded(snapshot?.performanceWarning, snapshot?.nativeAppModeWarning);
   renderTopTargets(snapshot?.currentTopTargets ?? [], snapshot?.pageContext, snapshot?.serviceState);
 }
 
@@ -139,14 +139,23 @@ function renderPerformanceWarning(performanceWarning) {
   performanceWarningElement.textContent = t(
     performanceWarning.messageKey || "performanceInsufficientReducePreloadCaps",
     [],
-    "Performance pressure detected. Lower the preload limits."
+    performanceWarning.messageFallback ||
+      "Performance pressure detected. Lower the preload limits."
   );
   performanceWarningElement.classList.remove("hidden");
 }
 
-function refreshPerformanceWarningIfCacheMissing(performanceWarning) {
+function selectRuntimeWarningToDisplay(snapshot) {
+  if (snapshot?.nativeAppModeWarning?.active === true) {
+    return snapshot.nativeAppModeWarning;
+  }
+
+  return snapshot?.performanceWarning;
+}
+
+function refreshRuntimeWarningsIfNeeded(performanceWarning, nativeAppModeWarning) {
   if (
-    performanceWarning?.reason !== "cache-unavailable" ||
+    !shouldRefreshRuntimeWarnings(performanceWarning, nativeAppModeWarning) ||
     performanceWarningRefreshInFlight
   ) {
     return;
@@ -159,7 +168,7 @@ function refreshPerformanceWarningIfCacheMissing(performanceWarning) {
       mode: "performance-warning",
     })
     .then((snapshot) => {
-      renderPerformanceWarning(snapshot?.performanceWarning);
+      renderPerformanceWarning(selectRuntimeWarningToDisplay(snapshot));
     })
     .catch((error) => {
       console.error(error);
@@ -167,6 +176,13 @@ function refreshPerformanceWarningIfCacheMissing(performanceWarning) {
     .finally(() => {
       performanceWarningRefreshInFlight = false;
     });
+}
+
+function shouldRefreshRuntimeWarnings(performanceWarning, nativeAppModeWarning) {
+  return (
+    performanceWarning?.reason === "cache-unavailable" ||
+    nativeAppModeWarning?.reason === "native-app-warning-cache-unavailable"
+  );
 }
 
 function renderTopTargets(topTargets, pageContext, serviceState) {

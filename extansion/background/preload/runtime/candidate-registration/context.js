@@ -99,6 +99,43 @@ async function resolvePreloadCandidateRegistrationContext(message, sender) {
     };
   }
 
+  if (
+    globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadSource?.(
+      sourceTab,
+      runtimeSettings
+    )
+  ) {
+    const preloadState = await loadPreloadState();
+    const cleanup =
+      await globalThis.ZeroLatencyPreloadProxySkipPolicy.clearProxySkippedPreloadState(
+        preloadState,
+        runtimeSettings,
+        {
+          tabs: [sourceTab],
+          reason: "candidate-registration",
+        }
+      );
+
+    if (cleanup.mutated) {
+      await savePreloadState(cleanup.preloadState);
+    }
+
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-candidates.skip-proxy-source", {
+      sourceTabId: sourceTab.id,
+      sourceWindowId: sourceTab.windowId,
+      pageUrl: sourcePageUrl,
+    });
+    return {
+      ok: false,
+      response: {
+        ok: true,
+        preloadedCount: 0,
+        skipped: true,
+        reason: "proxy-skip",
+      },
+    };
+  }
+
   const preloadState = await loadPreloadState();
 
   if (isPreloadTab(preloadState, sourceTab.id)) {

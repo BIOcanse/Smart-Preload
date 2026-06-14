@@ -2,7 +2,10 @@
   async function handleGetServiceState() {
     return {
       ok: true,
-      serviceState: await loadServiceState(),
+      serviceState:
+        typeof getCachedServiceState === "function"
+          ? getCachedServiceState()
+          : await loadServiceState(),
     };
   }
 

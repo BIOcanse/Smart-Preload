@@ -9,7 +9,10 @@
       ![
         "visit-graph:get-debug-snapshot",
         "extension:open-settings",
+        "native-app:update-status",
+        "native-app:update-to-version",
         "visit-graph:reset",
+        "visit-graph:delete-history-range",
       ].includes(envelope.messageType)
     ) {
       return ignoreDecision(envelope.messageType, { ok: true, skipped: true });
@@ -24,8 +27,20 @@
         return allowDecision("get-service-state");
       case "extension:set-service-paused":
         return allowDecision("set-service-paused");
+      case "native-app:update-status":
+        return envelope.context?.fromExtensionUi === true
+          ? allowDecision("native-app-update-status")
+          : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
+      case "native-app:update-to-version":
+        return envelope.context?.fromExtensionUi === true
+          ? allowDecision("native-app-update-to-version")
+          : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
       case "visit-graph:reset":
         return allowDecision("reset-graph");
+      case "visit-graph:delete-history-range":
+        return envelope.context?.fromExtensionUi === true
+          ? allowDecision("delete-history-range")
+          : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
       case "preload:register-candidates":
         return envelope.source.tabId
           ? allowDecision("register-preload-candidates")

@@ -19,6 +19,14 @@
       };
     }
 
+    if (await shouldSkipMessageForProxySkippedSource(decision.actionKey, sender)) {
+      return {
+        ok: true,
+        skipped: true,
+        reason: "proxy-skip",
+      };
+    }
+
     switch (decision.actionKey) {
       case "debug-snapshot":
         return globalThis.ZeroLatencyCoreMessages.handleDebugSnapshot(message);
@@ -28,8 +36,14 @@
         return globalThis.ZeroLatencyCoreMessages.handleGetServiceState();
       case "set-service-paused":
         return globalThis.ZeroLatencyCoreMessages.handleSetServicePaused(message);
+      case "native-app-update-status":
+        return globalThis.ZeroLatencyCoreMessages.handleNativeAppUpdateStatus(message);
+      case "native-app-update-to-version":
+        return globalThis.ZeroLatencyCoreMessages.handleNativeAppUpdateToVersion(message);
       case "reset-graph":
         return globalThis.ZeroLatencyCoreMessages.handleReset();
+      case "delete-history-range":
+        return globalThis.ZeroLatencyCoreMessages.handleDeleteHistoryRange(message);
       case "register-preload-candidates":
         void globalThis.ZeroLatencyPreloadSchedulerAttention?.recordActiveTabAttentionFromSender?.(
           sender,
@@ -148,6 +162,50 @@
       "navigation-resolve-click",
       "activate-preloaded-page",
     ].includes(actionKey);
+  }
+
+  async function shouldSkipMessageForProxySkippedSource(actionKey, sender) {
+    if (!shouldApplyProxySourceSkipToMessageAction(actionKey)) {
+      return false;
+    }
+
+    const sourceTab = sender?.tab ?? null;
+
+    if (
+      globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadSource?.(
+        sourceTab,
+        getEffectiveExtensionSettings()
+      ) !== true
+    ) {
+      return false;
+    }
+
+    const preloadState = await loadPreloadState();
+    const cleanup =
+      await globalThis.ZeroLatencyPreloadProxySkipPolicy.clearProxySkippedPreloadState(
+        preloadState,
+        getEffectiveExtensionSettings(),
+        {
+          tabs: [sourceTab],
+          reason: `message:${actionKey}`,
+        }
+      );
+
+    if (cleanup.mutated) {
+      await savePreloadState(cleanup.preloadState);
+    }
+
+    globalThis.ZeroLatencyDebugEvents?.record?.("message.skip-proxy-source", {
+      actionKey,
+      sourceTabId: sourceTab?.id ?? null,
+      sourceWindowId: sourceTab?.windowId ?? null,
+      sourceUrl: sourceTab?.url || "",
+    });
+    return true;
+  }
+
+  function shouldApplyProxySourceSkipToMessageAction(actionKey) {
+    return shouldApplyIncognitoSourceSkipToMessageAction(actionKey);
   }
 
   globalThis.ZeroLatencyMessageActions = {

@@ -39,6 +39,10 @@
     return requireBackgroundState().loadServiceState();
   };
 
+  globalThis.getCachedServiceState = function getCachedServiceState() {
+    return requireBackgroundState().getCachedServiceState();
+  };
+
   globalThis.saveServiceState = function saveServiceState(serviceState) {
     return requireBackgroundState().saveServiceState(serviceState);
   };

@@ -101,6 +101,9 @@ Install writes:
 If Native Messaging is not registered in the status output, install or enable the browser
 extension first, then run `install-register.cmd` again. The extension cannot wake the local app
 until the browser has a registered Native Messaging host whose manifest allows that extension ID.
+After binding succeeds, normal later launches do not require this order again: when the extension
+is online and the local app is offline, the extension can wake the local app automatically through
+Native Messaging.
 
 `install-register.cmd` also checks whether the existing registry registration points to a
 different portable app directory. If the old directory looks like a Zero-Latency Web app package

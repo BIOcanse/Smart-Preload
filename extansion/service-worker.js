@@ -64,6 +64,8 @@ importScripts(
   "background/preload/state/view.js",
   "background/preload/state.js",
   "background/preload/incognito-policy.js",
+  "background/preload/proxy-skip-policy.js",
+  "background/preload/native-only-policy.js",
   "background/tracking/graph/events/current-page.js",
   "background/tracking/graph/events/transitions.js",
   "background/tracking/graph/events/learning.js",
@@ -71,11 +73,13 @@ importScripts(
   "background/tracking/graph/events.js",
   "background/tracking/engine.js",
   "background/tracking/view.js",
+  "background/tracking/history-deletion.js",
   "background/core/state.js",
   "background/core/debug/events.js",
   "background/core/messages/debug.js",
   "background/core/messages/settings.js",
   "background/core/messages/service-control.js",
+  "background/core/messages/native-app-update.js",
   "background/core/messages.js",
   "background/core/state/config.js",
   "background/core/state/storage/normalize.js",
@@ -302,21 +306,31 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 function respondWithTask(sendResponse, task) {
-  const queue =
-    task?.queueMode === "side-effect" ? queueSideEffect : queueMutation;
   const executeTask = typeof task === "function" ? task : task?.task;
 
+  if (task?.queueMode === "direct") {
+    void executeMessageTask(sendResponse, executeTask);
+    return true;
+  }
+
+  const queue =
+    task?.queueMode === "side-effect" ? queueSideEffect : queueMutation;
+
   queue(async () => {
-    try {
-      sendResponse(await executeTask());
-    } catch (error) {
-      console.error("Zero-Latency message handler failed.", error);
-      sendResponse({
-        ok: false,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
+    await executeMessageTask(sendResponse, executeTask);
   });
 
   return true;
+}
+
+async function executeMessageTask(sendResponse, executeTask) {
+  try {
+    sendResponse(await executeTask());
+  } catch (error) {
+    console.error("Zero-Latency message handler failed.", error);
+    sendResponse({
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 }

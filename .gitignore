@@ -10,6 +10,7 @@ extansion/wasm/visit-graph-engine/target/
 output/
 dist/
 .claude/
+.codex-browser-profiles/
 scripts/debug-consent/
 extansion/shared/local-ai-test-config.js
 

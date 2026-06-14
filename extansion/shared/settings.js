@@ -55,7 +55,7 @@
   }
 
   const SETTINGS_STORAGE_KEY = "userSettingsV1";
-  const SETTINGS_STORAGE_VERSION = 23;
+  const SETTINGS_STORAGE_VERSION = 27;
   const AI_MODEL_CATALOG = globalThis.ZeroLatencyAiModelCatalog ?? null;
   const PRELOAD_RULE_CARD_IDS = [
     "nativePerPagePreloadLimit",
@@ -69,6 +69,11 @@
   const RULE_CONDITION_OPERATOR_VALUES = ["disabled", "gt", "gte", "eq", "lte", "lt"];
   const RULE_STATUS_VALUES = ["enabled", "disabled"];
   const FULLSCREEN_PRESSURE_POLICY_VALUES = ["close", "sleep", "ignore"];
+  const PROXY_SKIP_MODE_VALUES = ["blacklist", "whitelist"];
+  const PROXY_SKIP_MODE_OPTIONS = [
+    { value: "blacklist", label: localize("settingsProxySkipModeBlacklist", "Blacklist") },
+    { value: "whitelist", label: localize("settingsProxySkipModeWhitelist", "Whitelist") },
+  ];
   const TRANSITION_WINDOW_VALUES = ["total", "last365d", "last30d", "last7d", "last1d"];
   const TRANSITION_WINDOW_OPTIONS = [
     { value: "total", label: localize("transitionWindowTotal", "Total") },
@@ -204,6 +209,8 @@
     tracking: {
       trackGoogleSearchPages: true,
       excludeGoogleInternalPages: true,
+      excludeLocalPages: true,
+      excludePrivateNetworkPages: true,
     },
     preloading: {
       enabled: true,
@@ -212,8 +219,15 @@
       maxTabsPerSource: 1,
       siteSelectionLimit: 3,
       tabSiteSelectionLimit: 2,
+      allNativePreloadMode: false,
+      interactionPreloadEnabled: true,
       ignoreWaterfallDynamicLinks: true,
       excludeIncognitoWindows: true,
+      proxySkip: {
+        enabled: false,
+        mode: "blacklist",
+        rules: [],
+      },
       transitionWindowScope: {
         enabled: false,
         windowKey: "total",
@@ -357,6 +371,9 @@
     )
       ? normalized.preloading.mode
       : DEFAULT_SETTINGS.preloading.mode;
+    normalized.tracking.excludeLocalPages = normalized.tracking.excludeLocalPages !== false;
+    normalized.tracking.excludePrivateNetworkPages =
+      normalized.tracking.excludePrivateNetworkPages !== false;
     normalized.preloading.transitionWindowScope = normalizeTransitionWindowScopeSettings(
       normalized.preloading.transitionWindowScope
     );
@@ -369,8 +386,15 @@
     delete normalized.preloading.modelManager;
     normalized.preloading.ignoreWaterfallDynamicLinks =
       normalized.preloading.ignoreWaterfallDynamicLinks !== false;
+    normalized.preloading.interactionPreloadEnabled =
+      normalized.preloading.interactionPreloadEnabled !== false;
     normalized.preloading.excludeIncognitoWindows =
       normalized.preloading.excludeIncognitoWindows !== false;
+    normalized.preloading.allNativePreloadMode =
+      normalized.preloading.allNativePreloadMode === true;
+    normalized.preloading.proxySkip = normalizeProxySkipSettings(
+      normalized.preloading.proxySkip
+    );
     delete normalized.preloading.crossSiteCurrentTabSwap;
     normalized.preloadWindow.watchdogIntervalSeconds = clamp(
       normalized.preloadWindow.watchdogIntervalSeconds,
@@ -382,7 +406,9 @@
       normalized.preloadWindow.fullscreenPressurePolicy
     );
     normalized.experiments.crossSiteCurrentTabSwap =
-      normalized.experiments.crossSiteCurrentTabSwap === true;
+      normalized.preloading.allNativePreloadMode === true
+        ? false
+        : normalized.experiments.crossSiteCurrentTabSwap === true;
     normalized.diagnostics = {
       enabled: normalized.diagnostics?.enabled === true,
     };
@@ -486,6 +512,134 @@
     return TRANSITION_WINDOW_VALUES.includes(value) ? value : fallback;
   }
 
+  function normalizeProxySkipMode(value, fallback = DEFAULT_SETTINGS.preloading.proxySkip.mode) {
+    return PROXY_SKIP_MODE_VALUES.includes(value) ? value : fallback;
+  }
+
+  function normalizeProxySkipSettings(value) {
+    const mergedValue = mergeSettings(DEFAULT_SETTINGS.preloading.proxySkip, value);
+
+    return {
+      enabled: mergedValue.enabled === true,
+      mode: normalizeProxySkipMode(mergedValue.mode),
+      rules: normalizeProxySkipRules(mergedValue.rules),
+    };
+  }
+
+  function normalizeProxySkipRules(value) {
+    const rawRules = Array.isArray(value)
+      ? value
+      : typeof value === "string"
+        ? value.split(/\r?\n/)
+        : [];
+    const rules = [];
+    const seen = new Set();
+
+    for (const rawRule of rawRules) {
+      const normalizedRule = normalizeProxySkipRuleText(rawRule);
+
+      if (!normalizedRule || normalizedRule.startsWith("#")) {
+        continue;
+      }
+
+      const key = normalizedRule.toLowerCase();
+      if (seen.has(key)) {
+        continue;
+      }
+
+      seen.add(key);
+      rules.push(normalizedRule);
+
+      if (rules.length >= 200) {
+        break;
+      }
+    }
+
+    return rules;
+  }
+
+  function normalizeProxySkipRuleText(value) {
+    return typeof value === "string" ? value.trim().slice(0, 512) : "";
+  }
+
+  function shouldSkipProxyRuleUrl(url, settings) {
+    const proxySkipSettings = normalizeProxySkipSettings(
+      settings?.preloading?.proxySkip ?? settings?.proxySkip
+    );
+
+    if (proxySkipSettings.enabled !== true) {
+      return false;
+    }
+
+    const matched = proxySkipSettings.rules.some((rule) =>
+      doesProxySkipRuleMatchUrl(rule, url)
+    );
+
+    return proxySkipSettings.mode === "whitelist" ? !matched : matched;
+  }
+
+  function doesProxySkipRuleMatchUrl(rule, url) {
+    const ruleText = normalizeProxySkipRuleText(rule);
+    const parsedUrl = parseUrlForRuleMatch(url);
+
+    if (!ruleText || !parsedUrl) {
+      return false;
+    }
+
+    const normalizedRule = ruleText.toLowerCase();
+
+    if (normalizedRule.includes("://") || normalizedRule.startsWith("*://")) {
+      return wildcardMatch(parsedUrl.href, normalizedRule);
+    }
+
+    if (normalizedRule.includes("/")) {
+      const hostAndPath = `${parsedUrl.host}${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
+      return wildcardMatch(hostAndPath, normalizedRule);
+    }
+
+    return doesProxySkipHostRuleMatch(normalizedRule, parsedUrl);
+  }
+
+  function doesProxySkipHostRuleMatch(ruleText, parsedUrl) {
+    const hostRule = ruleText.replace(/^\*\./, "").replace(/^\./, "");
+
+    if (!hostRule) {
+      return false;
+    }
+
+    if (hostRule.includes("*")) {
+      return wildcardMatch(parsedUrl.hostname, hostRule) || wildcardMatch(parsedUrl.host, hostRule);
+    }
+
+    const compareValue = hostRule.includes(":") ? parsedUrl.host : parsedUrl.hostname;
+    return compareValue === hostRule || compareValue.endsWith(`.${hostRule}`);
+  }
+
+  function wildcardMatch(value, pattern) {
+    const regex = new RegExp(`^${escapeRegex(pattern).replace(/\\\*/g, ".*")}$`);
+    return regex.test(String(value || "").toLowerCase());
+  }
+
+  function escapeRegex(value) {
+    return String(value).replace(/[|\\{}()[\]^$+?.*]/g, "\\$&");
+  }
+
+  function parseUrlForRuleMatch(value) {
+    try {
+      const parsedUrl = new URL(String(value || ""));
+      return {
+        href: parsedUrl.href.toLowerCase(),
+        host: parsedUrl.host.toLowerCase(),
+        hostname: parsedUrl.hostname.toLowerCase(),
+        pathname: parsedUrl.pathname.toLowerCase(),
+        search: parsedUrl.search.toLowerCase(),
+        hash: parsedUrl.hash.toLowerCase(),
+      };
+    } catch (_error) {
+      return null;
+    }
+  }
+
   function normalizeTransitionWindowScopeSettings(value) {
     const mergedValue = mergeSettings(DEFAULT_SETTINGS.preloading.transitionWindowScope, value);
 
@@ -493,6 +647,10 @@
       enabled: Boolean(mergedValue.enabled),
       windowKey: normalizeTransitionWindowKey(mergedValue.windowKey),
     };
+  }
+
+  function isAllNativePreloadModeEnabled(settings) {
+    return settings?.preloading?.allNativePreloadMode === true;
   }
 
   function normalizePreloadSchedulerSettings(value) {
@@ -877,6 +1035,7 @@
             normalized.preloading.siteSelectionLimit
         ),
         effectiveTransitionWindowKey,
+        effectiveAllNativePreloadMode: normalized.preloading.allNativePreloadMode === true,
         effectivePreloadScheduler: normalized.preloading.scheduler,
         effectiveAiPredictionConfigured: isAiPredictionConfigured(
           normalized.preloading.aiPrediction
@@ -943,6 +1102,8 @@
     RULE_CONDITION_OPERATOR_VALUES,
     RULE_STATUS_VALUES,
     FULLSCREEN_PRESSURE_POLICY_VALUES,
+    PROXY_SKIP_MODE_VALUES,
+    PROXY_SKIP_MODE_OPTIONS,
     TRANSITION_WINDOW_VALUES,
     TRANSITION_WINDOW_OPTIONS,
     AI_PROVIDER_OPTIONS,
@@ -960,6 +1121,12 @@
     compareRuleValues,
     evaluateRuleCardMetric,
     normalizeFullscreenPressurePolicy,
+    normalizeProxySkipMode,
+    normalizeProxySkipSettings,
+    normalizeProxySkipRules,
+    isAllNativePreloadModeEnabled,
+    shouldSkipProxyRuleUrl,
+    doesProxySkipRuleMatchUrl,
     normalizeTransitionWindowKey,
     getAiModelInfo,
     getAiProviderModels,

@@ -113,6 +113,12 @@
   "performanceInsufficientReducePreloadCaps": {
     "message": "Press?o de desempenho detectada. Reduza os limites de pr?-carregamento."
   },
+  "nativeAppMissingEnableAllNativePreloadMode": {
+    "message": "App nativo não detectado. Ative o modo de pré-carregamento totalmente nativo para evitar abas reais ocultas."
+  },
+  "nativeAppMissingDownloadOrEnableAllNativePreloadMode": {
+    "message": "App nativo não detectado por 1 minuto. Baixe e instale o app nativo ou ative o modo de pré-carregamento totalmente nativo."
+  },
   "popupCurrentPageNotTracked": {
     "message": "A página atual não está sendo rastreada"
   },
@@ -251,6 +257,18 @@
   "settingsSkipGoogleInternalPagesDesc": {
     "message": "Não rastrear nem pré-carregar Chrome Web Store, conta e gerenciador de senhas do Google, Chrome sync, chromestatus e páginas administrativas semelhantes do Google. Gemini e produtos comuns do Google continuam rastreados."
   },
+  "settingsSkipLocalPages": {
+    "message": "Ignorar páginas locais"
+  },
+  "settingsSkipLocalPagesDesc": {
+    "message": "Não rastrear nem pré-carregar páginas localhost, 127.0.0.0/8, 0.0.0.0, [::1] ou *.localhost."
+  },
+  "settingsSkipPrivateNetworkPages": {
+    "message": "Ignorar páginas de rede privada"
+  },
+  "settingsSkipPrivateNetworkPagesDesc": {
+    "message": "Não rastrear nem pré-carregar páginas de rede privada como 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, fc00::/7 ou fe80::/10."
+  },
   "settingsPreloadMeta": {
     "message": "Controles para preparar abas, reparar com vigilância e definir o comportamento da janela de pré-carregamento."
   },
@@ -259,6 +277,75 @@
   },
   "settingsEnablePreloadingDesc": {
     "message": "Interruptor principal para registro de candidatos, abas em segundo plano e troca de abas."
+  },
+  "settingsInteractionPreload": {
+    "message": "Pré-carregamento por hover e menu contextual"
+  },
+  "settingsInteractionPreloadDesc": {
+    "message": "Inicia um pré-carregamento de interação após 80 ms com o cursor sobre um link e prepara um pré-carregamento de nova aba ao abrir o menu contextual do link."
+  },
+  "settingsAllNativePreloadMode": {
+    "message": "Modo de pré-carregamento totalmente nativo"
+  },
+  "settingsAllNativePreloadModeDesc": {
+    "message": "Usa apenas prefetch/prerender nativo do navegador. Abas reais ocultas e hard swap são desativados."
+  },
+  "settingsNativeAppDownloadTitle": {
+    "message": "Download do app nativo"
+  },
+  "settingsNativeAppDownloadDesc": {
+    "message": "Baixe o pacote do app nativo no GitHub quando precisar ocultar abas reais em segundo plano no nível do sistema."
+  },
+  "settingsNativeAppBindingOrder": {
+    "message": "Para vincular a extensão e o app nativo, instale ou ative primeiro a extensão e depois execute o instalador do app nativo ou inicie o app nativo. Depois que a vinculação for concluída, a extensão poderá iniciar o app nativo automaticamente."
+  },
+  "settingsNativeAppDownloadLink": {
+    "message": "Lançamentos do GitHub"
+  },
+  "settingsNativeAppUpdateTitle": {
+    "message": "Atualização do app nativo"
+  },
+  "settingsNativeAppUpdateDesc": {
+    "message": "Selecione uma versão disponível do app local. Apenas upgrades a partir da versão em execução são permitidos."
+  },
+  "settingsNativeAppVersionsLoading": {
+    "message": "Carregando versões..."
+  },
+  "settingsNativeAppRefreshVersions": {
+    "message": "Atualizar"
+  },
+  "settingsNativeAppUpdateButton": {
+    "message": "Atualizar app"
+  },
+  "settingsNativeAppVersionUnknown": {
+    "message": "A versão do app nativo não está disponível."
+  },
+  "settingsNativeAppVersionsReady": {
+    "message": "App nativo {0}. Selecione uma versão mais nova para atualizar."
+  },
+  "settingsNativeAppNoUpgrade": {
+    "message": "O app nativo {0} já está na versão listada mais recente."
+  },
+  "settingsNativeAppVersionsFailed": {
+    "message": "Não foi possível carregar as versões do app. Inicie o app nativo ou use os lançamentos do GitHub."
+  },
+  "settingsNativeAppNoVersions": {
+    "message": "Nenhuma versão do app disponível"
+  },
+  "settingsNativeAppCurrentVersionOption": {
+    "message": "v{0} (atual)"
+  },
+  "settingsNativeAppUpdateConfirm": {
+    "message": "Atualizar o app nativo para v{0}? O app será reiniciado depois que a atualização começar."
+  },
+  "settingsNativeAppUpdateStarting": {
+    "message": "Iniciando atualização do app nativo para v{0}..."
+  },
+  "settingsNativeAppUpdateAccepted": {
+    "message": "A atualização do app nativo para v{0} começou."
+  },
+  "settingsNativeAppUpdateFailed": {
+    "message": "Não foi possível iniciar a atualização do app nativo para v{0}."
   },
   "settingsIgnoreWaterfallDynamicLinks": {
     "message": "Ignorar links dinâmicos em cascata"
@@ -271,6 +358,21 @@
   },
   "settingsExcludeIncognitoWindowsDesc": {
     "message": "Quando ativado, janelas anônimas ficam fora de aprendizado, pontuação, alocação de slots e pré-carregamentos por interação. Quando desativado, fontes anônimas e normais compartilham os limites da conta, mas fontes anônimas usam apenas janelas anônimas de pré-carregamento."
+  },
+  "settingsProxySkipRules": {
+    "message": "Regras para ignorar proxy"
+  },
+  "settingsProxySkipRulesDesc": {
+    "message": "Ignore manualmente abas relacionadas a proxy. Use um domínio ou padrão de URL por linha; a lista negra ignora correspondências e a lista branca mantém apenas correspondências."
+  },
+  "settingsProxySkipModeBlacklist": {
+    "message": "Lista negra"
+  },
+  "settingsProxySkipModeWhitelist": {
+    "message": "Lista branca"
+  },
+  "settingsProxySkipRulesPlaceholder": {
+    "message": "example.com\n*.example.org\nhttps://example.net/docs/*"
   },
   "settingsTransitionFrequencyWindow": {
     "message": "Janela de frequência de transição"
@@ -562,6 +664,48 @@
   },
   "settingsAiNoSupportedModels": {
     "message": "Nenhum modelo leve compat?vel encontrado"
+  },
+  "settingsHistoryDeletionTitle": {
+    "message": "Excluir registros do histórico"
+  },
+  "settingsHistoryDeletionDesc": {
+    "message": "Exclui registros locais do grafo de visitas em um intervalo de datas UTC. A data inicial é incluída e a data final é excluída."
+  },
+  "settingsHistoryDeletionCurrentUtc": {
+    "message": "UTC atual"
+  },
+  "settingsHistoryDeletionStartDate": {
+    "message": "Data inicial UTC"
+  },
+  "settingsHistoryDeletionEndDate": {
+    "message": "Data final UTC"
+  },
+  "settingsHistoryDeletionDelete": {
+    "message": "Excluir histórico"
+  },
+  "settingsHistoryDeletionConfirm": {
+    "message": "Excluir registros locais do histórico para o intervalo UTC {0}? Esta ação não pode ser desfeita."
+  },
+  "settingsHistoryDeletionDeleting": {
+    "message": "Excluindo os registros selecionados do histórico..."
+  },
+  "settingsHistoryDeletionDeletedSummary": {
+    "message": "{0} registro(s) do histórico excluído(s): {1} transições, {2} páginas em primeiro plano, {3} registros de palavras-chave, {4} registros de comportamento de links."
+  },
+  "settingsHistoryDeletionFailed": {
+    "message": "Não foi possível excluir os registros selecionados do histórico."
+  },
+  "settingsHistoryDeletionNeedRange": {
+    "message": "Selecione a data inicial UTC e a data final UTC."
+  },
+  "settingsHistoryDeletionInvalidRange": {
+    "message": "A data inicial UTC deve ser anterior à data final UTC."
+  },
+  "settingsHistoryDeletionInvalidTime": {
+    "message": "Uma das datas UTC selecionadas é inválida."
+  },
+  "settingsHistoryDeletionRangeLabel": {
+    "message": "[{0}, {1})"
   },
   "commonProvider": {
     "message": "provedor"

@@ -36,6 +36,8 @@ async fn run_server(state: ApiState, mut shutdown_rx: watch::Receiver<bool>) -> 
             "/api/v1/extension/heartbeat",
             post(routes::extension_heartbeat),
         )
+        .route("/api/v1/app/update/status", get(routes::app_update_status))
+        .route("/api/v1/app/update", post(routes::request_app_update))
         .route("/api/v1/system/activity", get(routes::system_activity))
         .route("/api/v1/system/hardware", get(routes::system_hardware))
         .route(

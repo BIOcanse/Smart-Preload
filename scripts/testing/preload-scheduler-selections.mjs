@@ -14,6 +14,8 @@ const scriptPaths = [
   ["extansion", "background", "preload", "state", "model.js"],
   ["extansion", "background", "preload", "state", "normalize", "entries.js"],
   ["extansion", "background", "preload", "state", "normalize", "runtime.js"],
+  ["extansion", "background", "preload", "proxy-skip-policy.js"],
+  ["extansion", "background", "preload", "native-only-policy.js"],
   ["extansion", "background", "preload", "scoring.js"],
   ["extansion", "background", "preload", "prediction", "strategy", "flags.js"],
   ["extansion", "background", "preload", "prediction", "strategy", "scenario.js"],
@@ -94,6 +96,24 @@ const currentTabSwapSettings = context.ZeroLatencySettings.resolveEffectiveSetti
     },
   },
 });
+const allNativeSettings = context.ZeroLatencySettings.resolveEffectiveSettings({
+  ...context.ZeroLatencySettings.DEFAULT_SETTINGS,
+  preloading: {
+    ...context.ZeroLatencySettings.DEFAULT_SETTINGS.preloading,
+    allNativePreloadMode: true,
+    scheduler: {
+      ...context.ZeroLatencySettings.DEFAULT_SETTINGS.preloading.scheduler,
+      nativeTotalMin: 4,
+      nativeTotalMax: 4,
+      tabTotalMin: 5,
+      tabTotalMax: 5,
+    },
+  },
+  experiments: {
+    ...context.ZeroLatencySettings.DEFAULT_SETTINGS.experiments,
+    crossSiteCurrentTabSwap: true,
+  },
+});
 
 assert.deepEqual(
   JSON.parse(JSON.stringify(context.ZeroLatencySettings.FULLSCREEN_PRESSURE_POLICY_VALUES)),
@@ -122,6 +142,16 @@ assert.equal(
   false
 );
 assert.equal(
+  context.ZeroLatencySettings.normalizeStoredSettings({}).preloading.interactionPreloadEnabled,
+  true
+);
+assert.equal(
+  context.ZeroLatencySettings.normalizeStoredSettings({
+    preloading: { interactionPreloadEnabled: false },
+  }).preloading.interactionPreloadEnabled,
+  false
+);
+assert.equal(
   context.ZeroLatencySettings.normalizeStoredSettings({}).experiments.crossSiteCurrentTabSwap,
   false
 );
@@ -130,6 +160,13 @@ assert.equal(
     experiments: { crossSiteCurrentTabSwap: true },
   }).experiments.crossSiteCurrentTabSwap,
   true
+);
+assert.equal(
+  context.ZeroLatencySettings.normalizeStoredSettings({
+    preloading: { allNativePreloadMode: true },
+    experiments: { crossSiteCurrentTabSwap: true },
+  }).experiments.crossSiteCurrentTabSwap,
+  false
 );
 
 assert.deepEqual(JSON.parse(JSON.stringify(buildSchedulerDiscoverySlotLimits(settings))), {
@@ -211,6 +248,27 @@ assert.deepEqual(
       linkValueMultiplier: context.buildSchedulerLinkValueMultiplier(
         buildExpectedSchedulerScoreSum([5])
       ),
+    },
+  }
+);
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      context.buildPreloadSchedulerScoreSignals(mixedCandidateLinks, allNativeSettings)
+    )
+  ),
+  {
+    native: {
+      scoreSum: buildExpectedSchedulerScoreSum([2, 5, 7]),
+      candidateCount: 3,
+      linkValueMultiplier: context.buildSchedulerLinkValueMultiplier(
+        buildExpectedSchedulerScoreSum([2, 5, 7])
+      ),
+    },
+    tab: {
+      scoreSum: 0,
+      candidateCount: 0,
+      linkValueMultiplier: 1,
     },
   }
 );
@@ -415,6 +473,76 @@ assert.deepEqual(
     )
   ),
   [[6, 0, 0, 0]]
+);
+
+const proxySkipSettings = context.ZeroLatencySettings.resolveEffectiveSettings({
+  ...context.ZeroLatencySettings.DEFAULT_SETTINGS,
+  preloading: {
+    ...context.ZeroLatencySettings.DEFAULT_SETTINGS.preloading,
+    proxySkip: {
+      enabled: true,
+      mode: "blacklist",
+      rules: ["proxied-source.example", "proxied-target.example"],
+    },
+    scheduler: {
+      ...context.ZeroLatencySettings.DEFAULT_SETTINGS.preloading.scheduler,
+      nativeTotalMin: 4,
+      nativeTotalMax: 4,
+      tabTotalMin: 5,
+      tabTotalMax: 5,
+    },
+  },
+});
+
+const proxySourceSkippedSelections = await schedulePreloadCandidateSelectionSnapshots({
+  snapshots: [
+    buildSnapshot({
+      sourceTabId: 7,
+      sourcePageUrl: "https://proxied-source.example/page",
+      hiddenScores: [10],
+      nativeScores: [10],
+    }),
+  ],
+  preloadState,
+  settings: proxySkipSettings,
+});
+
+assert.deepEqual(JSON.parse(JSON.stringify(proxySourceSkippedSelections)), []);
+
+const proxyTargetSkippedSelections = await schedulePreloadCandidateSelectionSnapshots({
+  snapshots: [
+    context.normalizePreloadCandidateSelectionSnapshot({
+      sourceTabId: 8,
+      sourceWindowId: 10,
+      sourcePageUrl: "https://direct-source.example/page",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      scoreSignals: {
+        tab: { scoreSum: 200, candidateCount: 2 },
+        native: { scoreSum: 0, candidateCount: 0 },
+      },
+      selectedTargets: [
+        buildTarget(8, "hidden-tab", 100, 0, {
+          url: "https://proxied-target.example/page",
+        }),
+        buildTarget(8, "hidden-tab", 10, 1, {
+          url: "https://direct-target.example/page",
+        }),
+      ],
+    }),
+  ],
+  preloadState,
+  settings: proxySkipSettings,
+});
+
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      proxyTargetSkippedSelections.map((entry) =>
+        entry.selection.tabTargets.map((target) => target.url)
+      )
+    )
+  ),
+  [["https://direct-target.example/page"]]
 );
 
 const signalDrivenSelections = await schedulePreloadCandidateSelectionSnapshots({
@@ -692,6 +820,47 @@ assert.equal(rememberedSnapshot.scoreSignals.tab.scoreSum, buildExpectedSchedule
 assert.equal(
   rememberedSnapshot.scoreSignals.native.scoreSum,
   buildExpectedSchedulerScoreSum([80])
+);
+
+const oldHiddenSnapshot = buildSnapshot({
+  sourceTabId: 60,
+  sourcePageUrl: "https://source.example/native-only",
+  hiddenScores: [90, 80],
+  nativeScores: [70],
+  scoreSignals: {
+    native: {
+      scoreSum: buildExpectedSchedulerScoreSum([70]),
+      candidateCount: 1,
+    },
+    tab: {
+      scoreSum: buildExpectedSchedulerScoreSum([90, 80]),
+      candidateCount: 2,
+    },
+  },
+});
+const nativeOnlySelections = await schedulePreloadCandidateSelectionSnapshots({
+  snapshots: [oldHiddenSnapshot],
+  preloadState: context.createEmptyPreloadState(),
+  settings: allNativeSettings,
+  graph: null,
+});
+
+assert.equal(nativeOnlySelections.length, 1);
+assert.equal(nativeOnlySelections[0].tabSlots, 0);
+assert.ok(nativeOnlySelections[0].nativeSlots >= 1);
+assert.equal(nativeOnlySelections[0].selection.tabTargets.length, 0);
+assert.equal(
+  nativeOnlySelections[0].selection.selectedTargets.some(
+    (target) => target.strategy === "hidden-tab"
+  ),
+  false
+);
+assert.ok(
+  nativeOnlySelections[0].selection.selectedTargets.some(
+    (target) =>
+      target.url === "https://target.example/60/hidden-tab/0" &&
+      target.strategy === "prefetch"
+  )
 );
 
 function buildSnapshot({ sourceTabId, sourcePageUrl, hiddenScores, nativeScores, scoreSignals }) {

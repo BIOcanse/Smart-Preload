@@ -241,7 +241,11 @@ function determinePreloadStrategy(candidate, settings) {
   const resolver = PRELOAD_STRATEGY_RESOLVERS[scenario];
 
   if (typeof resolver === "function") {
-    return resolver(candidate, settings);
+    const strategy = resolver(candidate, settings);
+    return globalThis.ZeroLatencyPreloadNativeOnlyPolicy?.resolveHiddenTabStrategyForNativeOnlyMode?.(
+      strategy,
+      settings
+    ) ?? strategy;
   }
 
   return "prefetch";

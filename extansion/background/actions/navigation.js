@@ -10,7 +10,7 @@
 
     switch (decision.actionKey) {
       case "record-visit":
-        if (await shouldSkipNavigationForExcludedIncognitoTab(envelope.raw.tabId, "record-visit")) {
+        if (await shouldSkipNavigationForExcludedSourceTab(envelope.raw.tabId, "record-visit")) {
           return;
         }
         await recordVisit(envelope.raw, decision.metadata?.sourceEvent || "committed");
@@ -22,7 +22,7 @@
         return;
       case "set-current-page":
         if (
-          await shouldSkipNavigationForExcludedIncognitoTab(
+          await shouldSkipNavigationForExcludedSourceTab(
             envelope.raw.tabId,
             "set-current-page"
           )
@@ -44,11 +44,11 @@
         return;
       case "record-tab-replacement":
         if (
-          (await shouldSkipNavigationForExcludedIncognitoTab(
+          (await shouldSkipNavigationForExcludedSourceTab(
             envelope.raw.tabId,
             "tab-replacement-new"
           )) ||
-          (await shouldSkipNavigationForExcludedIncognitoTab(
+          (await shouldSkipNavigationForExcludedSourceTab(
             envelope.raw.replacedTabId,
             "tab-replacement-old"
           ))
@@ -197,7 +197,7 @@
     }
   }
 
-  async function shouldSkipNavigationForExcludedIncognitoTab(tabId, reason) {
+  async function shouldSkipNavigationForExcludedSourceTab(tabId, reason) {
     const normalizedTabId = normalizePositiveInteger(tabId);
 
     if (normalizedTabId === null) {
@@ -210,12 +210,27 @@
       globalThis.ZeroLatencyPreloadIncognitoPolicy?.shouldExcludeIncognitoPreloadSource?.(
         tab,
         getEffectiveExtensionSettings()
+      ) === true
+    ) {
+      globalThis.ZeroLatencyDebugEvents?.record?.("navigation.skip-incognito-source", {
+        tabId: normalizedTabId,
+        windowId: tab?.windowId ?? null,
+        url: tab?.url || "",
+        reason,
+      });
+      return true;
+    }
+
+    if (
+      globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadSource?.(
+        tab,
+        getEffectiveExtensionSettings()
       ) !== true
     ) {
       return false;
     }
 
-    globalThis.ZeroLatencyDebugEvents?.record?.("navigation.skip-incognito-source", {
+    globalThis.ZeroLatencyDebugEvents?.record?.("navigation.skip-proxy-source", {
       tabId: normalizedTabId,
       windowId: tab?.windowId ?? null,
       url: tab?.url || "",

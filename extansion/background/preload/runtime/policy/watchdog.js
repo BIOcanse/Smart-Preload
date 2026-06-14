@@ -27,6 +27,26 @@ async function enforcePreloadWindowPolicy() {
   const preloadState = await loadPreloadState();
   let didMutate = false;
   const preloadWindowManager = globalThis.ZeroLatencyPreloadWindowManager;
+  if (
+    globalThis.ZeroLatencyPreloadNativeOnlyPolicy?.isAllNativePreloadModeEnabled?.(
+      runtimeSettings
+    ) === true
+  ) {
+    const cleanup =
+      await globalThis.ZeroLatencyPreloadNativeOnlyPolicy.clearHiddenTabPreloadStateForNativeOnlyMode(
+        preloadState,
+        runtimeSettings,
+        {
+          reason: "watchdog",
+        }
+      );
+
+    if (cleanup.mutated) {
+      await savePreloadState(cleanup.preloadState);
+    }
+    return;
+  }
+
   const pressureResult = await applyPreloadResourcePressurePolicy(
     preloadState,
     runtimeSettings,

@@ -17,6 +17,11 @@
 
   function resolveMessageQueueMode(actionKey) {
     switch (actionKey) {
+      case "debug-snapshot":
+      case "open-settings":
+      case "get-service-state":
+      case "native-app-update-status":
+        return "direct";
       case "register-preload-candidates":
       case "preload-interaction-status":
       case "report-foreground-page-digest":

@@ -216,6 +216,10 @@ Reviewer setup:
 4. Open Chrome or Edge, then use regular web pages to verify prediction/preload behavior.
 5. The native app is a local Windows tray/API helper. It exposes local endpoints only on 127.0.0.1:45831 and only accepts extension origins or an explicit local debug token.
 
+Important setup order:
+- For the first binding, install or enable the browser extension before running install-register.cmd or starting the native app.
+- After binding succeeds, the extension can wake the native app automatically when the app is offline.
+
 Native app scope:
 - Native Messaging wake bridge and liveness heartbeat.
 - Per-user HKCU registration for the native messaging host.
@@ -246,6 +250,10 @@ Install:
 3. Run install-register.cmd from the extracted app folder.
 4. Keep the app folder in its final location. Re-run install-register.cmd if the folder is moved.
 
+Important native app binding order:
+- For the first binding, install or enable the browser extension before running install-register.cmd or starting the native app.
+- After binding succeeds, the extension can wake the native app automatically when the app is offline.
+
 Chrome Web Store builds should use the Chrome Web Store upload zip and Chrome-managed extension updates. The local app updates independently through signed or manually supplied app packages.
 "@
 
@@ -264,6 +272,8 @@ Recommended smoke checks:
 9. Confirm popup and settings show the performance warning only when the local app reports pressure without an external workload.
 
 This bundle is for internal QA and reviewer handoff. Runtime logs and debug tokens are intentionally excluded from the app package.
+
+First binding order: install or enable the browser extension first, then run install-register.cmd or start the native app. After binding succeeds, the extension can wake the native app automatically.
 "@
 
 New-CleanDirectory $ReviewStage

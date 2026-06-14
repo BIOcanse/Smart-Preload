@@ -63,6 +63,10 @@
       };
     }
 
+    getCachedServiceState() {
+      return normalizeServiceState(this.cachedServiceState);
+    }
+
     getEffectiveExtensionSettings() {
       return this.settingsApi.resolveEffectiveSettings(this.cachedUserSettings);
     }

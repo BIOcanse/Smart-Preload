@@ -35,7 +35,13 @@ context.ZeroLatencyDebugEvents = {
     this.events.push({ name, payload });
   },
 };
-context.currentSettings = { preloading: { enabled: true, excludeIncognitoWindows: true } };
+context.currentSettings = {
+  preloading: {
+    enabled: true,
+    interactionPreloadEnabled: true,
+    excludeIncognitoWindows: true,
+  },
+};
 context.getEffectiveExtensionSettings = () => context.currentSettings;
 context.getPreloadResourcePressureState = async () => ({ shouldDeferHiddenTabs: false });
 context.reassignSourceTabRuntimeIfNeeded = async (preloadState) => preloadState;
@@ -52,6 +58,7 @@ context.primePreloadEntry = async (_windowId, entry) => {
 context.isExtensionServicePaused = async () => false;
 context.isPreloadTab = () => false;
 context.isExcludedGooglePage = () => false;
+context.isExcludedTrackingPage = () => false;
 context.isTrackableAndAllowedUrl = (rawUrl) => /^https?:\/\//i.test(String(rawUrl || ""));
 context.normalizeNavigableUrl = (rawUrl, baseUrl) => {
   try {
@@ -206,6 +213,56 @@ assert.ok(
 );
 
 let response;
+context.currentSettings = {
+  preloading: {
+    enabled: true,
+    interactionPreloadEnabled: false,
+    excludeIncognitoWindows: true,
+  },
+};
+context.savedPreloadState = context.createEmptyPreloadState();
+response = await context.ZeroLatencyPreloadInteraction.getInteractionPreloadStatus(
+  {
+    sourcePageUrl: "https://disabled.example/page",
+    targetUrl: "/target",
+    targetHint: "_self",
+  },
+  {
+    tab: {
+      id: 203,
+      windowId: 204,
+      url: "https://disabled.example/page",
+    },
+  }
+);
+assert.equal(response.ok, false);
+assert.equal(response.preloaded, false);
+assert.equal(response.reason, "interaction-preload-disabled");
+response = await context.ZeroLatencyPreloadInteraction.startInteractionPreload(
+  {
+    sourcePageUrl: "https://disabled.example/page",
+    targetUrl: "/target",
+    trigger: "hover",
+  },
+  {
+    tab: {
+      id: 203,
+      windowId: 204,
+      url: "https://disabled.example/page",
+    },
+  }
+);
+assert.equal(response.skipped, true);
+assert.equal(response.reason, "interaction-preload-disabled");
+assert.equal(Object.keys(context.savedPreloadState.normalWindowsById).length, 0);
+
+context.currentSettings = {
+  preloading: {
+    enabled: true,
+    interactionPreloadEnabled: true,
+    excludeIncognitoWindows: true,
+  },
+};
 context.savedPreloadState = context.createEmptyPreloadState();
 response = await context.ZeroLatencyPreloadInteraction.startInteractionPreload(
   {
@@ -286,7 +343,13 @@ assert.equal(Object.keys(context.savedPreloadState.normalWindowsById).length, 0)
   );
 }
 
-context.currentSettings = { preloading: { enabled: true, excludeIncognitoWindows: false } };
+context.currentSettings = {
+  preloading: {
+    enabled: true,
+    interactionPreloadEnabled: true,
+    excludeIncognitoWindows: false,
+  },
+};
 context.savedPreloadState = context.createEmptyPreloadState();
 response = await context.ZeroLatencyPreloadInteraction.startInteractionPreload(
   {
@@ -311,7 +374,13 @@ assert.ok(
   ]
 );
 
-context.currentSettings = { preloading: { enabled: true, excludeIncognitoWindows: true } };
+context.currentSettings = {
+  preloading: {
+    enabled: true,
+    interactionPreloadEnabled: true,
+    excludeIncognitoWindows: true,
+  },
+};
 context.savedPreloadState = context.createEmptyPreloadState();
 response = await context.ZeroLatencyPreloadInteraction.startInteractionPreload(
   {

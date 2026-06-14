@@ -45,6 +45,7 @@ async function buildGoogleBookmarkPreloadTargets({
     buildGoogleBookmarkPreloadTarget({
       entry,
       bucketKey: context.bucketKey,
+      settings,
     })
   );
 }
@@ -113,7 +114,11 @@ function filterGoogleBookmarkPreloadEntriesByRankRule(rankedEntries, settings) {
     settingsApi.evaluateRuleCardMetric(
       bookmarkRuleCardState,
       clampNonNegativeInt(entry?.rank, 0)
-    )
+    ) &&
+    globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadCandidate?.(
+      entry?.url,
+      settings
+    ) !== true
   );
 }
 
@@ -142,6 +147,7 @@ function recordGoogleBookmarkPreloadTargetDiagnostic({
 function buildGoogleBookmarkPreloadTarget({
   entry,
   bucketKey,
+  settings,
 }) {
   const targetNodeId = buildNodeSeed(entry.url).nodeId;
 
@@ -160,7 +166,11 @@ function buildGoogleBookmarkPreloadTarget({
       title: entry.title,
     },
     siteSelection: null,
-    strategy: "hidden-tab",
+    strategy:
+      globalThis.ZeroLatencyPreloadNativeOnlyPolicy?.resolveHiddenTabStrategyForNativeOnlyMode?.(
+        "hidden-tab",
+        settings
+      ) ?? "hidden-tab",
   };
 }
 
@@ -373,7 +383,7 @@ function collectChromeBookmarkNodeEntries(node, sourceUrl, entriesByUrl, nextInd
     const candidateUrl = normalizeNavigableUrl(node.url, sourceUrl);
     const targetPageUrl = normalizePageUrlForIndex(candidateUrl || "");
 
-    if (candidateUrl && targetPageUrl && !isExcludedGooglePage(candidateUrl)) {
+    if (candidateUrl && targetPageUrl && !isExcludedTrackingPage(candidateUrl)) {
       const existingEntry = entriesByUrl.get(targetPageUrl);
       const nextEntry = {
         url: candidateUrl,

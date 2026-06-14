@@ -6,6 +6,17 @@ function isSystemLevelWindowHidingUsable() {
 
 function setSystemLevelWindowHidingUsable(value) {
   _systemHidingUsable = value === true;
+  try {
+    const warningChangeHandler =
+      globalThis.ZeroLatencyPreloadNativeOnlyPolicy
+        ?.handleSystemLevelWindowHidingUsabilityChange;
+
+    if (typeof warningChangeHandler === "function") {
+      void Promise.resolve(warningChangeHandler(_systemHidingUsable)).catch(() => {});
+    }
+  } catch (_error) {
+    // Support state updates must never be blocked by warning bookkeeping.
+  }
 }
 
 async function probeNativeAppAvailability(options = {}) {

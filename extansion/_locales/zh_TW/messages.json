@@ -113,6 +113,12 @@
   "performanceInsufficientReducePreloadCaps": {
     "message": "性能不足，请降低预加载上限。"
   },
+  "nativeAppMissingEnableAllNativePreloadMode": {
+    "message": "未偵測到本地 App。建議開啟全原生預載模式，避免使用隱藏真實分頁預載。"
+  },
+  "nativeAppMissingDownloadOrEnableAllNativePreloadMode": {
+    "message": "已連續 1 分鐘未偵測到本地 App。請下載並安裝本地 App，或開啟全原生預載模式。"
+  },
   "popupCurrentPageNotTracked": {
     "message": "当前页面未被追踪"
   },
@@ -251,6 +257,18 @@
   "settingsSkipGoogleInternalPagesDesc": {
     "message": "不要在 Chrome 网上应用店、Google 账号和密码管理器、Chrome 同步、chromestatus 等 Google 管理页面上追踪或预加载。Gemini 和普通 Google 产品仍然追踪。"
   },
+  "settingsSkipLocalPages": {
+    "message": "跳過本機網頁"
+  },
+  "settingsSkipLocalPagesDesc": {
+    "message": "不要追蹤或預載 localhost、127.0.0.0/8、0.0.0.0、[::1] 或 *.localhost 頁面。"
+  },
+  "settingsSkipPrivateNetworkPages": {
+    "message": "跳過內網頁面"
+  },
+  "settingsSkipPrivateNetworkPagesDesc": {
+    "message": "不要追蹤或預載 10.0.0.0/8、172.16.0.0/12、192.168.0.0/16、169.254.0.0/16、fc00::/7 或 fe80::/10 等內網頁面。"
+  },
   "settingsPreloadMeta": {
     "message": "控制标签页预热、看门狗修复和预加载窗口行为。"
   },
@@ -259,6 +277,75 @@
   },
   "settingsEnablePreloadingDesc": {
     "message": "候选注册、后台标签页和标签页替换的总开关。"
+  },
+  "settingsInteractionPreload": {
+    "message": "懸停和右鍵預載"
+  },
+  "settingsInteractionPreloadDesc": {
+    "message": "滑鼠懸停連結 80ms 後啟動互動預載；右鍵開啟連結選單時準備新分頁預載。"
+  },
+  "settingsAllNativePreloadMode": {
+    "message": "全原生預載模式"
+  },
+  "settingsAllNativePreloadModeDesc": {
+    "message": "只使用瀏覽器原生 prefetch/prerender，停用隱藏真實背景分頁和目前分頁硬替換。"
+  },
+  "settingsNativeAppDownloadTitle": {
+    "message": "本地 App 下載"
+  },
+  "settingsNativeAppDownloadDesc": {
+    "message": "需要系統級隱藏真實背景分頁時，請從 GitHub 下載本地 App 套件。"
+  },
+  "settingsNativeAppBindingOrder": {
+    "message": "若要綁定插件和本地 App，請先安裝或啟用瀏覽器插件，再執行本地 App 安裝腳本或啟動本地 App。綁定成功後，後續插件可以自動拉起本地 App。"
+  },
+  "settingsNativeAppDownloadLink": {
+    "message": "GitHub 發布頁"
+  },
+  "settingsNativeAppUpdateTitle": {
+    "message": "本地 App 更新"
+  },
+  "settingsNativeAppUpdateDesc": {
+    "message": "選擇可用的本地 App 版本。只能從目前執行版本升級，不能降級。"
+  },
+  "settingsNativeAppVersionsLoading": {
+    "message": "正在載入版本..."
+  },
+  "settingsNativeAppRefreshVersions": {
+    "message": "重新整理"
+  },
+  "settingsNativeAppUpdateButton": {
+    "message": "升級 App"
+  },
+  "settingsNativeAppVersionUnknown": {
+    "message": "無法取得本地 App 版本。"
+  },
+  "settingsNativeAppVersionsReady": {
+    "message": "本地 App {0}。選擇更新版本即可升級。"
+  },
+  "settingsNativeAppNoUpgrade": {
+    "message": "本地 App {0} 已是列表中的最新版本。"
+  },
+  "settingsNativeAppVersionsFailed": {
+    "message": "無法載入 App 版本。請啟動本地 App，或使用 GitHub 發布頁。"
+  },
+  "settingsNativeAppNoVersions": {
+    "message": "沒有可用的 App 版本"
+  },
+  "settingsNativeAppCurrentVersionOption": {
+    "message": "v{0}（目前）"
+  },
+  "settingsNativeAppUpdateConfirm": {
+    "message": "將本地 App 升級到 v{0}？更新開始後 App 會重新啟動。"
+  },
+  "settingsNativeAppUpdateStarting": {
+    "message": "正在啟動本地 App v{0} 更新..."
+  },
+  "settingsNativeAppUpdateAccepted": {
+    "message": "本地 App v{0} 更新已開始。"
+  },
+  "settingsNativeAppUpdateFailed": {
+    "message": "無法啟動本地 App v{0} 更新。"
   },
   "settingsIgnoreWaterfallDynamicLinks": {
     "message": "忽略瀑布流动态链接"
@@ -271,6 +358,21 @@
   },
   "settingsExcludeIncognitoWindowsDesc": {
     "message": "开启后，无痕窗口完全独立于学习、评分、槽位分配和交互预加载。关闭后，无痕和普通来源页面共用账户级上限，但无痕来源页面只会使用无痕预加载窗口。"
+  },
+  "settingsProxySkipRules": {
+    "message": "代理跳過規則"
+  },
+  "settingsProxySkipRulesDesc": {
+    "message": "手動跳過代理相關分頁。每行填寫一個網域或 URL 規則；黑名單跳過命中項，白名單只保留命中項。"
+  },
+  "settingsProxySkipModeBlacklist": {
+    "message": "黑名單"
+  },
+  "settingsProxySkipModeWhitelist": {
+    "message": "白名單"
+  },
+  "settingsProxySkipRulesPlaceholder": {
+    "message": "example.com\n*.example.org\nhttps://example.net/docs/*"
   },
   "settingsTransitionFrequencyWindow": {
     "message": "跳转频数时间窗口"
@@ -562,6 +664,48 @@
   },
   "settingsAiNoSupportedModels": {
     "message": "未找到支持的轻量模型"
+  },
+  "settingsHistoryDeletionTitle": {
+    "message": "刪除歷史記錄"
+  },
+  "settingsHistoryDeletionDesc": {
+    "message": "依協調世界時日期區間刪除本機訪問圖記錄。包含開始日期，不包含結束日期。"
+  },
+  "settingsHistoryDeletionCurrentUtc": {
+    "message": "目前協調世界時"
+  },
+  "settingsHistoryDeletionStartDate": {
+    "message": "開始 UTC 日期"
+  },
+  "settingsHistoryDeletionEndDate": {
+    "message": "結束 UTC 日期"
+  },
+  "settingsHistoryDeletionDelete": {
+    "message": "刪除歷史"
+  },
+  "settingsHistoryDeletionConfirm": {
+    "message": "刪除 UTC 區間 {0} 內的本機歷史記錄？此操作無法復原。"
+  },
+  "settingsHistoryDeletionDeleting": {
+    "message": "正在刪除選定歷史記錄..."
+  },
+  "settingsHistoryDeletionDeletedSummary": {
+    "message": "已刪除 {0} 筆歷史記錄：{1} 筆跳轉、{2} 筆前景頁、{3} 筆關鍵詞記錄、{4} 筆連結行為記錄。"
+  },
+  "settingsHistoryDeletionFailed": {
+    "message": "無法刪除選定歷史記錄。"
+  },
+  "settingsHistoryDeletionNeedRange": {
+    "message": "請同時選擇 UTC 開始日期和 UTC 結束日期。"
+  },
+  "settingsHistoryDeletionInvalidRange": {
+    "message": "UTC 開始日期必須早於 UTC 結束日期。"
+  },
+  "settingsHistoryDeletionInvalidTime": {
+    "message": "選定的 UTC 日期中有一個無效。"
+  },
+  "settingsHistoryDeletionRangeLabel": {
+    "message": "[{0}, {1})"
   },
   "commonProvider": {
     "message": "服务"

@@ -70,7 +70,16 @@
     await globalThis.ZeroLatencyAiProviders?.ensureLmStudioLifecycleWatchdog?.(runtimeSettings);
 
     await clearExcludedIncognitoPreloadStateForRuntime(runtimeSettings);
-    await globalThis.ZeroLatencyPreloadRuntimeManager.ensureWarmWindows?.();
+    await clearProxySkippedPreloadStateForRuntime(runtimeSettings);
+    const allNativePreloadMode =
+      globalThis.ZeroLatencyPreloadNativeOnlyPolicy?.isAllNativePreloadModeEnabled?.(
+        runtimeSettings
+      ) === true;
+    if (allNativePreloadMode) {
+      await clearHiddenTabPreloadStateForAllNativeMode(runtimeSettings);
+    } else {
+      await globalThis.ZeroLatencyPreloadRuntimeManager.ensureWarmWindows?.();
+    }
     await globalThis.ZeroLatencyPreloadRuntimeManager.maintain();
     await requestPreloadCandidateRefreshForOpenTabs();
   }
@@ -95,6 +104,46 @@
       );
 
     if (cleanup.mutated) {
+      await savePreloadState(cleanup.preloadState);
+    }
+  }
+
+  async function clearProxySkippedPreloadStateForRuntime(runtimeSettings) {
+    if (
+      globalThis.ZeroLatencyPreloadProxySkipPolicy?.isProxySkipPreloadEnabled?.(
+        runtimeSettings
+      ) !== true
+    ) {
+      return;
+    }
+
+    const preloadState = await loadPreloadState();
+    const cleanup =
+      await globalThis.ZeroLatencyPreloadProxySkipPolicy.clearProxySkippedPreloadState(
+        preloadState,
+        runtimeSettings,
+        {
+          reason: "runtime-settings",
+        }
+      );
+
+    if (cleanup.mutated) {
+      await savePreloadState(cleanup.preloadState);
+    }
+  }
+
+  async function clearHiddenTabPreloadStateForAllNativeMode(runtimeSettings) {
+    const preloadState = await loadPreloadState();
+    const cleanup =
+      await globalThis.ZeroLatencyPreloadNativeOnlyPolicy?.clearHiddenTabPreloadStateForNativeOnlyMode?.(
+        preloadState,
+        runtimeSettings,
+        {
+          reason: "runtime-settings",
+        }
+      );
+
+    if (cleanup?.mutated) {
       await savePreloadState(cleanup.preloadState);
     }
   }

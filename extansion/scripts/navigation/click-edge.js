@@ -155,6 +155,11 @@
         return;
       }
 
+      if (status?.reason === "interaction-preload-disabled") {
+        cancelPendingHoverPreloadIntent("interaction-preload-disabled");
+        return;
+      }
+
       intent.preloadKnown = status?.preloaded === true;
 
       if (intent.readyToStart && intent.preloadKnown === false) {

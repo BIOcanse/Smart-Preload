@@ -6,6 +6,7 @@ use anyhow::Result;
 
 use crate::lifecycle::target_extension_origin_is_installed;
 use crate::telemetry::{SystemSnapshot, SystemSnapshotter};
+use tokio::sync::watch;
 
 use super::origin::normalize_extension_origin;
 use super::persistence::{
@@ -18,6 +19,7 @@ pub struct ApiState {
     allowed_extension_origins: Arc<Mutex<BTreeSet<String>>>,
     extension_heartbeats: Arc<Mutex<BTreeMap<String, ExtensionHeartbeatLease>>>,
     debug_api_token: Arc<Mutex<Option<String>>>,
+    host_shutdown_tx: watch::Sender<bool>,
 }
 
 #[derive(Clone)]
@@ -28,12 +30,16 @@ struct ExtensionHeartbeatLease {
 }
 
 impl ApiState {
-    pub fn new(snapshotter: Arc<Mutex<SystemSnapshotter>>) -> Self {
+    pub fn new(
+        snapshotter: Arc<Mutex<SystemSnapshotter>>,
+        host_shutdown_tx: watch::Sender<bool>,
+    ) -> Self {
         Self {
             snapshotter,
             allowed_extension_origins: Arc::new(Mutex::new(load_allowed_extension_origins())),
             extension_heartbeats: Arc::new(Mutex::new(BTreeMap::new())),
             debug_api_token: Arc::new(Mutex::new(load_debug_api_token())),
+            host_shutdown_tx,
         }
     }
 
@@ -194,6 +200,10 @@ impl ApiState {
             .and_then(|value| value.clone())
             .map(|expected| expected == provided)
             .unwrap_or(false)
+    }
+
+    pub(crate) fn request_host_shutdown(&self) {
+        let _ = self.host_shutdown_tx.send(true);
     }
 }
 
