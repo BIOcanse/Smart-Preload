@@ -252,7 +252,7 @@
     "message": "`google/search`-Ergebnisseiten als eigenen Knoten verfolgen, damit der Graph ?berg?nge von Suchseiten zu Zielen lernen kann."
   },
   "settingsSkipGoogleInternalPages": {
-    "message": "Interne Google-Seiten ?berspringen"
+    "message": "Interne Google-Seiten überspringen"
   },
   "settingsSkipGoogleInternalPagesDesc": {
     "message": "Chrome Web Store, Google-Konto- und Passwortmanager, Chrome-Sync, chromestatus und ?hnliche Google-Verwaltungsseiten weder verfolgen noch vorladen. Gemini und normale Google-Produkte bleiben aktiv."
@@ -495,7 +495,7 @@
     "message": "Vorladefenster erzwingen minimieren"
   },
   "settingsForceMinimizeDesc": {
-    "message": "Das Preload-Fenster sofort wieder minimieren, wenn es wiederhergestellt oder vergr??ert wird."
+    "message": "Das Preload-Fenster sofort wieder minimieren, wenn es wiederhergestellt oder vergrößert wird."
   },
   "settingsOrderingMeta": {
     "message": "Feste Sortierfilter halten die erste Version vorhersehbar. Erweiterte programmierbare Filterketten k?nnen sp?ter erg?nzt werden, ohne die gespeicherte Regelform zu ?ndern."
@@ -531,7 +531,7 @@
     "message": "Keine ungespeicherten ?nderungen."
   },
   "settingsResetDefaults": {
-    "message": "Standardwerte zur?cksetzen"
+    "message": "Standardwerte zurücksetzen"
   },
   "settingsSaveSettings": {
     "message": "Einstellungen speichern"
@@ -794,17 +794,43 @@
   "settingsDiagnosticsLoggingDesc": {
     "message": "Wenn aktiviert, werden Laufzeitdiagnosen als JSONL-Dateien in den portablen Logordner der lokalen App geschrieben."
   },
-  "settingsInterfaceLanguage": { "message": "Oberflächensprache" },
-  "settingsInterfaceLanguageDesc": { "message": "Wählen Sie die Sprache der Erweiterungsoberfläche oder folgen Sie automatisch der Browsersprache." },
-  "languageAuto": { "message": "Automatisch" },
-  "languageEnglish": { "message": "Englisch" },
-  "languageChineseSimplified": { "message": "Chinesisch (vereinfacht)" },
-  "languageChineseTraditional": { "message": "Chinesisch (traditionell)" },
-  "languageJapanese": { "message": "Japanisch" },
-  "languageKorean": { "message": "Koreanisch" },
-  "languageGerman": { "message": "Deutsch" },
-  "languageFrench": { "message": "Französisch" },
-  "languageSpanish": { "message": "Spanisch" },
-  "languagePortugueseBrazil": { "message": "Portugiesisch (Brasilien)" },
-  "languageRussian": { "message": "Russisch" }
+  "settingsInterfaceLanguage": {
+    "message": "Oberflächensprache"
+  },
+  "settingsInterfaceLanguageDesc": {
+    "message": "Wählen Sie die Sprache der Erweiterungsoberfläche oder folgen Sie automatisch der Browsersprache."
+  },
+  "languageAuto": {
+    "message": "Automatisch"
+  },
+  "languageEnglish": {
+    "message": "Englisch"
+  },
+  "languageChineseSimplified": {
+    "message": "Chinesisch (vereinfacht)"
+  },
+  "languageChineseTraditional": {
+    "message": "Chinesisch (traditionell)"
+  },
+  "languageJapanese": {
+    "message": "Japanisch"
+  },
+  "languageKorean": {
+    "message": "Koreanisch"
+  },
+  "languageGerman": {
+    "message": "Deutsch"
+  },
+  "languageFrench": {
+    "message": "Französisch"
+  },
+  "languageSpanish": {
+    "message": "Spanisch"
+  },
+  "languagePortugueseBrazil": {
+    "message": "Portugiesisch (Brasilien)"
+  },
+  "languageRussian": {
+    "message": "Russisch"
+  }
 }

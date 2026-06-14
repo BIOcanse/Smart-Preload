@@ -10,7 +10,7 @@ Smart Preload prepara las paginas que probablemente abriras a continuacion, para
 
 Es mas util cuando revisas resultados de busqueda, comparas paginas o saltas con frecuencia entre sitios relacionados.
 
-![Ranking del popup](assets/readme/popup-ranking.png)
+![Ranking del popup](assets/readme/es/popup-ranking.png)
 
 ## Para Que Sirve El Ranking
 
@@ -30,7 +30,7 @@ Pausa Smart Preload antes de examenes en linea, sesiones supervisadas, navegador
 
 Usa el boton `Stop` del popup para una pausa rapida. Tambien puedes desactivar `Enable preloading` en Configuracion. Si una herramienta de examen o seguridad tambien revisa apps en segundo plano, sal de la app de Windows desde la bandeja antes de empezar.
 
-![Controles de configuracion](assets/readme/settings-preload-controls.png)
+![Controles de configuracion](assets/readme/es/settings-preload-controls.png)
 
 ## Datos Historicos Y Migracion
 

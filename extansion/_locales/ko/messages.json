@@ -9,13 +9,13 @@
     "message": "준비됨"
   },
   "commonLoading": {
-    "message": "?? ?"
+    "message": "로드 중"
   },
   "commonFailed": {
-    "message": "??"
+    "message": "실패"
   },
   "commonSaving": {
-    "message": "?? ?"
+    "message": "저장 중"
   },
   "commonSaved": {
     "message": "저장됨"
@@ -30,34 +30,34 @@
     "message": "다운로드됨"
   },
   "commonRemoving": {
-    "message": "?? ?"
+    "message": "제거 중"
   },
   "commonRemoved": {
     "message": "제거됨"
   },
   "commonOn": {
-    "message": "??"
+    "message": "켜짐"
   },
   "commonOff": {
-    "message": "??"
+    "message": "꺼짐"
   },
   "commonUnknown": {
-    "message": "? ? ??"
+    "message": "알 수 없음"
   },
   "commonThisPlatform": {
     "message": "이 플랫폼"
   },
   "commonModel": {
-    "message": "??"
+    "message": "모델"
   },
   "commonDone": {
-    "message": "??."
+    "message": "완료."
   },
   "commonWorking": {
-    "message": "?? ?..."
+    "message": "작업 중..."
   },
   "commonDismiss": {
-    "message": "??"
+    "message": "닫기"
   },
   "commonHelp": {
     "message": "도움말"
@@ -66,31 +66,31 @@
     "message": "현재 페이지"
   },
   "popupNodes": {
-    "message": "??"
+    "message": "노드"
   },
   "popupEdges": {
-    "message": "??"
+    "message": "간선"
   },
   "popupUpdated": {
     "message": "업데이트됨"
   },
   "popupTop": {
-    "message": "??"
+    "message": "상위"
   },
   "popupNoPreloadQualifiedLinks": {
     "message": "이 페이지에는 아직 프리로드 대상 링크가 없습니다."
   },
   "popupRefresh": {
-    "message": "?? ??"
+    "message": "새로 고침"
   },
   "popupStop": {
-    "message": "??"
+    "message": "중지"
   },
   "popupStart": {
-    "message": "??"
+    "message": "시작"
   },
   "popupSettings": {
-    "message": "??"
+    "message": "설정"
   },
   "popupWaitingForData": {
     "message": "데이터 대기 중."
@@ -147,7 +147,7 @@
     "message": "사이트: {0} (#{1}, {2}/{3})"
   },
   "popupFreqMeta": {
-    "message": "??: site {0}, out {1}, in {2}"
+    "message": "빈도: 사이트 {0}, 나감 {1}, 들어옴 {2}"
   },
   "popupBookmarkMeta": {
     "message": "북마크: {0}, 순위 {1}"
@@ -156,16 +156,16 @@
     "message": "스마트 프리로드 설정"
   },
   "settingsTitle": {
-    "message": "??"
+    "message": "설정"
   },
   "settingsNavAriaLabel": {
-    "message": "?? ??"
+    "message": "설정 섹션"
   },
   "settingsOverview": {
     "message": "개요"
   },
   "settingsTracking": {
-    "message": "??"
+    "message": "추적"
   },
   "settingsPreload": {
     "message": "프리로드"
@@ -174,7 +174,7 @@
     "message": "정렬"
   },
   "settingsExperiments": {
-    "message": "??"
+    "message": "실험"
   },
   "settingsOverviewSub": {
     "message": "런타임 프로필 및 자동 조정"
@@ -186,7 +186,7 @@
     "message": "로컬 확장 프로그램 저장소에 저장됩니다."
   },
   "settingsLoadingSettings": {
-    "message": "?? ?? ?..."
+    "message": "설정 로드 중..."
   },
   "settingsHeroKicker": {
     "message": "스마트 프리로드 제어"
@@ -393,13 +393,13 @@
     "message": "네이티브 프리로드"
   },
   "settingsSchedulerAttentionPool": {
-    "message": "?? ?? ?"
+    "message": "주의 시간 풀"
   },
   "settingsSchedulerMin": {
-    "message": "??"
+    "message": "최소"
   },
   "settingsSchedulerMax": {
-    "message": "??"
+    "message": "최대"
   },
   "settingsSchedulerHalfLifeTabs": {
     "message": "상한 증가 반감 탭 수"
@@ -480,10 +480,10 @@
     "message": "완전히 닫기"
   },
   "settingsFullscreenPressurePolicySleep": {
-    "message": "? ??"
+    "message": "탭 절전"
   },
   "settingsFullscreenPressurePolicyIgnore": {
-    "message": "?? ??"
+    "message": "작업 없음"
   },
   "settingsSecond": {
     "message": "{0}초"
@@ -534,7 +534,7 @@
     "message": "기본값 재설정"
   },
   "settingsSaveSettings": {
-    "message": "?? ??"
+    "message": "설정 저장"
   },
   "settingsAiModelTask": {
     "message": "AI 모델 작업"
@@ -651,13 +651,13 @@
     "message": "LM Studio 모델 로드 중: {0}"
   },
   "settingsAiKeyRequiredPlaceholder": {
-    "message": "??"
+    "message": "필수"
   },
   "settingsAiEnterKeyToLoadModels": {
     "message": "모델을 로드하려면 API 키를 입력하세요"
   },
   "settingsAiLoadingModels": {
-    "message": "?? ?? ?? ?..."
+    "message": "지원 모델 로드 중..."
   },
   "settingsAiSelectProviderFirst": {
     "message": "먼저 공급자를 선택하세요"
@@ -711,40 +711,40 @@
     "message": "공급자"
   },
   "transitionWindowTotal": {
-    "message": "??"
+    "message": "전체"
   },
   "transitionWindow365d": {
-    "message": "?? 1?"
+    "message": "지난 1년"
   },
   "transitionWindow30d": {
     "message": "지난달"
   },
   "transitionWindow7d": {
-    "message": "?? 7?"
+    "message": "지난 7일"
   },
   "transitionWindow1d": {
-    "message": "?? ??"
+    "message": "지난 1일"
   },
   "ruleOperatorDisabled": {
     "message": "비활성화"
   },
   "ruleFieldValueA": {
-    "message": "? A"
+    "message": "값 A"
   },
   "ruleFieldCompareA": {
-    "message": "?? A"
+    "message": "비교 A"
   },
   "ruleFieldCompareB": {
-    "message": "?? B"
+    "message": "비교 B"
   },
   "ruleFieldValueC": {
-    "message": "? C"
+    "message": "값 C"
   },
   "ruleFieldStatus": {
-    "message": "??"
+    "message": "상태"
   },
   "ruleTokenFixed": {
-    "message": "?? ?? {0}"
+    "message": "고정 토큰 {0}"
   },
   "ruleNativePerPageTitle": {
     "message": "네이티브 프리로드 그룹의 페이지 슬롯 상한 a"
@@ -777,13 +777,13 @@
     "message": "Google 검색 페이지에서만 적용됩니다. 활성화하면 Chrome 북마크가 이 순위 규칙에 따라 독립적인 상시 프리로드 대상으로 유지됩니다."
   },
   "deviceProfileBalanced": {
-    "message": "??"
+    "message": "균형"
   },
   "deviceProfileHighEnd": {
-    "message": "??"
+    "message": "고급"
   },
   "deviceProfileStrong": {
-    "message": "??"
+    "message": "강력"
   },
   "deviceProfileConstrained": {
     "message": "제한됨"
@@ -794,17 +794,43 @@
   "settingsDiagnosticsLoggingDesc": {
     "message": "활성화하면 런타임 진단이 로컬 앱의 포터블 로그 폴더에 JSONL 파일로 기록됩니다."
   },
-  "settingsInterfaceLanguage": { "message": "인터페이스 언어" },
-  "settingsInterfaceLanguageDesc": { "message": "확장 프로그램 UI 언어를 선택하거나 브라우저 언어를 자동으로 따릅니다." },
-  "languageAuto": { "message": "자동" },
-  "languageEnglish": { "message": "영어" },
-  "languageChineseSimplified": { "message": "중국어 간체" },
-  "languageChineseTraditional": { "message": "중국어 번체" },
-  "languageJapanese": { "message": "일본어" },
-  "languageKorean": { "message": "한국어" },
-  "languageGerman": { "message": "독일어" },
-  "languageFrench": { "message": "프랑스어" },
-  "languageSpanish": { "message": "스페인어" },
-  "languagePortugueseBrazil": { "message": "포르투갈어(브라질)" },
-  "languageRussian": { "message": "러시아어" }
+  "settingsInterfaceLanguage": {
+    "message": "인터페이스 언어"
+  },
+  "settingsInterfaceLanguageDesc": {
+    "message": "확장 프로그램 UI 언어를 선택하거나 브라우저 언어를 자동으로 따릅니다."
+  },
+  "languageAuto": {
+    "message": "자동"
+  },
+  "languageEnglish": {
+    "message": "영어"
+  },
+  "languageChineseSimplified": {
+    "message": "중국어 간체"
+  },
+  "languageChineseTraditional": {
+    "message": "중국어 번체"
+  },
+  "languageJapanese": {
+    "message": "일본어"
+  },
+  "languageKorean": {
+    "message": "한국어"
+  },
+  "languageGerman": {
+    "message": "독일어"
+  },
+  "languageFrench": {
+    "message": "프랑스어"
+  },
+  "languageSpanish": {
+    "message": "스페인어"
+  },
+  "languagePortugueseBrazil": {
+    "message": "포르투갈어(브라질)"
+  },
+  "languageRussian": {
+    "message": "러시아어"
+  }
 }

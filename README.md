@@ -10,7 +10,7 @@ Smart Preload prepares pages you are likely to open next, so repeated browsing, 
 
 It is most useful when you keep many tabs open, move through search results, compare pages, or repeatedly jump between related sites.
 
-![Popup ranking](assets/readme/popup-ranking.png)
+![Popup ranking](assets/readme/en/popup-ranking.png)
 
 ## What The Ranking Means
 
@@ -30,7 +30,7 @@ Pause Smart Preload before online exams, proctored sessions, locked-down corpora
 
 Use the popup `Stop` button for a quick pause. You can also turn off `Enable preloading` in Settings. If a test or secure tool also checks background apps, exit the Windows companion app from the tray before starting.
 
-![Settings controls](assets/readme/settings-preload-controls.png)
+![Settings controls](assets/readme/en/settings-preload-controls.png)
 
 ## History Data And Migration
 

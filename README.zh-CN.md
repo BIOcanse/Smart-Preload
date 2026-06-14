@@ -10,7 +10,7 @@
 
 它最适合多标签办公、查资料、看搜索结果、比价、查文档，以及经常在相关页面之间来回跳转的场景。
 
-![预加载排行](assets/readme/popup-ranking.png)
+![预加载排行](assets/readme/zh-CN/popup-ranking.png)
 
 ## 排行有什么用
 
@@ -30,7 +30,7 @@
 
 临时暂停可以点弹窗里的 `停止`。也可以在设置里关闭 `启用预加载`。如果考试或安全工具还会检查后台程序，开始前也可以从托盘退出 Windows 配套 app。
 
-![设置控制项](assets/readme/settings-preload-controls.png)
+![设置控制项](assets/readme/zh-CN/settings-preload-controls.png)
 
 ## 历史数据和迁移方式
 

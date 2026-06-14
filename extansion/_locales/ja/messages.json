@@ -12,7 +12,7 @@
     "message": "読み込み中"
   },
   "commonFailed": {
-    "message": "??"
+    "message": "失敗"
   },
   "commonSaving": {
     "message": "保存中"
@@ -36,13 +36,13 @@
     "message": "削除済み"
   },
   "commonOn": {
-    "message": "??"
+    "message": "オン"
   },
   "commonOff": {
-    "message": "??"
+    "message": "オフ"
   },
   "commonUnknown": {
-    "message": "??"
+    "message": "不明"
   },
   "commonThisPlatform": {
     "message": "このプラットフォーム"
@@ -72,25 +72,25 @@
     "message": "エッジ"
   },
   "popupUpdated": {
-    "message": "??"
+    "message": "更新"
   },
   "popupTop": {
-    "message": "??"
+    "message": "上位"
   },
   "popupNoPreloadQualifiedLinks": {
     "message": "このページにはまだプリロード対象のリンクがありません。"
   },
   "popupRefresh": {
-    "message": "??"
+    "message": "更新"
   },
   "popupStop": {
-    "message": "??"
+    "message": "停止"
   },
   "popupStart": {
-    "message": "??"
+    "message": "開始"
   },
   "popupSettings": {
-    "message": "??"
+    "message": "設定"
   },
   "popupWaitingForData": {
     "message": "データ待機中。"
@@ -141,13 +141,13 @@
     "message": "予測とプリロードを停止し、バックグラウンドのプリロードウィンドウを閉じる"
   },
   "popupWeightLabel": {
-    "message": "??: {0}"
+    "message": "重み: {0}"
   },
   "popupSiteMeta": {
     "message": "サイト: {0} (#{1}, {2}/{3})"
   },
   "popupFreqMeta": {
-    "message": "??: site {0}, out {1}, in {2}"
+    "message": "頻度: サイト {0}、出 {1}、入 {2}"
   },
   "popupBookmarkMeta": {
     "message": "ブックマーク: {0}、順位 {1}"
@@ -156,16 +156,16 @@
     "message": "スマートプリロード設定"
   },
   "settingsTitle": {
-    "message": "??"
+    "message": "設定"
   },
   "settingsNavAriaLabel": {
     "message": "設定セクション"
   },
   "settingsOverview": {
-    "message": "??"
+    "message": "概要"
   },
   "settingsTracking": {
-    "message": "??"
+    "message": "追跡"
   },
   "settingsPreload": {
     "message": "プリロード"
@@ -174,7 +174,7 @@
     "message": "並び順"
   },
   "settingsExperiments": {
-    "message": "??"
+    "message": "実験"
   },
   "settingsOverviewSub": {
     "message": "実行プロファイルと自動調整"
@@ -396,10 +396,10 @@
     "message": "アテンションプール"
   },
   "settingsSchedulerMin": {
-    "message": "??"
+    "message": "最小"
   },
   "settingsSchedulerMax": {
-    "message": "??"
+    "message": "最大"
   },
   "settingsSchedulerHalfLifeTabs": {
     "message": "上限成長の半減タブ数"
@@ -651,7 +651,7 @@
     "message": "LM Studio モデルを読み込み中: {0}"
   },
   "settingsAiKeyRequiredPlaceholder": {
-    "message": "??"
+    "message": "必須"
   },
   "settingsAiEnterKeyToLoadModels": {
     "message": "モデルを読み込むにはAPIキーを入力してください"
@@ -711,37 +711,37 @@
     "message": "プロバイダー"
   },
   "transitionWindowTotal": {
-    "message": "??"
+    "message": "全期間"
   },
   "transitionWindow365d": {
-    "message": "?? 1 ?"
+    "message": "過去1年"
   },
   "transitionWindow30d": {
-    "message": "?? 1 ??"
+    "message": "過去1か月"
   },
   "transitionWindow7d": {
-    "message": "?? 7 ?"
+    "message": "過去7日"
   },
   "transitionWindow1d": {
-    "message": "?? 1 ?"
+    "message": "過去1日"
   },
   "ruleOperatorDisabled": {
-    "message": "??"
+    "message": "無効"
   },
   "ruleFieldValueA": {
-    "message": "? A"
+    "message": "値 A"
   },
   "ruleFieldCompareA": {
-    "message": "?? A"
+    "message": "比較 A"
   },
   "ruleFieldCompareB": {
-    "message": "?? B"
+    "message": "比較 B"
   },
   "ruleFieldValueC": {
-    "message": "? C"
+    "message": "値 C"
   },
   "ruleFieldStatus": {
-    "message": "??"
+    "message": "状態"
   },
   "ruleTokenFixed": {
     "message": "固定トークン {0}"
@@ -783,7 +783,7 @@
     "message": "ハイエンド"
   },
   "deviceProfileStrong": {
-    "message": "??"
+    "message": "高性能"
   },
   "deviceProfileConstrained": {
     "message": "制約あり"
@@ -794,17 +794,43 @@
   "settingsDiagnosticsLoggingDesc": {
     "message": "有効にすると、実行時診断ログがローカルアプリの portable logs フォルダーに JSONL ファイルとして書き込まれます。"
   },
-  "settingsInterfaceLanguage": { "message": "インターフェース言語" },
-  "settingsInterfaceLanguageDesc": { "message": "拡張機能のUI言語を選択するか、ブラウザの言語に自動で合わせます。" },
-  "languageAuto": { "message": "自動" },
-  "languageEnglish": { "message": "英語" },
-  "languageChineseSimplified": { "message": "簡体字中国語" },
-  "languageChineseTraditional": { "message": "繁体字中国語" },
-  "languageJapanese": { "message": "日本語" },
-  "languageKorean": { "message": "韓国語" },
-  "languageGerman": { "message": "ドイツ語" },
-  "languageFrench": { "message": "フランス語" },
-  "languageSpanish": { "message": "スペイン語" },
-  "languagePortugueseBrazil": { "message": "ポルトガル語（ブラジル）" },
-  "languageRussian": { "message": "ロシア語" }
+  "settingsInterfaceLanguage": {
+    "message": "インターフェース言語"
+  },
+  "settingsInterfaceLanguageDesc": {
+    "message": "拡張機能のUI言語を選択するか、ブラウザの言語に自動で合わせます。"
+  },
+  "languageAuto": {
+    "message": "自動"
+  },
+  "languageEnglish": {
+    "message": "英語"
+  },
+  "languageChineseSimplified": {
+    "message": "簡体字中国語"
+  },
+  "languageChineseTraditional": {
+    "message": "繁体字中国語"
+  },
+  "languageJapanese": {
+    "message": "日本語"
+  },
+  "languageKorean": {
+    "message": "韓国語"
+  },
+  "languageGerman": {
+    "message": "ドイツ語"
+  },
+  "languageFrench": {
+    "message": "フランス語"
+  },
+  "languageSpanish": {
+    "message": "スペイン語"
+  },
+  "languagePortugueseBrazil": {
+    "message": "ポルトガル語（ブラジル）"
+  },
+  "languageRussian": {
+    "message": "ロシア語"
+  }
 }

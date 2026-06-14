@@ -90,7 +90,7 @@
     "message": "Iniciar"
   },
   "popupSettings": {
-    "message": "Configuraci?n"
+    "message": "Configuración"
   },
   "popupWaitingForData": {
     "message": "Esperando datos."
@@ -156,7 +156,7 @@
     "message": "Configuración de Precarga inteligente"
   },
   "settingsTitle": {
-    "message": "Configuraci?n"
+    "message": "Configuración"
   },
   "settingsNavAriaLabel": {
     "message": "Secciones de configuraci?n"
@@ -183,7 +183,7 @@
     "message": "Filtros simples de clasificación"
   },
   "settingsStorageFooter": {
-    "message": "Guardado en el almacenamiento local de la extensi?n."
+    "message": "Guardado en el almacenamiento local de la extensión."
   },
   "settingsLoadingSettings": {
     "message": "Cargando configuraci?n..."
@@ -246,13 +246,13 @@
     "message": "Controles sobre c?mo se normalizan y a?aden los nodos de navegaci?n al grafo direccional."
   },
   "settingsSeparateGoogleSearchPages": {
-    "message": "Separar p?ginas de b?squeda de Google"
+    "message": "Separar páginas de búsqueda de Google"
   },
   "settingsSeparateGoogleSearchPagesDesc": {
     "message": "Rastrear las p?ginas de resultados `google/search` como su propio nodo para que el grafo pueda aprender transiciones de b?squeda a destino."
   },
   "settingsSkipGoogleInternalPages": {
-    "message": "Omitir p?ginas internas de Google"
+    "message": "Omitir páginas internas de Google"
   },
   "settingsSkipGoogleInternalPagesDesc": {
     "message": "No rastrear ni precargar Chrome Web Store, cuenta y gestor de contrase?as de Google, Chrome sync, chromestatus y p?ginas administrativas similares de Google. Gemini y los productos normales de Google siguen rastre?ndose."
@@ -534,7 +534,7 @@
     "message": "Restablecer valores predeterminados"
   },
   "settingsSaveSettings": {
-    "message": "Guardar configuraci?n"
+    "message": "Guardar configuración"
   },
   "settingsAiModelTask": {
     "message": "Tarea del modelo de IA"
@@ -794,17 +794,43 @@
   "settingsDiagnosticsLoggingDesc": {
     "message": "Cuando est? activado, los diagn?sticos de ejecuci?n se escriben como JSONL en la carpeta portable logs de la app local."
   },
-  "settingsInterfaceLanguage": { "message": "Idioma de la interfaz" },
-  "settingsInterfaceLanguageDesc": { "message": "Elige el idioma de la interfaz de la extensión o sigue automáticamente el idioma del navegador." },
-  "languageAuto": { "message": "Automático" },
-  "languageEnglish": { "message": "Inglés" },
-  "languageChineseSimplified": { "message": "Chino simplificado" },
-  "languageChineseTraditional": { "message": "Chino tradicional" },
-  "languageJapanese": { "message": "Japonés" },
-  "languageKorean": { "message": "Coreano" },
-  "languageGerman": { "message": "Alemán" },
-  "languageFrench": { "message": "Francés" },
-  "languageSpanish": { "message": "Español" },
-  "languagePortugueseBrazil": { "message": "Portugués (Brasil)" },
-  "languageRussian": { "message": "Ruso" }
+  "settingsInterfaceLanguage": {
+    "message": "Idioma de la interfaz"
+  },
+  "settingsInterfaceLanguageDesc": {
+    "message": "Elige el idioma de la interfaz de la extensión o sigue automáticamente el idioma del navegador."
+  },
+  "languageAuto": {
+    "message": "Automático"
+  },
+  "languageEnglish": {
+    "message": "Inglés"
+  },
+  "languageChineseSimplified": {
+    "message": "Chino simplificado"
+  },
+  "languageChineseTraditional": {
+    "message": "Chino tradicional"
+  },
+  "languageJapanese": {
+    "message": "Japonés"
+  },
+  "languageKorean": {
+    "message": "Coreano"
+  },
+  "languageGerman": {
+    "message": "Alemán"
+  },
+  "languageFrench": {
+    "message": "Francés"
+  },
+  "languageSpanish": {
+    "message": "Español"
+  },
+  "languagePortugueseBrazil": {
+    "message": "Portugués (Brasil)"
+  },
+  "languageRussian": {
+    "message": "Ruso"
+  }
 }
