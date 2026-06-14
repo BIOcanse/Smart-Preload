@@ -55,7 +55,7 @@ Der `portable` Ordner der Windows-App enthaelt Bindungsdateien und Logs, nicht d
 
 ## Installation
 
-Laden Sie die neueste Version ueber [GitHub Releases](https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/latest) herunter.
+Laden Sie die neueste Version ueber [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) herunter.
 
 1. Installieren oder laden Sie die Erweiterung in Chrome oder Edge.
 2. Optional: entpacken Sie die Windows-Begleitapp.

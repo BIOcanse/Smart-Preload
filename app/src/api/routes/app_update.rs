@@ -14,9 +14,9 @@ use crate::runtime_debug::record_app_runtime_event;
 const APP_ASSET_PREFIX: &str = "zero-latency-web-app-windows-x64-v";
 const APP_ASSET_SUFFIX: &str = ".zip";
 const RELEASE_URL_PREFIX: &str =
-    "https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/";
+    "https://github.com/BIOcanse/Smart-Preload/releases/";
 const ASSET_URL_PREFIX: &str =
-    "https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/download/";
+    "https://github.com/BIOcanse/Smart-Preload/releases/download/";
 
 pub(crate) async fn app_update_status() -> Json<AppUpdateStatusResponse> {
     Json(AppUpdateStatusResponse {

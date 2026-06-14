@@ -54,7 +54,7 @@ function buildRelease(version, options = {}) {
   return {
     tag_name: version,
     name: version,
-    html_url: `https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/tag/${version}`,
+    html_url: `https://github.com/BIOcanse/Smart-Preload/releases/tag/${version}`,
     draft: false,
     prerelease: options.prerelease === true,
     assets: options.missingAsset
@@ -62,7 +62,7 @@ function buildRelease(version, options = {}) {
       : [
           {
             name: assetName,
-            browser_download_url: `https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/download/${version}/${assetName}`,
+            browser_download_url: `https://github.com/BIOcanse/Smart-Preload/releases/download/${version}/${assetName}`,
           },
         ],
   };

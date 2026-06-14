@@ -55,7 +55,7 @@ Windows アプリの `portable` フォルダーには連携ファイルとログ
 
 ## インストール
 
-最新版は [GitHub Releases](https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/latest) からダウンロードしてください。
+最新版は [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) からダウンロードしてください。
 
 1. Chrome または Edge に拡張機能をインストールまたは読み込みます。
 2. 任意で Windows 連携アプリを展開します。

@@ -55,7 +55,7 @@ The Windows app's `portable` folder stores app binding files and logs. It is not
 
 ## Install
 
-Download the latest version from [GitHub Releases](https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/latest).
+Download the latest version from [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest).
 
 1. Install or load the extension in Chrome or Edge.
 2. Optional: extract the Windows companion app.

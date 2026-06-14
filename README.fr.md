@@ -55,7 +55,7 @@ Le dossier `portable` de l'application Windows contient les fichiers de liaison 
 
 ## Installation
 
-Telechargez la derniere version depuis [GitHub Releases](https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/latest).
+Telechargez la derniere version depuis [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest).
 
 1. Installez ou chargez l'extension dans Chrome ou Edge.
 2. Facultatif : extrayez l'application Windows.

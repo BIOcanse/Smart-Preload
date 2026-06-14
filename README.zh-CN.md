@@ -55,7 +55,7 @@ Windows app 的 `portable` 文件夹保存的是 app 绑定文件和日志，不
 
 ## 安装
 
-请从 [GitHub Releases](https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/latest) 下载最新版。
+请从 [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) 下载最新版。
 
 1. 先在 Chrome 或 Edge 中安装或加载扩展。
 2. 可选：解压 Windows 配套 app。

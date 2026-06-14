@@ -55,7 +55,7 @@ Smart Preload использует интеллектуальные алгори
 
 ## Установка
 
-Скачайте последнюю версию на странице [GitHub Releases](https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/latest).
+Скачайте последнюю версию на странице [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest).
 
 1. Установите или загрузите расширение в Chrome или Edge.
 2. Необязательно: распакуйте Windows-приложение.

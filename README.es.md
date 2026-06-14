@@ -55,7 +55,7 @@ La carpeta `portable` de la app de Windows guarda archivos de vinculacion y logs
 
 ## Instalacion
 
-Descarga la version mas reciente desde [GitHub Releases](https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/latest).
+Descarga la version mas reciente desde [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest).
 
 1. Instala o carga la extension en Chrome o Edge.
 2. Opcional: extrae la app complementaria de Windows.

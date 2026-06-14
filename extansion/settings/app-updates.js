@@ -1,8 +1,8 @@
 (() => {
   const RELEASES_API_URL =
-    "https://api.github.com/repos/kingstonwang114514-cloud/zero-latency-web/releases?per_page=50";
+    "https://api.github.com/repos/BIOcanse/Smart-Preload/releases?per_page=50";
   const RELEASES_PAGE_URL =
-    "https://github.com/kingstonwang114514-cloud/zero-latency-web/releases";
+    "https://github.com/BIOcanse/Smart-Preload/releases";
   const APP_ASSET_NAME_PREFIX = "zero-latency-web-app-windows-x64-v";
   const APP_ASSET_NAME_SUFFIX = ".zip";
 
