@@ -294,10 +294,10 @@
     "message": "Скачать нативное приложение"
   },
   "settingsNativeAppDownloadDesc": {
-    "message": "Скачайте пакет нативного приложения с GitHub, если требуется системное скрытие реальных фоновых вкладок."
+    "message": "Скачайте пакет нативного приложения только для Windows с GitHub, если требуется системное скрытие реальных фоновых вкладок."
   },
   "settingsNativeAppBindingOrder": {
-    "message": "Чтобы связать расширение и нативное приложение, сначала установите или включите расширение, затем запустите установщик нативного приложения или само приложение. После успешной привязки расширение сможет автоматически запускать нативное приложение."
+    "message": "Чтобы связать расширение и нативное приложение Windows, сначала установите или включите расширение, затем запустите установщик нативного приложения или само приложение. После успешной привязки расширение сможет автоматически запускать нативное приложение."
   },
   "settingsNativeAppDownloadLink": {
     "message": "Релизы GitHub"
@@ -793,5 +793,18 @@
   },
   "settingsDiagnosticsLoggingDesc": {
     "message": "При включении runtime-диагностика записывается в папку portable logs локального приложения в виде файлов JSONL."
-  }
+  },
+  "settingsInterfaceLanguage": { "message": "Язык интерфейса" },
+  "settingsInterfaceLanguageDesc": { "message": "Выберите язык интерфейса расширения или автоматически следуйте языку браузера." },
+  "languageAuto": { "message": "Автоматически" },
+  "languageEnglish": { "message": "Английский" },
+  "languageChineseSimplified": { "message": "Китайский (упрощенный)" },
+  "languageChineseTraditional": { "message": "Китайский (традиционный)" },
+  "languageJapanese": { "message": "Японский" },
+  "languageKorean": { "message": "Корейский" },
+  "languageGerman": { "message": "Немецкий" },
+  "languageFrench": { "message": "Французский" },
+  "languageSpanish": { "message": "Испанский" },
+  "languagePortugueseBrazil": { "message": "Португальский (Бразилия)" },
+  "languageRussian": { "message": "Русский" }
 }

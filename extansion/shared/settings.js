@@ -55,7 +55,7 @@
   }
 
   const SETTINGS_STORAGE_KEY = "userSettingsV1";
-  const SETTINGS_STORAGE_VERSION = 27;
+  const SETTINGS_STORAGE_VERSION = 28;
   const AI_MODEL_CATALOG = globalThis.ZeroLatencyAiModelCatalog ?? null;
   const PRELOAD_RULE_CARD_IDS = [
     "nativePerPagePreloadLimit",
@@ -70,18 +70,12 @@
   const RULE_STATUS_VALUES = ["enabled", "disabled"];
   const FULLSCREEN_PRESSURE_POLICY_VALUES = ["close", "sleep", "ignore"];
   const PROXY_SKIP_MODE_VALUES = ["blacklist", "whitelist"];
-  const PROXY_SKIP_MODE_OPTIONS = [
-    { value: "blacklist", label: localize("settingsProxySkipModeBlacklist", "Blacklist") },
-    { value: "whitelist", label: localize("settingsProxySkipModeWhitelist", "Whitelist") },
-  ];
+  const LANGUAGE_MODE_VALUES = Array.isArray(globalThis.ZeroLatencyI18n?.LANGUAGE_MODE_VALUES)
+    ? globalThis.ZeroLatencyI18n.LANGUAGE_MODE_VALUES
+    : ["auto", "en", "zh_CN", "zh_TW", "ja", "ko", "de", "fr", "es", "pt_BR", "ru"];
+  const PROXY_SKIP_MODE_OPTIONS = [];
   const TRANSITION_WINDOW_VALUES = ["total", "last365d", "last30d", "last7d", "last1d"];
-  const TRANSITION_WINDOW_OPTIONS = [
-    { value: "total", label: localize("transitionWindowTotal", "Total") },
-    { value: "last365d", label: localize("transitionWindow365d", "Last year") },
-    { value: "last30d", label: localize("transitionWindow30d", "Last month") },
-    { value: "last7d", label: localize("transitionWindow7d", "Last 7 days") },
-    { value: "last1d", label: localize("transitionWindow1d", "Last day") },
-  ];
+  const TRANSITION_WINDOW_OPTIONS = [];
   const FALLBACK_AI_PROVIDER_OPTIONS = [
     {
       value: "openai",
@@ -153,59 +147,106 @@
   const AI_PROVIDER_BY_ID = Object.fromEntries(
     AI_PROVIDER_OPTIONS.map((option) => [option.value, option])
   );
-  const RULE_OPERATOR_OPTIONS = [
-    { value: "disabled", label: localize("ruleOperatorDisabled", "Disabled") },
-    { value: "gt", label: ">" },
-    { value: "gte", label: ">=" },
-    { value: "eq", label: "=" },
-    { value: "lte", label: "<=" },
-    { value: "lt", label: "<" },
-  ];
-  const RULE_CARD_SCHEMA = {
-    nativePerPagePreloadLimit: {
-      title: localize("ruleNativePerPageTitle", "Native preload group page slot cap a"),
-      description: localize(
-        "ruleNativePerPageDesc",
-        "Applies to native `prefetch` / `prerender` candidates. It decides how many page candidates this group can keep for final execution."
-      ),
-      fields: createRuleFields("a"),
-    },
-    perPagePreloadLimit: {
-      title: localize("ruleTabPerPageTitle", "Real-tab preload group page slot cap a"),
-      description: localize(
-        "ruleTabPerPageDesc",
-        "Applies to candidates that need real background tabs. It decides how many page candidates this group can keep for final execution."
-      ),
-      fields: createRuleFields("a"),
-    },
-    highWeightRank: {
-      title: localize("ruleNativeSiteTitle", "Native preload group high-weight site count x"),
-      description: localize(
-        "ruleNativeSiteDesc",
-        "Applies to native `prefetch` / `prerender` candidates. It decides how many high-weight sites enter the site slot allocation stage."
-      ),
-      fields: createRuleFields("x"),
-    },
-    highWeightRankTab: {
-      title: localize("ruleTabSiteTitle", "Real-tab preload group high-weight site count x"),
-      description: localize(
-        "ruleTabSiteDesc",
-        "Applies to candidates that need real background tabs, including cross-site new-tab preload and current-tab hard-swap cross-site candidates routed to hidden-tab."
-      ),
-      fields: createRuleFields("x"),
-    },
-    googleBookmarkRank: {
-      title: localize("ruleGoogleBookmarkRankTitle", "Google search bookmark preload rank x"),
-      description: localize(
-        "ruleGoogleBookmarkRankDesc",
-        "Only applies on Google search pages. When enabled, Chrome bookmarks are kept as independent persistent preload targets by this rank rule."
-      ),
-      fields: createRuleFields("x"),
-    },
-  };
+  const RULE_OPERATOR_OPTIONS = [];
+  const RULE_CARD_SCHEMA = {};
+
+  function createProxySkipModeOptions() {
+    return [
+      { value: "blacklist", label: localize("settingsProxySkipModeBlacklist", "Blacklist") },
+      { value: "whitelist", label: localize("settingsProxySkipModeWhitelist", "Whitelist") },
+    ];
+  }
+
+  function createTransitionWindowOptions() {
+    return [
+      { value: "total", label: localize("transitionWindowTotal", "Total") },
+      { value: "last365d", label: localize("transitionWindow365d", "Last year") },
+      { value: "last30d", label: localize("transitionWindow30d", "Last month") },
+      { value: "last7d", label: localize("transitionWindow7d", "Last 7 days") },
+      { value: "last1d", label: localize("transitionWindow1d", "Last day") },
+    ];
+  }
+
+  function createRuleOperatorOptions() {
+    return [
+      { value: "disabled", label: localize("ruleOperatorDisabled", "Disabled") },
+      { value: "gt", label: ">" },
+      { value: "gte", label: ">=" },
+      { value: "eq", label: "=" },
+      { value: "lte", label: "<=" },
+      { value: "lt", label: "<" },
+    ];
+  }
+
+  function createRuleCardSchema() {
+    return {
+      nativePerPagePreloadLimit: {
+        title: localize("ruleNativePerPageTitle", "Native preload group page slot cap a"),
+        description: localize(
+          "ruleNativePerPageDesc",
+          "Applies to native `prefetch` / `prerender` candidates. It decides how many page candidates this group can keep for final execution."
+        ),
+        fields: createRuleFields("a"),
+      },
+      perPagePreloadLimit: {
+        title: localize("ruleTabPerPageTitle", "Real-tab preload group page slot cap a"),
+        description: localize(
+          "ruleTabPerPageDesc",
+          "Applies to candidates that need real background tabs. It decides how many page candidates this group can keep for final execution."
+        ),
+        fields: createRuleFields("a"),
+      },
+      highWeightRank: {
+        title: localize("ruleNativeSiteTitle", "Native preload group high-weight site count x"),
+        description: localize(
+          "ruleNativeSiteDesc",
+          "Applies to native `prefetch` / `prerender` candidates. It decides how many high-weight sites enter the site slot allocation stage."
+        ),
+        fields: createRuleFields("x"),
+      },
+      highWeightRankTab: {
+        title: localize("ruleTabSiteTitle", "Real-tab preload group high-weight site count x"),
+        description: localize(
+          "ruleTabSiteDesc",
+          "Applies to candidates that need real background tabs, including cross-site new-tab preload and current-tab hard-swap cross-site candidates routed to hidden-tab."
+        ),
+        fields: createRuleFields("x"),
+      },
+      googleBookmarkRank: {
+        title: localize("ruleGoogleBookmarkRankTitle", "Google search bookmark preload rank x"),
+        description: localize(
+          "ruleGoogleBookmarkRankDesc",
+          "Only applies on Google search pages. When enabled, Chrome bookmarks are kept as independent persistent preload targets by this rank rule."
+        ),
+        fields: createRuleFields("x"),
+      },
+    };
+  }
+
+  function refreshLocalizedText() {
+    replaceArrayValues(PROXY_SKIP_MODE_OPTIONS, createProxySkipModeOptions());
+    replaceArrayValues(TRANSITION_WINDOW_OPTIONS, createTransitionWindowOptions());
+    replaceArrayValues(RULE_OPERATOR_OPTIONS, createRuleOperatorOptions());
+    replaceObjectValues(RULE_CARD_SCHEMA, createRuleCardSchema());
+  }
+
+  function replaceArrayValues(target, values) {
+    target.splice(0, target.length, ...values);
+  }
+
+  function replaceObjectValues(target, values) {
+    for (const key of Object.keys(target)) {
+      delete target[key];
+    }
+    Object.assign(target, values);
+  }
+
   const DEFAULT_SETTINGS = {
     version: SETTINGS_STORAGE_VERSION,
     automaticDeviceTuning: true,
+    appearance: {
+      languageMode: "auto",
+    },
     tracking: {
       trackGoogleSearchPages: true,
       excludeGoogleInternalPages: true,
@@ -326,6 +367,8 @@
     },
   };
 
+  refreshLocalizedText();
+
   const MODE_LIMITS = {
     conservative: 2,
     balanced: 3,
@@ -371,6 +414,7 @@
     )
       ? normalized.preloading.mode
       : DEFAULT_SETTINGS.preloading.mode;
+    normalized.appearance = normalizeAppearanceSettings(normalized.appearance);
     normalized.tracking.excludeLocalPages = normalized.tracking.excludeLocalPages !== false;
     normalized.tracking.excludePrivateNetworkPages =
       normalized.tracking.excludePrivateNetworkPages !== false;
@@ -444,6 +488,18 @@
       DEFAULT_SETTINGS.preloading.tabSiteSelectionLimit
     );
     return normalized;
+  }
+
+  function normalizeAppearanceSettings(value) {
+    const mergedValue = mergeSettings(DEFAULT_SETTINGS.appearance, value);
+
+    return {
+      languageMode: normalizeLanguageMode(mergedValue.languageMode),
+    };
+  }
+
+  function normalizeLanguageMode(value) {
+    return LANGUAGE_MODE_VALUES.includes(value) ? value : DEFAULT_SETTINGS.appearance.languageMode;
   }
 
   function normalizeLayoutSettings(layoutSettings) {
@@ -1103,6 +1159,7 @@
     RULE_STATUS_VALUES,
     FULLSCREEN_PRESSURE_POLICY_VALUES,
     PROXY_SKIP_MODE_VALUES,
+    LANGUAGE_MODE_VALUES,
     PROXY_SKIP_MODE_OPTIONS,
     TRANSITION_WINDOW_VALUES,
     TRANSITION_WINDOW_OPTIONS,
@@ -1117,6 +1174,8 @@
     cloneSettings,
     mergeSettings,
     normalizeStoredSettings,
+    normalizeAppearanceSettings,
+    normalizeLanguageMode,
     isRuleCardEnabled,
     compareRuleValues,
     evaluateRuleCardMetric,
@@ -1135,6 +1194,7 @@
     detectDeviceProfile,
     resolveEffectiveSettings,
     getNavigatorSnapshot,
+    refreshLocalizedText,
     loadSettings,
     saveSettings,
   };

@@ -294,10 +294,10 @@
     "message": "ネイティブアプリのダウンロード"
   },
   "settingsNativeAppDownloadDesc": {
-    "message": "システムレベルで実バックグラウンドタブを隠す必要がある場合は、GitHub からネイティブアプリパッケージをダウンロードしてください。"
+    "message": "システムレベルで実バックグラウンドタブを隠す必要がある場合は、GitHub から Windows 専用ネイティブアプリパッケージをダウンロードしてください。"
   },
   "settingsNativeAppBindingOrder": {
-    "message": "拡張機能とネイティブアプリを連携するには、先に拡張機能をインストールまたは有効化してから、ネイティブアプリのインストーラーを実行するかネイティブアプリを起動してください。連携が成功すると、以後は拡張機能がネイティブアプリを自動的に起動できます。"
+    "message": "拡張機能と Windows ネイティブアプリを連携するには、先に拡張機能をインストールまたは有効化してから、ネイティブアプリのインストーラーを実行するかネイティブアプリを起動してください。連携が成功すると、以後は拡張機能がネイティブアプリを自動的に起動できます。"
   },
   "settingsNativeAppDownloadLink": {
     "message": "GitHub リリース"
@@ -793,5 +793,18 @@
   },
   "settingsDiagnosticsLoggingDesc": {
     "message": "有効にすると、実行時診断ログがローカルアプリの portable logs フォルダーに JSONL ファイルとして書き込まれます。"
-  }
+  },
+  "settingsInterfaceLanguage": { "message": "インターフェース言語" },
+  "settingsInterfaceLanguageDesc": { "message": "拡張機能のUI言語を選択するか、ブラウザの言語に自動で合わせます。" },
+  "languageAuto": { "message": "自動" },
+  "languageEnglish": { "message": "英語" },
+  "languageChineseSimplified": { "message": "簡体字中国語" },
+  "languageChineseTraditional": { "message": "繁体字中国語" },
+  "languageJapanese": { "message": "日本語" },
+  "languageKorean": { "message": "韓国語" },
+  "languageGerman": { "message": "ドイツ語" },
+  "languageFrench": { "message": "フランス語" },
+  "languageSpanish": { "message": "スペイン語" },
+  "languagePortugueseBrazil": { "message": "ポルトガル語（ブラジル）" },
+  "languageRussian": { "message": "ロシア語" }
 }

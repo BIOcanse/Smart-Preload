@@ -294,10 +294,10 @@
     "message": "Download do app nativo"
   },
   "settingsNativeAppDownloadDesc": {
-    "message": "Baixe o pacote do app nativo no GitHub quando precisar ocultar abas reais em segundo plano no nível do sistema."
+    "message": "Baixe no GitHub o pacote do app nativo somente para Windows quando precisar ocultar abas reais em segundo plano no nível do sistema."
   },
   "settingsNativeAppBindingOrder": {
-    "message": "Para vincular a extensão e o app nativo, instale ou ative primeiro a extensão e depois execute o instalador do app nativo ou inicie o app nativo. Depois que a vinculação for concluída, a extensão poderá iniciar o app nativo automaticamente."
+    "message": "Para vincular a extensão e o app nativo do Windows, instale ou ative primeiro a extensão e depois execute o instalador do app nativo ou inicie o app nativo. Depois que a vinculação for concluída, a extensão poderá iniciar o app nativo automaticamente."
   },
   "settingsNativeAppDownloadLink": {
     "message": "Lançamentos do GitHub"
@@ -793,5 +793,18 @@
   },
   "settingsDiagnosticsLoggingDesc": {
     "message": "Quando ativado, os diagn?sticos de runtime s?o gravados como JSONL na pasta portable logs do app local."
-  }
+  },
+  "settingsInterfaceLanguage": { "message": "Idioma da interface" },
+  "settingsInterfaceLanguageDesc": { "message": "Escolha o idioma da interface da extensão ou siga automaticamente o idioma do navegador." },
+  "languageAuto": { "message": "Automático" },
+  "languageEnglish": { "message": "Inglês" },
+  "languageChineseSimplified": { "message": "Chinês simplificado" },
+  "languageChineseTraditional": { "message": "Chinês tradicional" },
+  "languageJapanese": { "message": "Japonês" },
+  "languageKorean": { "message": "Coreano" },
+  "languageGerman": { "message": "Alemão" },
+  "languageFrench": { "message": "Francês" },
+  "languageSpanish": { "message": "Espanhol" },
+  "languagePortugueseBrazil": { "message": "Português (Brasil)" },
+  "languageRussian": { "message": "Russo" }
 }

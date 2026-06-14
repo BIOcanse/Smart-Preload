@@ -41,6 +41,19 @@
           <div class="settings-list">
             <article class="settings-item">
               <div class="settings-item-info">
+                <label class="settings-item-label" for="language-mode" data-i18n="settingsInterfaceLanguage">
+                  Interface language
+                </label>
+                <p class="settings-item-desc" data-i18n="settingsInterfaceLanguageDesc">
+                  Choose the extension UI language, or follow the browser language automatically.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <select id="language-mode" class="select-input"></select>
+              </div>
+            </article>
+            <article class="settings-item">
+              <div class="settings-item-info">
                 <label class="settings-item-label" for="track-google-search-pages" data-i18n="settingsSeparateGoogleSearchPages">
                   Separate Google search pages
                 </label>
@@ -203,10 +216,10 @@
                   Native app download
                 </p>
                 <p class="settings-item-desc" data-i18n="settingsNativeAppDownloadDesc">
-                  Download the local app package from GitHub when system-level hidden real tabs are needed.
+                  Download the Windows-only local app package from GitHub when system-level hidden real tabs are needed.
                 </p>
                 <p class="settings-item-desc" data-i18n="settingsNativeAppBindingOrder">
-                  To bind the extension and native app, install or enable the extension first, then run the native app installer or start the native app. After binding succeeds, the extension can wake the native app automatically.
+                  To bind the extension and Windows native app, install or enable the extension first, then run the native app installer or start the native app. After binding succeeds, the extension can wake the native app automatically.
                 </p>
               </div>
               <div class="settings-item-control native-app-download-control">
