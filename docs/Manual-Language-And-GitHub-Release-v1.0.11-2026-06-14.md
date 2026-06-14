@@ -91,3 +91,5 @@ GitHub Release itself does not provide separate localized release-note fields. T
 ```
 
 The `name` attribute is best-effort accordion behavior in browsers that support and preserve it. If GitHub strips the attribute, the page still works as clickable collapsed language sections. If a real dropdown, automatic locale detection, or styled tabs are needed later, build a small GitHub Pages documentation site and link the release page to that site.
+
+The release note body should not mention internal packaging policy or the fact that the language switch is implemented with source Markdown sections. Keep those details out of visible user-facing copy. If maintainers need context, use a Markdown HTML comment near the top of `docs/Release-Notes-v1.0.11.md`.
