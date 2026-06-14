@@ -6,7 +6,7 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | Français | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
-Smart Preload prepare les pages que vous avez le plus de chances d'ouvrir ensuite, afin que la recherche, la comparaison, la lecture de documentation et le travail avec de nombreux onglets soient moins interrompus.
+Smart Preload utilise des algorithmes de préchargement intelligents pour réduire le temps d'attente ressenti au chargement et améliorer l'expérience de navigation.
 
 Il est surtout utile lorsque vous parcourez des resultats de recherche, comparez des pages ou passez souvent entre des sites lies.
 

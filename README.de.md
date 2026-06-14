@@ -6,7 +6,7 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | Deutsch | [Français](README.fr.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
-Smart Preload bereitet Seiten vor, die Sie wahrscheinlich als Naechstes oeffnen. Recherche, Vergleiche, Dokumentation und Arbeit mit vielen Tabs fuehlen sich dadurch weniger unterbrochen an.
+Smart Preload nutzt intelligente Vorladealgorithmen, um wahrgenommene Wartezeiten beim Laden zu reduzieren und das Browsing-Erlebnis zu verbessern.
 
 Es hilft besonders, wenn Sie Suchergebnisse durchgehen, Seiten vergleichen oder oft zwischen verwandten Websites wechseln.
 

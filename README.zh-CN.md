@@ -6,7 +6,7 @@
 
 [English](README.md) | 简体中文 | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
-智能预加载会提前准备你很可能下一步打开的页面，让连续浏览、资料检索、页面对比和文档阅读少一点等待感。
+智能预加载使用智能的预加载算法，减少用户感受到的页面加载等待时间，并提升整体浏览体验。
 
 它最适合多标签办公、查资料、看搜索结果、比价、查文档，以及经常在相关页面之间来回跳转的场景。
 

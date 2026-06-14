@@ -6,7 +6,7 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | 한국어 | [Deutsch](README.de.md) | [Français](README.fr.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
-Smart Preload는 다음에 열 가능성이 높은 페이지를 미리 준비해 조사, 비교, 문서 읽기, 여러 탭 작업의 대기감을 줄입니다.
+Smart Preload는 지능형 프리로드 알고리즘을 사용해 체감 로딩 대기 시간을 줄이고 브라우징 경험을 개선합니다.
 
 검색 결과를 계속 열어 보거나, 상품과 자료를 비교하거나, 관련 페이지 사이를 자주 오가는 상황에 적합합니다.
 

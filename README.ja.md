@@ -6,7 +6,7 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | 日本語 | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
-Smart Preload は、次に開く可能性が高いページを先に準備し、調査、比較、ドキュメント閲覧、複数タブ作業の待ち時間を減らします。
+Smart Preload はインテリジェントなプリロードアルゴリズムを使い、体感の読み込み待ち時間を減らしてブラウジング体験を高めます。
 
 検索結果を順に開く、商品や資料を比較する、関連ページを何度も行き来する、といった使い方に向いています。
 

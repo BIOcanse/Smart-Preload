@@ -6,7 +6,7 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | 繁體中文 | [日本語](README.ja.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
-智慧預載會提前準備你很可能下一步開啟的頁面，讓連續瀏覽、資料搜尋、頁面比較和文件閱讀少一點等待感。
+智慧預載使用智慧的預載演算法，降低使用者感受到的頁面載入等待時間，並提升整體瀏覽體驗。
 
 它最適合多分頁工作、查資料、看搜尋結果、比價、查文件，以及經常在相關頁面之間切換的場景。
 
