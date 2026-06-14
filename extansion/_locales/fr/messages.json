@@ -294,10 +294,10 @@
     "message": "Téléchargement de l'application native"
   },
   "settingsNativeAppDownloadDesc": {
-    "message": "Téléchargez le paquet de l'application native depuis GitHub lorsque le masquage système des vrais onglets en arrière-plan est nécessaire."
+    "message": "Téléchargez le paquet Windows uniquement de l'application native depuis GitHub lorsque le masquage système des vrais onglets en arrière-plan est nécessaire."
   },
   "settingsNativeAppBindingOrder": {
-    "message": "Pour lier l'extension et l'application native, installez ou activez d'abord l'extension, puis lancez l'installateur ou l'application native. Une fois la liaison réussie, l'extension peut lancer l'application native automatiquement."
+    "message": "Pour lier l'extension et l'application native Windows, installez ou activez d'abord l'extension, puis lancez l'installateur ou l'application native. Une fois la liaison réussie, l'extension peut lancer l'application native automatiquement."
   },
   "settingsNativeAppDownloadLink": {
     "message": "Versions GitHub"
@@ -793,5 +793,18 @@
   },
   "settingsDiagnosticsLoggingDesc": {
     "message": "Une fois activ?, les diagnostics d?ex?cution sont ?crits en JSONL dans le dossier portable logs de l?application locale."
-  }
+  },
+  "settingsInterfaceLanguage": { "message": "Langue de l'interface" },
+  "settingsInterfaceLanguageDesc": { "message": "Choisissez la langue de l'interface de l'extension ou suivez automatiquement la langue du navigateur." },
+  "languageAuto": { "message": "Automatique" },
+  "languageEnglish": { "message": "Anglais" },
+  "languageChineseSimplified": { "message": "Chinois simplifié" },
+  "languageChineseTraditional": { "message": "Chinois traditionnel" },
+  "languageJapanese": { "message": "Japonais" },
+  "languageKorean": { "message": "Coréen" },
+  "languageGerman": { "message": "Allemand" },
+  "languageFrench": { "message": "Français" },
+  "languageSpanish": { "message": "Espagnol" },
+  "languagePortugueseBrazil": { "message": "Portugais (Brésil)" },
+  "languageRussian": { "message": "Russe" }
 }

@@ -294,10 +294,10 @@
     "message": "本地 App 下載"
   },
   "settingsNativeAppDownloadDesc": {
-    "message": "需要系統級隱藏真實背景分頁時，請從 GitHub 下載本地 App 套件。"
+    "message": "需要系統級隱藏真實背景分頁時，請從 GitHub 下載僅支援 Windows 的本地 App 套件。"
   },
   "settingsNativeAppBindingOrder": {
-    "message": "若要綁定插件和本地 App，請先安裝或啟用瀏覽器插件，再執行本地 App 安裝腳本或啟動本地 App。綁定成功後，後續插件可以自動拉起本地 App。"
+    "message": "若要綁定插件和 Windows 本地 App，請先安裝或啟用瀏覽器插件，再執行本地 App 安裝腳本或啟動本地 App。綁定成功後，後續插件可以自動拉起本地 App。"
   },
   "settingsNativeAppDownloadLink": {
     "message": "GitHub 發布頁"
@@ -793,5 +793,18 @@
   },
   "settingsDiagnosticsLoggingDesc": {
     "message": "开启后，运行诊断日志会以 JSONL 文件写入本地 app 的 portable/logs 目录。"
-  }
+  },
+  "settingsInterfaceLanguage": { "message": "介面語言" },
+  "settingsInterfaceLanguageDesc": { "message": "選擇擴充功能介面語言，或自動跟隨瀏覽器語言。" },
+  "languageAuto": { "message": "自動" },
+  "languageEnglish": { "message": "英文" },
+  "languageChineseSimplified": { "message": "簡體中文" },
+  "languageChineseTraditional": { "message": "繁體中文" },
+  "languageJapanese": { "message": "日文" },
+  "languageKorean": { "message": "韓文" },
+  "languageGerman": { "message": "德文" },
+  "languageFrench": { "message": "法文" },
+  "languageSpanish": { "message": "西班牙文" },
+  "languagePortugueseBrazil": { "message": "葡萄牙文（巴西）" },
+  "languageRussian": { "message": "俄文" }
 }

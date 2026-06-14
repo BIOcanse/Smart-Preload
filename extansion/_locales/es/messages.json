@@ -294,10 +294,10 @@
     "message": "Descarga de la app nativa"
   },
   "settingsNativeAppDownloadDesc": {
-    "message": "Descarga el paquete de la app nativa desde GitHub cuando necesites ocultar pestañas reales en segundo plano a nivel del sistema."
+    "message": "Descarga el paquete de la app nativa solo para Windows desde GitHub cuando necesites ocultar pestañas reales en segundo plano a nivel del sistema."
   },
   "settingsNativeAppBindingOrder": {
-    "message": "Para vincular la extensión y la app nativa, instala o activa primero la extensión y luego ejecuta el instalador de la app nativa o inicia la app nativa. Después de vincularse, la extensión puede iniciar la app nativa automáticamente."
+    "message": "Para vincular la extensión y la app nativa de Windows, instala o activa primero la extensión y luego ejecuta el instalador de la app nativa o inicia la app nativa. Después de vincularse, la extensión puede iniciar la app nativa automáticamente."
   },
   "settingsNativeAppDownloadLink": {
     "message": "Versiones de GitHub"
@@ -793,5 +793,18 @@
   },
   "settingsDiagnosticsLoggingDesc": {
     "message": "Cuando est? activado, los diagn?sticos de ejecuci?n se escriben como JSONL en la carpeta portable logs de la app local."
-  }
+  },
+  "settingsInterfaceLanguage": { "message": "Idioma de la interfaz" },
+  "settingsInterfaceLanguageDesc": { "message": "Elige el idioma de la interfaz de la extensión o sigue automáticamente el idioma del navegador." },
+  "languageAuto": { "message": "Automático" },
+  "languageEnglish": { "message": "Inglés" },
+  "languageChineseSimplified": { "message": "Chino simplificado" },
+  "languageChineseTraditional": { "message": "Chino tradicional" },
+  "languageJapanese": { "message": "Japonés" },
+  "languageKorean": { "message": "Coreano" },
+  "languageGerman": { "message": "Alemán" },
+  "languageFrench": { "message": "Francés" },
+  "languageSpanish": { "message": "Español" },
+  "languagePortugueseBrazil": { "message": "Portugués (Brasil)" },
+  "languageRussian": { "message": "Ruso" }
 }

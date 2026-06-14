@@ -214,7 +214,7 @@ Reviewer setup:
 2. Extract the native app zip to a normal writable folder.
 3. Run install-register.cmd in the extracted native app folder.
 4. Open Chrome or Edge, then use regular web pages to verify prediction/preload behavior.
-5. The native app is a local Windows tray/API helper. It exposes local endpoints only on 127.0.0.1:45831 and only accepts extension origins or an explicit local debug token.
+5. The native app is a Windows-only local tray/API helper. It exposes local endpoints only on 127.0.0.1:45831 and only accepts extension origins or an explicit local debug token.
 
 Important setup order:
 - For the first binding, install or enable the browser extension before running install-register.cmd or starting the native app.
@@ -244,6 +244,9 @@ Contents:
 - zero-latency-web-app-windows-x64-v$Version.zip
 - SHA256SUMS.txt
 
+Native app platform:
+- Windows only. No macOS or Linux native app package is provided.
+
 Install:
 1. Install or load the extension package.
 2. Extract the Windows app package.
@@ -255,6 +258,8 @@ Important native app binding order:
 - After binding succeeds, the extension can wake the native app automatically when the app is offline.
 
 Chrome Web Store builds should use the Chrome Web Store upload zip and Chrome-managed extension updates. The local app updates independently through signed or manually supplied app packages.
+
+Public GitHub release assets for this version are limited to the full release package, extension-only package, and Windows app-only package.
 "@
 
 $testGuide = @"

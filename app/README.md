@@ -1,9 +1,11 @@
 # Zero-Latency Web Local App
 
-Windows tray app that exposes local hardware and performance data for the Chrome extension.
+Windows-only tray app that exposes local hardware and performance data for the Chrome extension.
+No macOS or Linux native app package is provided.
 
 ## Current scope
 
+- Supported platform: Windows only.
 - System tray resident app with an `Exit` menu item
 - Local HTTP API on `127.0.0.1:45831`
 - No local AI runtime/model management. AI provider keys and inference calls are owned by the extension.

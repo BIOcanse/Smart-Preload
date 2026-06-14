@@ -85,3 +85,10 @@
 - 后台真实预加载 tab 被用户点击命中后，由 `recordActivatedPreloadedTransition` 在 `chrome.tabs.move` 前写一条真实跳转消息；目标 URL 优先使用已加载 tab 的真实 URL，其次使用 entry loadedUrl，最后才回退到点击 URL。
 - 原生 `prerender/instant` 一类 `webNavigation.onTabReplaced` 不再只迁移 tabState；现在会读取 replacement tab 当前 URL，并紧接着写一条 `eventType=tab-replaced` 的真实跳转。若后续 commit 再到，会被 self-transition 跳过，避免重复计数。
 - 内容脚本托管当前页点击后，如果最终 fallback 到 `location.assign`，后台会先给当前 tab 写 `pendingSources[tabId]`。后续 commit 即使被 Chrome 标成 `generated` 而不是 `link`，也会因为存在 source-lock 写真实跳转；没有 source-lock 的非 link 导航仍只更新当前页状态。
+
+## 2026-06-14 v1.0.11 发布准备
+
+- 新增设置页手动语言选择：`auto`、`en`、`zh_CN`、`zh_TW`、`ja`、`ko`、`de`、`fr`、`es`、`pt_BR`、`ru`。
+- 扩展 UI i18n 改为先异步加载用户选择的 `_locales` 包，再用同步 `t()` 渲染设置页和弹窗，避免打开时闪到浏览器语言。
+- 设置模型新增 `appearance.languageMode`，设置 storage version 升到 28；非法语言值归一到 `auto`。
+- v1.0.11 GitHub release 只上传三类资产：组合包、单扩展包、单 Windows app 包。本地 app 明确为 Windows-only。

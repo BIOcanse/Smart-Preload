@@ -5,10 +5,8 @@ const i18n = globalThis.ZeroLatencyI18n;
 const t = (key, substitutions = [], fallback = "") =>
   i18n?.t?.(key, substitutions, fallback) || fallback || key;
 
-i18n?.applyDocument?.(document);
-compactInlineSettingDescriptions(document);
-
 const formElements = {
+  languageMode: document.getElementById("language-mode"),
   trackGoogleSearchPages: document.getElementById("track-google-search-pages"),
   excludeGoogleInternalPages: document.getElementById("exclude-google-internal-pages"),
   excludeLocalPages: document.getElementById("exclude-local-pages"),
@@ -101,7 +99,10 @@ let historyUtcClockTimerId = null;
 void initializeSettingsPage();
 
 async function initializeSettingsPage() {
+  await i18n?.initialize?.();
+  refreshLocalizedUiText();
   populateTransitionWindowOptions();
+  populateLanguageOptions();
   populateAiProviderOptions();
   bindUiEvents();
   startHistoryUtcClock();
@@ -119,6 +120,25 @@ async function initializeSettingsPage() {
   } catch (error) {
     console.error(error);
     setStatus(t("commonFailed", [], "Failed"), t("settingsCouldNotLoad", [], "Could not load settings from storage."));
+  }
+}
+
+function refreshLocalizedUiText() {
+  settingsApi.refreshLocalizedText?.();
+  i18n?.applyDocument?.(document);
+  compactInlineSettingDescriptions(document);
+}
+
+function populateLanguageOptions() {
+  const options = Array.isArray(i18n?.LANGUAGE_OPTIONS) ? i18n.LANGUAGE_OPTIONS : [];
+
+  formElements.languageMode.textContent = "";
+
+  for (const optionSpec of options) {
+    const option = document.createElement("option");
+    option.value = String(optionSpec.value);
+    option.textContent = t(optionSpec.labelKey, [], optionSpec.fallback);
+    formElements.languageMode.append(option);
   }
 }
 
@@ -172,13 +192,7 @@ function bindUiEvents() {
   });
 
   resetButton.addEventListener("click", () => {
-    draftSettings = settingsApi.cloneSettings(settingsApi.DEFAULT_SETTINGS);
-    renderForm(draftSettings);
-    if (isDirty()) {
-      setDirtyStatus(t("settingsDefaultsRestored", [], "Defaults restored in the form. Save to apply."));
-    } else {
-      setStatus(t("commonReady", [], "Ready"), t("settingsNoUnsavedChanges", [], "No unsaved changes."));
-    }
+    void resetDraftSettings();
   });
 
   historyDeleteButtonElement?.addEventListener("click", () => {
@@ -204,6 +218,17 @@ function bindUiEvents() {
   });
   window.addEventListener("resize", queueNavScrollSync);
 
+}
+
+async function resetDraftSettings() {
+  draftSettings = settingsApi.cloneSettings(settingsApi.DEFAULT_SETTINGS);
+  await applyLanguageModeToPage(draftSettings.appearance.languageMode);
+  renderForm(draftSettings);
+  if (isDirty()) {
+    setDirtyStatus(t("settingsDefaultsRestored", [], "Defaults restored in the form. Save to apply."));
+  } else {
+    setStatus(t("commonReady", [], "Ready"), t("settingsNoUnsavedChanges", [], "No unsaved changes."));
+  }
 }
 
 async function handleDeleteHistoryRange() {
@@ -421,6 +446,12 @@ async function handleFormChange(event) {
   }
 
   draftSettings = readFormSettings();
+
+  if (event?.target === formElements.languageMode) {
+    await applyLanguageModeToPage(draftSettings.appearance.languageMode);
+    renderForm(draftSettings);
+  }
+
   if (isSchedulerFormElement(event?.target)) {
     syncSchedulerFieldsFromSettings(draftSettings);
   }
@@ -437,7 +468,9 @@ async function handleFormChange(event) {
   ) {
     void ensureSelectedLmStudioModelLoadedFromSettings(draftSettings);
   }
-  renderRuleCards(draftSettings);
+  if (event?.target !== formElements.languageMode) {
+    renderRuleCards(draftSettings);
+  }
   updateComputedState(draftSettings);
   syncAiPredictionMismatchWarning();
   queueNavScrollSync();
@@ -447,6 +480,18 @@ async function handleFormChange(event) {
   } else {
     setStatus(t("commonReady", [], "Ready"), t("settingsNoUnsavedChanges", [], "No unsaved changes."));
   }
+}
+
+async function applyLanguageModeToPage(languageMode) {
+  const normalizedLanguageMode =
+    settingsApi.normalizeLanguageMode?.(languageMode) ||
+    i18n?.normalizeLanguageMode?.(languageMode) ||
+    "auto";
+  await i18n?.setLanguageMode?.(normalizedLanguageMode);
+  refreshLocalizedUiText();
+  populateLanguageOptions();
+  populateTransitionWindowOptions();
+  populateAiProviderOptions();
 }
 
 function isSchedulerFormElement(element) {
@@ -487,6 +532,9 @@ function readFormSettings() {
 
   return settingsApi.normalizeStoredSettings({
     automaticDeviceTuning: draftSettings.automaticDeviceTuning,
+    appearance: {
+      languageMode: formElements.languageMode.value,
+    },
     tracking: {
       trackGoogleSearchPages: formElements.trackGoogleSearchPages.checked,
       excludeGoogleInternalPages: formElements.excludeGoogleInternalPages.checked,
@@ -558,6 +606,7 @@ function renderForm(settings) {
 }
 
 function syncBaseControlsFromSettings(settings) {
+  formElements.languageMode.value = settings.appearance?.languageMode || "auto";
   formElements.trackGoogleSearchPages.checked = settings.tracking.trackGoogleSearchPages;
   formElements.excludeGoogleInternalPages.checked = settings.tracking.excludeGoogleInternalPages;
   formElements.excludeLocalPages.checked = settings.tracking.excludeLocalPages !== false;
@@ -1186,7 +1235,27 @@ function compactInlineSettingDescriptions(root = document) {
     const labelElement = infoBlock.querySelector(".settings-item-label");
     const descriptionElement = infoBlock.querySelector(".settings-item-desc");
 
-    if (!labelElement || !descriptionElement || labelElement.querySelector(".settings-help")) {
+    if (!labelElement) {
+      continue;
+    }
+
+    if (labelElement.dataset.helpI18nKey || labelElement.dataset.helpFallback) {
+      const helpText = labelElement.dataset.helpI18nKey
+        ? t(labelElement.dataset.helpI18nKey, [], labelElement.dataset.helpFallback || "")
+        : labelElement.dataset.helpFallback || "";
+
+      labelElement.querySelector(".settings-help")?.remove();
+
+      if (helpText.trim()) {
+        labelElement.classList.add("settings-item-label-row");
+        labelElement.append(createSettingsHelpIcon(helpText.trim(), labelElement.textContent.trim()));
+      }
+
+      descriptionElement?.remove();
+      continue;
+    }
+
+    if (!descriptionElement || labelElement.querySelector(".settings-help")) {
       continue;
     }
 
@@ -1197,6 +1266,9 @@ function compactInlineSettingDescriptions(root = document) {
       continue;
     }
 
+    labelElement.dataset.helpI18nKey = descriptionElement.getAttribute("data-i18n") || "";
+    labelElement.dataset.helpFallback =
+      descriptionElement.getAttribute("data-i18n-fallback") || helpText;
     labelElement.classList.add("settings-item-label-row");
     labelElement.append(createSettingsHelpIcon(helpText, labelElement.textContent.trim()));
     descriptionElement.remove();

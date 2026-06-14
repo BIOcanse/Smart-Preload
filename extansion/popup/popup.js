@@ -18,48 +18,53 @@ let snapshotLoadInFlight = false;
 let snapshotReloadQueued = false;
 let performanceWarningRefreshInFlight = false;
 
-i18n?.applyDocument?.(document);
+void initializePopup();
 
-refreshButton.addEventListener("click", () => {
-  void loadSnapshot();
-});
+async function initializePopup() {
+  await i18n?.initialize?.();
+  i18n?.applyDocument?.(document);
 
-serviceToggleButton.addEventListener("click", () => {
-  void toggleServicePaused();
-});
+  refreshButton.addEventListener("click", () => {
+    void loadSnapshot();
+  });
 
-settingsButton.addEventListener("click", async () => {
-  try {
-    const response = await chrome.runtime.sendMessage({
-      type: "extension:open-settings",
-    });
+  serviceToggleButton.addEventListener("click", () => {
+    void toggleServicePaused();
+  });
 
-    if (response?.ok === false) {
-      throw new Error(response.error || t("popupOpenSettingsFailed", [], "Failed to open settings page."));
+  settingsButton.addEventListener("click", async () => {
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: "extension:open-settings",
+      });
+
+      if (response?.ok === false) {
+        throw new Error(response.error || t("popupOpenSettingsFailed", [], "Failed to open settings page."));
+      }
+
+      window.close();
+    } catch (error) {
+      console.error(error);
+      statusTextElement.textContent = t("popupOpenSettingsFailed", [], "Failed to open settings page.");
     }
+  });
 
-    window.close();
-  } catch (error) {
-    console.error(error);
-    statusTextElement.textContent = t("popupOpenSettingsFailed", [], "Failed to open settings page.");
-  }
-});
+  void loadSnapshot();
 
-void loadSnapshot();
-
-chrome.tabs?.onActivated?.addListener?.(() => {
-  scheduleSnapshotReload();
-});
-
-chrome.tabs?.onUpdated?.addListener?.((_tabId, changeInfo, tab) => {
-  if (tab?.active === true && (changeInfo?.url || changeInfo?.status === "complete")) {
+  chrome.tabs?.onActivated?.addListener?.(() => {
     scheduleSnapshotReload();
-  }
-});
+  });
 
-chrome.windows?.onFocusChanged?.addListener?.(() => {
-  scheduleSnapshotReload();
-});
+  chrome.tabs?.onUpdated?.addListener?.((_tabId, changeInfo, tab) => {
+    if (tab?.active === true && (changeInfo?.url || changeInfo?.status === "complete")) {
+      scheduleSnapshotReload();
+    }
+  });
+
+  chrome.windows?.onFocusChanged?.addListener?.(() => {
+    scheduleSnapshotReload();
+  });
+}
 
 function scheduleSnapshotReload() {
   window.clearTimeout(snapshotReloadTimerId);
