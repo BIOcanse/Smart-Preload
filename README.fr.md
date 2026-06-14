@@ -6,35 +6,37 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | Français | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
-Smart Preload est une extension pour Chrome et Edge qui precharge plus activement les pages que vous etes susceptible d'ouvrir ensuite. Elle combine le score des liens, l'historique d'activite des onglets, le prechargement au survol et une application Windows pour mieux controler les fenetres en arriere-plan.
+Smart Preload prepare les pages que vous avez le plus de chances d'ouvrir ensuite, afin que la navigation paraisse plus rapide. Il convient a la recherche, au travail, a la lecture avec de nombreux onglets, aux comparaisons d'achat et a la consultation de documentation.
+
+Smart Preload travaille discretement pendant la navigation, prepare plus tot les pages probablement utiles et garde des controles pour la confidentialite, les performances et le comportement du navigateur.
+
+## Ce que vous obtenez
+
+- Des changements de page plus rapides quand la page suivante est deja preparee.
+- Une meilleure experience pour les personnes qui travaillent avec beaucoup d'onglets.
+- Les liens peuvent etre prepares des le survol ou le clic droit.
+- Les modes de prechargement normal et de prechargement plus actif en arriere-plan peuvent etre regles separement.
+- Vous pouvez exclure les pages locales, les pages de reseau prive, les pages Google, les fenetres privees et la navigation liee a un proxy configure.
+- La langue de l'interface peut etre detectee automatiquement ou choisie manuellement.
+- Les donnees d'historique peuvent etre copiees avec leur dossier vers un nouvel ordinateur ou une nouvelle version.
 
 ## Telechargement
 
 Telechargez la derniere version depuis [GitHub Releases](https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/latest).
 
-L'application Windows est facultative mais recommandee. Elle est disponible uniquement pour Windows et sert au Native Messaging, a la recuperation par watchdog, aux instantanes de performance et au controle des fenetres en arriere-plan.
+Smart Preload peut fonctionner uniquement comme extension de navigateur. L'application Windows optionnelle ameliore l'integration locale et aide l'extension et l'application a se reconnecter automatiquement quand c'est necessaire. L'application est disponible uniquement pour Windows.
 
-## Installation
+## Premiere configuration
 
 1. Installez ou activez d'abord l'extension dans Chrome ou Edge.
-2. Extrayez le package de l'application Windows.
+2. Si vous voulez utiliser l'application Windows, extrayez le package de l'application.
 3. Executez `install-register.cmd` dans le dossier app extrait, ou lancez l'application une fois.
-4. Apres la premiere liaison reussie, l'extension peut lancer automatiquement l'application locale.
+4. Apres la premiere liaison reussie, les lancements suivants peuvent se reconnecter automatiquement.
 
-Si l'application n'est pas detectee pendant environ une minute, l'extension peut proposer de telecharger l'application ou d'activer le mode de prechargement entierement natif.
+Si l'application n'est pas detectee pendant environ une minute, l'extension peut proposer de telecharger l'application ou d'utiliser un mode de prechargement uniquement navigateur.
 
-## Fonctionnalites
+## Navigateurs pris en charge
 
-- Planification globale du prechargement sur les onglets visibles, pas seulement l'onglet courant.
-- Budgets separes pour les prechargements normaux et les vrais prechargements d'onglets en arriere-plan.
-- Prechargement independant au survol d'un lien ou lors d'un clic droit sur un lien.
-- Exclusions pour les pages locales, les pages de reseau prive, les pages Google, les fenetres de navigation privee et la navigation via proxy configuree.
-- Choix manuel de la langue de l'interface en plus de la detection automatique de la langue du navigateur.
-- Les donnees d'historique locales sont stockees dans un dossier portable et peuvent etre copiees vers un nouvel ordinateur ou une nouvelle version.
-
-## Notes
-
-- Navigateurs pris en charge : versions Chromium de Google Chrome et Microsoft Edge.
-- Application native : Windows uniquement.
-- L'ordre de la premiere liaison est important : installez ou activez d'abord l'extension, puis lancez l'enregistrement de l'application.
-- La logique de prediction reste dans l'extension. L'application locale n'execute pas de modeles AI locaux et ne stocke pas de cles de fournisseurs AI.
+- Google Chrome
+- Microsoft Edge
+- D'autres navigateurs bases sur Chromium peuvent fonctionner, mais Chrome et Edge sont les cibles prevues.

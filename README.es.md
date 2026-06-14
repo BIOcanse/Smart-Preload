@@ -6,35 +6,37 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | Español | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
-Smart Preload es una extension para Chrome y Edge que precarga de forma mas activa las paginas que probablemente abriras a continuacion. Combina puntuacion de enlaces, historial de actividad de pestanas, precarga al pasar el cursor y una app auxiliar de Windows para controlar mejor las ventanas en segundo plano.
+Smart Preload prepara las paginas que probablemente abriras a continuacion para que la navegacion se sienta mas rapida. Esta pensado para investigacion, trabajo, lectura con muchas pestanas, comparacion de compras y consulta de documentacion.
+
+Smart Preload trabaja de forma discreta mientras navegas, prepara antes las paginas que podrian ser utiles y mantiene controles para privacidad, rendimiento y comportamiento del navegador.
+
+## Que obtienes
+
+- Cambios de pagina mas rapidos cuando la siguiente pagina ya esta preparada.
+- Mejor experiencia para quienes trabajan con muchas pestanas, no solo con la pagina actual.
+- Los enlaces pueden prepararse al pasar el cursor o al hacer clic derecho.
+- Puedes controlar por separado la precarga normal y la precarga mas activa en segundo plano.
+- Puedes excluir paginas locales, paginas de red privada, paginas de Google, ventanas de incognito y navegacion relacionada con un proxy configurado.
+- El idioma de la interfaz puede detectarse automaticamente o elegirse manualmente.
+- Los datos historicos pueden copiarse con su carpeta a otro equipo o a una nueva version.
 
 ## Descarga
 
 Descarga la version mas reciente desde [GitHub Releases](https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/latest).
 
-La app de Windows es opcional, pero recomendable. Solo esta disponible para Windows y se usa para Native Messaging, recuperacion por watchdog, capturas de rendimiento y control de ventanas en segundo plano.
+Smart Preload puede funcionar solo como extension del navegador. La app opcional de Windows mejora la integracion local y ayuda a que la extension y la app se reconecten automaticamente cuando sea necesario. La app solo esta disponible para Windows.
 
-## Instalacion
+## Primera configuracion
 
 1. Instala o activa primero la extension en Chrome o Edge.
-2. Extrae el paquete de la app de Windows.
+2. Si quieres usar la app complementaria de Windows, extrae el paquete de la app.
 3. Ejecuta `install-register.cmd` desde la carpeta app extraida, o inicia la app una vez.
-4. Despues del primer enlace correcto, la extension puede iniciar automaticamente la app local.
+4. Despues del primer enlace correcto, los siguientes inicios pueden reconectarse automaticamente.
 
-Si la app no se detecta durante aproximadamente un minuto, la extension puede sugerir descargar la app o activar el modo de precarga totalmente nativo.
+Si la app no se detecta durante aproximadamente un minuto, la extension puede sugerir descargar la app o usar un modo de precarga solo con el navegador.
 
-## Funciones
+## Navegadores compatibles
 
-- Planificacion global de precarga entre pestanas visibles, no solo en la pestana actual.
-- Presupuestos separados para precargas normales y precargas reales de pestanas en segundo plano.
-- Precarga independiente al pasar el cursor sobre enlaces o al hacer clic derecho en enlaces.
-- Exclusiones para paginas locales, paginas de red privada, paginas de Google, ventanas de incognito y navegacion con proxy configurado.
-- Seleccion manual del idioma de la interfaz ademas de la deteccion automatica del idioma del navegador.
-- Los datos historicos locales se guardan en una carpeta portable y pueden copiarse a otro equipo o a una nueva version.
-
-## Notas
-
-- Navegadores compatibles: versiones basadas en Chromium de Google Chrome y Microsoft Edge.
-- App nativa: solo Windows.
-- El orden del primer enlace es importante: instala o activa primero la extension y luego ejecuta el registro de la app.
-- La logica de prediccion permanece en la extension. La app local no ejecuta modelos AI locales ni guarda claves de proveedores AI.
+- Google Chrome
+- Microsoft Edge
+- Otros navegadores basados en Chromium pueden funcionar, pero Chrome y Edge son los objetivos previstos.

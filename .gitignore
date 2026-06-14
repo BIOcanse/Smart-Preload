@@ -7,6 +7,7 @@ app/target-codex/
 extansion/wasm/visit-graph-engine/target/
 
 # Local debug/output scratch space
+docs/
 output/
 dist/
 .claude/

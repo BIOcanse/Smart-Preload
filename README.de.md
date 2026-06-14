@@ -6,35 +6,37 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | Deutsch | [Français](README.fr.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
-Smart Preload ist eine Browsererweiterung fuer Chrome und Edge, die wahrscheinlich als Naechstes geoeffnete Seiten aktiver vorlaedt. Sie kombiniert Link-Bewertung, Tab-Aktivitaetsverlauf, Hover-Preloading und eine Windows-Hilfsapp fuer staerkere Kontrolle von Hintergrundfenstern.
+Smart Preload bereitet Seiten vor, die Sie wahrscheinlich als Naechstes oeffnen, damit sich das Surfen schneller anfuehlt. Es passt zu Recherche, Arbeit, Lesen mit vielen Tabs, Preisvergleichen und Dokumentation, wenn Sie haeufig zwischen Seiten wechseln.
+
+Smart Preload arbeitet unauffaellig beim Surfen, bereitet wahrscheinliche naechste Seiten frueher vor und laesst Ihnen zugleich Kontrolle ueber Datenschutz, Leistung und Browserverhalten.
+
+## Was Sie bekommen
+
+- Seitenwechsel fuehlen sich schneller an, wenn die naechste Seite bereits vorbereitet ist.
+- Bessere Unterstuetzung fuer Arbeit mit vielen Tabs, nicht nur fuer die aktuelle Seite.
+- Links koennen schon beim Hover oder Rechtsklick vorbereitet werden.
+- Normales Vorladen und staerkeres Hintergrund-Vorladen lassen sich getrennt steuern.
+- Lokale Seiten, private Netzwerkseiten, Google-Seiten, Inkognito-Fenster und konfigurierte Proxy-Nutzung koennen ausgeschlossen werden.
+- Die Oberflaechensprache kann automatisch erkannt oder manuell gewaehlt werden.
+- Verlaufsdaten lassen sich als Ordner auf einen neuen Computer oder eine neue Version mitnehmen.
 
 ## Download
 
 Laden Sie die neueste Version ueber [GitHub Releases](https://github.com/kingstonwang114514-cloud/zero-latency-web/releases/latest) herunter.
 
-Die Windows-App ist optional, wird aber empfohlen. Sie ist nur fuer Windows verfuegbar und wird fuer Native Messaging, Watchdog-Reparatur, Performance-Snapshots und Hintergrundfenstersteuerung verwendet.
+Smart Preload kann nur als Browsererweiterung genutzt werden. Die optionale Windows-App verbessert die lokale Zusammenarbeit und hilft, Erweiterung und App bei Bedarf automatisch neu zu verbinden. Die App ist nur fuer Windows verfuegbar.
 
-## Installation
+## Erste Einrichtung
 
 1. Installieren oder aktivieren Sie zuerst die Erweiterung in Chrome oder Edge.
-2. Entpacken Sie das Windows-App-Paket.
+2. Wenn Sie die Windows-Begleitapp nutzen moechten, entpacken Sie das App-Paket.
 3. Fuehren Sie `install-register.cmd` im entpackten app-Ordner aus oder starten Sie die App einmal.
-4. Nach der ersten erfolgreichen Kopplung kann die Erweiterung die lokale App automatisch starten.
+4. Nach der ersten erfolgreichen Kopplung kann die Verbindung spaeter automatisch wiederhergestellt werden.
 
-Wenn die App etwa eine Minute lang nicht erkannt wird, kann die Erweiterung zum Download der App oder zum Aktivieren des voll nativen Preload-Modus auffordern.
+Wenn die App etwa eine Minute lang nicht erkannt wird, kann die Erweiterung den Download der App oder einen reinen Browser-Preload-Modus vorschlagen.
 
-## Funktionen
+## Browser-Unterstuetzung
 
-- Globale Preload-Planung ueber sichtbare Tabs hinweg, nicht nur fuer den aktuellen Tab.
-- Getrennte Budgets fuer normale Preloads und echte Hintergrund-Tab-Preloads.
-- Eigenstaendiges Preloading beim Hover ueber Links oder beim Rechtsklick auf Links.
-- Ausschluesse fuer lokale Seiten, private Netzwerkseiten, Google-Seiten, Inkognito-Fenster und konfigurierte Proxy-Nutzung.
-- Manuelle UI-Sprachauswahl zusaetzlich zur automatischen Erkennung der Browsersprache.
-- Lokale Verlaufsdaten liegen in einem portablen Ordner und koennen auf einen neuen Computer oder eine neue Version kopiert werden.
-
-## Hinweise
-
-- Unterstuetzte Browser: Chromium-basierte Versionen von Google Chrome und Microsoft Edge.
-- Native App: nur Windows.
-- Die Reihenfolge bei der ersten Kopplung ist wichtig: zuerst die Erweiterung installieren oder aktivieren, danach die App-Registrierung ausfuehren.
-- Die Vorhersagelogik bleibt in der Erweiterung. Die lokale App fuehrt keine lokalen AI-Modelle aus und speichert keine AI-Anbieter-Schluessel.
+- Google Chrome
+- Microsoft Edge
+- Andere Chromium-basierte Browser koennen funktionieren, Ziel sind aber Chrome und Edge.
