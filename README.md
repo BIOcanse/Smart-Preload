@@ -38,4 +38,3 @@ If the app cannot be detected for about one minute, the extension can prompt you
 - Native app package: Windows only.
 - First binding order matters: install or enable the extension before running the app registration.
 - Extension prediction logic stays in the extension; the app does not run local AI models or store AI provider keys.
-
