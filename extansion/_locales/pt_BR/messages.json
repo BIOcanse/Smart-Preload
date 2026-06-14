@@ -66,7 +66,7 @@
     "message": "P?gina atual"
   },
   "popupNodes": {
-    "message": "N?s"
+    "message": "Nós"
   },
   "popupEdges": {
     "message": "Arestas"
@@ -90,13 +90,13 @@
     "message": "Iniciar"
   },
   "popupSettings": {
-    "message": "Configura??es"
+    "message": "Configurações"
   },
   "popupWaitingForData": {
     "message": "Aguardando dados."
   },
   "popupOpenSettingsFailed": {
-    "message": "Falha ao abrir a p?gina de configura??es."
+    "message": "Falha ao abrir a página de configurações."
   },
   "popupLoadingVisitGraph": {
     "message": "Carregando grafo de visitas..."
@@ -156,7 +156,7 @@
     "message": "Configurações do Pré-carregamento inteligente"
   },
   "settingsTitle": {
-    "message": "Configura??es"
+    "message": "Configurações"
   },
   "settingsNavAriaLabel": {
     "message": "Seções de configurações"
@@ -168,7 +168,7 @@
     "message": "Rastreamento"
   },
   "settingsPreload": {
-    "message": "Pr?-carregamento"
+    "message": "Pré-carregamento"
   },
   "settingsOrdering": {
     "message": "Ordenação"
@@ -183,10 +183,10 @@
     "message": "Filtros simples de classificação"
   },
   "settingsStorageFooter": {
-    "message": "Armazenado no armazenamento local da extens?o."
+    "message": "Armazenado no armazenamento local da extensão."
   },
   "settingsLoadingSettings": {
-    "message": "Carregando configura??es..."
+    "message": "Carregando configurações..."
   },
   "settingsHeroKicker": {
     "message": "Controle de pré-carregamento inteligente"
@@ -273,7 +273,7 @@
     "message": "Controles para preparar abas, reparar com vigilância e definir o comportamento da janela de pré-carregamento."
   },
   "settingsEnablePreloading": {
-    "message": "Ativar pr?-carregamento"
+    "message": "Ativar pré-carregamento"
   },
   "settingsEnablePreloadingDesc": {
     "message": "Interruptor principal para registro de candidatos, abas em segundo plano e troca de abas."
@@ -483,7 +483,7 @@
     "message": "Suspender abas"
   },
   "settingsFullscreenPressurePolicyIgnore": {
-    "message": "Nenhuma a??o"
+    "message": "Nenhuma ação"
   },
   "settingsSecond": {
     "message": "{0} segundo"
@@ -528,13 +528,13 @@
     "message": "Salvo apenas para uso futuro. Atualmente não altera autenticação nem aquecimento."
   },
   "settingsNoUnsavedChanges": {
-    "message": "Nenhuma altera??o n?o salva."
+    "message": "Nenhuma alteração não salva."
   },
   "settingsResetDefaults": {
-    "message": "Restaurar padr?es"
+    "message": "Restaurar padrões"
   },
   "settingsSaveSettings": {
-    "message": "Salvar configura??es"
+    "message": "Salvar configurações"
   },
   "settingsAiModelTask": {
     "message": "Tarefa do modelo de IA"
@@ -794,17 +794,43 @@
   "settingsDiagnosticsLoggingDesc": {
     "message": "Quando ativado, os diagn?sticos de runtime s?o gravados como JSONL na pasta portable logs do app local."
   },
-  "settingsInterfaceLanguage": { "message": "Idioma da interface" },
-  "settingsInterfaceLanguageDesc": { "message": "Escolha o idioma da interface da extensão ou siga automaticamente o idioma do navegador." },
-  "languageAuto": { "message": "Automático" },
-  "languageEnglish": { "message": "Inglês" },
-  "languageChineseSimplified": { "message": "Chinês simplificado" },
-  "languageChineseTraditional": { "message": "Chinês tradicional" },
-  "languageJapanese": { "message": "Japonês" },
-  "languageKorean": { "message": "Coreano" },
-  "languageGerman": { "message": "Alemão" },
-  "languageFrench": { "message": "Francês" },
-  "languageSpanish": { "message": "Espanhol" },
-  "languagePortugueseBrazil": { "message": "Português (Brasil)" },
-  "languageRussian": { "message": "Russo" }
+  "settingsInterfaceLanguage": {
+    "message": "Idioma da interface"
+  },
+  "settingsInterfaceLanguageDesc": {
+    "message": "Escolha o idioma da interface da extensão ou siga automaticamente o idioma do navegador."
+  },
+  "languageAuto": {
+    "message": "Automático"
+  },
+  "languageEnglish": {
+    "message": "Inglês"
+  },
+  "languageChineseSimplified": {
+    "message": "Chinês simplificado"
+  },
+  "languageChineseTraditional": {
+    "message": "Chinês tradicional"
+  },
+  "languageJapanese": {
+    "message": "Japonês"
+  },
+  "languageKorean": {
+    "message": "Coreano"
+  },
+  "languageGerman": {
+    "message": "Alemão"
+  },
+  "languageFrench": {
+    "message": "Francês"
+  },
+  "languageSpanish": {
+    "message": "Espanhol"
+  },
+  "languagePortugueseBrazil": {
+    "message": "Português (Brasil)"
+  },
+  "languageRussian": {
+    "message": "Russo"
+  }
 }

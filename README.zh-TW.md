@@ -10,7 +10,7 @@
 
 它最適合多分頁工作、查資料、看搜尋結果、比價、查文件，以及經常在相關頁面之間切換的場景。
 
-![預載排行](assets/readme/popup-ranking.png)
+![預載排行](assets/readme/zh-TW/popup-ranking.png)
 
 ## 排行有什麼用
 
@@ -30,7 +30,7 @@
 
 臨時暫停可以點彈窗裡的 `停止`。也可以在設定裡關閉 `啟用預載`。如果考試或安全工具還會檢查背景程式，開始前也可以從系統匣退出 Windows 配套 app。
 
-![設定控制項](assets/readme/settings-preload-controls.png)
+![設定控制項](assets/readme/zh-TW/settings-preload-controls.png)
 
 ## 歷史資料和遷移方式
 

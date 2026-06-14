@@ -10,7 +10,7 @@ Smart Preload는 다음에 열 가능성이 높은 페이지를 미리 준비해
 
 검색 결과를 계속 열어 보거나, 상품과 자료를 비교하거나, 관련 페이지 사이를 자주 오가는 상황에 적합합니다.
 
-![Popup ranking](assets/readme/popup-ranking.png)
+![Popup ranking](assets/readme/ko/popup-ranking.png)
 
 ## 순위의 의미
 
@@ -30,7 +30,7 @@ Smart Preload는 다음에 열 가능성이 높은 페이지를 미리 준비해
 
 빠르게 멈추려면 팝업의 `Stop`을 누르세요. 설정에서 `Enable preloading`을 끌 수도 있습니다. 시험 또는 보안 도구가 백그라운드 앱까지 확인한다면 시작 전에 Windows 보조 앱도 트레이에서 종료하세요.
 
-![Settings controls](assets/readme/settings-preload-controls.png)
+![Settings controls](assets/readme/ko/settings-preload-controls.png)
 
 ## 기록 데이터와 이전
 

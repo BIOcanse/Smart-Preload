@@ -10,7 +10,7 @@ Smart Preload は、次に開く可能性が高いページを先に準備し、
 
 検索結果を順に開く、商品や資料を比較する、関連ページを何度も行き来する、といった使い方に向いています。
 
-![Popup ranking](assets/readme/popup-ranking.png)
+![Popup ranking](assets/readme/ja/popup-ranking.png)
 
 ## ランキングの意味
 
@@ -30,7 +30,7 @@ Smart Preload は、次に開く可能性が高いページを先に準備し、
 
 一時停止はポップアップの `Stop` を使います。設定の `Enable preloading` をオフにすることもできます。テストやセキュリティツールがバックグラウンドアプリも確認する場合は、開始前に Windows 連携アプリをトレイから終了してください。
 
-![Settings controls](assets/readme/settings-preload-controls.png)
+![Settings controls](assets/readme/ja/settings-preload-controls.png)
 
 ## 履歴データと移行
 

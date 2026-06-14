@@ -10,7 +10,7 @@ Smart Preload bereitet Seiten vor, die Sie wahrscheinlich als Naechstes oeffnen.
 
 Es hilft besonders, wenn Sie Suchergebnisse durchgehen, Seiten vergleichen oder oft zwischen verwandten Websites wechseln.
 
-![Popup ranking](assets/readme/popup-ranking.png)
+![Popup ranking](assets/readme/de/popup-ranking.png)
 
 ## Was Die Rangliste Bedeutet
 
@@ -30,7 +30,7 @@ Pausieren Sie Smart Preload vor Online-Pruefungen, beaufsichtigten Tests, gesper
 
 Nutzen Sie im Popup `Stop` fuer eine schnelle Pause. Alternativ koennen Sie in den Einstellungen `Enable preloading` deaktivieren. Wenn ein Test- oder Sicherheitstool auch Hintergrund-Apps prueft, beenden Sie vorher die Windows-Begleitapp im Tray.
 
-![Settings controls](assets/readme/settings-preload-controls.png)
+![Settings controls](assets/readme/de/settings-preload-controls.png)
 
 ## Verlaufsdaten Und Migration
 

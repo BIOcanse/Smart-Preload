@@ -12,7 +12,7 @@
     "message": "Chargement"
   },
   "commonFailed": {
-    "message": "?chec"
+    "message": "Échec"
   },
   "commonSaving": {
     "message": "Enregistrement"
@@ -66,13 +66,13 @@
     "message": "Page actuelle"
   },
   "popupNodes": {
-    "message": "N?uds"
+    "message": "Nœuds"
   },
   "popupEdges": {
     "message": "Liens"
   },
   "popupUpdated": {
-    "message": "Mis ? jour"
+    "message": "Mis à jour"
   },
   "popupTop": {
     "message": "Meilleurs"
@@ -84,13 +84,13 @@
     "message": "Actualiser"
   },
   "popupStop": {
-    "message": "Arr?ter"
+    "message": "Arrêter"
   },
   "popupStart": {
     "message": "D?marrer"
   },
   "popupSettings": {
-    "message": "Param?tres"
+    "message": "Paramètres"
   },
   "popupWaitingForData": {
     "message": "En attente des donn?es."
@@ -105,7 +105,7 @@
     "message": "Extension arr?t?e : la pr?diction et le pr?chargement sont d?sactiv?s."
   },
   "popupVisitGraphLoaded": {
-    "message": "Graphe de visites charg?."
+    "message": "Graphe de visites chargé."
   },
   "popupLoadVisitGraphFailed": {
     "message": "Impossible de charger le graphe de visites."
@@ -132,7 +132,7 @@
     "message": "D?marrage de la pr?diction et du pr?chargement..."
   },
   "popupUpdateStateFailed": {
-    "message": "Impossible de mettre ? jour l??tat de l?extension."
+    "message": "Impossible de mettre à jour l'état du plugin."
   },
   "popupRestoreServiceTitle": {
     "message": "Reprendre la pr?diction et le pr?chargement"
@@ -147,7 +147,7 @@
     "message": "Site : {0} (n? {1}, {2}/{3})"
   },
   "popupFreqMeta": {
-    "message": "Fr?q. : site {0}, sortie {1}, interne {2}"
+    "message": "Fréq. : site {0}, sortie {1}, interne {2}"
   },
   "popupBookmarkMeta": {
     "message": "Favori : {0}, rang {1}"
@@ -156,7 +156,7 @@
     "message": "Paramètres du préchargement intelligent"
   },
   "settingsTitle": {
-    "message": "Param?tres"
+    "message": "Paramètres"
   },
   "settingsNavAriaLabel": {
     "message": "Sections des param?tres"
@@ -168,13 +168,13 @@
     "message": "Suivi"
   },
   "settingsPreload": {
-    "message": "Pr?chargement"
+    "message": "Préchargement"
   },
   "settingsOrdering": {
     "message": "Ordre"
   },
   "settingsExperiments": {
-    "message": "Exp?riences"
+    "message": "Expériences"
   },
   "settingsOverviewSub": {
     "message": "Profil d?ex?cution et r?glage automatique"
@@ -183,7 +183,7 @@
     "message": "Filtres de classement simples"
   },
   "settingsStorageFooter": {
-    "message": "Stock? dans le stockage local de l?extension."
+    "message": "Stocké dans le stockage local de l'extension."
   },
   "settingsLoadingSettings": {
     "message": "Chargement des param?tres..."
@@ -246,7 +246,7 @@
     "message": "Contr?le la normalisation des n?uds de navigation et leur ajout au graphe directionnel."
   },
   "settingsSeparateGoogleSearchPages": {
-    "message": "S?parer les pages de recherche Google"
+    "message": "Séparer les pages de recherche Google"
   },
   "settingsSeparateGoogleSearchPagesDesc": {
     "message": "Suit les pages de r?sultats `google/search` comme des n?uds distincts afin d?apprendre les transitions depuis la recherche vers les destinations."
@@ -273,7 +273,7 @@
     "message": "Contr?le la pr?paration des onglets, la r?paration watchdog et le comportement de la fen?tre de pr?chargement."
   },
   "settingsEnablePreloading": {
-    "message": "Activer le pr?chargement"
+    "message": "Activer le préchargement"
   },
   "settingsEnablePreloadingDesc": {
     "message": "Interrupteur principal pour l?enregistrement des candidats, les onglets en arri?re-plan et les ?changes d?onglets."
@@ -522,7 +522,7 @@
     "message": "Enregistr? uniquement pour un usage futur. Cela n?ajoute pas actuellement de pr?diction bas?e sur le pointeur."
   },
   "settingsAuthStateWarmup": {
-    "message": "Pr?paration de l??tat d?authentification"
+    "message": "Préparation de l'état d'authentification"
   },
   "settingsAuthStateWarmupDesc": {
     "message": "Enregistr? uniquement pour un usage futur. Cela ne change pas actuellement l?authentification ni la pr?paration."
@@ -531,10 +531,10 @@
     "message": "Aucune modification non enregistr?e."
   },
   "settingsResetDefaults": {
-    "message": "R?tablir les valeurs par d?faut"
+    "message": "Rétablir les valeurs par défaut"
   },
   "settingsSaveSettings": {
-    "message": "Enregistrer les param?tres"
+    "message": "Enregistrer les paramètres"
   },
   "settingsAiModelTask": {
     "message": "T?che du mod?le IA"
@@ -546,7 +546,7 @@
     "message": "Impossible de charger les param?tres depuis le stockage."
   },
   "settingsCouldNotLoadAiStatus": {
-    "message": "Impossible de charger l??tat du mod?le IA."
+    "message": "Impossible de charger l'état du modèle IA."
   },
   "settingsDefaultsRestored": {
     "message": "Valeurs par d?faut restaur?es dans le formulaire. Enregistrez pour appliquer."
@@ -762,7 +762,7 @@
     "message": "Nombre x de sites ? poids ?lev? du groupe de pr?chargement natif"
   },
   "ruleNativeSiteDesc": {
-    "message": "S?applique aux candidats natifs `prefetch` / `prerender`. D?finit combien de sites ? poids ?lev? entrent dans l??tape d?allocation des cr?neaux de site."
+    "message": "S'applique aux candidats natifs `prefetch` / `prerender`. Définit combien de sites à poids élevé entrent dans l'étape d'allocation des créneaux de site."
   },
   "ruleTabSiteTitle": {
     "message": "Nombre x de sites ? poids ?lev? du groupe de vrais onglets pr?charg?s"
@@ -794,17 +794,43 @@
   "settingsDiagnosticsLoggingDesc": {
     "message": "Une fois activ?, les diagnostics d?ex?cution sont ?crits en JSONL dans le dossier portable logs de l?application locale."
   },
-  "settingsInterfaceLanguage": { "message": "Langue de l'interface" },
-  "settingsInterfaceLanguageDesc": { "message": "Choisissez la langue de l'interface de l'extension ou suivez automatiquement la langue du navigateur." },
-  "languageAuto": { "message": "Automatique" },
-  "languageEnglish": { "message": "Anglais" },
-  "languageChineseSimplified": { "message": "Chinois simplifié" },
-  "languageChineseTraditional": { "message": "Chinois traditionnel" },
-  "languageJapanese": { "message": "Japonais" },
-  "languageKorean": { "message": "Coréen" },
-  "languageGerman": { "message": "Allemand" },
-  "languageFrench": { "message": "Français" },
-  "languageSpanish": { "message": "Espagnol" },
-  "languagePortugueseBrazil": { "message": "Portugais (Brésil)" },
-  "languageRussian": { "message": "Russe" }
+  "settingsInterfaceLanguage": {
+    "message": "Langue de l'interface"
+  },
+  "settingsInterfaceLanguageDesc": {
+    "message": "Choisissez la langue de l'interface de l'extension ou suivez automatiquement la langue du navigateur."
+  },
+  "languageAuto": {
+    "message": "Automatique"
+  },
+  "languageEnglish": {
+    "message": "Anglais"
+  },
+  "languageChineseSimplified": {
+    "message": "Chinois simplifié"
+  },
+  "languageChineseTraditional": {
+    "message": "Chinois traditionnel"
+  },
+  "languageJapanese": {
+    "message": "Japonais"
+  },
+  "languageKorean": {
+    "message": "Coréen"
+  },
+  "languageGerman": {
+    "message": "Allemand"
+  },
+  "languageFrench": {
+    "message": "Français"
+  },
+  "languageSpanish": {
+    "message": "Espagnol"
+  },
+  "languagePortugueseBrazil": {
+    "message": "Portugais (Brésil)"
+  },
+  "languageRussian": {
+    "message": "Russe"
+  }
 }
