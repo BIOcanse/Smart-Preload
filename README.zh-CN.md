@@ -4,7 +4,7 @@
 
 # 智能预加载 / Zero Latency Web
 
-[English](README.md) | 简体中文
+[English](README.md) | 简体中文 | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
 智能预加载是一个支持 Chrome 和 Edge 的浏览器扩展，用于更智能、更积极地预加载你很可能下一步打开的网页。它会结合链接评分、标签页活动历史、鼠标悬停预加载，以及 Windows 本地 app 的后台窗口控制能力。
 
