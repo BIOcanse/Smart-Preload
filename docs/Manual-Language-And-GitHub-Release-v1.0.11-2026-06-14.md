@@ -59,7 +59,9 @@ The manual language setting applies to extension-owned UI pages: settings page, 
 - `extansion/_locales/*/messages.json`
   - Adds language-selector labels and descriptions in every supported locale.
 - `docs/Release-Notes-v1.0.11.md`
-  - Multilingual release notes for GitHub.
+  - GitHub release body language index and download summary.
+- `docs/release-notes/v1.0.11/*.md`
+  - One release note page per language. Do not combine every language into one long document.
 - `scripts/package-release.ps1`
   - Keeps package generation deterministic and updates release README wording for Windows-only app scope.
 
@@ -77,3 +79,13 @@ Changing the language selector updates the current page immediately, but persist
 - Run existing app update catalog test because the release/version selector depends on GitHub asset naming.
 - Run a Chrome-extension package check by executing the release package script.
 - Verify the release output includes the three GitHub assets needed for upload.
+
+## Follow-up Correction
+
+The GitHub release body must not be one document containing all languages. GitHub Release itself does not provide separate localized release-note fields, so the practical structure is:
+
+1. Keep the release body short.
+2. Present language links as the switcher.
+3. Put each language body in its own document under `docs/release-notes/v1.0.11/`.
+
+If a real dropdown or automatic language switch is needed later, build a small GitHub Pages documentation site and link the release page to that site.
