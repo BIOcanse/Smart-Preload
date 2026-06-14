@@ -4,7 +4,7 @@
 
 # Smart Preload / Zero Latency Web
 
-English | [简体中文](README.zh-CN.md)
+English | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Русский](README.ru.md)
 
 Smart Preload is a Chrome and Edge extension that preloads likely next pages more proactively. It combines link scoring, tab activity history, hover preloading, and a Windows helper app for stronger background-window control.
 
@@ -21,7 +21,7 @@ The Windows app is optional but recommended. It is Windows-only and is used for 
 3. Run `install-register.cmd` from the extracted app folder, or start the app once.
 4. After the first successful binding, the extension can wake the local app automatically.
 
-If the app cannot be detected for about one minute, the extension can prompt you to download the app or enable the native-only preload mode.
+If the app cannot be detected for about one minute, the extension can prompt you to download the app or enable the full native preload mode.
 
 ## Features
 
