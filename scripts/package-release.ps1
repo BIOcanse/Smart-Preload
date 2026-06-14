@@ -188,10 +188,25 @@ if ([string]::IsNullOrWhiteSpace($CargoTargetDirectory)) {
   $CargoTargetDirectory = [string]$CargoMetadata.target_directory
 }
 $AppExe = Join-Path ([System.IO.Path]::GetFullPath($CargoTargetDirectory)) "release\zero-latency-web-app.exe"
+$appReadme = @"
+# Smart Preload Windows App
+
+This optional Windows app improves Smart Preload's local browser integration.
+
+First setup:
+1. Install or enable the Smart Preload extension in Chrome or Edge.
+2. Run install-register.cmd from this folder.
+3. Keep this folder in its final location. Run install-register.cmd again if you move it.
+
+After the first successful binding, the extension can reconnect to the app automatically.
+
+Platform: Windows only.
+"@
+
 Copy-File $AppExe (Join-Path $AppStage "zero-latency-web-app.exe")
 Copy-File (Join-Path $AppRoot "install-register.cmd") (Join-Path $AppStage "install-register.cmd")
 Copy-File (Join-Path $AppRoot "install-register.ps1") (Join-Path $AppStage "install-register.ps1")
-Copy-File (Join-Path $AppRoot "README.md") (Join-Path $AppStage "README.md")
+Write-TextFile (Join-Path $AppStage "README.md") $appReadme
 Write-TextFile (Join-Path $AppStage "VERSION.txt") $Version
 New-Item -ItemType Directory -Path (Join-Path $AppStage "portable\native-messaging") -Force | Out-Null
 Assert-NoForbiddenRuntimeFiles $AppStage
@@ -237,29 +252,30 @@ No remote hosted extension code is used. The extension package contains the exec
 "@
 
 $releaseReadme = @"
-# Smart Preload v$Version release package
+# Smart Preload v$Version
 
 Contents:
 - zero-latency-web-extension-v$Version.zip
 - zero-latency-web-app-windows-x64-v$Version.zip
 - SHA256SUMS.txt
 
-Native app platform:
-- Windows only. No macOS or Linux native app package is provided.
+Smart Preload prepares pages you are likely to open next so browsing can feel faster, especially when working across many tabs.
 
 Install:
-1. Install or load the extension package.
-2. Extract the Windows app package.
+1. Install or load the extension package in Chrome or Edge.
+2. If you want the Windows companion app, extract the Windows app package.
 3. Run install-register.cmd from the extracted app folder.
-4. Keep the app folder in its final location. Re-run install-register.cmd if the folder is moved.
+4. Keep the app folder in its final location. Run install-register.cmd again if the folder is moved.
 
-Important native app binding order:
-- For the first binding, install or enable the browser extension before running install-register.cmd or starting the native app.
-- After binding succeeds, the extension can wake the native app automatically when the app is offline.
+First setup order:
+- Install or enable the browser extension before running the Windows app for the first time.
+- After the first successful binding, later launches can reconnect automatically.
 
-Chrome Web Store builds should use the Chrome Web Store upload zip and Chrome-managed extension updates. The local app updates independently through signed or manually supplied app packages.
+Platform:
+- Extension: Chrome and Edge.
+- Companion app: Windows only.
 
-Public GitHub release assets for this version are limited to the full release package, extension-only package, and Windows app-only package.
+The SHA256SUMS.txt file can be used to verify the downloaded zip files.
 "@
 
 $testGuide = @"
