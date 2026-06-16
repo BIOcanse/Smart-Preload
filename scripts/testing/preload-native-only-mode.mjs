@@ -73,28 +73,34 @@ for (const scriptPath of scriptPaths) {
 }
 
 const settingsApi = context.ZeroLatencySettings;
-const allNativeSettings = settingsApi.resolveEffectiveSettings({
+const browserNativeOnlySettings = settingsApi.resolveEffectiveSettings({
   ...settingsApi.DEFAULT_SETTINGS,
   preloading: {
     ...settingsApi.DEFAULT_SETTINGS.preloading,
-    allNativePreloadMode: true,
+    realPreloadEnabled: false,
   },
   experiments: {
     ...settingsApi.DEFAULT_SETTINGS.experiments,
     crossSiteCurrentTabSwap: true,
   },
 });
-const regularSettings = settingsApi.resolveEffectiveSettings({
+const realPreloadSettings = settingsApi.resolveEffectiveSettings({
   ...settingsApi.DEFAULT_SETTINGS,
+  preloading: {
+    ...settingsApi.DEFAULT_SETTINGS.preloading,
+    realPreloadEnabled: true,
+  },
   experiments: {
     ...settingsApi.DEFAULT_SETTINGS.experiments,
     crossSiteCurrentTabSwap: true,
   },
 });
-context.currentSettings = allNativeSettings;
+context.currentSettings = browserNativeOnlySettings;
 
-assert.equal(allNativeSettings.preloading.allNativePreloadMode, true);
-assert.equal(allNativeSettings.experiments.crossSiteCurrentTabSwap, false);
+assert.equal(browserNativeOnlySettings.preloading.realPreloadEnabled, false);
+assert.equal(browserNativeOnlySettings.experiments.crossSiteCurrentTabSwap, false);
+assert.equal(realPreloadSettings.preloading.realPreloadEnabled, true);
+assert.equal(realPreloadSettings.experiments.crossSiteCurrentTabSwap, true);
 assert.equal(
   context.determinePreloadStrategy(
     {
@@ -103,7 +109,7 @@ assert.equal(
       targetHint: "_blank",
       outboundPageTransitionCount: 3,
     },
-    regularSettings
+    realPreloadSettings
   ),
   "hidden-tab"
 );
@@ -115,7 +121,7 @@ assert.equal(
       targetHint: "_blank",
       outboundPageTransitionCount: 3,
     },
-    allNativeSettings
+    browserNativeOnlySettings
   ),
   "prefetch"
 );
@@ -126,7 +132,7 @@ assert.equal(
       isSameOrigin: true,
       targetHint: "_self",
     },
-    allNativeSettings
+    browserNativeOnlySettings
   ),
   "prerender"
 );
@@ -135,7 +141,7 @@ assert.deepEqual(
   JSON.parse(
     JSON.stringify(
       context.ZeroLatencyPreloadNativeOnlyPolicy.peekNativeAppModeWarning(
-        regularSettings,
+        realPreloadSettings,
         { now: 1000 }
       )
     )
@@ -149,7 +155,7 @@ assert.deepEqual(
   JSON.parse(
     JSON.stringify(
       await context.ZeroLatencyPreloadNativeOnlyPolicy.buildNativeAppModeWarning(
-        regularSettings,
+        realPreloadSettings,
         { now: 1000 }
       )
     )
@@ -166,7 +172,7 @@ assert.deepEqual(
 assert.equal(
   (
     await context.ZeroLatencyPreloadNativeOnlyPolicy.buildNativeAppModeWarning(
-      regularSettings,
+      realPreloadSettings,
       { now: 60999 }
     )
   ).active,
@@ -176,7 +182,7 @@ assert.deepEqual(
   JSON.parse(
     JSON.stringify(
       await context.ZeroLatencyPreloadNativeOnlyPolicy.buildNativeAppModeWarning(
-        regularSettings,
+        realPreloadSettings,
         { now: 61000 }
       )
     )
@@ -184,9 +190,9 @@ assert.deepEqual(
   {
     active: true,
     reason: "native-app-unavailable",
-    messageKey: "nativeAppMissingDownloadOrEnableAllNativePreloadMode",
+    messageKey: "nativeAppMissingDownloadOrDisableRealPreload",
     messageFallback:
-      "Native app has not been detected for 1 minute. Download the native app or enable all-native preload mode.",
+      "Real Preload needs the Windows app. It has not been detected for 1 minute; install the app or turn off Real Preload.",
     observedAtMs: 1000,
     delayMs: 60000,
   }
@@ -195,7 +201,7 @@ assert.deepEqual(
   JSON.parse(
     JSON.stringify(
       context.ZeroLatencyPreloadNativeOnlyPolicy.peekNativeAppModeWarning(
-        regularSettings,
+        realPreloadSettings,
         { now: 61000 }
       )
     )
@@ -203,9 +209,9 @@ assert.deepEqual(
   {
     active: true,
     reason: "native-app-unavailable",
-    messageKey: "nativeAppMissingDownloadOrEnableAllNativePreloadMode",
+    messageKey: "nativeAppMissingDownloadOrDisableRealPreload",
     messageFallback:
-      "Native app has not been detected for 1 minute. Download the native app or enable all-native preload mode.",
+      "Real Preload needs the Windows app. It has not been detected for 1 minute; install the app or turn off Real Preload.",
     observedAtMs: 1000,
     delayMs: 60000,
   }
@@ -213,7 +219,9 @@ assert.deepEqual(
 assert.deepEqual(
   JSON.parse(
     JSON.stringify(
-      await context.ZeroLatencyPreloadNativeOnlyPolicy.buildNativeAppModeWarning(allNativeSettings)
+      await context.ZeroLatencyPreloadNativeOnlyPolicy.buildNativeAppModeWarning(
+        browserNativeOnlySettings
+      )
     )
   ),
   { active: false }
@@ -222,7 +230,7 @@ assert.deepEqual(
   JSON.parse(
     JSON.stringify(
       await context.ZeroLatencyPreloadNativeOnlyPolicy.buildNativeAppModeWarning(
-        regularSettings,
+        realPreloadSettings,
         { now: 70000 }
       )
     )
@@ -240,7 +248,7 @@ await context.ZeroLatencyPreloadNativeOnlyPolicy.resetNativeAppModeWarningState(
 await context.ZeroLatencyPreloadNativeOnlyPolicy.handleSystemLevelWindowHidingUsabilityChange(
   false,
   {
-    settings: regularSettings,
+    settings: realPreloadSettings,
     now: 90000,
   }
 );
@@ -248,7 +256,7 @@ assert.deepEqual(
   JSON.parse(
     JSON.stringify(
       await context.ZeroLatencyPreloadNativeOnlyPolicy.buildNativeAppModeWarning(
-        regularSettings,
+        realPreloadSettings,
         { now: 150000 }
       )
     )
@@ -256,9 +264,9 @@ assert.deepEqual(
   {
     active: true,
     reason: "native-app-unavailable",
-    messageKey: "nativeAppMissingDownloadOrEnableAllNativePreloadMode",
+    messageKey: "nativeAppMissingDownloadOrDisableRealPreload",
     messageFallback:
-      "Native app has not been detected for 1 minute. Download the native app or enable all-native preload mode.",
+      "Real Preload needs the Windows app. It has not been detected for 1 minute; install the app or turn off Real Preload.",
     observedAtMs: 90000,
     delayMs: 60000,
   }
@@ -267,7 +275,7 @@ assert.deepEqual(
   JSON.parse(
     JSON.stringify(
       context.ZeroLatencyPreloadNativeOnlyPolicy.peekNativeAppModeWarning(
-        regularSettings,
+        realPreloadSettings,
         { now: 150000 }
       )
     )
@@ -275,9 +283,9 @@ assert.deepEqual(
   {
     active: true,
     reason: "native-app-unavailable",
-    messageKey: "nativeAppMissingDownloadOrEnableAllNativePreloadMode",
+    messageKey: "nativeAppMissingDownloadOrDisableRealPreload",
     messageFallback:
-      "Native app has not been detected for 1 minute. Download the native app or enable all-native preload mode.",
+      "Real Preload needs the Windows app. It has not been detected for 1 minute; install the app or turn off Real Preload.",
     observedAtMs: 90000,
     delayMs: 60000,
   }
@@ -285,7 +293,7 @@ assert.deepEqual(
 await context.ZeroLatencyPreloadNativeOnlyPolicy.handleSystemLevelWindowHidingUsabilityChange(
   true,
   {
-    settings: regularSettings,
+    settings: realPreloadSettings,
     now: 150001,
   }
 );
@@ -294,8 +302,83 @@ assert.deepEqual(
   JSON.parse(
     JSON.stringify(
       await context.ZeroLatencyPreloadNativeOnlyPolicy.buildNativeAppModeWarning(
-        regularSettings,
+        realPreloadSettings,
         { now: 150001 }
+      )
+    )
+  ),
+  { active: false }
+);
+context.ZeroLatencySupport.isSystemLevelWindowHidingUsable = () => false;
+
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      await context.ZeroLatencyPreloadNativeOnlyPolicy.buildNativeAppModeWarning(
+        browserNativeOnlySettings,
+        { now: 200000 }
+      )
+    )
+  ),
+  { active: false }
+);
+context.ZeroLatencySupport.isSystemLevelWindowHidingUsable = () => true;
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      context.ZeroLatencyPreloadNativeOnlyPolicy.buildRealPreloadRecommendationWarning(
+        browserNativeOnlySettings,
+        {
+          metrics: {
+            totalMemoryBytes: 16 * 1024 * 1024 * 1024,
+          },
+        }
+      )
+    )
+  ),
+  {
+    active: true,
+    reason: "real-preload-low-memory",
+    messageKey: "realPreloadAvailableLowMemoryWarning",
+    messageFallback:
+      "Real Preload is available and can reduce perceived latency to zero, but this computer has less than 24 GB of memory; it is not recommended for most users.",
+    totalMemoryBytes: 16 * 1024 * 1024 * 1024,
+    thresholdMemoryBytes: 24 * 1024 * 1024 * 1024,
+  }
+);
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      context.ZeroLatencyPreloadNativeOnlyPolicy.buildRealPreloadRecommendationWarning(
+        browserNativeOnlySettings,
+        {
+          metrics: {
+            totalMemoryBytes: 32 * 1024 * 1024 * 1024,
+          },
+        }
+      )
+    )
+  ),
+  {
+    active: true,
+    reason: "real-preload-recommended",
+    messageKey: "realPreloadRecommendedWarning",
+    messageFallback:
+      "Real Preload is available and recommended on this machine. It can reduce perceived latency to zero, but uses a lot of memory; avoid overly aggressive limits.",
+    totalMemoryBytes: 32 * 1024 * 1024 * 1024,
+    thresholdMemoryBytes: 24 * 1024 * 1024 * 1024,
+  }
+);
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      context.ZeroLatencyPreloadNativeOnlyPolicy.buildRealPreloadRecommendationWarning(
+        realPreloadSettings,
+        {
+          metrics: {
+            totalMemoryBytes: 32 * 1024 * 1024 * 1024,
+          },
+        }
       )
     )
   ),
@@ -336,7 +419,7 @@ normalWindowRuntime.sourceTabs["1"] = {
 const cleanup =
   await context.ZeroLatencyPreloadNativeOnlyPolicy.clearHiddenTabPreloadStateForNativeOnlyMode(
     preloadState,
-    allNativeSettings,
+    browserNativeOnlySettings,
     {
       reason: "test",
     }

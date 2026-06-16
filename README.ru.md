@@ -69,3 +69,7 @@ Smart Preload использует интеллектуальные алгори
 - Google Chrome
 - Microsoft Edge
 - Другие браузеры на базе Chromium могут работать, но основными целями являются Chrome и Edge.
+
+## Лицензия
+
+Smart Preload / Zero Latency Web распространяется по лицензии [Apache License 2.0](LICENSE). Уведомления об атрибуции см. в [NOTICE](NOTICE).

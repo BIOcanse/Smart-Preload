@@ -113,12 +113,6 @@
   "performanceInsufficientReducePreloadCaps": {
     "message": "성능 압박이 감지되었습니다. 프리로드 상한을 낮추세요."
   },
-  "nativeAppMissingEnableAllNativePreloadMode": {
-    "message": "네이티브 앱이 감지되지 않았습니다. 숨겨진 실제 탭 프리로드를 피하려면 전체 네이티브 프리로드 모드를 켜세요."
-  },
-  "nativeAppMissingDownloadOrEnableAllNativePreloadMode": {
-    "message": "네이티브 앱이 1분 동안 감지되지 않았습니다. 네이티브 앱을 다운로드해 설치하거나 전체 네이티브 프리로드 모드를 켜세요."
-  },
   "popupCurrentPageNotTracked": {
     "message": "현재 페이지는 추적되지 않습니다"
   },
@@ -257,6 +251,12 @@
   "settingsSkipGoogleInternalPagesDesc": {
     "message": "Chrome Web Store, Google 계정 및 비밀번호 관리자, Chrome 동기화, chromestatus 및 유사한 Google 관리 페이지에서는 추적하거나 프리로드하지 않습니다. Gemini와 일반 Google 제품은 계속 추적됩니다."
   },
+  "settingsSkipHttpPages": {
+    "message": "HTTP 페이지 건너뛰기"
+  },
+  "settingsSkipHttpPagesDesc": {
+    "message": "암호화되지 않은 HTTP 페이지와 링크를 추적하거나 프리로드하지 않습니다. HTTPS 페이지는 계속 사용할 수 있습니다."
+  },
   "settingsSkipLocalPages": {
     "message": "로컬 페이지 건너뛰기"
   },
@@ -283,12 +283,6 @@
   },
   "settingsInteractionPreloadDesc": {
     "message": "링크 위에 80ms 동안 머무르면 상호작용 프리로드를 시작하고, 링크 컨텍스트 메뉴를 열면 새 탭 프리로드를 준비합니다."
-  },
-  "settingsAllNativePreloadMode": {
-    "message": "전체 네이티브 프리로드 모드"
-  },
-  "settingsAllNativePreloadModeDesc": {
-    "message": "브라우저 기본 prefetch/prerender만 사용합니다. 숨겨진 실제 백그라운드 탭과 하드 스왑은 비활성화됩니다."
   },
   "settingsNativeAppDownloadTitle": {
     "message": "네이티브 앱 다운로드"
@@ -387,10 +381,10 @@
     "message": "후보가 있는 모든 원본 탭에 프리로드 슬롯을 배분하기 위한 계정 단위 제한입니다."
   },
   "settingsSchedulerHiddenTabs": {
-    "message": "숨겨진 실제 탭"
+    "message": "Real Preload"
   },
   "settingsSchedulerNativePreload": {
-    "message": "네이티브 프리로드"
+    "message": "브라우저 기본 프리로드"
   },
   "settingsSchedulerAttentionPool": {
     "message": "주의 시간 풀"
@@ -747,28 +741,28 @@
     "message": "고정 토큰 {0}"
   },
   "ruleNativePerPageTitle": {
-    "message": "네이티브 프리로드 그룹의 페이지 슬롯 상한 a"
+    "message": "브라우저 기본 프리로드 그룹의 페이지 슬롯 상한 a"
   },
   "ruleNativePerPageDesc": {
-    "message": "네이티브 `prefetch` / `prerender` 후보에 적용됩니다. 이 그룹이 최종 실행을 위해 유지할 수 있는 페이지 후보 수를 결정합니다."
+    "message": "브라우저 기본 `prefetch` / `prerender` 후보에 적용됩니다. 이 그룹이 최종 실행에 남길 페이지 후보 수를 결정합니다."
   },
   "ruleTabPerPageTitle": {
-    "message": "실제 탭 프리로드 그룹의 페이지 슬롯 상한 a"
+    "message": "Real Preload 그룹의 페이지 슬롯 상한 a"
   },
   "ruleTabPerPageDesc": {
-    "message": "실제 백그라운드 탭이 필요한 후보에 적용됩니다. 이 그룹이 최종 실행을 위해 유지할 수 있는 페이지 후보 수를 결정합니다."
+    "message": "숨겨진 실제 백그라운드 탭이 필요한 후보에 적용됩니다. 이 그룹이 최종 실행에 남길 페이지 후보 수를 결정합니다."
   },
   "ruleNativeSiteTitle": {
-    "message": "네이티브 프리로드 그룹의 고가중치 사이트 수 x"
+    "message": "브라우저 기본 프리로드 그룹의 고가중치 사이트 수 x"
   },
   "ruleNativeSiteDesc": {
-    "message": "네이티브 `prefetch` / `prerender` 후보에 적용됩니다. 사이트 슬롯 할당 단계에 들어갈 고가중치 사이트 수를 결정합니다."
+    "message": "브라우저 기본 `prefetch` / `prerender` 후보에 적용됩니다. 사이트 슬롯 배분 단계에 들어갈 고가중치 사이트 수를 결정합니다."
   },
   "ruleTabSiteTitle": {
-    "message": "실제 탭 프리로드 그룹의 고가중치 사이트 수 x"
+    "message": "Real Preload 그룹의 고가중치 사이트 수 x"
   },
   "ruleTabSiteDesc": {
-    "message": "실제 백그라운드 탭이 필요한 후보에 적용됩니다. 크로스 사이트 새 탭 프리로드와 hidden-tab으로 라우팅되는 현재 탭 강제 교체의 크로스 사이트 후보를 포함합니다."
+    "message": "숨겨진 실제 백그라운드 탭이 필요한 후보에 적용됩니다. 새 탭으로 여는 교차 사이트 프리로드와 hidden-tab으로 라우팅되는 현재 탭 hard-swap 후보를 포함합니다."
   },
   "ruleGoogleBookmarkRankTitle": {
     "message": "Google 검색 북마크 프리로드 순위 x"
@@ -832,5 +826,35 @@
   },
   "languageRussian": {
     "message": "러시아어"
+  },
+  "nativeAppMissingDownloadOrDisableRealPreload": {
+    "message": "Real Preload에는 Windows 앱이 필요합니다. 1분 동안 감지되지 않았습니다. 앱을 설치하거나 Real Preload를 끄세요."
+  },
+  "settingsRealPreload": {
+    "message": "Real Preload"
+  },
+  "settingsRealPreloadDesc": {
+    "message": "숨겨진 실제 백그라운드 탭을 사용해 체감 지연을 거의 0에 가깝게 줄입니다. 메모리를 많이 쓰기 때문에 기본값은 꺼짐입니다."
+  },
+  "settingsSideEffectLinkSafetyGuard": {
+    "message": "부작용 링크 안전 보호"
+  },
+  "settingsSideEffectLinkSafetyGuardDesc": {
+    "message": "다운로드, 내보내기, 첨부 파일 및 기타 부작용이 생길 수 있는 링크는 항상 프리로드를 차단합니다. 이 안전 기준은 끌 수 없습니다."
+  },
+  "settingsDangerousSiteSafetyGuard": {
+    "message": "위험 사이트 프리로드 보호"
+  },
+  "settingsDangerousSiteSafetyGuardDesc": {
+    "message": "확장 프로그램이나 로컬 app 이 위험하다고 표시한 링크는 프리로드되지 않습니다. 실제 이동 중에는 브라우저 내장 안전 경고도 계속 적용됩니다."
+  },
+  "settingsDangerousSitePausePreloadingWarning": {
+    "message": "위험하거나 신뢰할 수 없는 사이트에 들어갈 때는 프리로드를 완전히 일시 중지하세요. 자동 규칙이 모든 위험한 페이지의 안전을 보장할 수는 없습니다."
+  },
+  "realPreloadAvailableLowMemoryWarning": {
+    "message": "Real Preload를 사용할 수 있고 체감 지연을 0에 가깝게 줄일 수 있지만, 이 컴퓨터는 메모리가 24 GB 미만입니다. 대부분의 사용자에게는 권장하지 않습니다."
+  },
+  "realPreloadRecommendedWarning": {
+    "message": "Real Preload를 사용할 수 있으며 이 컴퓨터에서는 켜는 것을 권장할 수 있습니다. 체감 지연을 0에 가깝게 줄일 수 있지만 메모리를 많이 쓰므로 지나치게 공격적인 제한은 피하세요."
   }
 }

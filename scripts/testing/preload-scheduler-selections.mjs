@@ -64,6 +64,7 @@ const settings = context.ZeroLatencySettings.resolveEffectiveSettings({
   ...context.ZeroLatencySettings.DEFAULT_SETTINGS,
   preloading: {
     ...context.ZeroLatencySettings.DEFAULT_SETTINGS.preloading,
+    realPreloadEnabled: true,
     scheduler: {
       ...context.ZeroLatencySettings.DEFAULT_SETTINGS.preloading.scheduler,
       nativeTotalMin: 4,
@@ -87,6 +88,7 @@ const currentTabSwapSettings = context.ZeroLatencySettings.resolveEffectiveSetti
   },
   preloading: {
     ...context.ZeroLatencySettings.DEFAULT_SETTINGS.preloading,
+    realPreloadEnabled: true,
     scheduler: {
       ...context.ZeroLatencySettings.DEFAULT_SETTINGS.preloading.scheduler,
       nativeTotalMin: 4,
@@ -96,11 +98,11 @@ const currentTabSwapSettings = context.ZeroLatencySettings.resolveEffectiveSetti
     },
   },
 });
-const allNativeSettings = context.ZeroLatencySettings.resolveEffectiveSettings({
+const browserNativeOnlySettings = context.ZeroLatencySettings.resolveEffectiveSettings({
   ...context.ZeroLatencySettings.DEFAULT_SETTINGS,
   preloading: {
     ...context.ZeroLatencySettings.DEFAULT_SETTINGS.preloading,
-    allNativePreloadMode: true,
+    realPreloadEnabled: false,
     scheduler: {
       ...context.ZeroLatencySettings.DEFAULT_SETTINGS.preloading.scheduler,
       nativeTotalMin: 4,
@@ -159,11 +161,18 @@ assert.equal(
   context.ZeroLatencySettings.normalizeStoredSettings({
     experiments: { crossSiteCurrentTabSwap: true },
   }).experiments.crossSiteCurrentTabSwap,
+  false
+);
+assert.equal(
+  context.ZeroLatencySettings.normalizeStoredSettings({
+    preloading: { realPreloadEnabled: true },
+    experiments: { crossSiteCurrentTabSwap: true },
+  }).experiments.crossSiteCurrentTabSwap,
   true
 );
 assert.equal(
   context.ZeroLatencySettings.normalizeStoredSettings({
-    preloading: { allNativePreloadMode: true },
+    preloading: { realPreloadEnabled: false },
     experiments: { crossSiteCurrentTabSwap: true },
   }).experiments.crossSiteCurrentTabSwap,
   false
@@ -254,7 +263,7 @@ assert.deepEqual(
 assert.deepEqual(
   JSON.parse(
     JSON.stringify(
-      context.buildPreloadSchedulerScoreSignals(mixedCandidateLinks, allNativeSettings)
+      context.buildPreloadSchedulerScoreSignals(mixedCandidateLinks, browserNativeOnlySettings)
     )
   ),
   {
@@ -479,6 +488,7 @@ const proxySkipSettings = context.ZeroLatencySettings.resolveEffectiveSettings({
   ...context.ZeroLatencySettings.DEFAULT_SETTINGS,
   preloading: {
     ...context.ZeroLatencySettings.DEFAULT_SETTINGS.preloading,
+    realPreloadEnabled: true,
     proxySkip: {
       enabled: true,
       mode: "blacklist",
@@ -841,7 +851,7 @@ const oldHiddenSnapshot = buildSnapshot({
 const nativeOnlySelections = await schedulePreloadCandidateSelectionSnapshots({
   snapshots: [oldHiddenSnapshot],
   preloadState: context.createEmptyPreloadState(),
-  settings: allNativeSettings,
+  settings: browserNativeOnlySettings,
   graph: null,
 });
 

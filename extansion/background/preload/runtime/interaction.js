@@ -271,6 +271,28 @@
       return { ok: false, reason: "proxy-target-skip" };
     }
 
+    const safetyDecision =
+      globalThis.ZeroLatencyPreloadSafetyPolicy?.inspectPreloadCandidate?.(
+        {
+          url: targetUrl,
+          targetHint: message?.targetHint,
+          trigger: message?.trigger,
+        },
+        targetUrl
+      ) ?? null;
+
+    if (safetyDecision?.skipPreload === true || safetyDecision?.realPreloadBlocked === true) {
+      globalThis.ZeroLatencyDebugEvents?.record?.("preload-interaction.safety-skip", {
+        sourceTabId: sourceTab.id,
+        sourceWindowId: sourceTab.windowId,
+        sourcePageUrl,
+        targetUrl,
+        reason: safetyDecision.reason || "unsafe-interaction-preload",
+        reasons: safetyDecision.reasons || [],
+      });
+      return { ok: false, reason: "real-preload-safety-guard" };
+    }
+
     const preloadState = await loadPreloadState();
 
     if (isPreloadTab(preloadState, sourceTab.id)) {
@@ -294,6 +316,7 @@
       trigger,
       forceNewTab,
       settings,
+      realPreloadSafety: safetyDecision,
     };
   }
 
@@ -365,6 +388,7 @@
       targetHint: context.targetHint,
       aiKeywordMatch: null,
       bookmarkPreload: null,
+      realPreloadSafety: context.realPreloadSafety ?? null,
       interactionPreload: {
         trigger: context.trigger,
         targetHint: context.targetHint,
@@ -442,6 +466,7 @@
       transitionMetrics: target.transitionMetrics,
       aiKeywordMatch: null,
       bookmarkPreload: null,
+      realPreloadSafety: target.realPreloadSafety ?? null,
       interactionPreload: target.interactionPreload,
       siteSelection: null,
       status: "queued",
@@ -471,6 +496,7 @@
     entry.transitionMetrics = target.transitionMetrics;
     entry.aiKeywordMatch = null;
     entry.bookmarkPreload = null;
+    entry.realPreloadSafety = target.realPreloadSafety ?? null;
     entry.interactionPreload = target.interactionPreload;
     entry.siteSelection = null;
     entry.status = liveTab.status || entry.status;
@@ -500,6 +526,7 @@
       targetHint: target.targetHint,
       aiKeywordMatch: null,
       bookmarkPreload: null,
+      realPreloadSafety: target.realPreloadSafety ?? null,
       interactionPreload: {
         ...target.interactionPreload,
         startedAt,

@@ -36,6 +36,7 @@
       status: typeof nextEntry.status === "string" ? nextEntry.status : "queued",
       aiKeywordMatch: normalizeAiKeywordMatch(nextEntry.aiKeywordMatch),
       bookmarkPreload: normalizeBookmarkPreloadMetadata(nextEntry.bookmarkPreload),
+      realPreloadSafety: normalizeRealPreloadSafety(nextEntry.realPreloadSafety),
       interactionPreload: normalizeInteractionPreloadMetadata(nextEntry.interactionPreload),
       siteSelection: normalizeSiteSelection(nextEntry.siteSelection),
       createdAt: typeof nextEntry.createdAt === "string" ? nextEntry.createdAt : null,
@@ -57,6 +58,7 @@
       targetHint: typeof nextEntry.targetHint === "string" ? nextEntry.targetHint : null,
       aiKeywordMatch: normalizeAiKeywordMatch(nextEntry.aiKeywordMatch),
       bookmarkPreload: normalizeBookmarkPreloadMetadata(nextEntry.bookmarkPreload),
+      realPreloadSafety: normalizeRealPreloadSafety(nextEntry.realPreloadSafety),
       interactionPreload: normalizeInteractionPreloadMetadata(nextEntry.interactionPreload),
       siteSelection: normalizeSiteSelection(nextEntry.siteSelection),
       updatedAt: typeof nextEntry.updatedAt === "string" ? nextEntry.updatedAt : null,
@@ -78,6 +80,78 @@
       targetHint,
       startedAt: typeof nextValue.startedAt === "string" ? nextValue.startedAt : null,
       updatedAt: typeof nextValue.updatedAt === "string" ? nextValue.updatedAt : null,
+    };
+  }
+
+  function normalizeRealPreloadSafety(rawValue) {
+    const nextValue = isPlainObject(rawValue) ? rawValue : null;
+
+    if (!nextValue) {
+      return null;
+    }
+
+    const reasons = Array.isArray(nextValue.reasons)
+      ? nextValue.reasons
+          .map((reason) => (typeof reason === "string" ? reason.trim() : ""))
+          .filter(Boolean)
+          .slice(0, 8)
+      : [];
+    const sideEffectReasons = Array.isArray(nextValue.sideEffectReasons)
+      ? nextValue.sideEffectReasons
+          .map((reason) => (typeof reason === "string" ? reason.trim() : ""))
+          .filter(Boolean)
+          .slice(0, 8)
+      : [];
+    const dangerousSiteReasons = Array.isArray(nextValue.dangerousSiteReasons)
+      ? nextValue.dangerousSiteReasons
+          .map((reason) => (typeof reason === "string" ? reason.trim() : ""))
+          .filter(Boolean)
+          .slice(0, 8)
+      : [];
+    const reason =
+      typeof nextValue.reason === "string" && nextValue.reason.trim()
+        ? nextValue.reason.trim()
+        : reasons[0] || "";
+    const rawDangerousSiteEvidence = isPlainObject(nextValue.dangerousSiteEvidence)
+      ? nextValue.dangerousSiteEvidence
+      : null;
+    const dangerousSiteEvidence = rawDangerousSiteEvidence
+      ? {
+          verdict:
+            typeof rawDangerousSiteEvidence.verdict === "string"
+              ? rawDangerousSiteEvidence.verdict.trim()
+              : "",
+          reason:
+            typeof rawDangerousSiteEvidence.reason === "string"
+              ? rawDangerousSiteEvidence.reason.trim()
+              : "",
+          source:
+            typeof rawDangerousSiteEvidence.source === "string"
+              ? rawDangerousSiteEvidence.source.trim()
+              : "",
+          threatTypes: Array.isArray(rawDangerousSiteEvidence.threatTypes)
+            ? rawDangerousSiteEvidence.threatTypes
+                .map((threatType) =>
+                  typeof threatType === "string" ? threatType.trim() : ""
+                )
+                .filter(Boolean)
+                .slice(0, 8)
+            : [],
+        }
+      : null;
+
+    return {
+      enabled: true,
+      locked: true,
+      skipPreload: nextValue.skipPreload === true,
+      realPreloadBlocked: nextValue.realPreloadBlocked === true,
+      sideEffectBlocked: nextValue.sideEffectBlocked === true,
+      dangerousSiteBlocked: nextValue.dangerousSiteBlocked === true,
+      reason,
+      reasons,
+      sideEffectReasons,
+      dangerousSiteReasons,
+      dangerousSiteEvidence,
     };
   }
 
@@ -231,4 +305,5 @@
   globalThis.normalizeAiKeywordMatch = normalizeAiKeywordMatch;
   globalThis.normalizeSiteSelection = normalizeSiteSelection;
   globalThis.normalizeBookmarkPreloadMetadata = normalizeBookmarkPreloadMetadata;
+  globalThis.normalizeRealPreloadSafety = normalizeRealPreloadSafety;
 })();

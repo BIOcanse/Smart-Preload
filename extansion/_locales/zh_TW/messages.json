@@ -113,12 +113,6 @@
   "performanceInsufficientReducePreloadCaps": {
     "message": "性能不足，请降低预加载上限。"
   },
-  "nativeAppMissingEnableAllNativePreloadMode": {
-    "message": "未偵測到本地 App。建議開啟全原生預載模式，避免使用隱藏真實分頁預載。"
-  },
-  "nativeAppMissingDownloadOrEnableAllNativePreloadMode": {
-    "message": "已連續 1 分鐘未偵測到本地 App。請下載並安裝本地 App，或開啟全原生預載模式。"
-  },
   "popupCurrentPageNotTracked": {
     "message": "当前页面未被追踪"
   },
@@ -257,6 +251,12 @@
   "settingsSkipGoogleInternalPagesDesc": {
     "message": "不要在 Chrome 网上应用店、Google 账号和密码管理器、Chrome 同步、chromestatus 等 Google 管理页面上追踪或预加载。Gemini 和普通 Google 产品仍然追踪。"
   },
+  "settingsSkipHttpPages": {
+    "message": "跳過 HTTP 明文頁面"
+  },
+  "settingsSkipHttpPagesDesc": {
+    "message": "不要追蹤或預載 HTTP 明文頁面和連結。HTTPS 頁面仍然可用。"
+  },
   "settingsSkipLocalPages": {
     "message": "跳過本機網頁"
   },
@@ -283,12 +283,6 @@
   },
   "settingsInteractionPreloadDesc": {
     "message": "滑鼠懸停連結 80ms 後啟動互動預載；右鍵開啟連結選單時準備新分頁預載。"
-  },
-  "settingsAllNativePreloadMode": {
-    "message": "全原生預載模式"
-  },
-  "settingsAllNativePreloadModeDesc": {
-    "message": "只使用瀏覽器原生 prefetch/prerender，停用隱藏真實背景分頁和目前分頁硬替換。"
   },
   "settingsNativeAppDownloadTitle": {
     "message": "本地 App 下載"
@@ -387,10 +381,10 @@
     "message": "在所有拥有候选的来源标签页之间分配账户级预加载槽位。"
   },
   "settingsSchedulerHiddenTabs": {
-    "message": "隐藏真实标签页"
+    "message": "真實預載"
   },
   "settingsSchedulerNativePreload": {
-    "message": "原生预加载"
+    "message": "瀏覽器原生預載"
   },
   "settingsSchedulerAttentionPool": {
     "message": "注意力时间池"
@@ -747,28 +741,28 @@
     "message": "固定占位 {0}"
   },
   "ruleNativePerPageTitle": {
-    "message": "原生预加载组的页面槽位上限 a"
+    "message": "瀏覽器原生預載組的頁面槽位上限 a"
   },
   "ruleNativePerPageDesc": {
-    "message": "适用于原生 `prefetch` / `prerender` 指令候选。它决定这一组最多能留下多少个页面候选进入最终执行。"
+    "message": "適用於瀏覽器原生 `prefetch` / `prerender` 指令候選。它決定這一組最多能留下多少個頁面候選進入最終執行。"
   },
   "ruleTabPerPageTitle": {
-    "message": "真实标签页预加载组的页面槽位上限 a"
+    "message": "真實預載組的頁面槽位上限 a"
   },
   "ruleTabPerPageDesc": {
-    "message": "适用于需要真实后台标签页的候选。它决定这一组最多能留下多少个页面候选进入最终执行。"
+    "message": "適用於需要隱藏真實背景分頁的候選。它決定這一組最多能留下多少個頁面候選進入最終執行。"
   },
   "ruleNativeSiteTitle": {
-    "message": "原生预加载组的高权重站点数量 x"
+    "message": "瀏覽器原生預載組的高權重站點數量 x"
   },
   "ruleNativeSiteDesc": {
-    "message": "适用于原生 `prefetch` / `prerender` 指令候选。它决定这一组最多有多少个高权重站点进入站点分槽阶段。"
+    "message": "適用於瀏覽器原生 `prefetch` / `prerender` 指令候選。它決定這一組最多有多少個高權重站點進入站點分槽階段。"
   },
   "ruleTabSiteTitle": {
-    "message": "真实标签页预加载组的高权重站点数量 x"
+    "message": "真實預載組的高權重站點數量 x"
   },
   "ruleTabSiteDesc": {
-    "message": "适用于需要真实后台标签页的候选，包括跨站新标签预加载，以及开启当前标签页硬替换后改走 hidden-tab 的跨站候选。"
+    "message": "適用於需要隱藏真實背景分頁的候選，包括跨站新分頁預載，以及開啟目前分頁硬替換後改走 hidden-tab 的跨站候選。"
   },
   "ruleGoogleBookmarkRankTitle": {
     "message": "Google 搜索页书签预加载排名 x"
@@ -794,17 +788,73 @@
   "settingsDiagnosticsLoggingDesc": {
     "message": "开启后，运行诊断日志会以 JSONL 文件写入本地 app 的 portable/logs 目录。"
   },
-  "settingsInterfaceLanguage": { "message": "介面語言" },
-  "settingsInterfaceLanguageDesc": { "message": "選擇擴充功能介面語言，或自動跟隨瀏覽器語言。" },
-  "languageAuto": { "message": "自動" },
-  "languageEnglish": { "message": "英文" },
-  "languageChineseSimplified": { "message": "簡體中文" },
-  "languageChineseTraditional": { "message": "繁體中文" },
-  "languageJapanese": { "message": "日文" },
-  "languageKorean": { "message": "韓文" },
-  "languageGerman": { "message": "德文" },
-  "languageFrench": { "message": "法文" },
-  "languageSpanish": { "message": "西班牙文" },
-  "languagePortugueseBrazil": { "message": "葡萄牙文（巴西）" },
-  "languageRussian": { "message": "俄文" }
+  "settingsInterfaceLanguage": {
+    "message": "介面語言"
+  },
+  "settingsInterfaceLanguageDesc": {
+    "message": "選擇擴充功能介面語言，或自動跟隨瀏覽器語言。"
+  },
+  "languageAuto": {
+    "message": "自動"
+  },
+  "languageEnglish": {
+    "message": "英文"
+  },
+  "languageChineseSimplified": {
+    "message": "簡體中文"
+  },
+  "languageChineseTraditional": {
+    "message": "繁體中文"
+  },
+  "languageJapanese": {
+    "message": "日文"
+  },
+  "languageKorean": {
+    "message": "韓文"
+  },
+  "languageGerman": {
+    "message": "德文"
+  },
+  "languageFrench": {
+    "message": "法文"
+  },
+  "languageSpanish": {
+    "message": "西班牙文"
+  },
+  "languagePortugueseBrazil": {
+    "message": "葡萄牙文（巴西）"
+  },
+  "languageRussian": {
+    "message": "俄文"
+  },
+  "nativeAppMissingDownloadOrDisableRealPreload": {
+    "message": "真實預載需要 Windows 本地 App。已連續 1 分鐘未偵測到本地 App，請安裝 App 或關閉真實預載。"
+  },
+  "settingsRealPreload": {
+    "message": "真實預載"
+  },
+  "settingsRealPreloadDesc": {
+    "message": "使用隱藏的真實背景分頁，盡量把體感延遲降為 0。預設關閉，因為它會大量占用記憶體。"
+  },
+  "settingsSideEffectLinkSafetyGuard": {
+    "message": "副作用連結安全保護"
+  },
+  "settingsSideEffectLinkSafetyGuardDesc": {
+    "message": "始終阻止下載、匯出、附件和其他容易產生副作用的連結進入預載。這條安全底線不可關閉。"
+  },
+  "settingsDangerousSiteSafetyGuard": {
+    "message": "危險網站預載保護"
+  },
+  "settingsDangerousSiteSafetyGuardDesc": {
+    "message": "擴充功能或本機 app 判定為危險的連結不會進入預載。真正造訪時，瀏覽器內建安全警告仍會生效。"
+  },
+  "settingsDangerousSitePausePreloadingWarning": {
+    "message": "進入危險或不受信任的網站時，請直接暫停預載。自動規則無法保證覆蓋每一個危險頁面。"
+  },
+  "realPreloadAvailableLowMemoryWarning": {
+    "message": "真實預載可用，能把體感延遲降為 0；但這台電腦記憶體低於 24 GB，不太建議大多數使用者開啟。"
+  },
+  "realPreloadRecommendedWarning": {
+    "message": "真實預載可用，而且這台機器適合開啟。它能把體感延遲降為 0，但非常占用記憶體，請不要使用過於激進的配置。"
+  }
 }

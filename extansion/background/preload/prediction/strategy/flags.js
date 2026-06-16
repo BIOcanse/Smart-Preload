@@ -18,6 +18,6 @@ function isAllNativePreloadModeEnabledForStrategy(settings) {
       settings
     ) === true ||
     globalThis.ZeroLatencySettings?.isAllNativePreloadModeEnabled?.(settings) === true ||
-    settings?.preloading?.allNativePreloadMode === true
+    settings?.preloading?.realPreloadEnabled !== true
   );
 }

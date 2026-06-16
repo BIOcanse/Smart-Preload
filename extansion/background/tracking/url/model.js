@@ -124,6 +124,15 @@ function isGoogleInternalPageUrl(rawUrl) {
   }
 }
 
+function isHttpPageUrl(rawUrl) {
+  try {
+    const parsedUrl = new URL(rawUrl);
+    return parsedUrl.protocol === "http:";
+  } catch (_error) {
+    return false;
+  }
+}
+
 function isLocalPageUrl(rawUrl) {
   try {
     const parsedUrl = new URL(rawUrl);
@@ -232,6 +241,13 @@ function isExcludedGooglePage(rawUrl) {
   return isGoogleInternalPageUrl(rawUrl);
 }
 
+function isExcludedHttpPage(rawUrl) {
+  if (!getEffectiveExtensionSettings().tracking.excludeHttpPages) {
+    return false;
+  }
+  return isHttpPageUrl(rawUrl);
+}
+
 function isExcludedLocalPage(rawUrl) {
   if (!getEffectiveExtensionSettings().tracking.excludeLocalPages) {
     return false;
@@ -249,6 +265,7 @@ function isExcludedPrivateNetworkPage(rawUrl) {
 function isExcludedTrackingPage(rawUrl) {
   return (
     isExcludedGooglePage(rawUrl) ||
+    isExcludedHttpPage(rawUrl) ||
     isExcludedLocalPage(rawUrl) ||
     isExcludedPrivateNetworkPage(rawUrl)
   );

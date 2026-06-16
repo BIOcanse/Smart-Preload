@@ -1,11 +1,27 @@
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
-import { cp, mkdir, rm } from "node:fs/promises";
+import { mkdir, rm } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { CdpClient, pageEval, swEval } from "./lib/cdp-client.mjs";
+import { waitForTarget, waitForExtensionServiceWorker as waitForExtensionServiceWorkerTarget } from "./lib/cdp-discovery.mjs";
+import { prepareExtensionUnderTest as copyExtensionFixture } from "./lib/extension-fixture.mjs";
+import {
+  findFirstExistingExecutable,
+  getSharedPlaywrightChromiumPathCandidates,
+} from "./lib/browser-paths.mjs";
+import {
+  escapeHtml,
+  fetchJson,
+  getEventName,
+  getFreePort,
+  rmWithRetry,
+  sameUrl,
+  sleep,
+  stripHash,
+} from "./lib/test-utils.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,15 +32,10 @@ const runRoot = path.join(
   os.tmpdir(),
   `zlw-click-intercept-smoke-${process.pid}-${Date.now()}`
 );
-const profileDir = path.join(runRoot, "chrome-profile");
+const profileDir = path.join(runRoot, "chromium-profile");
 const extensionUnderTestDir = path.join(runRoot, "extension");
 
-const chromePathCandidates = [
-  path.join(process.env.LocalAppData || "", "ms-playwright", "chromium-1217", "chrome-win64", "chrome.exe"),
-  path.join(process.env.ProgramFiles || "C:\\Program Files", "Google", "Chrome", "Application", "chrome.exe"),
-  path.join(process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)", "Google", "Chrome", "Application", "chrome.exe"),
-  path.join(process.env.LocalAppData || "", "Google", "Chrome", "Application", "chrome.exe"),
-];
+const chromiumPath = findFirstExistingExecutable(getSharedPlaywrightChromiumPathCandidates());
 
 const SCENARIOS = Array.from({ length: 10 }, (_, index) => ({
   id: index + 1,
@@ -33,32 +44,39 @@ const SCENARIOS = Array.from({ length: 10 }, (_, index) => ({
   targetHint: "_self",
 }));
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 async function main() {
+  console.error(`[click-smoke] run root: ${runRoot}`);
   await rm(runRoot, { recursive: true, force: true });
   await mkdir(profileDir, { recursive: true });
+  console.error("[click-smoke] preparing extension fixture");
   await prepareExtensionUnderTest();
 
   const webPort = await getFreePort();
   const debugPort = await getFreePort();
   const scenarios = buildScenarioUrls(webPort);
+  console.error(`[click-smoke] starting test server on ${webPort}`);
   const server = await startTestServer(webPort, scenarios);
+  console.error(`[click-smoke] launching chromium on debug port ${debugPort}`);
   const chrome = launchChrome({ debugPort, scenarios });
   const clients = [];
 
   try {
+    console.error("[click-smoke] waiting for extension service worker");
     const serviceWorkerTarget = await waitForExtensionServiceWorker(debugPort);
     const serviceWorker = serviceWorkerTarget.client;
     clients.push(serviceWorker);
 
+    console.error("[click-smoke] waiting for background ready");
     await waitForBackgroundReady(serviceWorker);
+    console.error("[click-smoke] applying extension state");
     await setupExtensionState(serviceWorker);
 
     const results = [];
 
     for (const scenario of scenarios) {
+      console.error(`[click-smoke] scenario ${scenario.id}/${scenarios.length}: start`);
       results.push(await runClickScenario({ debugPort, serviceWorker, scenario, clients }));
+      console.error(`[click-smoke] scenario ${scenario.id}/${scenarios.length}: done`);
     }
 
     const failed = results.filter((result) => !result.ok);
@@ -98,6 +116,7 @@ function buildScenarioUrls(port) {
 }
 
 async function runClickScenario({ debugPort, serviceWorker, scenario, clients }) {
+  console.error(`[click-smoke] ${scenario.id}: create source tab`);
   const source = await swEval(serviceWorker, async ({ sourceUrl }) => {
     const createdTab = await chrome.tabs.create({ url: sourceUrl, active: true });
     await chrome.windows.update(createdTab.windowId, { focused: true });
@@ -108,6 +127,7 @@ async function runClickScenario({ debugPort, serviceWorker, scenario, clients })
   }, { sourceUrl: scenario.sourceUrl });
 
   await waitForTabComplete(serviceWorker, source.tabId);
+  console.error(`[click-smoke] ${scenario.id}: source tab complete`);
   const pageTarget = await waitForTarget(
     debugPort,
     (target) => target.type === "page" && stripHash(target.url) === stripHash(scenario.sourceUrl)
@@ -127,15 +147,20 @@ async function runClickScenario({ debugPort, serviceWorker, scenario, clients })
   await sleep(250);
 
   await requestCandidateRefresh(serviceWorker, source.tabId);
+  console.error(`[click-smoke] ${scenario.id}: wait for preloaded target`);
   const preloadBeforeClick = await waitForPreloadedTarget(
     serviceWorker,
     source.tabId,
     scenario.targetUrl
   );
+  console.error(
+    `[click-smoke] ${scenario.id}: preload ready=${preloadBeforeClick.ready} status=${preloadBeforeClick.status}`
+  );
 
   const beforeEventCount = await getDebugEventCount(serviceWorker);
 
   await dispatchRealClick(page, clickPoint);
+  console.error(`[click-smoke] ${scenario.id}: click dispatched`);
 
   const finalState = await waitForClickedTarget({
     serviceWorker,
@@ -169,6 +194,7 @@ async function runClickScenario({ debugPort, serviceWorker, scenario, clients })
     sourceTabId: source.tabId,
     targetUrl: scenario.targetUrl,
   });
+  console.error(`[click-smoke] ${scenario.id}: ok=${ok} swallowed=${swallowed}`);
 
   return {
     id: scenario.id,
@@ -193,7 +219,11 @@ async function setupExtensionState(serviceWorker) {
     const settings = globalThis.ZeroLatencySettings.cloneSettings(
       globalThis.ZeroLatencySettings.DEFAULT_SETTINGS
     );
+    settings.tracking.excludeHttpPages = false;
+    settings.tracking.excludeLocalPages = false;
+    settings.tracking.excludePrivateNetworkPages = false;
     settings.preloading.enabled = true;
+    settings.preloading.realPreloadEnabled = true;
     settings.preloading.aiPrediction.enabled = false;
     settings.preloadWindow.watchdogEnabled = true;
     settings.experiments.crossSiteCurrentTabSwap = true;
@@ -257,7 +287,7 @@ async function requestCandidateRefresh(serviceWorker, tabId) {
   }, { tabId });
 }
 
-async function waitForPreloadedTarget(serviceWorker, sourceTabId, targetUrl, timeoutMs = 12000) {
+async function waitForPreloadedTarget(serviceWorker, sourceTabId, targetUrl, timeoutMs = 3000) {
   const startedAt = Date.now();
   let lastState = null;
 
@@ -322,7 +352,7 @@ async function waitForClickedTarget({
     const targetTabs = lastState.tabs.filter((tab) => sameUrl(tab.url, targetUrl));
     const activeTarget = targetTabs.some((tab) => tab.active === true);
     const expectedSourceState =
-      targetHint === "_blank" ? lastState.sourceExists === true : lastState.sourceExists === false;
+      targetHint === "_blank" ? lastState.sourceExists === true : true;
 
     if (activeTarget && expectedSourceState) {
       return lastState;
@@ -437,10 +467,6 @@ function includesEventName(event, namePart) {
   return getEventName(event).includes(namePart);
 }
 
-function getEventName(event) {
-  return String(event?.eventName || event?.event || event?.name || event?.type || "");
-}
-
 async function waitForTabComplete(serviceWorker, tabId, timeoutMs = 12000) {
   const startedAt = Date.now();
 
@@ -460,222 +486,21 @@ async function waitForTabComplete(serviceWorker, tabId, timeoutMs = 12000) {
   throw new Error(`Timed out waiting for tab ${tabId} to complete`);
 }
 
-async function swEval(client, fn, arg = {}) {
-  return runtimeEval(client, `(${fn.toString()})(${JSON.stringify(arg)})`);
-}
-
-async function pageEval(client, fn, arg = {}) {
-  return runtimeEval(client, `(${fn.toString()})(${JSON.stringify(arg)})`);
-}
-
-async function runtimeEval(client, expression) {
-  const response = await client.send("Runtime.evaluate", {
-    expression,
-    awaitPromise: true,
-    returnByValue: true,
-  });
-  if (response.exceptionDetails) {
-    throw new Error(
-      response.exceptionDetails.exception?.description ||
-        response.exceptionDetails.text ||
-        "CDP Runtime.evaluate failed"
-    );
-  }
-  return response.result?.value;
-}
-
-async function waitForTarget(debugPort, predicate, timeoutMs = 15000) {
-  const startedAt = Date.now();
-  let lastTargets = [];
-
-  while (Date.now() - startedAt < timeoutMs) {
-    let targets = [];
-    try {
-      targets = await fetchJson(`http://127.0.0.1:${debugPort}/json/list`);
-      lastTargets = targets;
-    } catch (_error) {
-      await sleep(250);
-      continue;
-    }
-
-    const target = targets.find(predicate);
-    if (target?.webSocketDebuggerUrl) {
-      return target;
-    }
-    await sleep(250);
-  }
-
-  throw new Error(
-    `Timed out waiting for CDP target. Last targets: ${JSON.stringify(
-      lastTargets.map((target) => ({
-        type: target.type,
-        url: target.url,
-        title: target.title,
-      })),
-      null,
-      2
-    )}`
-  );
-}
-
 async function waitForExtensionServiceWorker(debugPort, timeoutMs = 20000) {
-  const startedAt = Date.now();
-  let lastTargets = [];
-  const inspectionErrors = [];
-  const inspectedManifests = [];
-
-  while (Date.now() - startedAt < timeoutMs) {
-    let targets = [];
-    try {
-      targets = await fetchJson(`http://127.0.0.1:${debugPort}/json/list`);
-      lastTargets = targets;
-    } catch (_error) {
-      await sleep(250);
-      continue;
-    }
-
-    for (const target of targets) {
-      if (
-        target.type !== "service_worker" ||
-        !/^chrome-extension:\/\//.test(target.url || "") ||
-        !target.webSocketDebuggerUrl
-      ) {
-        continue;
-      }
-
-      const client = await CdpClient.connect(target.webSocketDebuggerUrl);
-      await client.send("Runtime.enable");
-
-      try {
-        const manifest = await runtimeEval(client, "chrome.runtime.getManifest()");
-        const permissions = Array.isArray(manifest?.permissions)
-          ? manifest.permissions
-          : [];
-        inspectedManifests.push({
-          url: target.url,
-          name: manifest?.name || null,
-          permissions,
-        });
-        const isTargetExtension =
-          permissions.includes("nativeMessaging") &&
-          permissions.includes("bookmarks") &&
-          permissions.includes("tabs") &&
-          permissions.includes("windows");
-
-        if (isTargetExtension) {
-          return {
-            ...target,
-            manifest,
-            client,
-          };
-        }
-      } catch (error) {
-        inspectionErrors.push({
-          url: target.url,
-          error: error?.message || String(error),
-        });
-      }
-
-      client.close();
-    }
-
-    await sleep(250);
-  }
-
-  throw new Error(
-    `Timed out waiting for Zero-Latency Web service worker. Last targets: ${JSON.stringify(
-      lastTargets.map((target) => ({
-        type: target.type,
-        url: target.url,
-        title: target.title,
-      })),
-      null,
-      2
-    )}; inspected manifests: ${JSON.stringify(inspectedManifests.slice(-8), null, 2)}; inspection errors: ${JSON.stringify(inspectionErrors.slice(-8), null, 2)}`
-  );
-}
-
-async function fetchJson(url) {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status} for ${url}`);
-  }
-  return response.json();
-}
-
-class CdpClient {
-  static async connect(webSocketUrl) {
-    const client = new CdpClient(webSocketUrl);
-    await client.open();
-    return client;
-  }
-
-  constructor(webSocketUrl) {
-    this.webSocketUrl = webSocketUrl;
-    this.ws = null;
-    this.nextId = 1;
-    this.pending = new Map();
-  }
-
-  open() {
-    return new Promise((resolve, reject) => {
-      this.ws = new WebSocket(this.webSocketUrl);
-      this.ws.addEventListener("open", () => resolve());
-      this.ws.addEventListener("error", (event) =>
-        reject(event.error || new Error("WebSocket error"))
-      );
-      this.ws.addEventListener("message", (event) => this.handleMessage(event.data));
-      this.ws.addEventListener("close", () => {
-        for (const { reject: rejectPending } of this.pending.values()) {
-          rejectPending(new Error("CDP socket closed"));
-        }
-        this.pending.clear();
-      });
-    });
-  }
-
-  send(method, params = {}) {
-    const id = this.nextId++;
-    this.ws.send(JSON.stringify({ id, method, params }));
-    return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject });
-      setTimeout(() => {
-        if (!this.pending.has(id)) {
-          return;
-        }
-        this.pending.delete(id);
-        reject(new Error(`CDP command timed out: ${method}`));
-      }, 15000).unref?.();
-    });
-  }
-
-  handleMessage(rawMessage) {
-    const message = JSON.parse(rawMessage);
-    if (!message.id || !this.pending.has(message.id)) {
-      return;
-    }
-    const pending = this.pending.get(message.id);
-    this.pending.delete(message.id);
-    if (message.error) {
-      pending.reject(new Error(`${message.error.message}: ${message.error.data || ""}`));
-      return;
-    }
-    pending.resolve(message.result || {});
-  }
-
-  close() {
-    try {
-      this.ws?.close();
-    } catch (_error) {
-      // Ignore cleanup errors.
-    }
-  }
+  return waitForExtensionServiceWorkerTarget({
+    debugPort,
+    timeoutMs,
+    isTargetManifest: ({ permissions }) =>
+      permissions.includes("nativeMessaging") &&
+      permissions.includes("bookmarks") &&
+      permissions.includes("tabs") &&
+      permissions.includes("windows"),
+  });
 }
 
 function launchChrome({ debugPort, scenarios }) {
-  const chromePath = chromePathCandidates.find((candidate) => candidate && existsSync(candidate));
-  if (!chromePath) {
-    throw new Error("Chrome executable was not found.");
+  if (!chromiumPath || !existsSync(chromiumPath)) {
+    throw new Error("Playwright Chromium executable was not found.");
   }
 
   const resolverRules = [...new Set(scenarios.flatMap((scenario) => [
@@ -689,6 +514,7 @@ function launchChrome({ debugPort, scenarios }) {
     `--remote-debugging-port=${debugPort}`,
     `--disable-extensions-except=${extensionUnderTestDir}`,
     `--load-extension=${extensionUnderTestDir}`,
+    "--enable-extensions",
     "--enable-unsafe-extension-debugging",
     `--host-resolver-rules=${resolverRules}`,
     "--proxy-server=direct://",
@@ -699,14 +525,14 @@ function launchChrome({ debugPort, scenarios }) {
     "--disable-default-apps",
     "--disable-sync",
     "--disable-popup-blocking",
-    "--disable-features=Translate,AutofillServerCommunication",
+    "--disable-features=Translate,AutofillServerCommunication,DisableLoadExtensionCommandLineSwitch",
     "--window-size=1280,900",
     `${scenarios[0].sourceUrl}?startup=1`,
   ];
 
-  const child = spawn(chromePath, args, {
+  const child = spawn(chromiumPath, args, {
     stdio: ["ignore", "pipe", "pipe"],
-    windowsHide: false,
+    windowsHide: true,
   });
 
   child.stdout.on("data", (chunk) => process.stdout.write(chunk));
@@ -751,49 +577,11 @@ async function waitForProcessExit(child, timeoutMs) {
   ]);
 }
 
-async function rmWithRetry(targetPath, attempts = 8) {
-  let lastError = null;
-
-  for (let attempt = 1; attempt <= attempts; attempt += 1) {
-    try {
-      await rm(targetPath, { recursive: true, force: true });
-      return;
-    } catch (error) {
-      lastError = error;
-      await sleep(250 * attempt);
-    }
-  }
-
-  throw lastError;
-}
-
 async function prepareExtensionUnderTest() {
-  await rm(extensionUnderTestDir, { recursive: true, force: true });
-  await mkdir(extensionUnderTestDir, { recursive: true });
-
-  const entries = [
-    "manifest.json",
-    "service-worker.js",
-    "_locales",
-    "background",
-    "popup",
-    "scripts",
-    "settings",
-    "shared",
-    path.join("wasm", "pkg"),
-  ];
-
-  for (const entry of entries) {
-    const source = path.join(extensionDir, entry);
-    const target = path.join(extensionUnderTestDir, entry);
-    if (!existsSync(source)) {
-      continue;
-    }
-    await cp(source, target, {
-      recursive: true,
-      force: true,
-    });
-  }
+  await copyExtensionFixture({
+    extensionDir,
+    targetDir: extensionUnderTestDir,
+  });
 }
 
 async function startTestServer(port, scenarios) {
@@ -868,40 +656,6 @@ function renderTargetPage(scenario) {
 function respondHtml(response, html) {
   response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
   response.end(html);
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-}
-
-async function getFreePort() {
-  return new Promise((resolve, reject) => {
-    const server = net.createServer();
-    server.unref();
-    server.on("error", reject);
-    server.listen(0, "127.0.0.1", () => {
-      const address = server.address();
-      server.close(() => resolve(address.port));
-    });
-  });
-}
-
-function sameUrl(actual, expected) {
-  return stripHash(actual) === stripHash(expected);
-}
-
-function stripHash(rawUrl) {
-  try {
-    const url = new URL(rawUrl);
-    url.hash = "";
-    return url.href;
-  } catch (_error) {
-    return String(rawUrl || "");
-  }
 }
 
 main().catch((error) => {

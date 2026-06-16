@@ -89,6 +89,22 @@
             </article>
             <article class="settings-item">
               <div class="settings-item-info">
+                <label class="settings-item-label" for="exclude-http-pages" data-i18n="settingsSkipHttpPages">
+                  Skip HTTP pages
+                </label>
+                <p class="settings-item-desc" data-i18n="settingsSkipHttpPagesDesc">
+                  Do not track or preload plain HTTP pages and links. HTTPS pages stay available.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="exclude-http-pages" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+            <article class="settings-item">
+              <div class="settings-item-info">
                 <label class="settings-item-label" for="exclude-local-pages" data-i18n="settingsSkipLocalPages">
                   Skip local pages
                 </label>
@@ -196,16 +212,63 @@
             </article>
             <article class="settings-item">
               <div class="settings-item-info">
-                <label class="settings-item-label" for="all-native-preload-mode" data-i18n="settingsAllNativePreloadMode">
-                  All-native preload mode
+                <label class="settings-item-label" for="real-preload-enabled" data-i18n="settingsRealPreload">
+                  Real Preload
                 </label>
-                <p class="settings-item-desc" data-i18n="settingsAllNativePreloadModeDesc">
-                  Use only browser-native prefetch/prerender. Hidden real background tabs and hard swap are disabled.
+                <p class="settings-item-desc" data-i18n="settingsRealPreloadDesc">
+                  Use hidden real background tabs for near-zero perceived latency. Off by default because it uses a large amount of memory.
                 </p>
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="all-native-preload-mode" type="checkbox" />
+                  <input id="real-preload-enabled" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+            <article class="settings-item is-locked is-wide">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="side-effect-link-safety-guard" data-i18n="settingsSideEffectLinkSafetyGuard">
+                  Side-effect link safety guard
+                </label>
+                <p class="settings-item-desc" data-i18n="settingsSideEffectLinkSafetyGuardDesc">
+                  Always blocks Real Preload for download, export, attachment, and other side-effect-prone links. This safety baseline cannot be turned off.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch is-locked">
+                  <input
+                    id="side-effect-link-safety-guard"
+                    type="checkbox"
+                    checked
+                    disabled
+                    aria-disabled="true"
+                  />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+            <article class="settings-item is-locked is-wide">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="dangerous-site-safety-guard" data-i18n="settingsDangerousSiteSafetyGuard">
+                  Dangerous site safety guard
+                </label>
+                <p class="settings-item-desc" data-i18n="settingsDangerousSiteSafetyGuardDesc">
+                  Keeps a locked guard for known-dangerous site verdicts and future threat-list checks. Browser built-in warnings still apply during real navigation.
+                </p>
+                <p class="settings-item-warning" data-i18n="settingsDangerousSitePausePreloadingWarning">
+                  When entering risky or untrusted sites, pause preloading completely. Automatic rules cannot guarantee safety on every dangerous page.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch is-locked">
+                  <input
+                    id="dangerous-site-safety-guard"
+                    type="checkbox"
+                    checked
+                    disabled
+                    aria-disabled="true"
+                  />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -361,7 +424,7 @@
               </div>
               <div class="settings-item-control scheduler-grid">
                 <fieldset class="scheduler-group" id="scheduler-hidden-tabs-group">
-                  <legend data-i18n="settingsSchedulerHiddenTabs">Hidden real tabs</legend>
+                  <legend data-i18n="settingsSchedulerHiddenTabs">Real Preload</legend>
                   <label class="scheduler-field" for="scheduler-tab-total-min">
                     <span data-i18n="settingsSchedulerMin">Min</span>
                     <input id="scheduler-tab-total-min" class="number-input" type="number" min="1" max="64" step="1" />
@@ -376,7 +439,7 @@
                   </label>
                 </fieldset>
                 <fieldset class="scheduler-group">
-                  <legend data-i18n="settingsSchedulerNativePreload">Native preload</legend>
+                  <legend data-i18n="settingsSchedulerNativePreload">Browser-native preload</legend>
                   <label class="scheduler-field" for="scheduler-native-total-min">
                     <span data-i18n="settingsSchedulerMin">Min</span>
                     <input id="scheduler-native-total-min" class="number-input" type="number" min="1" max="64" step="1" />
@@ -654,6 +717,11 @@
     <script src="../shared/settings.js"></script>
     <script src="ai-models.js"></script>
     <script src="app-updates.js"></script>
+    <script src="ui-components.js"></script>
+    <script src="rule-cards.js"></script>
+    <script src="history-deletion.js"></script>
+    <script src="performance-warning.js"></script>
+    <script src="navigation.js"></script>
     <script src="settings.js"></script>
   </body>
 </html>

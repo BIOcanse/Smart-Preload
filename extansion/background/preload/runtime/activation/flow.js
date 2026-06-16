@@ -72,6 +72,32 @@ async function activatePreloadedPage(message, sender) {
     return { handled: false };
   }
 
+  const safetyDecision =
+    globalThis.ZeroLatencyPreloadSafetyPolicy?.inspectPreloadCandidate?.(
+      {
+        url: targetUrl,
+        realPreloadSafety: entry.realPreloadSafety ?? null,
+      },
+      targetUrl
+    ) ?? null;
+
+  if (safetyDecision?.realPreloadBlocked === true || safetyDecision?.skipPreload === true) {
+    await closeTabIfExists(preloadedTab.id);
+    delete sourceRuntimeEntry.sourceTabRuntime.hiddenTabEntriesByUrl[targetUrl];
+    markSourceRuntimeUpdated(preloadState, sourceRuntimeEntry, new Date().toISOString());
+    pruneSourceTabRuntime(preloadState, sourceTab.windowId, sourceTabId);
+    await savePreloadState(preloadState);
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-activation.safety-blocked", {
+      sourceTabId: sourceTab.id,
+      sourceWindowId: sourceTab.windowId,
+      targetUrl,
+      preloadedTabId: preloadedTab.id,
+      reason: safetyDecision.reason || "unsafe-real-preload",
+      reasons: safetyDecision.reasons || [],
+    });
+    return { handled: false, reason: "real-preload-safety-guard" };
+  }
+
   const activatedWhileLoading = resolvedEntryStatus !== "complete";
   const trackingTargetUrl = resolveActivatedTrackingTargetUrl(targetUrl, preloadedTab, entry);
   const destinationWindowId = targetWindowId ?? sourceTab.windowId;

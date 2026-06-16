@@ -55,7 +55,7 @@
   }
 
   const SETTINGS_STORAGE_KEY = "userSettingsV1";
-  const SETTINGS_STORAGE_VERSION = 28;
+  const SETTINGS_STORAGE_VERSION = 29;
   const AI_MODEL_CATALOG = globalThis.ZeroLatencyAiModelCatalog ?? null;
   const PRELOAD_RULE_CARD_IDS = [
     "nativePerPagePreloadLimit",
@@ -181,34 +181,34 @@
   function createRuleCardSchema() {
     return {
       nativePerPagePreloadLimit: {
-        title: localize("ruleNativePerPageTitle", "Native preload group page slot cap a"),
+        title: localize("ruleNativePerPageTitle", "Browser-native preload group page slot cap a"),
         description: localize(
           "ruleNativePerPageDesc",
-          "Applies to native `prefetch` / `prerender` candidates. It decides how many page candidates this group can keep for final execution."
+          "Applies to browser-native `prefetch` / `prerender` candidates. It decides how many page candidates this group can keep for final execution."
         ),
         fields: createRuleFields("a"),
       },
       perPagePreloadLimit: {
-        title: localize("ruleTabPerPageTitle", "Real-tab preload group page slot cap a"),
+        title: localize("ruleTabPerPageTitle", "Real Preload group page slot cap a"),
         description: localize(
           "ruleTabPerPageDesc",
-          "Applies to candidates that need real background tabs. It decides how many page candidates this group can keep for final execution."
+          "Applies to candidates that need hidden real background tabs. It decides how many page candidates this group can keep for final execution."
         ),
         fields: createRuleFields("a"),
       },
       highWeightRank: {
-        title: localize("ruleNativeSiteTitle", "Native preload group high-weight site count x"),
+        title: localize("ruleNativeSiteTitle", "Browser-native preload group high-weight site count x"),
         description: localize(
           "ruleNativeSiteDesc",
-          "Applies to native `prefetch` / `prerender` candidates. It decides how many high-weight sites enter the site slot allocation stage."
+          "Applies to browser-native `prefetch` / `prerender` candidates. It decides how many high-weight sites enter the site slot allocation stage."
         ),
         fields: createRuleFields("x"),
       },
       highWeightRankTab: {
-        title: localize("ruleTabSiteTitle", "Real-tab preload group high-weight site count x"),
+        title: localize("ruleTabSiteTitle", "Real Preload group high-weight site count x"),
         description: localize(
           "ruleTabSiteDesc",
-          "Applies to candidates that need real background tabs, including cross-site new-tab preload and current-tab hard-swap cross-site candidates routed to hidden-tab."
+          "Applies to candidates that need hidden real background tabs, including cross-site new-tab preload and current-tab hard-swap cross-site candidates routed to hidden-tab."
         ),
         fields: createRuleFields("x"),
       },
@@ -250,6 +250,7 @@
     tracking: {
       trackGoogleSearchPages: true,
       excludeGoogleInternalPages: true,
+      excludeHttpPages: true,
       excludeLocalPages: true,
       excludePrivateNetworkPages: true,
     },
@@ -260,7 +261,7 @@
       maxTabsPerSource: 1,
       siteSelectionLimit: 3,
       tabSiteSelectionLimit: 2,
-      allNativePreloadMode: false,
+      realPreloadEnabled: false,
       interactionPreloadEnabled: true,
       ignoreWaterfallDynamicLinks: true,
       excludeIncognitoWindows: true,
@@ -415,6 +416,7 @@
       ? normalized.preloading.mode
       : DEFAULT_SETTINGS.preloading.mode;
     normalized.appearance = normalizeAppearanceSettings(normalized.appearance);
+    normalized.tracking.excludeHttpPages = normalized.tracking.excludeHttpPages !== false;
     normalized.tracking.excludeLocalPages = normalized.tracking.excludeLocalPages !== false;
     normalized.tracking.excludePrivateNetworkPages =
       normalized.tracking.excludePrivateNetworkPages !== false;
@@ -434,8 +436,9 @@
       normalized.preloading.interactionPreloadEnabled !== false;
     normalized.preloading.excludeIncognitoWindows =
       normalized.preloading.excludeIncognitoWindows !== false;
-    normalized.preloading.allNativePreloadMode =
-      normalized.preloading.allNativePreloadMode === true;
+    normalized.preloading.realPreloadEnabled =
+      normalized.preloading.realPreloadEnabled === true;
+    delete normalized.preloading.allNativePreloadMode;
     normalized.preloading.proxySkip = normalizeProxySkipSettings(
       normalized.preloading.proxySkip
     );
@@ -450,9 +453,8 @@
       normalized.preloadWindow.fullscreenPressurePolicy
     );
     normalized.experiments.crossSiteCurrentTabSwap =
-      normalized.preloading.allNativePreloadMode === true
-        ? false
-        : normalized.experiments.crossSiteCurrentTabSwap === true;
+      normalized.preloading.realPreloadEnabled === true &&
+      normalized.experiments.crossSiteCurrentTabSwap === true;
     normalized.diagnostics = {
       enabled: normalized.diagnostics?.enabled === true,
     };
@@ -705,8 +707,12 @@
     };
   }
 
+  function isRealPreloadEnabled(settings) {
+    return settings?.preloading?.realPreloadEnabled === true;
+  }
+
   function isAllNativePreloadModeEnabled(settings) {
-    return settings?.preloading?.allNativePreloadMode === true;
+    return !isRealPreloadEnabled(settings);
   }
 
   function normalizePreloadSchedulerSettings(value) {
@@ -1091,7 +1097,8 @@
             normalized.preloading.siteSelectionLimit
         ),
         effectiveTransitionWindowKey,
-        effectiveAllNativePreloadMode: normalized.preloading.allNativePreloadMode === true,
+        effectiveRealPreloadEnabled: normalized.preloading.realPreloadEnabled === true,
+        effectiveAllNativePreloadMode: normalized.preloading.realPreloadEnabled !== true,
         effectivePreloadScheduler: normalized.preloading.scheduler,
         effectiveAiPredictionConfigured: isAiPredictionConfigured(
           normalized.preloading.aiPrediction
@@ -1183,6 +1190,7 @@
     normalizeProxySkipMode,
     normalizeProxySkipSettings,
     normalizeProxySkipRules,
+    isRealPreloadEnabled,
     isAllNativePreloadModeEnabled,
     shouldSkipProxyRuleUrl,
     doesProxySkipRuleMatchUrl,

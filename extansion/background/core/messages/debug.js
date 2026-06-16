@@ -5,14 +5,20 @@
     }
 
     if (message?.mode === "performance-warning") {
+      const performanceWarning = await resolvePreloadPerformanceWarning({
+        allowRefresh: true,
+        timeoutMs: 1000,
+      });
+      const nativeAppModeWarning = await resolveNativeAppModeWarning({
+        allowStorage: true,
+      });
+
       return {
-        performanceWarning: await resolvePreloadPerformanceWarning({
-          allowRefresh: true,
-          timeoutMs: 1000,
-        }),
-        nativeAppModeWarning: await resolveNativeAppModeWarning({
-          allowStorage: true,
-        }),
+        performanceWarning,
+        nativeAppModeWarning,
+        realPreloadRecommendationWarning: resolveRealPreloadRecommendationWarning(
+          performanceWarning
+        ),
         mode: "performance-warning",
       };
     }
@@ -32,6 +38,14 @@
         ? await globalThis.nativeAppGetHiddenWindowMonitor()
         : null;
 
+    const performanceWarning = await resolvePreloadPerformanceWarning({
+      allowRefresh: true,
+      timeoutMs: 1000,
+    });
+    const nativeAppModeWarning = await resolveNativeAppModeWarning({
+      allowStorage: true,
+    });
+
     return {
       summary: buildDebugSnapshot(trackingState.graph),
       serviceState,
@@ -42,13 +56,11 @@
       knownPreloadRuntime: globalThis.snapshotKnownPreloadRuntime?.() ?? null,
       featureSupport: globalThis.ZeroLatencySupport?.getBackgroundFeatureSupport?.() ?? {},
       hiddenWindowMonitor,
-      performanceWarning: await resolvePreloadPerformanceWarning({
-        allowRefresh: true,
-        timeoutMs: 1000,
-      }),
-      nativeAppModeWarning: await resolveNativeAppModeWarning({
-        allowStorage: true,
-      }),
+      performanceWarning,
+      nativeAppModeWarning,
+      realPreloadRecommendationWarning: resolveRealPreloadRecommendationWarning(
+        performanceWarning
+      ),
       currentPreloadWindowMonitor: resolveCurrentPreloadWindowMonitor(
         pageContext,
         hiddenWindowMonitor
@@ -65,17 +77,23 @@
       message?.pageUrl
     );
 
+    const performanceWarning = await resolvePreloadPerformanceWarning({
+      allowRefresh: false,
+    });
+    const nativeAppModeWarning = await resolveNativeAppModeWarning({
+      allowStorage: false,
+    });
+
     return {
       summary: snapshot.summary,
       serviceState: snapshot.serviceState,
       pageContext,
       currentTopTargets: buildCurrentPreloads(snapshot.preloadState, message?.tabId),
-      performanceWarning: await resolvePreloadPerformanceWarning({
-        allowRefresh: false,
-      }),
-      nativeAppModeWarning: await resolveNativeAppModeWarning({
-        allowStorage: false,
-      }),
+      performanceWarning,
+      nativeAppModeWarning,
+      realPreloadRecommendationWarning: resolveRealPreloadRecommendationWarning(
+        performanceWarning
+      ),
       mode: "popup",
     };
   }
@@ -164,6 +182,24 @@
       return (await policyApi?.buildNativeAppModeWarning?.(settings)) ?? null;
     } catch (error) {
       globalThis.ZeroLatencyDebugEvents?.record?.("debug.native-app-mode-warning.error", {
+        error: String(error?.message || error),
+      });
+      return null;
+    }
+  }
+
+  function resolveRealPreloadRecommendationWarning(performanceWarning) {
+    try {
+      const settings =
+        typeof getEffectiveExtensionSettings === "function"
+          ? getEffectiveExtensionSettings()
+          : null;
+      return (
+        globalThis.ZeroLatencyPreloadNativeOnlyPolicy
+          ?.buildRealPreloadRecommendationWarning?.(settings, performanceWarning) ?? null
+      );
+    } catch (error) {
+      globalThis.ZeroLatencyDebugEvents?.record?.("debug.real-preload-warning.error", {
         error: String(error?.message || error),
       });
       return null;

@@ -113,12 +113,6 @@
   "performanceInsufficientReducePreloadCaps": {
     "message": "Leistungsdruck erkannt. Senken Sie die Vorladegrenzen."
   },
-  "nativeAppMissingEnableAllNativePreloadMode": {
-    "message": "Native App nicht erkannt. Aktivieren Sie den rein nativen Vorlademodus, um versteckte echte Tabs zu vermeiden."
-  },
-  "nativeAppMissingDownloadOrEnableAllNativePreloadMode": {
-    "message": "Native App wurde seit 1 Minute nicht erkannt. Laden und installieren Sie die native App oder aktivieren Sie den rein nativen Vorlademodus."
-  },
   "popupCurrentPageNotTracked": {
     "message": "Aktuelle Seite wird nicht verfolgt"
   },
@@ -257,6 +251,12 @@
   "settingsSkipGoogleInternalPagesDesc": {
     "message": "Chrome Web Store, Google-Konto- und Passwortmanager, Chrome-Sync, chromestatus und ?hnliche Google-Verwaltungsseiten weder verfolgen noch vorladen. Gemini und normale Google-Produkte bleiben aktiv."
   },
+  "settingsSkipHttpPages": {
+    "message": "HTTP-Seiten überspringen"
+  },
+  "settingsSkipHttpPagesDesc": {
+    "message": "HTTP-Seiten und -Links ohne Verschlüsselung weder verfolgen noch vorladen. HTTPS-Seiten bleiben verfügbar."
+  },
   "settingsSkipLocalPages": {
     "message": "Lokale Seiten überspringen"
   },
@@ -283,12 +283,6 @@
   },
   "settingsInteractionPreloadDesc": {
     "message": "Startet nach 80 ms Hover über einem Link ein Interaktions-Vorladen und bereitet beim Öffnen des Link-Kontextmenüs ein Vorladen für einen neuen Tab vor."
-  },
-  "settingsAllNativePreloadMode": {
-    "message": "Rein nativer Vorlademodus"
-  },
-  "settingsAllNativePreloadModeDesc": {
-    "message": "Nur browsernatives Prefetch/Prerender verwenden. Versteckte echte Hintergrund-Tabs und Hard-Swap sind deaktiviert."
   },
   "settingsNativeAppDownloadTitle": {
     "message": "Native App herunterladen"
@@ -387,10 +381,10 @@
     "message": "Kontoweite Limits zur Verteilung von Preload-Slots ?ber alle Quell-Tabs mit Kandidaten."
   },
   "settingsSchedulerHiddenTabs": {
-    "message": "Versteckte echte Tabs"
+    "message": "Real Preload"
   },
   "settingsSchedulerNativePreload": {
-    "message": "Nativer Preload"
+    "message": "Browsernatives Vorladen"
   },
   "settingsSchedulerAttentionPool": {
     "message": "Aufmerksamkeitspool"
@@ -747,28 +741,28 @@
     "message": "fester Token {0}"
   },
   "ruleNativePerPageTitle": {
-    "message": "Seiten-Slot-Limit a der nativen Preload-Gruppe"
+    "message": "Seiten-Slotlimit a der browsernativen Vorladegruppe"
   },
   "ruleNativePerPageDesc": {
-    "message": "Gilt f?r native `prefetch`- / `prerender`-Kandidaten. Legt fest, wie viele Seitenkandidaten diese Gruppe f?r die endg?ltige Ausf?hrung behalten kann."
+    "message": "Gilt für browsernative `prefetch`- / `prerender`-Kandidaten. Legt fest, wie viele Seitenkandidaten diese Gruppe für die finale Ausführung behalten kann."
   },
   "ruleTabPerPageTitle": {
-    "message": "Seiten-Slot-Limit a der echten Tab-Preload-Gruppe"
+    "message": "Seiten-Slotlimit a der Real-Preload-Gruppe"
   },
   "ruleTabPerPageDesc": {
-    "message": "Gilt f?r Kandidaten, die echte Hintergrund-Tabs ben?tigen. Legt fest, wie viele Seitenkandidaten diese Gruppe f?r die endg?ltige Ausf?hrung behalten kann."
+    "message": "Gilt für Kandidaten, die versteckte echte Hintergrund-Tabs benötigen. Legt fest, wie viele Seitenkandidaten diese Gruppe behalten kann."
   },
   "ruleNativeSiteTitle": {
-    "message": "Anzahl x hochgewichteter Sites der nativen Preload-Gruppe"
+    "message": "Anzahl x hochgewichteter Sites der browsernativen Vorladegruppe"
   },
   "ruleNativeSiteDesc": {
-    "message": "Gilt f?r native `prefetch`- / `prerender`-Kandidaten. Legt fest, wie viele hochgewichtete Sites in die Site-Slot-Zuweisung gelangen."
+    "message": "Gilt für browsernative `prefetch`- / `prerender`-Kandidaten. Legt fest, wie viele hochgewichtete Sites in die Site-Slotverteilung eingehen."
   },
   "ruleTabSiteTitle": {
-    "message": "Anzahl x hochgewichteter Sites der echten Tab-Preload-Gruppe"
+    "message": "Anzahl x hochgewichteter Sites der Real-Preload-Gruppe"
   },
   "ruleTabSiteDesc": {
-    "message": "Gilt f?r Kandidaten, die echte Hintergrund-Tabs ben?tigen, einschlie?lich website?bergreifendem New-Tab-Preload und Cross-Site-Kandidaten aus dem harten aktuellen Tab-Wechsel, die zu hidden-tab geleitet werden."
+    "message": "Gilt für Kandidaten, die versteckte echte Hintergrund-Tabs benötigen, einschließlich Cross-Site-New-Tab-Preload und Cross-Site-Hard-Swap-Kandidaten, die zu hidden-tab geroutet werden."
   },
   "ruleGoogleBookmarkRankTitle": {
     "message": "Google-Suche-Lesezeichen-Preload-Rang x"
@@ -832,5 +826,35 @@
   },
   "languageRussian": {
     "message": "Russisch"
+  },
+  "nativeAppMissingDownloadOrDisableRealPreload": {
+    "message": "Real Preload benötigt die Windows-App. Sie wurde seit 1 Minute nicht erkannt; installieren Sie die App oder deaktivieren Sie Real Preload."
+  },
+  "settingsRealPreload": {
+    "message": "Real Preload"
+  },
+  "settingsRealPreloadDesc": {
+    "message": "Verwendet versteckte echte Hintergrund-Tabs für nahezu null wahrgenommene Verzögerung. Standardmäßig aus, weil es viel Arbeitsspeicher belegt."
+  },
+  "settingsSideEffectLinkSafetyGuard": {
+    "message": "Schutz f?r Links mit Nebenwirkungen"
+  },
+  "settingsSideEffectLinkSafetyGuardDesc": {
+    "message": "Blockiert Preloading immer f?r Downloads, Exporte, Anh?nge und andere Links, die Nebenwirkungen ausl?sen k?nnen. Diese Sicherheitsgrundlage kann nicht deaktiviert werden."
+  },
+  "settingsDangerousSiteSafetyGuard": {
+    "message": "Schutz vor gef?hrlichen Websites"
+  },
+  "settingsDangerousSiteSafetyGuardDesc": {
+    "message": "Preloading bleibt f?r Links blockiert, die von der Erweiterung oder der lokalen App als gef?hrlich markiert wurden. Die eingebauten Browserwarnungen greifen weiterhin bei echter Navigation."
+  },
+  "settingsDangerousSitePausePreloadingWarning": {
+    "message": "Wenn Sie riskante oder nicht vertrauenswürdige Websites öffnen, pausieren Sie das Preloading vollständig. Automatische Regeln können nicht jede gefährliche Seite zuverlässig absichern."
+  },
+  "realPreloadAvailableLowMemoryWarning": {
+    "message": "Real Preload ist verfügbar und kann die wahrgenommene Verzögerung auf null senken, aber dieser Computer hat weniger als 24 GB Arbeitsspeicher; für die meisten Nutzer wird es nicht empfohlen."
+  },
+  "realPreloadRecommendedWarning": {
+    "message": "Real Preload ist verfügbar und für diesen Computer empfohlen. Es kann die wahrgenommene Verzögerung auf null senken, belegt aber viel Arbeitsspeicher; vermeiden Sie zu aggressive Limits."
   }
 }

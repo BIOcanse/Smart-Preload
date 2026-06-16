@@ -4,6 +4,11 @@ async function synchronizePreloadsForSourceTab(
   sourceTabId,
   targets
 ) {
+  const safeTargets = filterUnsafeHiddenTabTargets({
+    normalWindowId,
+    sourceTabId,
+    targets,
+  });
   const pressureState =
     typeof getPreloadResourcePressureState === "function"
       ? await getPreloadResourcePressureState(getEffectiveExtensionSettings())
@@ -13,7 +18,7 @@ async function synchronizePreloadsForSourceTab(
     globalThis.ZeroLatencyDebugEvents?.record?.("hidden-tab.sync.resource-pressure-skip", {
       normalWindowId,
       sourceTabId,
-      targetCount: Array.isArray(targets) ? targets.length : 0,
+      targetCount: safeTargets.length,
       policy: pressureState.policy,
       reason: pressureState.reason,
     });
@@ -32,14 +37,14 @@ async function synchronizePreloadsForSourceTab(
     sourceTabId
   );
 
-  if (!existingRuntimeEntry && targets.length === 0) {
+  if (!existingRuntimeEntry && safeTargets.length === 0) {
     return preloadState;
   }
 
   const sourceRuntimeEntry =
     existingRuntimeEntry ?? ensureSourceTabRuntime(preloadState, normalWindowId, sourceTabId);
   const existingEntries = sourceRuntimeEntry.sourceTabRuntime.hiddenTabEntriesByUrl;
-  const desiredUrls = new Set(targets.map((target) => target.url));
+  const desiredUrls = new Set(safeTargets.map((target) => target.url));
   let preloadWindowId = null;
 
   for (const [url, entry] of Object.entries(existingEntries)) {
@@ -61,7 +66,7 @@ async function synchronizePreloadsForSourceTab(
     });
   }
 
-  for (const target of targets) {
+  for (const target of safeTargets) {
     const existingEntry = existingEntries[target.url];
 
     if (existingEntry) {
@@ -76,7 +81,9 @@ async function synchronizePreloadsForSourceTab(
         existingEntry.transitionMetrics = target.transitionMetrics ?? null;
         existingEntry.aiKeywordMatch = target.aiKeywordMatch ?? null;
         existingEntry.bookmarkPreload = target.bookmarkPreload ?? null;
-        existingEntry.interactionPreload = target.interactionPreload ?? null;
+        existingEntry.realPreloadSafety = target.realPreloadSafety ?? null;
+        existingEntry.interactionPreload =
+          target.interactionPreload ?? existingEntry.interactionPreload ?? null;
         existingEntry.siteSelection = target.siteSelection ?? null;
         existingEntry.status = liveTab.status || existingEntry.status;
         existingEntry.loadedUrl = liveTab.url || existingEntry.loadedUrl;
@@ -115,6 +122,7 @@ async function synchronizePreloadsForSourceTab(
       transitionMetrics: target.transitionMetrics ?? null,
       aiKeywordMatch: target.aiKeywordMatch ?? null,
       bookmarkPreload: target.bookmarkPreload ?? null,
+      realPreloadSafety: target.realPreloadSafety ?? null,
       interactionPreload: target.interactionPreload ?? null,
       siteSelection: target.siteSelection ?? null,
       status: "queued",
@@ -157,6 +165,39 @@ async function synchronizePreloadsForSourceTab(
   }
 
   return preloadState;
+}
+
+function filterUnsafeHiddenTabTargets({ normalWindowId, sourceTabId, targets }) {
+  const safeTargets = [];
+
+  for (const target of Array.isArray(targets) ? targets : []) {
+    if (
+      globalThis.ZeroLatencyPreloadSafetyPolicy?.shouldBlockRealPreload?.(
+        target,
+        target?.url
+      ) === true
+    ) {
+      const decision =
+        target?.realPreloadSafety ??
+        globalThis.ZeroLatencyPreloadSafetyPolicy?.inspectPreloadCandidate?.(
+          target,
+          target?.url
+        ) ??
+        {};
+      globalThis.ZeroLatencyDebugEvents?.record?.("hidden-tab.sync.safety-skip", {
+        normalWindowId,
+        sourceTabId,
+        targetUrl: target?.url || "",
+        reason: decision.reason || "unsafe-real-preload",
+        reasons: decision.reasons || [],
+      });
+      continue;
+    }
+
+    safeTargets.push(target);
+  }
+
+  return safeTargets;
 }
 
 async function clearPreloadsForSourceTab(

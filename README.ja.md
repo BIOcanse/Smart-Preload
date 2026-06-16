@@ -69,3 +69,7 @@ Windows アプリの `portable` フォルダーには連携ファイルとログ
 - Google Chrome
 - Microsoft Edge
 - その他の Chromium ベースブラウザでも動作する可能性がありますが、主な対象は Chrome と Edge です。
+
+## ライセンス
+
+Smart Preload / Zero Latency Web は [Apache License 2.0](LICENSE) の下でライセンスされています。帰属表示は [NOTICE](NOTICE) を参照してください。

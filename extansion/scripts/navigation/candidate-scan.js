@@ -13,6 +13,8 @@
     isGoogleSearchInternalModeNavigation,
     hasActiveEditableFocus,
     isPassivePrerenderContext,
+    collectAnchorPreloadSafety,
+    inspectAnchorSideEffectPreloadSafety,
     filterWaterfallDynamicLinks,
     registerPreloadCandidates,
     syncContentScriptPreloadPolicy,
@@ -153,6 +155,12 @@
         continue;
       }
 
+      const preloadSafetyDecision = inspectAnchorSideEffectPreloadSafety(anchor, targetUrl);
+
+      if (preloadSafetyDecision.skipPreload === true) {
+        continue;
+      }
+
       const visibility = getVisibilityScore(anchor);
 
       if (visibility <= 0) {
@@ -169,6 +177,7 @@
         titleAttr: normalizeShortText(anchor.getAttribute("title")),
         ariaLabel: normalizeShortText(anchor.getAttribute("aria-label")),
         imageAlt: collectAnchorImageAlt(anchor),
+        preloadSafety: preloadSafetyDecision.preloadSafety ?? collectAnchorPreloadSafety(anchor),
       });
 
       if (links.length >= constants.MAX_CANDIDATE_LINKS) {
@@ -190,6 +199,7 @@
           link.titleAttr || "",
           link.ariaLabel || "",
           link.imageAlt || "",
+          JSON.stringify(link.preloadSafety || {}),
           Number.isFinite(link.visibility) ? String(link.visibility) : "",
         ].join("\u001f")
       )
