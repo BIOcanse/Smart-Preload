@@ -6,6 +6,7 @@
     normalizeNavigableHref,
     getAnchorNavigationTarget,
     resolveManagedNavigationTarget,
+    shouldUseBrowserDefaultForPreloadSafety,
     isGoogleSearchInternalModeNavigation,
     isPassivePrerenderContext,
     sendNavigationPrimeSource,
@@ -361,6 +362,10 @@
     );
 
     if (!targetUrl || !navigationTarget) {
+      return null;
+    }
+
+    if (shouldUseBrowserDefaultForPreloadSafety?.(anchor, targetUrl)) {
       return null;
     }
 

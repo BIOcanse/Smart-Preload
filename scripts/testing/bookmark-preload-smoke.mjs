@@ -1,11 +1,19 @@
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
-import { cp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { CdpClient, pageEval, swEval } from "./lib/cdp-client.mjs";
+import { waitForTarget, waitForExtensionServiceWorker as waitForExtensionServiceWorkerTarget } from "./lib/cdp-discovery.mjs";
+import { prepareExtensionUnderTest as copyExtensionFixture } from "./lib/extension-fixture.mjs";
+import { getChromePathCandidates } from "./lib/browser-paths.mjs";
+import {
+  escapeHtml,
+  getFreePort,
+  sleep,
+} from "./lib/test-utils.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,12 +25,7 @@ const runDir = path.join(outputRoot, `bookmark-preload-smoke-${runId}`);
 const profileDir = path.join(runDir, "chrome-profile");
 const extensionUnderTestDir = path.join(os.tmpdir(), `zlw-ext-smoke-${process.pid}-${Date.now()}`);
 
-const chromePathCandidates = [
-  path.join(process.env.LocalAppData || "", "ms-playwright", "chromium-1217", "chrome-win64", "chrome.exe"),
-  path.join(process.env.ProgramFiles || "C:\\Program Files", "Google", "Chrome", "Application", "chrome.exe"),
-  path.join(process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)", "Google", "Chrome", "Application", "chrome.exe"),
-  path.join(process.env.LocalAppData || "", "Google", "Chrome", "Application", "chrome.exe"),
-];
+const chromePathCandidates = getChromePathCandidates();
 
 const TEST_HOSTS = [
   "www.google.test",
@@ -32,8 +35,6 @@ const TEST_HOSTS = [
   "page-result.test",
   "nongoogle.test",
 ];
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function main() {
   await mkdir(runDir, { recursive: true });
@@ -163,6 +164,7 @@ async function setupExtensionState(serviceWorker, urls) {
       globalThis.ZeroLatencySettings.DEFAULT_SETTINGS
     );
     settings.preloading.enabled = true;
+    settings.preloading.realPreloadEnabled = true;
     settings.preloading.aiPrediction.enabled = false;
     settings.preloadWindow.watchdogEnabled = false;
     settings.preloadWindow.fullscreenPressurePolicy = "ignore";
@@ -711,207 +713,17 @@ async function waitForPageReady(page, timeoutMs = 10000) {
   throw new Error("Timed out waiting for settings page readiness");
 }
 
-async function swEval(client, fn, arg = {}) {
-  return runtimeEval(client, `(${fn.toString()})(${JSON.stringify(arg)})`);
-}
-
-async function pageEval(client, fn, arg = {}) {
-  return runtimeEval(client, `(${fn.toString()})(${JSON.stringify(arg)})`);
-}
-
-async function runtimeEval(client, expression) {
-  const response = await client.send("Runtime.evaluate", {
-    expression,
-    awaitPromise: true,
-    returnByValue: true,
-  });
-  if (response.exceptionDetails) {
-    throw new Error(
-      response.exceptionDetails.exception?.description ||
-        response.exceptionDetails.text ||
-        "CDP Runtime.evaluate failed"
-    );
-  }
-  return response.result?.value;
-}
-
-async function waitForTarget(debugPort, predicate, timeoutMs = 15000) {
-  const startedAt = Date.now();
-  let lastTargets = [];
-  while (Date.now() - startedAt < timeoutMs) {
-    let targets = [];
-    try {
-      targets = await fetchJson(`http://127.0.0.1:${debugPort}/json/list`);
-      lastTargets = targets;
-    } catch (_error) {
-      await sleep(250);
-      continue;
-    }
-    const target = targets.find(predicate);
-    if (target?.webSocketDebuggerUrl) {
-      return target;
-    }
-    await sleep(250);
-  }
-  throw new Error(
-    `Timed out waiting for CDP target. Last targets: ${JSON.stringify(
-      lastTargets.map((target) => ({
-        type: target.type,
-        url: target.url,
-        title: target.title,
-      })),
-      null,
-      2
-    )}`
-  );
-}
-
 async function waitForExtensionServiceWorker(debugPort, timeoutMs = 20000) {
-  const startedAt = Date.now();
-  let lastTargets = [];
-  const inspectionErrors = [];
-
-  while (Date.now() - startedAt < timeoutMs) {
-    let targets = [];
-    try {
-      targets = await fetchJson(`http://127.0.0.1:${debugPort}/json/list`);
-      lastTargets = targets;
-    } catch (_error) {
-      await sleep(250);
-      continue;
-    }
-
-    for (const target of targets) {
-      if (
-        target.type !== "service_worker" ||
-        !/^chrome-extension:\/\//.test(target.url || "") ||
-        !target.webSocketDebuggerUrl
-      ) {
-        continue;
-      }
-
-      const client = await CdpClient.connect(target.webSocketDebuggerUrl);
-      await client.send("Runtime.enable");
-
-      try {
-        const manifest = await runtimeEval(client, "chrome.runtime.getManifest()");
-        const permissions = Array.isArray(manifest?.permissions)
-          ? manifest.permissions
-          : [];
-        const isTargetExtension =
-          manifest?.background?.service_worker === "service-worker.js" &&
-          manifest?.options_page === "settings/index.html" &&
-          permissions.includes("nativeMessaging") &&
-          permissions.includes("bookmarks") &&
-          permissions.includes("storage");
-
-        if (isTargetExtension) {
-          return {
-            ...target,
-            manifest,
-            client,
-          };
-        }
-      } catch (error) {
-        inspectionErrors.push({
-          url: target.url,
-          error: error?.message || String(error),
-        });
-        // Ignore unrelated component extensions.
-      }
-
-      client.close();
-    }
-
-    await sleep(250);
-  }
-
-  throw new Error(
-    `Timed out waiting for Zero-Latency Web service worker. Last targets: ${JSON.stringify(
-      lastTargets.map((target) => ({
-        type: target.type,
-        url: target.url,
-        title: target.title,
-      })),
-      null,
-      2
-    )}; inspection errors: ${JSON.stringify(inspectionErrors.slice(-8), null, 2)}`
-  );
-}
-
-async function fetchJson(url) {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status} for ${url}`);
-  }
-  return response.json();
-}
-
-class CdpClient {
-  static async connect(webSocketUrl) {
-    const client = new CdpClient(webSocketUrl);
-    await client.open();
-    return client;
-  }
-
-  constructor(webSocketUrl) {
-    this.webSocketUrl = webSocketUrl;
-    this.ws = null;
-    this.nextId = 1;
-    this.pending = new Map();
-  }
-
-  open() {
-    return new Promise((resolve, reject) => {
-      this.ws = new WebSocket(this.webSocketUrl);
-      this.ws.addEventListener("open", () => resolve());
-      this.ws.addEventListener("error", (event) => reject(event.error || new Error("WebSocket error")));
-      this.ws.addEventListener("message", (event) => this.handleMessage(event.data));
-      this.ws.addEventListener("close", () => {
-        for (const { reject: rejectPending } of this.pending.values()) {
-          rejectPending(new Error("CDP socket closed"));
-        }
-        this.pending.clear();
-      });
-    });
-  }
-
-  send(method, params = {}) {
-    const id = this.nextId++;
-    this.ws.send(JSON.stringify({ id, method, params }));
-    return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject });
-      setTimeout(() => {
-        if (!this.pending.has(id)) {
-          return;
-        }
-        this.pending.delete(id);
-        reject(new Error(`CDP command timed out: ${method}`));
-      }, 15000).unref?.();
-    });
-  }
-
-  handleMessage(rawMessage) {
-    const message = JSON.parse(rawMessage);
-    if (!message.id || !this.pending.has(message.id)) {
-      return;
-    }
-    const pending = this.pending.get(message.id);
-    this.pending.delete(message.id);
-    if (message.error) {
-      pending.reject(new Error(`${message.error.message}: ${message.error.data || ""}`));
-      return;
-    }
-    pending.resolve(message.result || {});
-  }
-
-  close() {
-    try {
-      this.ws?.close();
-    } catch (_error) {
-      // Ignore cleanup errors.
-    }
-  }
+  return waitForExtensionServiceWorkerTarget({
+    debugPort,
+    timeoutMs,
+    isTargetManifest: ({ manifest, permissions }) =>
+      manifest?.background?.service_worker === "service-worker.js" &&
+      manifest?.options_page === "settings/index.html" &&
+      permissions.includes("nativeMessaging") &&
+      permissions.includes("bookmarks") &&
+      permissions.includes("storage"),
+  });
 }
 
 function launchChrome({ webPort, debugPort }) {
@@ -928,6 +740,7 @@ function launchChrome({ webPort, debugPort }) {
     `--remote-debugging-port=${debugPort}`,
     `--disable-extensions-except=${extensionUnderTestDir}`,
     `--load-extension=${extensionUnderTestDir}`,
+    "--enable-extensions",
     "--enable-unsafe-extension-debugging",
     `--host-resolver-rules=${resolverRules}`,
     "--no-first-run",
@@ -935,7 +748,7 @@ function launchChrome({ webPort, debugPort }) {
     "--no-sandbox",
     "--disable-default-apps",
     "--disable-sync",
-    "--disable-features=Translate,AutofillServerCommunication",
+    "--disable-features=Translate,AutofillServerCommunication,DisableLoadExtensionCommandLineSwitch",
     "--window-size=1280,900",
     `http://www.google.test:${webPort}/search?q=startup-smoke`,
   ];
@@ -951,32 +764,10 @@ function launchChrome({ webPort, debugPort }) {
 }
 
 async function prepareExtensionUnderTest() {
-  await rm(extensionUnderTestDir, { recursive: true, force: true });
-  await mkdir(extensionUnderTestDir, { recursive: true });
-
-  const entries = [
-    "manifest.json",
-    "service-worker.js",
-    "_locales",
-    "background",
-    "popup",
-    "scripts",
-    "settings",
-    "shared",
-    path.join("wasm", "pkg"),
-  ];
-
-  for (const entry of entries) {
-    const source = path.join(extensionDir, entry);
-    const target = path.join(extensionUnderTestDir, entry);
-    if (!existsSync(source)) {
-      continue;
-    }
-    await cp(source, target, {
-      recursive: true,
-      force: true,
-    });
-  }
+  await copyExtensionFixture({
+    extensionDir,
+    targetDir: extensionUnderTestDir,
+  });
 }
 
 async function startTestServer(port) {
@@ -1045,26 +836,6 @@ function renderTargetPage(host, pathname) {
 function respondHtml(response, html) {
   response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
   response.end(html);
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-}
-
-async function getFreePort() {
-  return new Promise((resolve, reject) => {
-    const server = net.createServer();
-    server.unref();
-    server.on("error", reject);
-    server.listen(0, "127.0.0.1", () => {
-      const address = server.address();
-      server.close(() => resolve(address.port));
-    });
-  });
 }
 
 main().catch((error) => {

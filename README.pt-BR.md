@@ -69,3 +69,7 @@ A extensao pode funcionar sem o app do Windows. O app e exclusivo para Windows e
 - Google Chrome
 - Microsoft Edge
 - Outros navegadores baseados em Chromium podem funcionar, mas Chrome e Edge sao os alvos previstos.
+
+## Licenca
+
+Smart Preload / Zero Latency Web e licenciado sob a [Apache License 2.0](LICENSE). Consulte [NOTICE](NOTICE) para os avisos de atribuicao.

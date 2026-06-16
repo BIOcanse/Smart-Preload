@@ -127,7 +127,11 @@ function renderSnapshot(snapshot) {
     : t("popupCurrentPageNotTracked", [], "Current page is not tracked");
 
   renderPerformanceWarning(selectRuntimeWarningToDisplay(snapshot));
-  refreshRuntimeWarningsIfNeeded(snapshot?.performanceWarning, snapshot?.nativeAppModeWarning);
+  refreshRuntimeWarningsIfNeeded(
+    snapshot?.performanceWarning,
+    snapshot?.nativeAppModeWarning,
+    snapshot?.realPreloadRecommendationWarning
+  );
   renderTopTargets(snapshot?.currentTopTargets ?? [], snapshot?.pageContext, snapshot?.serviceState);
 }
 
@@ -155,12 +159,24 @@ function selectRuntimeWarningToDisplay(snapshot) {
     return snapshot.nativeAppModeWarning;
   }
 
-  return snapshot?.performanceWarning;
+  if (snapshot?.performanceWarning?.active === true) {
+    return snapshot.performanceWarning;
+  }
+
+  return snapshot?.realPreloadRecommendationWarning;
 }
 
-function refreshRuntimeWarningsIfNeeded(performanceWarning, nativeAppModeWarning) {
+function refreshRuntimeWarningsIfNeeded(
+  performanceWarning,
+  nativeAppModeWarning,
+  realPreloadRecommendationWarning
+) {
   if (
-    !shouldRefreshRuntimeWarnings(performanceWarning, nativeAppModeWarning) ||
+    !shouldRefreshRuntimeWarnings(
+      performanceWarning,
+      nativeAppModeWarning,
+      realPreloadRecommendationWarning
+    ) ||
     performanceWarningRefreshInFlight
   ) {
     return;
@@ -183,10 +199,15 @@ function refreshRuntimeWarningsIfNeeded(performanceWarning, nativeAppModeWarning
     });
 }
 
-function shouldRefreshRuntimeWarnings(performanceWarning, nativeAppModeWarning) {
+function shouldRefreshRuntimeWarnings(
+  performanceWarning,
+  nativeAppModeWarning,
+  realPreloadRecommendationWarning
+) {
   return (
     performanceWarning?.reason === "cache-unavailable" ||
-    nativeAppModeWarning?.reason === "native-app-warning-cache-unavailable"
+    nativeAppModeWarning?.reason === "native-app-warning-cache-unavailable" ||
+    realPreloadRecommendationWarning?.reason === "real-preload-memory-unavailable"
   );
 }
 

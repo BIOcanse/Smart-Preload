@@ -69,3 +69,7 @@ Windows app 的 `portable` 資料夾保存的是 app 綁定檔案和日誌，不
 - Google Chrome
 - Microsoft Edge
 - 其他 Chromium 瀏覽器可能可用，但主要適配目標是 Chrome 和 Edge。
+
+## 授權條款
+
+智慧預載 / Zero Latency Web 使用 [Apache License 2.0](LICENSE) 授權。署名聲明見 [NOTICE](NOTICE)。

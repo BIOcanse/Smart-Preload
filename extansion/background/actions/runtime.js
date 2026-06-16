@@ -49,7 +49,7 @@
     }
 
     await globalThis.ZeroLatencyNativeAppHeartbeat?.ensureAlarm?.(true);
-    await sendImmediateNativeAppHeartbeat("runtime-settings");
+    void sendImmediateNativeAppHeartbeat("runtime-settings");
     await globalThis.ZeroLatencySupport.probeNativeAppAvailability({
       forceRefresh: true,
     });

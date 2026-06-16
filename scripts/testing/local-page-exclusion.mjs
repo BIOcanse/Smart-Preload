@@ -31,6 +31,9 @@ context.getEffectiveExtensionSettings = () => activeSettings;
 
 assert.equal(activeSettings.tracking.excludeLocalPages, true);
 assert.equal(activeSettings.tracking.excludePrivateNetworkPages, true);
+assert.equal(activeSettings.tracking.excludeHttpPages, true);
+assert.equal(context.isHttpPageUrl("http://example.com/app"), true);
+assert.equal(context.isHttpPageUrl("https://example.com/app"), false);
 assert.equal(context.isLocalPageUrl("http://localhost:3000/app"), true);
 assert.equal(context.isLocalPageUrl("http://dev.localhost/app"), true);
 assert.equal(context.isLocalPageUrl("http://127.42.0.1:5173/app"), true);
@@ -52,6 +55,9 @@ assert.equal(context.isPrivateNetworkPageUrl("http://8.8.8.8/app"), false);
 assert.equal(context.isPrivateNetworkPageUrl("https://example.com/app"), false);
 
 assert.equal(context.isExcludedLocalPage("http://localhost:3000/app"), true);
+assert.equal(context.isExcludedHttpPage("http://example.com/app"), true);
+assert.equal(context.isTrackableAndAllowedUrl("http://example.com/app"), false);
+assert.equal(context.isTrackableAndAllowedUrl("https://example.com/app"), true);
 assert.equal(context.isTrackableAndAllowedUrl("http://localhost:3000/app"), false);
 assert.equal(
   context.normalizeNavigableUrl("http://127.0.0.1:5173/target", "https://source.example/page"),
@@ -66,15 +72,19 @@ assert.equal(
 
 activeSettings = context.ZeroLatencySettings.normalizeStoredSettings({
   tracking: {
+    excludeHttpPages: false,
     excludeLocalPages: false,
     excludePrivateNetworkPages: false,
   },
 });
 
+assert.equal(activeSettings.tracking.excludeHttpPages, false);
 assert.equal(activeSettings.tracking.excludeLocalPages, false);
 assert.equal(activeSettings.tracking.excludePrivateNetworkPages, false);
+assert.equal(context.isExcludedHttpPage("http://example.com/app"), false);
 assert.equal(context.isExcludedLocalPage("http://localhost:3000/app"), false);
 assert.equal(context.isExcludedPrivateNetworkPage("http://192.168.0.1/admin"), false);
+assert.equal(context.isTrackableAndAllowedUrl("http://example.com/app"), true);
 assert.equal(context.isTrackableAndAllowedUrl("http://localhost:3000/app"), true);
 assert.equal(context.isTrackableAndAllowedUrl("http://192.168.0.1/admin"), true);
 assert.equal(
@@ -86,4 +96,16 @@ assert.equal(
   "http://10.0.0.2/target"
 );
 
-console.log("local and private network page exclusion tests passed");
+activeSettings = context.ZeroLatencySettings.normalizeStoredSettings({
+  tracking: {
+    excludeHttpPages: false,
+    excludeLocalPages: true,
+    excludePrivateNetworkPages: true,
+  },
+});
+
+assert.equal(context.isTrackableAndAllowedUrl("http://example.com/app"), true);
+assert.equal(context.isTrackableAndAllowedUrl("http://localhost:3000/app"), false);
+assert.equal(context.isTrackableAndAllowedUrl("http://192.168.0.1/admin"), false);
+
+console.log("HTTP, local, and private network page exclusion tests passed");

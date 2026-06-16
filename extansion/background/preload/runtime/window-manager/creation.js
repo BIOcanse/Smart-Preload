@@ -54,7 +54,7 @@ async function ensurePreloadWindowInternal(preloadState, normalWindowId) {
       windowId: null,
       created: false,
       supported: false,
-      reason: "all-native-preload-mode",
+      reason: "real-preload-disabled",
     };
   }
 

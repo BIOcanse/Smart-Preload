@@ -113,12 +113,6 @@
   "performanceInsufficientReducePreloadCaps": {
     "message": "パフォーマンス負荷を検出しました。プリロード上限を下げてください。"
   },
-  "nativeAppMissingEnableAllNativePreloadMode": {
-    "message": "ネイティブアプリが検出されません。隠し実タブのプリロードを避けるには、全ネイティブプリロードモードを有効にしてください。"
-  },
-  "nativeAppMissingDownloadOrEnableAllNativePreloadMode": {
-    "message": "ネイティブアプリが1分間検出されていません。ネイティブアプリをダウンロードしてインストールするか、全ネイティブプリロードモードを有効にしてください。"
-  },
   "popupCurrentPageNotTracked": {
     "message": "現在のページは追跡されていません"
   },
@@ -257,6 +251,12 @@
   "settingsSkipGoogleInternalPagesDesc": {
     "message": "Chrome ウェブストア、Google アカウントとパスワードマネージャー、Chrome 同期、chromestatus などの Google 管理ページでは追跡やプリロードを行いません。Gemini と通常の Google サービスは引き続き追跡されます。"
   },
+  "settingsSkipHttpPages": {
+    "message": "HTTP ページをスキップ"
+  },
+  "settingsSkipHttpPagesDesc": {
+    "message": "暗号化されていない HTTP ページとリンクを追跡またはプリロードしません。HTTPS ページは引き続き利用できます。"
+  },
   "settingsSkipLocalPages": {
     "message": "ローカルページをスキップ"
   },
@@ -283,12 +283,6 @@
   },
   "settingsInteractionPreloadDesc": {
     "message": "リンク上に 80ms ホバーするとインタラクションプリロードを開始し、リンクのコンテキストメニューを開くと新しいタブ用のプリロードを準備します。"
-  },
-  "settingsAllNativePreloadMode": {
-    "message": "全ネイティブプリロードモード"
-  },
-  "settingsAllNativePreloadModeDesc": {
-    "message": "ブラウザー標準の prefetch/prerender のみを使用します。隠し実バックグラウンドタブとハードスワップは無効になります。"
   },
   "settingsNativeAppDownloadTitle": {
     "message": "ネイティブアプリのダウンロード"
@@ -387,10 +381,10 @@
     "message": "候補を持つすべてのソースタブにプリロードスロットを配分するアカウント単位の上限です。"
   },
   "settingsSchedulerHiddenTabs": {
-    "message": "隠し実タブ"
+    "message": "Real Preload"
   },
   "settingsSchedulerNativePreload": {
-    "message": "ネイティブプリロード"
+    "message": "ブラウザネイティブプリロード"
   },
   "settingsSchedulerAttentionPool": {
     "message": "アテンションプール"
@@ -747,28 +741,28 @@
     "message": "固定トークン {0}"
   },
   "ruleNativePerPageTitle": {
-    "message": "ネイティブプリロードグループのページスロット上限 a"
+    "message": "ブラウザネイティブプリロード組のページスロット上限 a"
   },
   "ruleNativePerPageDesc": {
-    "message": "ネイティブ `prefetch` / `prerender` 候補に適用されます。このグループが最終実行用に保持できるページ候補数を決めます。"
+    "message": "ブラウザネイティブの `prefetch` / `prerender` 候補に適用します。この組が最終実行に残せるページ候補数を決めます。"
   },
   "ruleTabPerPageTitle": {
-    "message": "実タブプリロードグループのページスロット上限 a"
+    "message": "Real Preload 組のページスロット上限 a"
   },
   "ruleTabPerPageDesc": {
-    "message": "実際のバックグラウンドタブを必要とする候補に適用されます。このグループが最終実行用に保持できるページ候補数を決めます。"
+    "message": "非表示の実バックグラウンドタブを必要とする候補に適用します。この組が最終実行に残せるページ候補数を決めます。"
   },
   "ruleNativeSiteTitle": {
-    "message": "ネイティブプリロードグループの高重みサイト数 x"
+    "message": "ブラウザネイティブプリロード組の高重みサイト数 x"
   },
   "ruleNativeSiteDesc": {
-    "message": "ネイティブ `prefetch` / `prerender` 候補に適用されます。サイトスロット割り当て段階に入る高重みサイト数を決めます。"
+    "message": "ブラウザネイティブの `prefetch` / `prerender` 候補に適用します。サイトスロット配分に入る高重みサイト数を決めます。"
   },
   "ruleTabSiteTitle": {
-    "message": "実タブプリロードグループの高重みサイト数 x"
+    "message": "Real Preload 組の高重みサイト数 x"
   },
   "ruleTabSiteDesc": {
-    "message": "実際のバックグラウンドタブを必要とする候補に適用されます。クロスサイトの新規タブプリロードや、hidden-tab に送られる現在タブ強制置換のクロスサイト候補を含みます。"
+    "message": "非表示の実バックグラウンドタブを必要とする候補に適用します。新規タブのクロスサイトプリロードや、hidden-tab に回される現在タブ hard-swap 候補も含みます。"
   },
   "ruleGoogleBookmarkRankTitle": {
     "message": "Google 検索ブックマークプリロード順位 x"
@@ -832,5 +826,35 @@
   },
   "languageRussian": {
     "message": "ロシア語"
+  },
+  "nativeAppMissingDownloadOrDisableRealPreload": {
+    "message": "Real Preload には Windows アプリが必要です。1 分間検出されていません。アプリをインストールするか、Real Preload をオフにしてください。"
+  },
+  "settingsRealPreload": {
+    "message": "Real Preload"
+  },
+  "settingsRealPreloadDesc": {
+    "message": "非表示の実タブをバックグラウンドで使い、体感遅延をほぼゼロに近づけます。メモリを大量に使うため、既定ではオフです。"
+  },
+  "settingsSideEffectLinkSafetyGuard": {
+    "message": "副作用リンクの安全保護"
+  },
+  "settingsSideEffectLinkSafetyGuardDesc": {
+    "message": "ダウンロード、エクスポート、添付ファイル、その他副作用が起きやすいリンクは、常にプリロードをブロックします。この安全基準はオフにできません。"
+  },
+  "settingsDangerousSiteSafetyGuard": {
+    "message": "危険サイトのプリロード保護"
+  },
+  "settingsDangerousSiteSafetyGuardDesc": {
+    "message": "拡張機能またはローカル app が危険と判断したリンクはプリロードされません。実際の移動時には、ブラウザ内蔵の安全警告も引き続き機能します。"
+  },
+  "settingsDangerousSitePausePreloadingWarning": {
+    "message": "危険または信頼できないサイトに入るときは、プリロードを完全に一時停止してください。自動ルールですべての危険なページを保証することはできません。"
+  },
+  "realPreloadAvailableLowMemoryWarning": {
+    "message": "Real Preload は利用でき、体感遅延をゼロに近づけられますが、この PC のメモリは 24 GB 未満です。多くのユーザーには推奨しません。"
+  },
+  "realPreloadRecommendedWarning": {
+    "message": "Real Preload は利用でき、この PC では有効化を推奨できます。体感遅延をゼロに近づけられますが、メモリを大量に使うため、過度に強い設定は避けてください。"
   }
 }

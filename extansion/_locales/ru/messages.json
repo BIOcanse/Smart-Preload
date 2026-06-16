@@ -113,12 +113,6 @@
   "performanceInsufficientReducePreloadCaps": {
     "message": "Обнаружена нагрузка на производительность. Уменьшите лимиты предзагрузки."
   },
-  "nativeAppMissingEnableAllNativePreloadMode": {
-    "message": "Нативное приложение не обнаружено. Включите полностью нативный режим предзагрузки, чтобы не использовать скрытые реальные вкладки."
-  },
-  "nativeAppMissingDownloadOrEnableAllNativePreloadMode": {
-    "message": "Нативное приложение не обнаружено в течение 1 минуты. Скачайте и установите нативное приложение или включите полностью нативный режим предзагрузки."
-  },
   "popupCurrentPageNotTracked": {
     "message": "Текущая страница не отслеживается"
   },
@@ -257,6 +251,12 @@
   "settingsSkipGoogleInternalPagesDesc": {
     "message": "Не отслеживать и не предзагружать Chrome Web Store, страницы аккаунта и менеджера паролей Google, Chrome sync, chromestatus и похожие административные страницы Google. Gemini и обычные продукты Google остаются в отслеживании."
   },
+  "settingsSkipHttpPages": {
+    "message": "Пропускать HTTP-страницы"
+  },
+  "settingsSkipHttpPagesDesc": {
+    "message": "Не отслеживать и не предзагружать незашифрованные HTTP-страницы и ссылки. HTTPS-страницы остаются доступными."
+  },
   "settingsSkipLocalPages": {
     "message": "Пропускать локальные страницы"
   },
@@ -283,12 +283,6 @@
   },
   "settingsInteractionPreloadDesc": {
     "message": "Запускает интерактивную предзагрузку после 80 мс наведения на ссылку и готовит предзагрузку новой вкладки при открытии контекстного меню ссылки."
-  },
-  "settingsAllNativePreloadMode": {
-    "message": "Полностью нативный режим предзагрузки"
-  },
-  "settingsAllNativePreloadModeDesc": {
-    "message": "Использует только браузерные prefetch/prerender. Скрытые реальные фоновые вкладки и hard swap отключаются."
   },
   "settingsNativeAppDownloadTitle": {
     "message": "Скачать нативное приложение"
@@ -387,10 +381,10 @@
     "message": "Лимиты на уровне аккаунта для распределения слотов предзагрузки между всеми вкладками-источниками с кандидатами."
   },
   "settingsSchedulerHiddenTabs": {
-    "message": "Скрытые реальные вкладки"
+    "message": "Real Preload"
   },
   "settingsSchedulerNativePreload": {
-    "message": "Нативная предзагрузка"
+    "message": "Встроенная предзагрузка браузера"
   },
   "settingsSchedulerAttentionPool": {
     "message": "Пул внимания"
@@ -747,28 +741,28 @@
     "message": "фиксированный токен {0}"
   },
   "ruleNativePerPageTitle": {
-    "message": "Лимит a слотов страниц группы нативной предзагрузки"
+    "message": "Лимит страниц a для группы встроенной предзагрузки браузера"
   },
   "ruleNativePerPageDesc": {
-    "message": "Применяется к нативным кандидатам `prefetch` / `prerender`. Определяет, сколько кандидатов страниц эта группа может сохранить для финального выполнения."
+    "message": "Применяется к встроенным браузерным кандидатам `prefetch` / `prerender`. Определяет, сколько страниц группа сохранит для финального выполнения."
   },
   "ruleTabPerPageTitle": {
-    "message": "Лимит a слотов страниц группы предзагрузки реальными вкладками"
+    "message": "Лимит страниц a для группы Real Preload"
   },
   "ruleTabPerPageDesc": {
-    "message": "Применяется к кандидатам, которым нужны реальные фоновые вкладки. Определяет, сколько кандидатов страниц эта группа может сохранить для финального выполнения."
+    "message": "Применяется к кандидатам, которым нужны скрытые реальные фоновые вкладки. Определяет, сколько страниц группа сохранит для финального выполнения."
   },
   "ruleNativeSiteTitle": {
-    "message": "Число x сайтов с высоким весом группы нативной предзагрузки"
+    "message": "Число x сайтов с высоким весом для встроенной предзагрузки браузера"
   },
   "ruleNativeSiteDesc": {
-    "message": "Применяется к нативным кандидатам `prefetch` / `prerender`. Определяет, сколько сайтов с высоким весом попадут на этап распределения слотов сайтов."
+    "message": "Применяется к встроенным браузерным кандидатам `prefetch` / `prerender`. Определяет, сколько сайтов с высоким весом попадут в распределение слотов."
   },
   "ruleTabSiteTitle": {
-    "message": "Число x сайтов с высоким весом группы предзагрузки реальными вкладками"
+    "message": "Число x сайтов с высоким весом для группы Real Preload"
   },
   "ruleTabSiteDesc": {
-    "message": "Применяется к кандидатам, которым нужны реальные фоновые вкладки, включая межсайтовую предзагрузку новой вкладки и межсайтовые кандидаты жесткой замены текущей вкладки, направленные в hidden-tab."
+    "message": "Применяется к кандидатам, которым нужны скрытые реальные фоновые вкладки, включая межсайтовую предзагрузку новой вкладки и hard-swap кандидаты, направленные в hidden-tab."
   },
   "ruleGoogleBookmarkRankTitle": {
     "message": "Ранг x предзагрузки закладок на странице поиска Google"
@@ -794,17 +788,73 @@
   "settingsDiagnosticsLoggingDesc": {
     "message": "При включении runtime-диагностика записывается в папку portable logs локального приложения в виде файлов JSONL."
   },
-  "settingsInterfaceLanguage": { "message": "Язык интерфейса" },
-  "settingsInterfaceLanguageDesc": { "message": "Выберите язык интерфейса расширения или автоматически следуйте языку браузера." },
-  "languageAuto": { "message": "Автоматически" },
-  "languageEnglish": { "message": "Английский" },
-  "languageChineseSimplified": { "message": "Китайский (упрощенный)" },
-  "languageChineseTraditional": { "message": "Китайский (традиционный)" },
-  "languageJapanese": { "message": "Японский" },
-  "languageKorean": { "message": "Корейский" },
-  "languageGerman": { "message": "Немецкий" },
-  "languageFrench": { "message": "Французский" },
-  "languageSpanish": { "message": "Испанский" },
-  "languagePortugueseBrazil": { "message": "Португальский (Бразилия)" },
-  "languageRussian": { "message": "Русский" }
+  "settingsInterfaceLanguage": {
+    "message": "Язык интерфейса"
+  },
+  "settingsInterfaceLanguageDesc": {
+    "message": "Выберите язык интерфейса расширения или автоматически следуйте языку браузера."
+  },
+  "languageAuto": {
+    "message": "Автоматически"
+  },
+  "languageEnglish": {
+    "message": "Английский"
+  },
+  "languageChineseSimplified": {
+    "message": "Китайский (упрощенный)"
+  },
+  "languageChineseTraditional": {
+    "message": "Китайский (традиционный)"
+  },
+  "languageJapanese": {
+    "message": "Японский"
+  },
+  "languageKorean": {
+    "message": "Корейский"
+  },
+  "languageGerman": {
+    "message": "Немецкий"
+  },
+  "languageFrench": {
+    "message": "Французский"
+  },
+  "languageSpanish": {
+    "message": "Испанский"
+  },
+  "languagePortugueseBrazil": {
+    "message": "Португальский (Бразилия)"
+  },
+  "languageRussian": {
+    "message": "Русский"
+  },
+  "nativeAppMissingDownloadOrDisableRealPreload": {
+    "message": "Для Real Preload требуется приложение Windows. Оно не обнаружено в течение 1 минуты; установите приложение или отключите Real Preload."
+  },
+  "settingsRealPreload": {
+    "message": "Real Preload"
+  },
+  "settingsRealPreloadDesc": {
+    "message": "Использует скрытые реальные фоновые вкладки, чтобы приблизить воспринимаемую задержку к нулю. По умолчанию выключено, потому что требует много памяти."
+  },
+  "settingsSideEffectLinkSafetyGuard": {
+    "message": "Защита от ссылок с побочными действиями"
+  },
+  "settingsSideEffectLinkSafetyGuardDesc": {
+    "message": "Всегда блокирует предзагрузку для скачиваний, экспорта, вложений и других ссылок, которые могут вызвать побочные действия. Этот базовый уровень защиты нельзя отключить."
+  },
+  "settingsDangerousSiteSafetyGuard": {
+    "message": "Защита от опасных сайтов"
+  },
+  "settingsDangerousSiteSafetyGuardDesc": {
+    "message": "Предзагрузка блокируется для ссылок, которые расширение или локальное app пометили как опасные. Встроенные предупреждения браузера по-прежнему срабатывают при реальном переходе."
+  },
+  "settingsDangerousSitePausePreloadingWarning": {
+    "message": "На опасных или недоверенных сайтах полностью приостанавливайте предзагрузку. Автоматические правила не могут гарантировать безопасность на каждой опасной странице."
+  },
+  "realPreloadAvailableLowMemoryWarning": {
+    "message": "Real Preload доступен и может снизить воспринимаемую задержку до нуля, но на этом компьютере меньше 24 GB памяти; большинству пользователей это не рекомендуется."
+  },
+  "realPreloadRecommendedWarning": {
+    "message": "Real Preload доступен и рекомендован для этой машины. Он может снизить воспринимаемую задержку до нуля, но требует много памяти; не используйте слишком агрессивные лимиты."
+  }
 }

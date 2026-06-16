@@ -50,6 +50,93 @@
     interactionPrerenderTargets: [],
     interactionPrefetchTargets: [],
   };
+  const UNSAFE_PRELOAD_EXTENSIONS = new Set([
+    "7z",
+    "apk",
+    "appx",
+    "bat",
+    "bin",
+    "bz2",
+    "cmd",
+    "crx",
+    "deb",
+    "dmg",
+    "exe",
+    "gz",
+    "img",
+    "iso",
+    "jar",
+    "msi",
+    "msix",
+    "pkg",
+    "ps1",
+    "rar",
+    "reg",
+    "rpm",
+    "sh",
+    "tar",
+    "tgz",
+    "torrent",
+    "xpi",
+    "xz",
+    "zip",
+  ]);
+  const DOWNLOAD_PRELOAD_PATH_TOKENS = new Set([
+    "attachment",
+    "attachments",
+    "download",
+    "download-file",
+    "downloadfile",
+    "downloads",
+    "export",
+    "exports",
+  ]);
+  const SIDE_EFFECT_PRELOAD_PATH_TOKENS = new Set([
+    "cancel",
+    "confirm",
+    "delete",
+    "destroy",
+    "logout",
+    "log-out",
+    "remove",
+    "signout",
+    "sign-out",
+    "unsubscribe",
+  ]);
+  const UNSAFE_PRELOAD_QUERY_KEYS = new Set([
+    "attachment",
+    "content-disposition",
+    "dl",
+    "download",
+    "export",
+    "file",
+    "filename",
+    "response-content-disposition",
+  ]);
+  const SIDE_EFFECT_PRELOAD_QUERY_VALUES = new Set([
+    "cancel",
+    "confirm",
+    "delete",
+    "destroy",
+    "download",
+    "export",
+    "logout",
+    "remove",
+    "signout",
+    "unsubscribe",
+  ]);
+  const UNSAFE_PRELOAD_MIME_HINTS = [
+    "application/octet-stream",
+    "application/x-msdownload",
+    "application/x-msi",
+    "application/zip",
+    "application/x-7z-compressed",
+    "application/x-rar-compressed",
+    "application/x-tar",
+    "application/gzip",
+    "application/vnd.android.package-archive",
+    "application/x-apple-diskimage",
+  ];
 
   function sleep(ms) {
     return new Promise((resolve) => {
@@ -205,6 +292,135 @@
     return document.prerendering === true;
   }
 
+  function collectAnchorPreloadSafety(anchor) {
+    const relTokens = String(anchor?.rel || anchor?.getAttribute?.("rel") || "")
+      .toLowerCase()
+      .split(/\s+/)
+      .map((token) => token.trim())
+      .filter(Boolean)
+      .slice(0, 12);
+
+    return {
+      downloadAttribute: anchor?.hasAttribute?.("download") === true,
+      downloadFileName: normalizeShortText(anchor?.getAttribute?.("download") || ""),
+      relTokens,
+      typeAttr: normalizeShortText(anchor?.getAttribute?.("type") || "").toLowerCase(),
+      pingAttribute: Boolean(String(anchor?.getAttribute?.("ping") || "").trim()),
+    };
+  }
+
+  function shouldUseBrowserDefaultForPreloadSafety(anchor, targetUrl) {
+    return inspectAnchorSideEffectPreloadSafety(anchor, targetUrl).skipPreload === true;
+  }
+
+  function inspectAnchorSideEffectPreloadSafety(anchor, targetUrl) {
+    const safety = collectAnchorPreloadSafety(anchor);
+    const sideEffectReasons = [];
+
+    if (safety.downloadAttribute === true) {
+      sideEffectReasons.push("download-attribute");
+    }
+
+    if (hasUnsafePreloadMimeType(safety.typeAttr)) {
+      sideEffectReasons.push("download-mime-type");
+    }
+
+    sideEffectReasons.push(...collectUnsafePreloadUrlReasons(targetUrl));
+
+    const uniqueReasons = [...new Set(sideEffectReasons.filter(Boolean))];
+
+    return {
+      skipPreload: uniqueReasons.length > 0,
+      sideEffectBlocked: uniqueReasons.length > 0,
+      reason: uniqueReasons[0] || "",
+      reasons: uniqueReasons,
+      sideEffectReasons: uniqueReasons,
+      preloadSafety: safety,
+    };
+  }
+
+  function hasUnsafePreloadMimeType(typeAttr) {
+    const normalizedType = String(typeAttr || "").trim().toLowerCase();
+
+    return Boolean(
+      normalizedType &&
+        UNSAFE_PRELOAD_MIME_HINTS.some((mimeHint) => normalizedType.includes(mimeHint))
+    );
+  }
+
+  function hasUnsafePreloadUrl(rawUrl) {
+    return collectUnsafePreloadUrlReasons(rawUrl).length > 0;
+  }
+
+  function collectUnsafePreloadUrlReasons(rawUrl) {
+    const reasons = [];
+
+    try {
+      const url = new URL(rawUrl, location.href);
+      const pathSegments = url.pathname
+        .split("/")
+        .map((segment) => safeDecodeURIComponent(segment).trim().toLowerCase())
+        .filter(Boolean);
+      const extension = getPathExtension(pathSegments[pathSegments.length - 1] || "");
+
+      if (extension && UNSAFE_PRELOAD_EXTENSIONS.has(extension)) {
+        reasons.push("download-file-extension");
+      }
+
+      if (pathSegments.some((segment) => DOWNLOAD_PRELOAD_PATH_TOKENS.has(segment))) {
+        reasons.push("download-url-path");
+      }
+
+      if (pathSegments.some((segment) => SIDE_EFFECT_PRELOAD_PATH_TOKENS.has(segment))) {
+        reasons.push("side-effect-url-path");
+      }
+
+      for (const [key, value] of url.searchParams.entries()) {
+        const normalizedKey = String(key || "").trim().toLowerCase();
+        const normalizedValue = String(value || "").trim().toLowerCase();
+
+        if (UNSAFE_PRELOAD_QUERY_KEYS.has(normalizedKey)) {
+          reasons.push("download-query");
+        }
+
+        if (
+          SIDE_EFFECT_PRELOAD_QUERY_VALUES.has(normalizedValue) ||
+          (normalizedKey === "action" && SIDE_EFFECT_PRELOAD_QUERY_VALUES.has(normalizedValue)) ||
+          (normalizedKey === "method" && SIDE_EFFECT_PRELOAD_QUERY_VALUES.has(normalizedValue))
+        ) {
+          reasons.push("side-effect-query");
+        }
+
+        if (normalizedValue.includes("attachment")) {
+          reasons.push("download-query-attachment");
+        }
+      }
+    } catch (_error) {
+      reasons.push("invalid-url");
+    }
+
+    return [...new Set(reasons)];
+  }
+
+  function getPathExtension(fileName) {
+    const normalizedName = String(fileName || "").split(/[?#]/u)[0];
+    const dotIndex = normalizedName.lastIndexOf(".");
+
+    if (dotIndex <= 0 || dotIndex === normalizedName.length - 1) {
+      return "";
+    }
+
+    return normalizedName.slice(dotIndex + 1).toLowerCase();
+  }
+
+  function safeDecodeURIComponent(value) {
+    try {
+      return decodeURIComponent(value);
+    } catch (_error) {
+      return String(value || "");
+    }
+  }
+
   Object.assign(namespace, {
     constants,
     state,
@@ -218,5 +434,8 @@
     isGoogleSearchInternalModeNavigation,
     hasActiveEditableFocus,
     isPassivePrerenderContext,
+    collectAnchorPreloadSafety,
+    inspectAnchorSideEffectPreloadSafety,
+    shouldUseBrowserDefaultForPreloadSafety,
   });
 })();

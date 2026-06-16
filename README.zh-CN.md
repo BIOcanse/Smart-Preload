@@ -69,3 +69,15 @@ Windows app 的 `portable` 文件夹保存的是 app 绑定文件和日志，不
 - Google Chrome
 - Microsoft Edge
 - 其他 Chromium 浏览器可能可用，但主要适配目标是 Chrome 和 Edge。
+
+## 许可证
+
+智能预加载 / Zero Latency Web 使用 [Apache License 2.0](LICENSE) 授权。署名声明见 [NOTICE](NOTICE)。
+
+## Google 商店页宣传图
+
+![Google 商店页小尺寸宣传图](assets/chrome-web-store/google-store-small-promo-440x280.png)
+
+![Google 商店页横幅宣传图](assets/chrome-web-store/google-store-marquee-promo-1400x560.png)
+
+![Google 商店页截图](assets/chrome-web-store/google-store-screenshot-1280x800.png)

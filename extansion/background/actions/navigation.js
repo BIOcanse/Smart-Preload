@@ -71,27 +71,38 @@
               },
               tab: envelope.raw,
             });
+          const fallbackPayload = {
+            tabId: envelope.raw.id,
+            openerTabId: envelope.raw.openerTabId ?? null,
+            url: envelope.raw.pendingUrl || envelope.raw.url || "",
+            handled: fallbackActivation?.handled === true,
+            reason: fallbackActivation?.reason ?? null,
+            debug: fallbackActivation?.debug ?? null,
+            activatedTabId: fallbackActivation?.tabId ?? null,
+          };
           globalThis.ZeroLatencyDiagnostics?.record?.(
             "tracking.tab-created.contextmenu-preload-fallback",
-            {
-              tabId: envelope.raw.id,
-              openerTabId: envelope.raw.openerTabId ?? null,
-              url: envelope.raw.pendingUrl || envelope.raw.url || "",
-              handled: fallbackActivation?.handled === true,
-              reason: fallbackActivation?.reason ?? null,
-              activatedTabId: fallbackActivation?.tabId ?? null,
-            }
+            fallbackPayload
+          );
+          globalThis.ZeroLatencyDebugEvents?.record?.(
+            "tracking.tab-created.contextmenu-preload-fallback",
+            fallbackPayload
           );
 
           if (fallbackActivation?.handled === true) {
+            const activationPayload = {
+              tabId: envelope.raw.id,
+              openerTabId: envelope.raw.openerTabId ?? null,
+              url: envelope.raw.pendingUrl || envelope.raw.url || "",
+              activatedTabId: fallbackActivation.tabId ?? null,
+            };
             globalThis.ZeroLatencyDiagnostics?.record?.(
               "tracking.tab-created.contextmenu-preload-activated",
-              {
-                tabId: envelope.raw.id,
-                openerTabId: envelope.raw.openerTabId ?? null,
-                url: envelope.raw.pendingUrl || envelope.raw.url || "",
-                activatedTabId: fallbackActivation.tabId ?? null,
-              }
+              activationPayload
+            );
+            globalThis.ZeroLatencyDebugEvents?.record?.(
+              "tracking.tab-created.contextmenu-preload-activated",
+              activationPayload
             );
           }
         }
@@ -115,27 +126,38 @@
                 envelope.raw
               );
 
+            const fallbackPayload = {
+              tabId: envelope.raw.tabId,
+              openerTabId: envelope.raw.tab?.openerTabId ?? null,
+              url: fallbackUrl,
+              handled: fallbackActivation?.handled === true,
+              reason: fallbackActivation?.reason ?? null,
+              debug: fallbackActivation?.debug ?? null,
+              activatedTabId: fallbackActivation?.tabId ?? null,
+            };
             globalThis.ZeroLatencyDiagnostics?.record?.(
               "tracking.tab-updated.contextmenu-preload-fallback",
-              {
-                tabId: envelope.raw.tabId,
-                openerTabId: envelope.raw.tab?.openerTabId ?? null,
-                url: fallbackUrl,
-                handled: fallbackActivation?.handled === true,
-                reason: fallbackActivation?.reason ?? null,
-                activatedTabId: fallbackActivation?.tabId ?? null,
-              }
+              fallbackPayload
+            );
+            globalThis.ZeroLatencyDebugEvents?.record?.(
+              "tracking.tab-updated.contextmenu-preload-fallback",
+              fallbackPayload
             );
 
             if (fallbackActivation?.handled === true) {
+              const activationPayload = {
+                tabId: envelope.raw.tabId,
+                openerTabId: envelope.raw.tab?.openerTabId ?? null,
+                url: fallbackUrl,
+                activatedTabId: fallbackActivation.tabId ?? null,
+              };
               globalThis.ZeroLatencyDiagnostics?.record?.(
                 "tracking.tab-updated.contextmenu-preload-activated",
-                {
-                  tabId: envelope.raw.tabId,
-                  openerTabId: envelope.raw.tab?.openerTabId ?? null,
-                  url: fallbackUrl,
-                  activatedTabId: fallbackActivation.tabId ?? null,
-                }
+                activationPayload
+              );
+              globalThis.ZeroLatencyDebugEvents?.record?.(
+                "tracking.tab-updated.contextmenu-preload-activated",
+                activationPayload
               );
               return;
             }

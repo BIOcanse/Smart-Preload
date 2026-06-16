@@ -116,6 +116,7 @@ async function selectPreloadTargetsFromScoredCandidatePool({
     targetHint: candidate.targetHint,
     aiKeywordMatch: candidate.aiKeywordMatch ?? null,
     bookmarkPreload: null,
+    realPreloadSafety: candidate.realPreloadSafety ?? null,
     siteSelection: candidate.siteSelection ?? null,
     strategy: candidate.strategy ?? determinePreloadStrategy(candidate, settings),
   }));
@@ -155,6 +156,7 @@ async function selectPreloadTargetsFromScoredCandidatePool({
         targetHint: candidate.targetHint,
         aiKeywordMatch: candidate.aiKeywordMatch ?? null,
         bookmarkPreload: candidate.bookmarkPreload ?? null,
+        realPreloadSafety: candidate.realPreloadSafety ?? null,
         siteSelection: candidate.siteSelection ?? null,
       })),
   };
@@ -242,6 +244,19 @@ function determinePreloadStrategy(candidate, settings) {
 
   if (typeof resolver === "function") {
     const strategy = resolver(candidate, settings);
+    if (
+      strategy === "hidden-tab" &&
+      globalThis.ZeroLatencyPreloadSafetyPolicy?.shouldBlockRealPreload?.(candidate) === true
+    ) {
+      globalThis.ZeroLatencyDebugEvents?.record?.("preload.safety.block-real-strategy", {
+        targetUrl: candidate?.url || "",
+        reason:
+          candidate?.realPreloadSafety?.reason ||
+          globalThis.ZeroLatencyPreloadSafetyPolicy?.inspectPreloadCandidate?.(candidate)?.reason ||
+          "unsafe-real-preload",
+      });
+      return "prefetch";
+    }
     return globalThis.ZeroLatencyPreloadNativeOnlyPolicy?.resolveHiddenTabStrategyForNativeOnlyMode?.(
       strategy,
       settings

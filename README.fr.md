@@ -69,3 +69,7 @@ L'extension peut fonctionner sans l'application Windows. L'application est uniqu
 - Google Chrome
 - Microsoft Edge
 - D'autres navigateurs bases sur Chromium peuvent fonctionner, mais Chrome et Edge sont les cibles prevues.
+
+## Licence
+
+Smart Preload / Zero Latency Web est sous [Apache License 2.0](LICENSE). Consultez [NOTICE](NOTICE) pour les avis d'attribution.

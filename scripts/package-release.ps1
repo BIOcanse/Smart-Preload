@@ -10,6 +10,8 @@ $RepoRoot = [System.IO.Path]::GetFullPath((Join-Path $ScriptRoot ".."))
 $ExtensionRoot = Join-Path $RepoRoot "extansion"
 $AppRoot = Join-Path $RepoRoot "app"
 $DistRoot = Join-Path $RepoRoot "dist"
+$LicensePath = Join-Path $RepoRoot "LICENSE"
+$NoticePath = Join-Path $RepoRoot "NOTICE"
 
 if ([string]::IsNullOrWhiteSpace($Version)) {
   $manifest = Get-Content -LiteralPath (Join-Path $ExtensionRoot "manifest.json") -Raw | ConvertFrom-Json
@@ -152,6 +154,8 @@ New-Item -ItemType Directory -Path $DistRoot -Force | Out-Null
 New-CleanDirectory $StagingRoot
 
 New-CleanDirectory $ExtensionStage
+Copy-File $LicensePath (Join-Path $ExtensionStage "LICENSE")
+Copy-File $NoticePath (Join-Path $ExtensionStage "NOTICE")
 Copy-File (Join-Path $ExtensionRoot "manifest.json") (Join-Path $ExtensionStage "manifest.json")
 Copy-File (Join-Path $ExtensionRoot "service-worker.js") (Join-Path $ExtensionStage "service-worker.js")
 Copy-Directory (Join-Path $ExtensionRoot "_locales") (Join-Path $ExtensionStage "_locales")
@@ -201,11 +205,15 @@ First setup:
 After the first successful binding, the extension can reconnect to the app automatically.
 
 Platform: Windows only.
+
+License: Apache License 2.0. See LICENSE and NOTICE.
 "@
 
 Copy-File $AppExe (Join-Path $AppStage "zero-latency-web-app.exe")
 Copy-File (Join-Path $AppRoot "install-register.cmd") (Join-Path $AppStage "install-register.cmd")
 Copy-File (Join-Path $AppRoot "install-register.ps1") (Join-Path $AppStage "install-register.ps1")
+Copy-File $LicensePath (Join-Path $AppStage "LICENSE")
+Copy-File $NoticePath (Join-Path $AppStage "NOTICE")
 Write-TextFile (Join-Path $AppStage "README.md") $appReadme
 Write-TextFile (Join-Path $AppStage "VERSION.txt") $Version
 New-Item -ItemType Directory -Path (Join-Path $AppStage "portable\native-messaging") -Force | Out-Null
@@ -258,6 +266,8 @@ Contents:
 - zero-latency-web-extension-v$Version.zip
 - zero-latency-web-app-windows-x64-v$Version.zip
 - SHA256SUMS.txt
+- LICENSE
+- NOTICE
 
 Smart Preload prepares pages you are likely to open next so browsing can feel faster, especially when working across many tabs.
 
@@ -276,6 +286,8 @@ Platform:
 - Companion app: Windows only.
 
 The SHA256SUMS.txt file can be used to verify the downloaded zip files.
+
+License: Apache License 2.0. See LICENSE and NOTICE.
 "@
 
 $testGuide = @"
@@ -295,6 +307,8 @@ Recommended smoke checks:
 This bundle is for internal QA and reviewer handoff. Runtime logs and debug tokens are intentionally excluded from the app package.
 
 First binding order: install or enable the browser extension first, then run install-register.cmd or start the native app. After binding succeeds, the extension can wake the native app automatically.
+
+License: Apache License 2.0. See LICENSE and NOTICE.
 "@
 
 New-CleanDirectory $ReviewStage
@@ -302,11 +316,15 @@ New-Item -ItemType Directory -Path (Join-Path $ReviewStage "chrome-web-store-upl
 New-Item -ItemType Directory -Path (Join-Path $ReviewStage "native-app-reviewer-bundle") -Force | Out-Null
 Copy-File $ChromeStoreZip (Join-Path $ReviewStage "chrome-web-store-upload\zero-latency-web-extension-chrome-web-store-v$Version.zip")
 Copy-File $AppZip (Join-Path $ReviewStage "native-app-reviewer-bundle\zero-latency-web-app-windows-x64-v$Version.zip")
+Copy-File $LicensePath (Join-Path $ReviewStage "LICENSE")
+Copy-File $NoticePath (Join-Path $ReviewStage "NOTICE")
 Write-TextFile (Join-Path $ReviewStage "REVIEW-INSTRUCTIONS.md") $reviewInstructions
 
 New-CleanDirectory $ReleaseStage
 Copy-File $ExtensionZip (Join-Path $ReleaseStage "zero-latency-web-extension-v$Version.zip")
 Copy-File $AppZip (Join-Path $ReleaseStage "zero-latency-web-app-windows-x64-v$Version.zip")
+Copy-File $LicensePath (Join-Path $ReleaseStage "LICENSE")
+Copy-File $NoticePath (Join-Path $ReleaseStage "NOTICE")
 Write-TextFile (Join-Path $ReleaseStage "README.md") $releaseReadme
 
 New-CleanDirectory $TestStage
@@ -314,6 +332,8 @@ Copy-Directory $ExtensionStage (Join-Path $TestStage "zero-latency-web-extension
 Copy-Directory $AppStage (Join-Path $TestStage "zero-latency-web-app-v$Version")
 Copy-File $ExtensionZip (Join-Path $TestStage "zero-latency-web-extension-v$Version.zip")
 Copy-File $AppZip (Join-Path $TestStage "zero-latency-web-app-windows-x64-v$Version.zip")
+Copy-File $LicensePath (Join-Path $TestStage "LICENSE")
+Copy-File $NoticePath (Join-Path $TestStage "NOTICE")
 Write-TextFile (Join-Path $TestStage "README-TEST-GUIDE.md") $testGuide
 
 function Get-HashLines {

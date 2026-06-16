@@ -105,6 +105,25 @@ function buildLinkPreloadCandidate({
     return null;
   }
 
+  const realPreloadSafety =
+    globalThis.ZeroLatencyPreloadSafetyPolicy?.inspectPreloadCandidate?.(
+      {
+        ...candidate,
+        url: candidateUrl,
+      },
+      candidateUrl
+    ) ?? null;
+
+  if (realPreloadSafety?.skipPreload === true) {
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload.safety.skip-candidate", {
+      sourceUrl,
+      targetUrl: candidateUrl,
+      reason: realPreloadSafety.reason || "unsafe-preload-candidate",
+      reasons: realPreloadSafety.reasons || [],
+    });
+    return null;
+  }
+
   if (
     globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadCandidate?.(
       candidateUrl,
@@ -137,6 +156,7 @@ function buildLinkPreloadCandidate({
     ariaLabel: typeof candidate?.ariaLabel === "string" ? candidate.ariaLabel : "",
     imageAlt: typeof candidate?.imageAlt === "string" ? candidate.imageAlt : "",
     hrefPathTokens: buildHrefPathTokens(candidateUrl),
+    realPreloadSafety,
   };
 }
 
@@ -185,6 +205,8 @@ function mergeCandidatePoolEntry(existingCandidate, nextCandidate) {
     titleAttr: selectRicherCandidateText(existingCandidate.titleAttr, nextCandidate.titleAttr),
     ariaLabel: selectRicherCandidateText(existingCandidate.ariaLabel, nextCandidate.ariaLabel),
     imageAlt: selectRicherCandidateText(existingCandidate.imageAlt, nextCandidate.imageAlt),
+    realPreloadSafety:
+      nextCandidate.realPreloadSafety ?? existingCandidate.realPreloadSafety ?? null,
     extraScoreMultipliers: mergeCandidateScoreMultipliers(
       existingCandidate.extraScoreMultipliers,
       nextCandidate.extraScoreMultipliers

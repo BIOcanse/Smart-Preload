@@ -378,8 +378,374 @@
     );
   }
 
+  function createAiModelControls({
+    elements,
+    warningElement,
+    settingsApi,
+    modelLoader = globalThis.ZeroLatencySettingsAiModels,
+    translate,
+    readFormSettings,
+    setDraftSettings,
+    updateComputedState,
+  } = {}) {
+    const t = (key, substitutions = [], fallback = "") =>
+      translate?.(key, substitutions, fallback) || fallback || key;
+    let modelOptionsRequestId = 0;
+    let pendingLmStudioModelLoadId = "";
+
+    function populateProviderOptions() {
+      const providerSelect = elements?.aiPredictionProvider;
+      const options = Array.isArray(settingsApi?.AI_PROVIDER_OPTIONS)
+        ? settingsApi.AI_PROVIDER_OPTIONS
+        : [];
+
+      if (!providerSelect) {
+        return;
+      }
+
+      providerSelect.textContent = "";
+
+      for (const optionSpec of options) {
+        const option = document.createElement("option");
+        option.value = String(optionSpec.value);
+        option.textContent = optionSpec.label;
+        providerSelect.append(option);
+      }
+    }
+
+    function readFormAiPrediction(draftSettings) {
+      const providerId = elements.aiPredictionProvider.value;
+      const provider = settingsApi?.AI_PROVIDER_BY_ID?.[providerId] ?? {};
+      const providerIsLmStudio = isLmStudioProvider(providerId);
+      const aiApiKeys = {
+        ...(draftSettings?.preloading?.aiPrediction?.apiKeys ?? {}),
+        [providerId]: providerIsLmStudio ? "" : elements.aiProviderApiKey.value.trim(),
+      };
+      const aiModelIds = {
+        ...(draftSettings?.preloading?.aiPrediction?.modelIds ?? {}),
+        [providerId]: elements.aiPredictionModel.value.trim(),
+      };
+      const aiEndpointUrls = {
+        ...(draftSettings?.preloading?.aiPrediction?.endpointUrls ?? {}),
+        [providerId]: providerIsLmStudio
+          ? provider.endpointUrl || globalThis.ZeroLatencyLmStudio?.CHAT_COMPLETIONS_URL || ""
+          : elements.aiProviderEndpoint.value.trim(),
+      };
+
+      return {
+        enabled: elements.aiPredictionEnabled.checked,
+        providerId,
+        modelId: aiModelIds[providerId],
+        apiKeys: aiApiKeys,
+        modelIds: aiModelIds,
+        endpointUrls: aiEndpointUrls,
+      };
+    }
+
+    function syncProviderFieldsFromSettings(settings) {
+      const aiPrediction = settings?.preloading?.aiPrediction ?? {};
+      const providerId = elements.aiPredictionProvider.value || aiPrediction.providerId;
+      const provider =
+        settingsApi?.AI_PROVIDER_BY_ID?.[providerId] ??
+        settingsApi?.AI_PROVIDER_OPTIONS?.[0] ??
+        {};
+      const providerIsLmStudio = isLmStudioProvider(providerId);
+      const modelId =
+        aiPrediction.modelIds?.[providerId] ||
+        provider.defaultModelId ||
+        aiPrediction.modelId ||
+        "";
+      const apiKey = providerIsLmStudio ? "" : aiPrediction.apiKeys?.[providerId] || "";
+      const endpointUrl = providerIsLmStudio
+        ? provider.endpointUrl || globalThis.ZeroLatencyLmStudio?.CHAT_COMPLETIONS_URL || ""
+        : aiPrediction.endpointUrls?.[providerId] || provider.endpointUrl || "";
+
+      renderModelSelectOptions({
+        providerId,
+        selectedModelId: modelId,
+        models: getCuratedAiModelOptions(providerId),
+        disabled: !apiKey && provider.apiKeyOptional !== true,
+        placeholder:
+          !apiKey && provider.apiKeyOptional !== true
+            ? t("settingsAiEnterKeyToLoadModels", [], "Enter an API key to load models")
+            : t("settingsAiLoadingModels", [], "Loading supported models..."),
+      });
+      elements.aiProviderApiKey.value = apiKey;
+      elements.aiProviderEndpoint.value = endpointUrl;
+      elements.aiProviderApiKey.disabled = providerIsLmStudio;
+      elements.aiProviderEndpoint.disabled = providerIsLmStudio;
+      elements.aiProviderApiKey.placeholder =
+        providerIsLmStudio
+          ? t("settingsAiLmStudioKeyIgnoredPlaceholder", [], "Ignored for LM Studio")
+          : provider.apiKeyOptional === true
+            ? t("settingsAiKeyOptionalPlaceholder", [], "Optional for local compatible endpoints")
+            : t("settingsAiKeyRequiredPlaceholder", [], "Required");
+      void refreshModelOptions({
+        providerId,
+        selectedModelId: modelId,
+        apiKey,
+        endpointUrl,
+      });
+    }
+
+    async function refreshOptionsForCurrentProvider() {
+      const providerId = String(elements.aiPredictionProvider.value || "");
+      const provider = settingsApi?.AI_PROVIDER_BY_ID?.[providerId] ?? {};
+      const providerIsLmStudio = isLmStudioProvider(providerId);
+      const selectedModelId = String(elements.aiPredictionModel.value || "").trim();
+      const apiKey = providerIsLmStudio
+        ? ""
+        : String(elements.aiProviderApiKey.value || "").trim();
+      const endpointUrl = providerIsLmStudio
+        ? provider.endpointUrl || globalThis.ZeroLatencyLmStudio?.CHAT_COMPLETIONS_URL || ""
+        : String(elements.aiProviderEndpoint.value || "").trim();
+      await refreshModelOptions({
+        providerId,
+        selectedModelId,
+        apiKey,
+        endpointUrl,
+      });
+    }
+
+    async function refreshModelOptions({ providerId, selectedModelId, apiKey, endpointUrl }) {
+      const provider = settingsApi?.AI_PROVIDER_BY_ID?.[providerId];
+      const requestId = ++modelOptionsRequestId;
+
+      if (!provider) {
+        renderModelSelectOptions({
+          providerId,
+          selectedModelId: "",
+          models: [],
+          disabled: true,
+          placeholder: t("settingsAiSelectProviderFirst", [], "Select a provider first"),
+        });
+        return;
+      }
+
+      if (!apiKey && provider.apiKeyOptional !== true) {
+        renderModelSelectOptions({
+          providerId,
+          selectedModelId,
+          models: [],
+          disabled: true,
+          placeholder: t("settingsAiEnterKeyToLoadModels", [], "Enter an API key to load models"),
+        });
+        return;
+      }
+
+      renderModelSelectOptions({
+        providerId,
+        selectedModelId,
+        models: getCuratedAiModelOptions(providerId),
+        disabled: false,
+        placeholder: t("settingsAiLoadingModels", [], "Loading supported models..."),
+      });
+
+      const result = await modelLoader?.loadProviderModelOptions?.({
+        providerId,
+        provider,
+        endpointUrl,
+        apiKey,
+      });
+
+      if (requestId !== modelOptionsRequestId) {
+        return;
+      }
+
+      const models = Array.isArray(result?.models)
+        ? result.models
+        : getCuratedAiModelOptions(providerId);
+      const selectedAfterRender = renderModelSelectOptions({
+        providerId,
+        selectedModelId,
+        models,
+        disabled: models.length === 0,
+        placeholder:
+          models.length === 0
+            ? t("settingsAiNoSupportedModels", [], "No supported lightweight models found")
+            : "",
+      });
+
+      elements.aiPredictionModel.title = result?.message || "";
+
+      if (selectedAfterRender !== selectedModelId) {
+        const nextSettings = readFormSettings?.();
+        if (nextSettings) {
+          setDraftSettings?.(nextSettings);
+          updateComputedState?.(nextSettings);
+          syncMismatchWarning();
+        }
+      }
+
+      if (isLmStudioProvider(providerId) && elements.aiPredictionEnabled.checked === true) {
+        const settings = readFormSettings?.();
+        if (settings) {
+          void ensureSelectedLmStudioModelLoaded(settings);
+        }
+      }
+    }
+
+    function renderModelSelectOptions({
+      providerId,
+      selectedModelId,
+      models,
+      disabled,
+      placeholder,
+    }) {
+      const normalizedModels = Array.isArray(models) ? models : [];
+      const modelSelect = elements.aiPredictionModel;
+      const nextSelectedModelId =
+        normalizedModels.some((model) => model.id === selectedModelId)
+          ? selectedModelId
+          : normalizedModels[0]?.id || "";
+
+      modelSelect.textContent = "";
+
+      if (placeholder) {
+        const placeholderOption = document.createElement("option");
+        placeholderOption.value = "";
+        placeholderOption.textContent = placeholder;
+        placeholderOption.disabled = normalizedModels.length > 0;
+        placeholderOption.selected = !nextSelectedModelId;
+        modelSelect.append(placeholderOption);
+      }
+
+      for (const model of normalizedModels) {
+        const option = document.createElement("option");
+        option.value = String(model.id || "");
+        option.textContent = formatModelOptionLabel(model);
+        modelSelect.append(option);
+      }
+
+      modelSelect.value = nextSelectedModelId;
+      modelSelect.disabled = Boolean(disabled);
+      modelSelect.dataset.providerId = providerId || "";
+
+      return nextSelectedModelId;
+    }
+
+    function formatModelOptionLabel(model) {
+      const modelId = String(model?.id || "");
+      const label = String(model?.label || modelId);
+      const suffixes = [];
+
+      if (model?.statusLabel) {
+        suffixes.push(String(model.statusLabel));
+      }
+
+      if (modelId && label !== modelId) {
+        suffixes.push(modelId);
+      }
+
+      return suffixes.length > 0 ? `${label} (${suffixes.join(" / ")})` : label;
+    }
+
+    async function ensureSelectedLmStudioModelLoaded(settings) {
+      const aiPrediction = settings?.preloading?.aiPrediction ?? {};
+      const modelId = String(aiPrediction.modelId || "").trim();
+
+      if (
+        aiPrediction.enabled !== true ||
+        !isLmStudioProvider(aiPrediction.providerId) ||
+        !modelId ||
+        pendingLmStudioModelLoadId === modelId ||
+        typeof globalThis.ZeroLatencyLmStudio?.loadModel !== "function"
+      ) {
+        return;
+      }
+
+      pendingLmStudioModelLoadId = modelId;
+      elements.aiPredictionModel.title = t(
+        "settingsAiLmStudioLoadingModel",
+        [modelId],
+        `Loading LM Studio model: ${modelId}`
+      );
+
+      try {
+        const status = await globalThis.ZeroLatencyLmStudio.getModelStatus(modelId).catch(
+          () => null
+        );
+        let didRequestLoad = false;
+
+        if (!status?.loaded) {
+          await globalThis.ZeroLatencyLmStudio.loadModel(modelId);
+          didRequestLoad = true;
+          const loaded = await globalThis.ZeroLatencyLmStudio.waitForModelLoaded(modelId);
+
+          if (loaded?.ok !== true) {
+            throw new Error(loaded?.reason || "model load timed out");
+          }
+        }
+
+        if (didRequestLoad) {
+          await refreshOptionsForCurrentProvider();
+        }
+      } catch (error) {
+        elements.aiPredictionModel.title = `LM Studio model load failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`;
+      } finally {
+        if (pendingLmStudioModelLoadId === modelId) {
+          pendingLmStudioModelLoadId = "";
+        }
+      }
+    }
+
+    function syncMismatchWarning() {
+      if (!warningElement) {
+        return;
+      }
+
+      const aiPredictionEnabled = elements.aiPredictionEnabled.checked === true;
+      const providerId = String(elements.aiPredictionProvider.value || "");
+      const provider = settingsApi?.AI_PROVIDER_BY_ID?.[providerId];
+      const providerLabel = provider?.label || providerId || t("commonProvider", [], "provider");
+      const modelId = String(elements.aiPredictionModel.value || "").trim();
+      const apiKey = String(elements.aiProviderApiKey.value || "").trim();
+      const endpointUrl = String(elements.aiProviderEndpoint.value || "").trim();
+
+      if (!aiPredictionEnabled) {
+        warningElement.classList.add("is-hidden");
+        warningElement.textContent = "";
+        return;
+      }
+
+      if (!provider || !modelId || !endpointUrl || (!apiKey && provider.apiKeyOptional !== true)) {
+        warningElement.textContent = t(
+          "settingsAiProviderMissingWarning",
+          [providerLabel],
+          `AI scoring will stay disabled until ${providerLabel} has a model, endpoint, and API key.`
+        );
+        warningElement.classList.remove("is-hidden");
+        return;
+      }
+
+      warningElement.classList.add("is-hidden");
+      warningElement.textContent = "";
+    }
+
+    function getCuratedAiModelOptions(providerId) {
+      return typeof settingsApi?.getAiProviderModels === "function"
+        ? settingsApi.getAiProviderModels(providerId)
+        : [];
+    }
+
+    return {
+      populateProviderOptions,
+      readFormAiPrediction,
+      syncProviderFieldsFromSettings,
+      refreshOptionsForCurrentProvider,
+      ensureSelectedLmStudioModelLoaded,
+      syncMismatchWarning,
+      isLmStudioProvider,
+    };
+  }
+
   globalThis.ZeroLatencySettingsAiModels = {
     loadProviderModelOptions,
     filterAndSortBasicModels,
+  };
+  globalThis.ZeroLatencySettingsAiModelControls = {
+    create: createAiModelControls,
   };
 })();

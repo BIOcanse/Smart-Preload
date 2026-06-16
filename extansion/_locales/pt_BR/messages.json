@@ -113,12 +113,6 @@
   "performanceInsufficientReducePreloadCaps": {
     "message": "Press?o de desempenho detectada. Reduza os limites de pr?-carregamento."
   },
-  "nativeAppMissingEnableAllNativePreloadMode": {
-    "message": "App nativo não detectado. Ative o modo de pré-carregamento totalmente nativo para evitar abas reais ocultas."
-  },
-  "nativeAppMissingDownloadOrEnableAllNativePreloadMode": {
-    "message": "App nativo não detectado por 1 minuto. Baixe e instale o app nativo ou ative o modo de pré-carregamento totalmente nativo."
-  },
   "popupCurrentPageNotTracked": {
     "message": "A página atual não está sendo rastreada"
   },
@@ -257,6 +251,12 @@
   "settingsSkipGoogleInternalPagesDesc": {
     "message": "Não rastrear nem pré-carregar Chrome Web Store, conta e gerenciador de senhas do Google, Chrome sync, chromestatus e páginas administrativas semelhantes do Google. Gemini e produtos comuns do Google continuam rastreados."
   },
+  "settingsSkipHttpPages": {
+    "message": "Ignorar páginas HTTP"
+  },
+  "settingsSkipHttpPagesDesc": {
+    "message": "Não rastrear nem pré-carregar páginas e links HTTP sem criptografia. Páginas HTTPS continuam disponíveis."
+  },
   "settingsSkipLocalPages": {
     "message": "Ignorar páginas locais"
   },
@@ -283,12 +283,6 @@
   },
   "settingsInteractionPreloadDesc": {
     "message": "Inicia um pré-carregamento de interação após 80 ms com o cursor sobre um link e prepara um pré-carregamento de nova aba ao abrir o menu contextual do link."
-  },
-  "settingsAllNativePreloadMode": {
-    "message": "Modo de pré-carregamento totalmente nativo"
-  },
-  "settingsAllNativePreloadModeDesc": {
-    "message": "Usa apenas prefetch/prerender nativo do navegador. Abas reais ocultas e hard swap são desativados."
   },
   "settingsNativeAppDownloadTitle": {
     "message": "Download do app nativo"
@@ -387,10 +381,10 @@
     "message": "Limites em nível de conta para distribuir slots de pré-carregamento entre todas as abas de origem com candidatos."
   },
   "settingsSchedulerHiddenTabs": {
-    "message": "Abas reais ocultas"
+    "message": "Real Preload"
   },
   "settingsSchedulerNativePreload": {
-    "message": "Pré-carregamento nativo"
+    "message": "Pré-carregamento nativo do navegador"
   },
   "settingsSchedulerAttentionPool": {
     "message": "Pool de atenção"
@@ -747,28 +741,28 @@
     "message": "token fixo {0}"
   },
   "ruleNativePerPageTitle": {
-    "message": "Limite a de slots de página do grupo de pré-carregamento nativo"
+    "message": "Limite a de páginas do grupo nativo do navegador"
   },
   "ruleNativePerPageDesc": {
-    "message": "Aplica-se a candidatos nativos `prefetch` / `prerender`. Decide quantos candidatos de página este grupo pode manter para a execução final."
+    "message": "Aplica-se a candidatos `prefetch` / `prerender` nativos do navegador. Decide quantas páginas o grupo pode manter para a execução final."
   },
   "ruleTabPerPageTitle": {
-    "message": "Limite a de slots de página do grupo de pré-carregamento com abas reais"
+    "message": "Limite a de páginas do grupo Real Preload"
   },
   "ruleTabPerPageDesc": {
-    "message": "Aplica-se a candidatos que precisam de abas reais em segundo plano. Decide quantos candidatos de página este grupo pode manter para a execução final."
+    "message": "Aplica-se a candidatos que precisam de abas reais ocultas em segundo plano. Decide quantas páginas o grupo pode manter para a execução final."
   },
   "ruleNativeSiteTitle": {
-    "message": "Quantidade x de sites de alto peso do grupo de pré-carregamento nativo"
+    "message": "Quantidade x de sites de alto peso do grupo nativo do navegador"
   },
   "ruleNativeSiteDesc": {
-    "message": "Aplica-se a candidatos nativos `prefetch` / `prerender`. Decide quantos sites de alto peso entram na etapa de alocação de slots por site."
+    "message": "Aplica-se a candidatos `prefetch` / `prerender` nativos do navegador. Decide quantos sites de alto peso entram na alocação de espaços."
   },
   "ruleTabSiteTitle": {
-    "message": "Quantidade x de sites de alto peso do grupo de pré-carregamento com abas reais"
+    "message": "Quantidade x de sites de alto peso do grupo Real Preload"
   },
   "ruleTabSiteDesc": {
-    "message": "Aplica-se a candidatos que precisam de abas reais em segundo plano, incluindo pré-carregamento entre sites em nova aba e candidatos entre sites da troca forçada da aba atual roteados para hidden-tab."
+    "message": "Aplica-se a candidatos que precisam de abas reais ocultas em segundo plano, incluindo pré-carregamento entre sites em nova aba e candidatos hard-swap entre sites roteados para hidden-tab."
   },
   "ruleGoogleBookmarkRankTitle": {
     "message": "Posição x de pré-carregamento de favoritos na busca Google"
@@ -832,5 +826,35 @@
   },
   "languageRussian": {
     "message": "Russo"
+  },
+  "nativeAppMissingDownloadOrDisableRealPreload": {
+    "message": "O Real Preload precisa do app do Windows. Ele não foi detectado por 1 minuto; instale o app ou desative o Real Preload."
+  },
+  "settingsRealPreload": {
+    "message": "Real Preload"
+  },
+  "settingsRealPreloadDesc": {
+    "message": "Usa abas reais ocultas em segundo plano para aproximar a latência percebida de zero. Fica desativado por padrão porque consome muita memória."
+  },
+  "settingsSideEffectLinkSafetyGuard": {
+    "message": "Prote??o para links com efeitos colaterais"
+  },
+  "settingsSideEffectLinkSafetyGuardDesc": {
+    "message": "Sempre bloqueia a pr?-carga de downloads, exporta??es, anexos e outros links propensos a efeitos colaterais. Essa base de seguran?a n?o pode ser desativada."
+  },
+  "settingsDangerousSiteSafetyGuard": {
+    "message": "Prote??o contra sites perigosos"
+  },
+  "settingsDangerousSiteSafetyGuardDesc": {
+    "message": "A pr?-carga permanece bloqueada para links que a extens?o ou o app local marcar como perigosos. Os avisos integrados do navegador continuam valendo na navega??o real."
+  },
+  "settingsDangerousSitePausePreloadingWarning": {
+    "message": "Ao entrar em sites arriscados ou não confiáveis, pause totalmente o pré-carregamento. Regras automáticas não conseguem garantir segurança em todas as páginas perigosas."
+  },
+  "realPreloadAvailableLowMemoryWarning": {
+    "message": "O Real Preload está disponível e pode reduzir a latência percebida a zero, mas este computador tem menos de 24 GB de memória; não é recomendado para a maioria dos usuários."
+  },
+  "realPreloadRecommendedWarning": {
+    "message": "O Real Preload está disponível e é recomendado nesta máquina. Ele pode reduzir a latência percebida a zero, mas consome muita memória; evite limites agressivos demais."
   }
 }

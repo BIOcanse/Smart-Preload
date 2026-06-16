@@ -50,6 +50,26 @@ function sendNativeAppWakeMessage() {
   }
 
   return new Promise((resolve, reject) => {
+    let settled = false;
+    const timeoutId = setTimeout(() => {
+      settle(false, new Error("native host send wake timed out."));
+    }, NATIVE_APP_WAKE_CONNECT_TIMEOUT_MS);
+
+    function settle(ok, value) {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      clearTimeout(timeoutId);
+
+      if (ok) {
+        resolve(value);
+      } else {
+        reject(value);
+      }
+    }
+
     globalThis.chrome.runtime.sendNativeMessage(
       NATIVE_MESSAGING_HOST_NAME,
       {
@@ -61,16 +81,16 @@ function sendNativeAppWakeMessage() {
         const lastError = globalThis.chrome.runtime.lastError;
 
         if (lastError) {
-          reject(new Error(lastError.message));
+          settle(false, new Error(lastError.message));
           return;
         }
 
         if (response?.ok !== true) {
-          reject(new Error(response?.error || "native host wake failed."));
+          settle(false, new Error(response?.error || "native host wake failed."));
           return;
         }
 
-        resolve({
+        settle(true, {
           ...response,
           strategy: "sendNativeMessage",
         });

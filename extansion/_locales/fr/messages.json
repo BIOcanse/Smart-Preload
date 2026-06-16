@@ -113,12 +113,6 @@
   "performanceInsufficientReducePreloadCaps": {
     "message": "Performances insuffisantes. R?duisez les limites de pr?chargement."
   },
-  "nativeAppMissingEnableAllNativePreloadMode": {
-    "message": "Application native non détectée. Activez le mode de préchargement entièrement natif pour éviter les vrais onglets masqués."
-  },
-  "nativeAppMissingDownloadOrEnableAllNativePreloadMode": {
-    "message": "Application native non détectée depuis 1 minute. Téléchargez et installez l'application native, ou activez le mode de préchargement entièrement natif."
-  },
   "popupCurrentPageNotTracked": {
     "message": "La page actuelle n?est pas suivie"
   },
@@ -257,6 +251,12 @@
   "settingsSkipGoogleInternalPagesDesc": {
     "message": "Ne pas suivre ni précharger le Chrome Web Store, le compte Google, le gestionnaire de mots de passe, Chrome Sync, chromestatus et les pages administratives Google similaires. Gemini et les produits Google courants restent suivis."
   },
+  "settingsSkipHttpPages": {
+    "message": "Ignorer les pages HTTP"
+  },
+  "settingsSkipHttpPagesDesc": {
+    "message": "Ne pas suivre ni précharger les pages et liens HTTP non chiffrés. Les pages HTTPS restent disponibles."
+  },
   "settingsSkipLocalPages": {
     "message": "Ignorer les pages locales"
   },
@@ -283,12 +283,6 @@
   },
   "settingsInteractionPreloadDesc": {
     "message": "Démarre un préchargement d'interaction après 80 ms de survol d'un lien, et prépare un préchargement de nouvel onglet à l'ouverture du menu contextuel du lien."
-  },
-  "settingsAllNativePreloadMode": {
-    "message": "Mode de préchargement entièrement natif"
-  },
-  "settingsAllNativePreloadModeDesc": {
-    "message": "Utilise uniquement le prefetch/prerender natif du navigateur. Les vrais onglets masqués et le hard swap sont désactivés."
   },
   "settingsNativeAppDownloadTitle": {
     "message": "Téléchargement de l'application native"
@@ -387,10 +381,10 @@
     "message": "Limites au niveau du compte pour distribuer les cr?neaux de pr?chargement entre tous les onglets source ayant des candidats."
   },
   "settingsSchedulerHiddenTabs": {
-    "message": "Onglets r?els masqu?s"
+    "message": "Real Preload"
   },
   "settingsSchedulerNativePreload": {
-    "message": "Pr?chargement natif"
+    "message": "Préchargement natif du navigateur"
   },
   "settingsSchedulerAttentionPool": {
     "message": "R?serve d?attention"
@@ -747,28 +741,28 @@
     "message": "jeton fixe {0}"
   },
   "ruleNativePerPageTitle": {
-    "message": "Limite a de cr?neaux de page du groupe de pr?chargement natif"
+    "message": "Plafond a des emplacements de page du préchargement natif du navigateur"
   },
   "ruleNativePerPageDesc": {
-    "message": "S?applique aux candidats natifs `prefetch` / `prerender`. D?finit combien de candidats de page ce groupe peut conserver pour l?ex?cution finale."
+    "message": "S’applique aux candidats `prefetch` / `prerender` natifs du navigateur. Décide combien de pages cette grappe peut garder pour l’exécution finale."
   },
   "ruleTabPerPageTitle": {
-    "message": "Limite a de cr?neaux de page du groupe de vrais onglets pr?charg?s"
+    "message": "Plafond a des emplacements de page Real Preload"
   },
   "ruleTabPerPageDesc": {
-    "message": "S?applique aux candidats qui n?cessitent de vrais onglets en arri?re-plan. D?finit combien de candidats de page ce groupe peut conserver pour l?ex?cution finale."
+    "message": "S’applique aux candidats qui nécessitent de vrais onglets masqués en arrière-plan. Décide combien de pages cette grappe peut garder pour l’exécution finale."
   },
   "ruleNativeSiteTitle": {
-    "message": "Nombre x de sites ? poids ?lev? du groupe de pr?chargement natif"
+    "message": "Nombre x de sites à fort poids du préchargement natif du navigateur"
   },
   "ruleNativeSiteDesc": {
-    "message": "S'applique aux candidats natifs `prefetch` / `prerender`. Définit combien de sites à poids élevé entrent dans l'étape d'allocation des créneaux de site."
+    "message": "S’applique aux candidats `prefetch` / `prerender` natifs du navigateur. Décide combien de sites à fort poids entrent dans l’allocation des emplacements."
   },
   "ruleTabSiteTitle": {
-    "message": "Nombre x de sites ? poids ?lev? du groupe de vrais onglets pr?charg?s"
+    "message": "Nombre x de sites à fort poids Real Preload"
   },
   "ruleTabSiteDesc": {
-    "message": "S?applique aux candidats qui n?cessitent de vrais onglets en arri?re-plan, y compris le pr?chargement intersite en nouvel onglet et les candidats intersites du remplacement forc? de l?onglet courant rout?s vers hidden-tab."
+    "message": "S’applique aux candidats qui nécessitent de vrais onglets masqués en arrière-plan, y compris les préchargements de nouveaux onglets intersites et les candidats hard-swap intersites routés vers hidden-tab."
   },
   "ruleGoogleBookmarkRankTitle": {
     "message": "Rang x de pr?chargement des favoris sur Google Search"
@@ -832,5 +826,35 @@
   },
   "languageRussian": {
     "message": "Russe"
+  },
+  "nativeAppMissingDownloadOrDisableRealPreload": {
+    "message": "Real Preload nécessite l’application Windows. Elle n’a pas été détectée depuis 1 minute ; installez l’application ou désactivez Real Preload."
+  },
+  "settingsRealPreload": {
+    "message": "Real Preload"
+  },
+  "settingsRealPreloadDesc": {
+    "message": "Utilise de vrais onglets masqués en arrière-plan pour tendre vers une latence perçue nulle. Désactivé par défaut car cela consomme beaucoup de mémoire."
+  },
+  "settingsSideEffectLinkSafetyGuard": {
+    "message": "Protection des liens ? effets secondaires"
+  },
+  "settingsSideEffectLinkSafetyGuardDesc": {
+    "message": "Bloque toujours le pr?chargement des t?l?chargements, exports, pi?ces jointes et autres liens susceptibles de produire des effets secondaires. Cette protection de base ne peut pas ?tre d?sactiv?e."
+  },
+  "settingsDangerousSiteSafetyGuard": {
+    "message": "Protection contre les sites dangereux"
+  },
+  "settingsDangerousSiteSafetyGuardDesc": {
+    "message": "Le pr?chargement reste bloqu? pour les liens que l?extension ou l?app locale signale comme dangereux. Les avertissements int?gr?s du navigateur restent actifs lors de la navigation r?elle."
+  },
+  "settingsDangerousSitePausePreloadingWarning": {
+    "message": "Sur les sites risqués ou non fiables, mettez la précharge en pause complètement. Les règles automatiques ne peuvent pas garantir la sécurité sur chaque page dangereuse."
+  },
+  "realPreloadAvailableLowMemoryWarning": {
+    "message": "Real Preload est disponible et peut réduire la latence perçue à zéro, mais cet ordinateur a moins de 24 GB de mémoire ; ce n’est pas recommandé pour la plupart des utilisateurs."
+  },
+  "realPreloadRecommendedWarning": {
+    "message": "Real Preload est disponible et recommandé sur cette machine. Il peut réduire la latence perçue à zéro, mais consomme beaucoup de mémoire ; évitez des limites trop agressives."
   }
 }

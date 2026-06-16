@@ -178,6 +178,10 @@ body {
   cursor: not-allowed;
 }
 
+.settings-item.is-locked {
+  background: #fbfcfa;
+}
+
 .settings-item.is-wide {
   align-items: start;
 }
@@ -478,6 +482,10 @@ body {
   cursor: pointer;
 }
 
+.switch input:disabled {
+  cursor: not-allowed;
+}
+
 .switch-track {
   position: relative;
   display: block;
@@ -508,6 +516,11 @@ body {
 
 .switch input:checked + .switch-track::after {
   transform: translateX(24px);
+}
+
+.switch.is-locked .switch-track {
+  border-color: rgba(15, 118, 110, 0.24);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.42);
 }
 
 .segmented-control {
