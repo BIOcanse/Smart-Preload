@@ -74,10 +74,10 @@ Windows app 的 `portable` 文件夹保存的是 app 绑定文件和日志，不
 
 智能预加载 / Zero Latency Web 使用 [Apache License 2.0](LICENSE) 授权。署名声明见 [NOTICE](NOTICE)。
 
-## Google 商店页宣传图
+## Chrome 网上应用店宣传图
 
-![Google 商店页小尺寸宣传图](assets/chrome-web-store/google-store-small-promo-440x280.png)
+![Chrome 网上应用店小尺寸宣传图](assets/chrome-web-store/google-store-small-promo-440x280.png)
 
-![Google 商店页横幅宣传图](assets/chrome-web-store/google-store-marquee-promo-1400x560.png)
+![Chrome 网上应用店横幅宣传图](assets/chrome-web-store/google-store-marquee-promo-1400x560.png)
 
-![Google 商店页截图](assets/chrome-web-store/google-store-screenshot-1280x800.png)
+![Chrome 网上应用店截图](assets/chrome-web-store/google-store-screenshot-1280x800.png)

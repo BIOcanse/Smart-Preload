@@ -73,3 +73,11 @@ L'extension peut fonctionner sans l'application Windows. L'application est uniqu
 ## Licence
 
 Smart Preload / Zero Latency Web est sous [Apache License 2.0](LICENSE). Consultez [NOTICE](NOTICE) pour les avis d'attribution.
+
+## Images Promotionnelles du Chrome Web Store
+
+![Petite image promotionnelle pour le Chrome Web Store](assets/chrome-web-store/google-store-small-promo-440x280.png)
+
+![Image promotionnelle marquee pour le Chrome Web Store](assets/chrome-web-store/google-store-marquee-promo-1400x560.png)
+
+![Capture d'ecran pour le Chrome Web Store](assets/chrome-web-store/google-store-screenshot-1280x800.png)

@@ -73,3 +73,11 @@ Windows アプリの `portable` フォルダーには連携ファイルとログ
 ## ライセンス
 
 Smart Preload / Zero Latency Web は [Apache License 2.0](LICENSE) の下でライセンスされています。帰属表示は [NOTICE](NOTICE) を参照してください。
+
+## Chrome ウェブストア掲載画像
+
+![Chrome ウェブストア用の小サイズ掲載画像](assets/chrome-web-store/google-store-small-promo-440x280.png)
+
+![Chrome ウェブストア用のマーキー掲載画像](assets/chrome-web-store/google-store-marquee-promo-1400x560.png)
+
+![Chrome ウェブストア用のスクリーンショット](assets/chrome-web-store/google-store-screenshot-1280x800.png)

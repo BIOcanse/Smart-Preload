@@ -73,3 +73,11 @@ Smart Preload использует интеллектуальные алгори
 ## Лицензия
 
 Smart Preload / Zero Latency Web распространяется по лицензии [Apache License 2.0](LICENSE). Уведомления об атрибуции см. в [NOTICE](NOTICE).
+
+## Промоизображения Chrome Web Store
+
+![Малое промоизображение для Chrome Web Store](assets/chrome-web-store/google-store-small-promo-440x280.png)
+
+![Промоизображение marquee для Chrome Web Store](assets/chrome-web-store/google-store-marquee-promo-1400x560.png)
+
+![Скриншот для Chrome Web Store](assets/chrome-web-store/google-store-screenshot-1280x800.png)
