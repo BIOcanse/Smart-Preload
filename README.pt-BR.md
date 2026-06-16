@@ -73,3 +73,11 @@ A extensao pode funcionar sem o app do Windows. O app e exclusivo para Windows e
 ## Licenca
 
 Smart Preload / Zero Latency Web e licenciado sob a [Apache License 2.0](LICENSE). Consulte [NOTICE](NOTICE) para os avisos de atribuicao.
+
+## Imagens Promocionais da Chrome Web Store
+
+![Imagem promocional pequena para a Chrome Web Store](assets/chrome-web-store/google-store-small-promo-440x280.png)
+
+![Imagem promocional marquee para a Chrome Web Store](assets/chrome-web-store/google-store-marquee-promo-1400x560.png)
+
+![Captura de tela para a Chrome Web Store](assets/chrome-web-store/google-store-screenshot-1280x800.png)

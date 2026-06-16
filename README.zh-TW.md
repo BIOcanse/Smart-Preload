@@ -73,3 +73,11 @@ Windows app 的 `portable` 資料夾保存的是 app 綁定檔案和日誌，不
 ## 授權條款
 
 智慧預載 / Zero Latency Web 使用 [Apache License 2.0](LICENSE) 授權。署名聲明見 [NOTICE](NOTICE)。
+
+## Chrome 線上應用程式商店宣傳圖
+
+![Chrome 線上應用程式商店小尺寸宣傳圖](assets/chrome-web-store/google-store-small-promo-440x280.png)
+
+![Chrome 線上應用程式商店橫幅宣傳圖](assets/chrome-web-store/google-store-marquee-promo-1400x560.png)
+
+![Chrome 線上應用程式商店截圖](assets/chrome-web-store/google-store-screenshot-1280x800.png)
