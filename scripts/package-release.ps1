@@ -198,14 +198,147 @@ $appReadme = @"
 
 This optional Windows app improves Smart Preload's local browser integration.
 
-First setup:
-1. Install or enable the Smart Preload extension in Chrome or Edge.
-2. Run install-register.cmd from this folder.
-3. Keep this folder in its final location. Run install-register.cmd again if you move it.
-
-After the first successful binding, the extension can reconnect to the app automatically.
-
 Platform: Windows only.
+
+## English
+
+Setup order:
+1. Install or enable the Smart Preload browser extension first.
+2. Extract this zip to a normal writable folder. Do not run files directly from inside the zip.
+3. Keep this app folder in its final location.
+4. Run `install-register.cmd` from this folder.
+5. After registration, you can also start `zero-latency-web-app.exe` from this folder.
+
+Important notes:
+- First binding succeeds only after the browser extension is installed or enabled.
+- If you move this app folder later, run `install-register.cmd` again from the new location.
+- After the first successful binding, the extension can wake the native app automatically when needed.
+
+## 简体中文
+
+设置顺序：
+1. 先安装或启用 Smart Preload 浏览器扩展。
+2. 把这个 zip 解压到普通可写文件夹。不要直接在 zip 压缩包里运行文件。
+3. 先把 app 文件夹放到最终位置。
+4. 从这个文件夹运行 `install-register.cmd`。
+5. 注册后，也可以从这个文件夹启动 `zero-latency-web-app.exe`。
+
+注意事项：
+- 首次绑定需要先安装或启用浏览器扩展。
+- 如果之后移动了 app 文件夹，需要在新位置重新运行 `install-register.cmd`。
+- 首次绑定成功后，扩展在需要时可以自动唤起本地 app。
+
+## 繁體中文
+
+設定順序：
+1. 先安裝或啟用 Smart Preload 瀏覽器擴充功能。
+2. 把這個 zip 解壓縮到一般可寫入的資料夾。不要直接在 zip 壓縮包裡執行檔案。
+3. 先把 app 資料夾放到最終位置。
+4. 從這個資料夾執行 `install-register.cmd`。
+5. 註冊後，也可以從這個資料夾啟動 `zero-latency-web-app.exe`。
+
+注意事項：
+- 首次綁定需要先安裝或啟用瀏覽器擴充功能。
+- 如果之後移動了 app 資料夾，需要在新位置重新執行 `install-register.cmd`。
+- 首次綁定成功後，擴充功能在需要時可以自動喚起本機 app。
+
+## 日本語
+
+セットアップ順:
+1. 先に Smart Preload ブラウザ拡張機能をインストールまたは有効化します。
+2. この zip を通常の書き込み可能なフォルダーへ展開します。zip の中から直接実行しないでください。
+3. app フォルダーを最終的な場所に置きます。
+4. このフォルダーから `install-register.cmd` を実行します。
+5. 登録後は、このフォルダーの `zero-latency-web-app.exe` からも起動できます。
+
+注意:
+- 初回連携には、先にブラウザ拡張機能をインストールまたは有効化しておく必要があります。
+- 後で app フォルダーを移動した場合は、新しい場所で `install-register.cmd` をもう一度実行してください。
+- 初回連携が成功すると、必要なときに拡張機能がネイティブアプリを自動起動できます。
+
+## 한국어
+
+설정 순서:
+1. Smart Preload 브라우저 확장 프로그램을 먼저 설치하거나 활성화합니다.
+2. 이 zip을 일반 쓰기 가능한 폴더에 압축 해제합니다. zip 안에서 바로 실행하지 마세요.
+3. app 폴더를 최종 위치에 둡니다.
+4. 이 폴더에서 `install-register.cmd`를 실행합니다.
+5. 등록 후에는 이 폴더의 `zero-latency-web-app.exe`로도 시작할 수 있습니다.
+
+주의:
+- 첫 연결은 브라우저 확장 프로그램이 먼저 설치되거나 활성화되어 있어야 성공합니다.
+- 나중에 app 폴더를 옮기면 새 위치에서 `install-register.cmd`를 다시 실행해야 합니다.
+- 첫 연결이 성공하면 확장 프로그램이 필요할 때 네이티브 앱을 자동으로 실행할 수 있습니다.
+
+## Deutsch
+
+Einrichtung:
+1. Installieren oder aktivieren Sie zuerst die Smart Preload-Browsererweiterung.
+2. Entpacken Sie diese zip-Datei in einen normalen beschreibbaren Ordner. Starten Sie Dateien nicht direkt aus der zip-Datei.
+3. Legen Sie den app-Ordner an seinen endgueltigen Ort.
+4. Fuehren Sie `install-register.cmd` aus diesem Ordner aus.
+5. Nach der Registrierung koennen Sie auch `zero-latency-web-app.exe` aus diesem Ordner starten.
+
+Hinweise:
+- Die erste Kopplung funktioniert nur, wenn die Browsererweiterung bereits installiert oder aktiviert ist.
+- Wenn Sie den app-Ordner spaeter verschieben, fuehren Sie `install-register.cmd` am neuen Ort erneut aus.
+- Nach der ersten erfolgreichen Kopplung kann die Erweiterung die native App bei Bedarf automatisch starten.
+
+## Francais
+
+Ordre de configuration :
+1. Installez ou activez d'abord l'extension de navigateur Smart Preload.
+2. Extrayez ce zip dans un dossier normal avec droit d'ecriture. Ne lancez pas les fichiers directement depuis le zip.
+3. Placez le dossier app a son emplacement final.
+4. Executez `install-register.cmd` depuis ce dossier.
+5. Apres l'enregistrement, vous pouvez aussi lancer `zero-latency-web-app.exe` depuis ce dossier.
+
+Notes importantes :
+- Le premier lien ne reussit que si l'extension du navigateur est deja installee ou activee.
+- Si vous deplacez ensuite ce dossier app, executez a nouveau `install-register.cmd` depuis le nouvel emplacement.
+- Apres le premier lien reussi, l'extension peut demarrer automatiquement l'application native quand c'est necessaire.
+
+## Espanol
+
+Orden de configuracion:
+1. Instala o habilita primero la extension de navegador Smart Preload.
+2. Extrae este zip en una carpeta normal con permiso de escritura. No ejecutes archivos directamente desde el zip.
+3. Coloca la carpeta app en su ubicacion final.
+4. Ejecuta `install-register.cmd` desde esta carpeta.
+5. Despues del registro, tambien puedes iniciar `zero-latency-web-app.exe` desde esta carpeta.
+
+Notas importantes:
+- El primer enlace solo funciona si la extension del navegador ya esta instalada o habilitada.
+- Si mueves esta carpeta app mas adelante, ejecuta `install-register.cmd` otra vez desde la nueva ubicacion.
+- Despues del primer enlace correcto, la extension puede iniciar la app nativa automaticamente cuando sea necesario.
+
+## Portugues (Brasil)
+
+Ordem de configuracao:
+1. Instale ou ative primeiro a extensao de navegador Smart Preload.
+2. Extraia este zip em uma pasta normal com permissao de escrita. Nao execute arquivos diretamente dentro do zip.
+3. Coloque a pasta app no local final.
+4. Execute `install-register.cmd` a partir desta pasta.
+5. Depois do registro, voce tambem pode iniciar `zero-latency-web-app.exe` por esta pasta.
+
+Observacoes importantes:
+- A primeira vinculacao so funciona se a extensao do navegador ja estiver instalada ou ativada.
+- Se voce mover esta pasta app depois, execute `install-register.cmd` novamente no novo local.
+- Depois da primeira vinculacao bem-sucedida, a extensao pode iniciar o app nativo automaticamente quando necessario.
+
+## Русский
+
+Порядок настройки:
+1. Сначала установите или включите расширение браузера Smart Preload.
+2. Распакуйте этот zip в обычную папку с правом записи. Не запускайте файлы прямо из zip-архива.
+3. Поместите папку app в окончательное расположение.
+4. Запустите `install-register.cmd` из этой папки.
+5. После регистрации также можно запускать `zero-latency-web-app.exe` из этой же папки.
+
+Важные примечания:
+- Первое связывание успешно работает только после установки или включения расширения браузера.
+- Если позже переместить папку app, нужно снова запустить `install-register.cmd` из нового расположения.
+- После первого успешного связывания расширение сможет автоматически запускать нативное приложение при необходимости.
 
 License: Apache License 2.0. See LICENSE and NOTICE.
 "@
@@ -215,6 +348,7 @@ Copy-File (Join-Path $AppRoot "install-register.cmd") (Join-Path $AppStage "inst
 Copy-File (Join-Path $AppRoot "install-register.ps1") (Join-Path $AppStage "install-register.ps1")
 Copy-File $LicensePath (Join-Path $AppStage "LICENSE")
 Copy-File $NoticePath (Join-Path $AppStage "NOTICE")
+Write-TextFile (Join-Path $AppStage "START-HERE.md") $appReadme
 Write-TextFile (Join-Path $AppStage "README.md") $appReadme
 Write-TextFile (Join-Path $AppStage "VERSION.txt") $Version
 New-Item -ItemType Directory -Path (Join-Path $AppStage "portable\native-messaging") -Force | Out-Null
@@ -264,6 +398,8 @@ $releaseReadme = @"
 # Smart Preload v$Version
 
 Contents:
+- START-HERE.md
+- README.md
 - zero-latency-web-extension-v$Version.zip
 - zero-latency-web-app-windows-x64-v$Version.zip
 - SHA256SUMS.txt
@@ -272,19 +408,149 @@ Contents:
 
 Smart Preload prepares pages you are likely to open next so browsing can feel faster, especially when working across many tabs.
 
-Install:
-1. Install or load the extension package in Chrome or Edge.
-2. If you want the Windows companion app, extract the Windows app package.
-3. Run install-register.cmd from the extracted app folder.
-4. Keep the app folder in its final location. Run install-register.cmd again if the folder is moved.
-
-First setup order:
-- Install or enable the browser extension before running the Windows app for the first time.
-- After the first successful binding, later launches can reconnect automatically.
-
 Platform:
 - Extension: Chrome and Edge.
 - Companion app: Windows only.
+
+## English
+
+Install:
+1. Install or load the extension package in Chrome or Edge.
+2. Extract the Windows app package to a normal writable folder.
+3. Keep the app folder in its final location.
+4. Run `install-register.cmd` from the extracted app folder.
+5. After registration, you can start `zero-latency-web-app.exe` from the same folder. After the first successful binding, the extension can wake it automatically.
+
+Notes:
+- Install or enable the browser extension before running the Windows app for the first time.
+- Do not run the Windows app directly from inside the zip.
+- If the app folder is moved later, run `install-register.cmd` again from the new location.
+
+## 简体中文
+
+安装：
+1. 在 Chrome 或 Edge 中安装或加载扩展包。
+2. 把 Windows app 包解压到普通可写文件夹。
+3. 先把 app 文件夹放到最终位置。
+4. 从解压后的 app 文件夹运行 `install-register.cmd`。
+5. 注册后，可以从同一文件夹启动 `zero-latency-web-app.exe`。首次绑定成功后，扩展可以自动唤起它。
+
+注意：
+- 第一次运行 Windows app 前，必须先安装或启用浏览器扩展。
+- 不要直接在 zip 压缩包里运行 Windows app。
+- 如果之后移动了 app 文件夹，需要在新位置重新运行 `install-register.cmd`。
+
+## 繁體中文
+
+安裝：
+1. 在 Chrome 或 Edge 中安裝或載入擴充功能包。
+2. 把 Windows app 包解壓縮到一般可寫入的資料夾。
+3. 先把 app 資料夾放到最終位置。
+4. 從解壓縮後的 app 資料夾執行 `install-register.cmd`。
+5. 註冊後，可以從同一資料夾啟動 `zero-latency-web-app.exe`。首次綁定成功後，擴充功能可以自動喚起它。
+
+注意：
+- 第一次執行 Windows app 前，必須先安裝或啟用瀏覽器擴充功能。
+- 不要直接在 zip 壓縮包裡執行 Windows app。
+- 如果之後移動了 app 資料夾，需要在新位置重新執行 `install-register.cmd`。
+
+## 日本語
+
+インストール:
+1. Chrome または Edge に拡張機能パッケージをインストールまたは読み込みます。
+2. Windows アプリパッケージを通常の書き込み可能なフォルダーへ展開します。
+3. app フォルダーを最終的な場所に置きます。
+4. 展開した app フォルダーから `install-register.cmd` を実行します。
+5. 登録後は、同じフォルダーの `zero-latency-web-app.exe` から起動できます。初回連携後は拡張機能が自動起動できます。
+
+注意:
+- 初めて Windows アプリを実行する前に、ブラウザ拡張機能をインストールまたは有効化してください。
+- Windows アプリを zip の中から直接実行しないでください。
+- app フォルダーを後で移動した場合は、新しい場所で `install-register.cmd` をもう一度実行してください。
+
+## 한국어
+
+설치:
+1. Chrome 또는 Edge에 확장 프로그램 패키지를 설치하거나 로드합니다.
+2. Windows 앱 패키지를 일반 쓰기 가능한 폴더에 압축 해제합니다.
+3. app 폴더를 최종 위치에 둡니다.
+4. 압축 해제한 app 폴더에서 `install-register.cmd`를 실행합니다.
+5. 등록 후에는 같은 폴더의 `zero-latency-web-app.exe`로 시작할 수 있습니다. 첫 연결 후에는 확장 프로그램이 자동으로 실행할 수 있습니다.
+
+주의:
+- Windows 앱을 처음 실행하기 전에 브라우저 확장 프로그램을 먼저 설치하거나 활성화해야 합니다.
+- Windows 앱을 zip 안에서 바로 실행하지 마세요.
+- 나중에 app 폴더를 옮기면 새 위치에서 `install-register.cmd`를 다시 실행해야 합니다.
+
+## Deutsch
+
+Installation:
+1. Installieren oder laden Sie das Erweiterungspaket in Chrome oder Edge.
+2. Entpacken Sie das Windows-App-Paket in einen normalen beschreibbaren Ordner.
+3. Legen Sie den app-Ordner an seinen endgueltigen Ort.
+4. Fuehren Sie `install-register.cmd` aus dem entpackten app-Ordner aus.
+5. Nach der Registrierung koennen Sie `zero-latency-web-app.exe` aus demselben Ordner starten. Nach der ersten Kopplung kann die Erweiterung die App automatisch starten.
+
+Hinweise:
+- Installieren oder aktivieren Sie die Browsererweiterung, bevor Sie die Windows-App zum ersten Mal starten.
+- Starten Sie die Windows-App nicht direkt aus der zip-Datei.
+- Wenn der app-Ordner spaeter verschoben wird, fuehren Sie `install-register.cmd` am neuen Ort erneut aus.
+
+## Francais
+
+Installation :
+1. Installez ou chargez le package d'extension dans Chrome ou Edge.
+2. Extrayez le package de l'application Windows dans un dossier normal avec droit d'ecriture.
+3. Placez le dossier app a son emplacement final.
+4. Executez `install-register.cmd` depuis le dossier app extrait.
+5. Apres l'enregistrement, vous pouvez lancer `zero-latency-web-app.exe` depuis le meme dossier. Apres le premier lien, l'extension peut le demarrer automatiquement.
+
+Notes :
+- Installez ou activez l'extension du navigateur avant le premier lancement de l'application Windows.
+- Ne lancez pas l'application Windows directement depuis le zip.
+- Si le dossier app est deplace ensuite, executez a nouveau `install-register.cmd` depuis le nouvel emplacement.
+
+## Espanol
+
+Instalacion:
+1. Instala o carga el paquete de extension en Chrome o Edge.
+2. Extrae el paquete de la app de Windows en una carpeta normal con permiso de escritura.
+3. Coloca la carpeta app en su ubicacion final.
+4. Ejecuta `install-register.cmd` desde la carpeta app extraida.
+5. Despues del registro, puedes iniciar `zero-latency-web-app.exe` desde la misma carpeta. Tras el primer enlace, la extension puede iniciarla automaticamente.
+
+Notas:
+- Instala o habilita la extension del navegador antes de ejecutar la app de Windows por primera vez.
+- No ejecutes la app de Windows directamente desde el zip.
+- Si mueves la carpeta app despues, ejecuta `install-register.cmd` otra vez desde la nueva ubicacion.
+
+## Portugues (Brasil)
+
+Instalacao:
+1. Instale ou carregue o pacote da extensao no Chrome ou Edge.
+2. Extraia o pacote do app Windows em uma pasta normal com permissao de escrita.
+3. Coloque a pasta app no local final.
+4. Execute `install-register.cmd` a partir da pasta app extraida.
+5. Depois do registro, voce pode iniciar `zero-latency-web-app.exe` pela mesma pasta. Depois da primeira vinculacao, a extensao pode iniciar o app automaticamente.
+
+Observacoes:
+- Instale ou ative a extensao do navegador antes de executar o app Windows pela primeira vez.
+- Nao execute o app Windows diretamente dentro do zip.
+- Se a pasta app for movida depois, execute `install-register.cmd` novamente no novo local.
+
+## Русский
+
+Установка:
+1. Установите или загрузите пакет расширения в Chrome или Edge.
+2. Распакуйте пакет Windows-приложения в обычную папку с правом записи.
+3. Поместите папку app в окончательное расположение.
+4. Запустите `install-register.cmd` из распакованной папки app.
+5. После регистрации можно запускать `zero-latency-web-app.exe` из той же папки. После первого связывания расширение сможет запускать приложение автоматически.
+
+Примечания:
+- Перед первым запуском Windows-приложения установите или включите расширение браузера.
+- Не запускайте Windows-приложение прямо из zip-архива.
+- Если позже переместить папку app, снова запустите `install-register.cmd` из нового расположения.
 
 The SHA256SUMS.txt file can be used to verify the downloaded zip files.
 
@@ -326,6 +592,7 @@ Copy-File $ExtensionZip (Join-Path $ReleaseStage "zero-latency-web-extension-v$V
 Copy-File $AppZip (Join-Path $ReleaseStage "zero-latency-web-app-windows-x64-v$Version.zip")
 Copy-File $LicensePath (Join-Path $ReleaseStage "LICENSE")
 Copy-File $NoticePath (Join-Path $ReleaseStage "NOTICE")
+Write-TextFile (Join-Path $ReleaseStage "START-HERE.md") $releaseReadme
 Write-TextFile (Join-Path $ReleaseStage "README.md") $releaseReadme
 
 New-CleanDirectory $TestStage
