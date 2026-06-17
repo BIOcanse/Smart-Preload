@@ -28,7 +28,7 @@ import { getFreePort, sleep } from "./lib/test-utils.mjs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
-const extensionDir = path.join(repoRoot, "extansion");
+const extensionDir = path.join(repoRoot, "extension");
 const outputRoot = path.join(repoRoot, "output", "playwright");
 const runId = new Date().toISOString().replace(/[:.]/g, "-");
 const runDir = path.join(outputRoot, `bookmark-preload-smoke-${runId}`);

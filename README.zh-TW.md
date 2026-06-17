@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="extansion/images/icon-128.png" width="96" alt="智慧預載圖示">
+  <img src="extension/images/icon-128.png" width="96" alt="智慧預載圖示">
 </p>
 
 # 智慧預載 / Zero Latency Web

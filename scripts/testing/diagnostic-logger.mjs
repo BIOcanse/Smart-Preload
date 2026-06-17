@@ -4,11 +4,11 @@ import vm from "node:vm";
 
 const sources = await Promise.all(
   [
-    "../../extansion/background/diagnostics/sanitize.js",
-    "../../extansion/background/diagnostics/logger/session.js",
-    "../../extansion/background/diagnostics/logger/event.js",
-    "../../extansion/background/diagnostics/logger/flush-buffer.js",
-    "../../extansion/background/diagnostics/logger.js",
+    "../../extension/background/diagnostics/sanitize.js",
+    "../../extension/background/diagnostics/logger/session.js",
+    "../../extension/background/diagnostics/logger/event.js",
+    "../../extension/background/diagnostics/logger/flush-buffer.js",
+    "../../extension/background/diagnostics/logger.js",
   ].map((path) => readFile(new URL(path, import.meta.url), "utf8"))
 );
 const nativeRequests = [];

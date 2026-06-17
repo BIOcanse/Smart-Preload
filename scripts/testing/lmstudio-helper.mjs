@@ -8,10 +8,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const scriptPaths = [
-  ["extansion", "shared", "lmstudio", "constants.js"],
-  ["extansion", "shared", "lmstudio", "models.js"],
-  ["extansion", "shared", "lmstudio", "http.js"],
-  ["extansion", "shared", "lmstudio.js"],
+  ["extension", "shared", "lmstudio", "constants.js"],
+  ["extension", "shared", "lmstudio", "models.js"],
+  ["extension", "shared", "lmstudio", "http.js"],
+  ["extension", "shared", "lmstudio.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
 
 const context = {

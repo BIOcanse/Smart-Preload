@@ -8,10 +8,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const scriptPaths = [
-  ["extansion", "background", "learning", "foreground-pages", "context.js"],
-  ["extansion", "background", "learning", "foreground-pages", "record.js"],
-  ["extansion", "background", "learning", "foreground-pages", "keywords.js"],
-  ["extansion", "background", "learning", "foreground-pages.js"],
+  ["extension", "background", "learning", "foreground-pages", "context.js"],
+  ["extension", "background", "learning", "foreground-pages", "record.js"],
+  ["extension", "background", "learning", "foreground-pages", "keywords.js"],
+  ["extension", "background", "learning", "foreground-pages.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
 
 let paused = true;

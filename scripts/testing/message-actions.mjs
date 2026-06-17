@@ -8,9 +8,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const scriptPaths = [
-  ["extansion", "background", "actions", "messages", "source-skip.js"],
-  ["extansion", "background", "actions", "messages", "attention.js"],
-  ["extansion", "background", "actions", "messages.js"],
+  ["extension", "background", "actions", "messages", "source-skip.js"],
+  ["extension", "background", "actions", "messages", "attention.js"],
+  ["extension", "background", "actions", "messages.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
 
 const events = [];

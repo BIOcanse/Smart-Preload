@@ -3,44 +3,44 @@ import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
 const sharedSource = await readFile(
-  new URL("../../extansion/scripts/navigation/shared.js", import.meta.url),
+  new URL("../../extension/scripts/navigation/shared.js", import.meta.url),
   "utf8"
 );
 const sharedTextSource = await readFile(
-  new URL("../../extansion/scripts/navigation/shared/text.js", import.meta.url),
+  new URL("../../extension/scripts/navigation/shared/text.js", import.meta.url),
   "utf8"
 );
 const sharedUrlSource = await readFile(
-  new URL("../../extansion/scripts/navigation/shared/url.js", import.meta.url),
+  new URL("../../extension/scripts/navigation/shared/url.js", import.meta.url),
   "utf8"
 );
 const sharedFocusSource = await readFile(
-  new URL("../../extansion/scripts/navigation/shared/focus.js", import.meta.url),
+  new URL("../../extension/scripts/navigation/shared/focus.js", import.meta.url),
   "utf8"
 );
 const sharedSafetySource = await readFile(
-  new URL("../../extansion/scripts/navigation/shared/safety.js", import.meta.url),
+  new URL("../../extension/scripts/navigation/shared/safety.js", import.meta.url),
   "utf8"
 );
 const safetyRuleSources = await Promise.all(
   [
-    "../../extansion/shared/preload-safety-rules/constants.js",
-    "../../extansion/shared/preload-safety-rules/url.js",
-    "../../extansion/shared/preload-safety-rules/decision.js",
-    "../../extansion/shared/preload-safety-rules/candidate.js",
-    "../../extansion/shared/preload-safety-rules.js",
-    "../../extansion/shared/sensitive-site-rules/constants.js",
-    "../../extansion/shared/sensitive-site-rules/url.js",
-    "../../extansion/shared/sensitive-site-rules/match.js",
-    "../../extansion/shared/sensitive-site-rules.js",
+    "../../extension/shared/preload-safety-rules/constants.js",
+    "../../extension/shared/preload-safety-rules/url.js",
+    "../../extension/shared/preload-safety-rules/decision.js",
+    "../../extension/shared/preload-safety-rules/candidate.js",
+    "../../extension/shared/preload-safety-rules.js",
+    "../../extension/shared/sensitive-site-rules/constants.js",
+    "../../extension/shared/sensitive-site-rules/url.js",
+    "../../extension/shared/sensitive-site-rules/match.js",
+    "../../extension/shared/sensitive-site-rules.js",
   ].map((filePath) => readFile(new URL(filePath, import.meta.url), "utf8"))
 );
 const candidateScanSource = await readFile(
-  new URL("../../extansion/scripts/navigation/candidate-scan.js", import.meta.url),
+  new URL("../../extension/scripts/navigation/candidate-scan.js", import.meta.url),
   "utf8"
 );
 const candidateScanLinksSource = await readFile(
-  new URL("../../extansion/scripts/navigation/candidate-scan/links.js", import.meta.url),
+  new URL("../../extension/scripts/navigation/candidate-scan/links.js", import.meta.url),
   "utf8"
 );
 

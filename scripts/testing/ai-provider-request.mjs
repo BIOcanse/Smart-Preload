@@ -9,19 +9,19 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 
 const scriptPaths = [
-  path.join(repoRoot, "extansion", "background", "ai", "providers", "common.js"),
+  path.join(repoRoot, "extension", "background", "ai", "providers", "common.js"),
   path.join(
     repoRoot,
-    "extansion",
+    "extension",
     "background",
     "ai",
     "providers",
     "request",
     "openai-compatible.js"
   ),
-  path.join(repoRoot, "extansion", "background", "ai", "providers", "request", "gemini.js"),
-  path.join(repoRoot, "extansion", "background", "ai", "providers", "request", "claude.js"),
-  path.join(repoRoot, "extansion", "background", "ai", "providers", "request.js"),
+  path.join(repoRoot, "extension", "background", "ai", "providers", "request", "gemini.js"),
+  path.join(repoRoot, "extension", "background", "ai", "providers", "request", "claude.js"),
+  path.join(repoRoot, "extension", "background", "ai", "providers", "request.js"),
 ];
 
 const providerCatalog = {

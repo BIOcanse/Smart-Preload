@@ -8,28 +8,28 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const i18nPaths = [
-  ["extansion", "shared", "i18n", "constants.js"],
-  ["extansion", "shared", "i18n", "locale.js"],
-  ["extansion", "shared", "i18n", "messages.js"],
-  ["extansion", "shared", "i18n", "dom.js"],
-  ["extansion", "shared", "i18n.js"],
+  ["extension", "shared", "i18n", "constants.js"],
+  ["extension", "shared", "i18n", "locale.js"],
+  ["extension", "shared", "i18n", "messages.js"],
+  ["extension", "shared", "i18n", "dom.js"],
+  ["extension", "shared", "i18n.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
-const settingsUtilsPath = path.join(repoRoot, "extansion", "shared", "settings", "utils.js");
+const settingsUtilsPath = path.join(repoRoot, "extension", "shared", "settings", "utils.js");
 const settingsSchemaSupportPaths = [
-  ["extansion", "shared", "settings", "schema", "localize.js"],
-  ["extansion", "shared", "settings", "schema", "constants.js"],
-  ["extansion", "shared", "settings", "schema", "options.js"],
-  ["extansion", "shared", "settings", "schema", "rule-cards.js"],
+  ["extension", "shared", "settings", "schema", "localize.js"],
+  ["extension", "shared", "settings", "schema", "constants.js"],
+  ["extension", "shared", "settings", "schema", "options.js"],
+  ["extension", "shared", "settings", "schema", "rule-cards.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
-const settingsSchemaPath = path.join(repoRoot, "extansion", "shared", "settings", "schema.js");
-const settingsDefaultsPath = path.join(repoRoot, "extansion", "shared", "settings", "defaults.js");
-const settingsRulesPath = path.join(repoRoot, "extansion", "shared", "settings", "rules.js");
-const settingsProxySkipPath = path.join(repoRoot, "extansion", "shared", "settings", "proxy-skip.js");
-const settingsAiPath = path.join(repoRoot, "extansion", "shared", "settings", "ai.js");
-const settingsEffectivePath = path.join(repoRoot, "extansion", "shared", "settings", "effective.js");
+const settingsSchemaPath = path.join(repoRoot, "extension", "shared", "settings", "schema.js");
+const settingsDefaultsPath = path.join(repoRoot, "extension", "shared", "settings", "defaults.js");
+const settingsRulesPath = path.join(repoRoot, "extension", "shared", "settings", "rules.js");
+const settingsProxySkipPath = path.join(repoRoot, "extension", "shared", "settings", "proxy-skip.js");
+const settingsAiPath = path.join(repoRoot, "extension", "shared", "settings", "ai.js");
+const settingsEffectivePath = path.join(repoRoot, "extension", "shared", "settings", "effective.js");
 const settingsNormalizeAppearanceLayoutPath = path.join(
   repoRoot,
-  "extansion",
+  "extension",
   "shared",
   "settings",
   "normalize",
@@ -37,7 +37,7 @@ const settingsNormalizeAppearanceLayoutPath = path.join(
 );
 const settingsNormalizePreloadPath = path.join(
   repoRoot,
-  "extansion",
+  "extension",
   "shared",
   "settings",
   "normalize",
@@ -45,15 +45,15 @@ const settingsNormalizePreloadPath = path.join(
 );
 const settingsNormalizeSchedulerPath = path.join(
   repoRoot,
-  "extansion",
+  "extension",
   "shared",
   "settings",
   "normalize",
   "scheduler.js"
 );
-const settingsNormalizePath = path.join(repoRoot, "extansion", "shared", "settings", "normalize.js");
-const settingsStoragePath = path.join(repoRoot, "extansion", "shared", "settings", "storage.js");
-const settingsPath = path.join(repoRoot, "extansion", "shared", "settings.js");
+const settingsNormalizePath = path.join(repoRoot, "extension", "shared", "settings", "normalize.js");
+const settingsStoragePath = path.join(repoRoot, "extension", "shared", "settings", "storage.js");
+const settingsPath = path.join(repoRoot, "extension", "shared", "settings.js");
 
 const storedSettings = {
   userSettingsV1: {
@@ -98,7 +98,7 @@ const context = {
   },
   async fetch(urlPath) {
     const normalizedPath = String(urlPath).replaceAll("/", path.sep);
-    const filePath = path.join(repoRoot, "extansion", normalizedPath);
+    const filePath = path.join(repoRoot, "extension", normalizedPath);
     return {
       ok: true,
       async json() {

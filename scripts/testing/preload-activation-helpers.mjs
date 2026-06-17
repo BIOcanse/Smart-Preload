@@ -4,10 +4,10 @@ import vm from "node:vm";
 
 const sources = await Promise.all(
   [
-    "../../extansion/background/preload/runtime/source-tabs/channels.js",
-    "../../extansion/background/preload/runtime/activation/target.js",
-    "../../extansion/background/preload/runtime/activation/safety.js",
-    "../../extansion/background/preload/runtime/activation/incognito.js",
+    "../../extension/background/preload/runtime/source-tabs/channels.js",
+    "../../extension/background/preload/runtime/activation/target.js",
+    "../../extension/background/preload/runtime/activation/safety.js",
+    "../../extension/background/preload/runtime/activation/incognito.js",
   ].map((path) => readFile(new URL(path, import.meta.url), "utf8"))
 );
 const debugEvents = [];

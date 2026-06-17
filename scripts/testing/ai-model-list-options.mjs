@@ -22,9 +22,9 @@ context.ZeroLatencyLmStudio = {
 vm.createContext(context);
 
 for (const scriptPath of [
-  path.join(repoRoot, "extansion", "settings", "ai-models", "provider.js"),
-  path.join(repoRoot, "extansion", "settings", "ai-models", "filters.js"),
-  path.join(repoRoot, "extansion", "settings", "ai-models", "recommendations.js"),
+  path.join(repoRoot, "extension", "settings", "ai-models", "provider.js"),
+  path.join(repoRoot, "extension", "settings", "ai-models", "filters.js"),
+  path.join(repoRoot, "extension", "settings", "ai-models", "recommendations.js"),
 ]) {
   vm.runInContext(readFileSync(scriptPath, "utf8"), context, { filename: scriptPath });
 }

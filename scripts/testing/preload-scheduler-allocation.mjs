@@ -8,13 +8,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const scoringScriptPaths = [
-  ["extansion", "background", "preload", "scoring", "constants.js"],
-  ["extansion", "background", "preload", "scoring", "multipliers.js"],
-  ["extansion", "background", "preload", "scoring.js"],
+  ["extension", "background", "preload", "scoring", "constants.js"],
+  ["extension", "background", "preload", "scoring", "multipliers.js"],
+  ["extension", "background", "preload", "scoring.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
 const allocationPath = path.join(
   repoRoot,
-  "extansion",
+  "extension",
   "background",
   "preload",
   "scheduler",
@@ -23,7 +23,7 @@ const allocationPath = path.join(
 const allocationScriptPaths = [
   path.join(
     repoRoot,
-    "extansion",
+    "extension",
     "background",
     "preload",
     "scheduler",
@@ -32,7 +32,7 @@ const allocationScriptPaths = [
   ),
   path.join(
     repoRoot,
-    "extansion",
+    "extension",
     "background",
     "preload",
     "scheduler",
@@ -41,7 +41,7 @@ const allocationScriptPaths = [
   ),
   path.join(
     repoRoot,
-    "extansion",
+    "extension",
     "background",
     "preload",
     "scheduler",
@@ -50,7 +50,7 @@ const allocationScriptPaths = [
   ),
   path.join(
     repoRoot,
-    "extansion",
+    "extension",
     "background",
     "preload",
     "scheduler",
@@ -59,7 +59,7 @@ const allocationScriptPaths = [
   ),
   path.join(
     repoRoot,
-    "extansion",
+    "extension",
     "background",
     "preload",
     "scheduler",

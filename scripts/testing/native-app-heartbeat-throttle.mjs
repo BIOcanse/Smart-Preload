@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const heartbeatPath = path.join(
   repoRoot,
-  "extansion",
+  "extension",
   "background",
   "shared",
   "native-app",
