@@ -9,15 +9,23 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const scriptPaths = [
   ["extansion", "background", "shared", "base.js"],
+  ["extansion", "background", "tracking", "url", "google.js"],
+  ["extansion", "background", "tracking", "url", "network.js"],
   ["extansion", "background", "tracking", "url", "model.js"],
   ["extansion", "background", "tracking", "graph", "model", "schema.js"],
   ["extansion", "background", "tracking", "view.js"],
   ["extansion", "background", "preload", "state", "model.js"],
+  ["extansion", "background", "preload", "state", "normalize", "entries", "window.js"],
+  ["extansion", "background", "preload", "state", "normalize", "entries", "metadata.js"],
+  ["extansion", "background", "preload", "state", "normalize", "entries", "scores.js"],
+  ["extansion", "background", "preload", "state", "normalize", "entries", "preloads.js"],
   ["extansion", "background", "preload", "state", "normalize", "entries.js"],
   ["extansion", "background", "preload", "state", "normalize", "runtime.js"],
   ["extansion", "background", "preload", "state", "lookup", "normal-windows.js"],
   ["extansion", "background", "preload", "state", "lookup", "source-tabs.js"],
   ["extansion", "background", "preload", "state", "view.js"],
+  ["extansion", "background", "core", "messages", "debug", "warnings.js"],
+  ["extansion", "background", "core", "messages", "debug", "history-deletion.js"],
   ["extansion", "background", "core", "messages", "debug.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
 

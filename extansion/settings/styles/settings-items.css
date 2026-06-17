@@ -1,0 +1,234 @@
+.settings-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface-strong);
+}
+
+.settings-item[data-runtime-placeholder="true"] {
+  background: #fbfcfa;
+  cursor: not-allowed;
+}
+
+.settings-item[data-runtime-placeholder="true"] * {
+  cursor: not-allowed;
+}
+
+.settings-item.is-locked {
+  background: #fbfcfa;
+}
+
+.settings-item.is-wide {
+  align-items: start;
+}
+
+.settings-item-info {
+  display: grid;
+  gap: 6px;
+}
+
+.settings-item-label {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.settings-item-label-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.settings-item-label-text {
+  min-width: 0;
+}
+
+.settings-help {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--surface-muted);
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: help;
+  user-select: none;
+}
+
+.settings-help-tooltip {
+  position: absolute;
+  z-index: 20;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 48px));
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface-strong);
+  box-shadow: 0 12px 28px rgba(35, 48, 41, 0.13);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(2px);
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+  white-space: normal;
+}
+
+.settings-help:hover .settings-help-tooltip,
+.settings-help:focus .settings-help-tooltip,
+.settings-help:focus-visible .settings-help-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.settings-item-control {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 220px;
+}
+
+.compound-setting-control {
+  min-width: 320px;
+}
+
+.compound-setting-control .select-input,
+.compound-setting-control .text-input {
+  width: 160px;
+}
+
+.proxy-skip-control {
+  display: grid;
+  grid-template-columns: 160px minmax(260px, 1fr) auto;
+  align-items: start;
+  width: min(760px, 100%);
+  min-width: 0;
+}
+
+.proxy-skip-rules-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 116px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.history-delete-control {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 1fr)) auto;
+  align-items: end;
+  width: min(760px, 100%);
+  min-width: 0;
+}
+
+.history-delete-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.history-delete-field legend {
+  padding: 0;
+}
+
+.history-date-parts {
+  display: grid;
+  grid-template-columns: minmax(72px, 1fr) minmax(62px, 0.75fr) minmax(62px, 0.75fr);
+  gap: 8px;
+  min-width: 0;
+}
+
+.history-date-part {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.history-date-input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 10px;
+}
+
+.history-utc-now {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.scheduler-settings-item {
+  grid-template-columns: minmax(240px, 0.7fr) minmax(0, 1.3fr);
+}
+
+.scheduler-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.scheduler-group {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.scheduler-group legend {
+  padding: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.scheduler-group.is-disabled {
+  opacity: 0.52;
+}
+
+.scheduler-field {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.scheduler-field .number-input {
+  min-width: 0;
+  padding: 10px 12px;
+}
+
+.settings-item.has-disabled-select .compound-setting-control .select-input {
+  color: var(--muted);
+  background: var(--surface-muted);
+}
+

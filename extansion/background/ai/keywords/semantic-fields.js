@@ -1,0 +1,4 @@
+globalThis.ZeroLatencyAiKeywordSemanticFields = {
+  buildCandidateSemanticFieldEntries,
+  buildSiteSemanticFieldEntries,
+};

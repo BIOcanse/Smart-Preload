@@ -7,7 +7,15 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
-const scriptPath = path.join(repoRoot, "extansion", "settings", "app-updates.js");
+const scriptPaths = [
+  ["extansion", "settings", "app-updates", "constants.js"],
+  ["extansion", "settings", "app-updates", "version.js"],
+  ["extansion", "settings", "app-updates", "catalog.js"],
+  ["extansion", "settings", "app-updates", "service.js"],
+  ["extansion", "settings", "app-updates", "view.js"],
+  ["extansion", "settings", "app-updates", "controller.js"],
+  ["extansion", "settings", "app-updates.js"],
+].map((segments) => path.join(repoRoot, ...segments));
 
 const context = {
   console,
@@ -19,7 +27,9 @@ context.ZeroLatencyI18n = {
   },
 };
 vm.createContext(context);
-vm.runInContext(readFileSync(scriptPath, "utf8"), context, { filename: scriptPath });
+for (const scriptPath of scriptPaths) {
+  vm.runInContext(readFileSync(scriptPath, "utf8"), context, { filename: scriptPath });
+}
 
 const api = context.ZeroLatencySettingsAppUpdates;
 

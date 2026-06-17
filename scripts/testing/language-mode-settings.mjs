@@ -7,7 +7,52 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
-const i18nPath = path.join(repoRoot, "extansion", "shared", "i18n.js");
+const i18nPaths = [
+  ["extansion", "shared", "i18n", "constants.js"],
+  ["extansion", "shared", "i18n", "locale.js"],
+  ["extansion", "shared", "i18n", "messages.js"],
+  ["extansion", "shared", "i18n", "dom.js"],
+  ["extansion", "shared", "i18n.js"],
+].map((segments) => path.join(repoRoot, ...segments));
+const settingsUtilsPath = path.join(repoRoot, "extansion", "shared", "settings", "utils.js");
+const settingsSchemaSupportPaths = [
+  ["extansion", "shared", "settings", "schema", "localize.js"],
+  ["extansion", "shared", "settings", "schema", "constants.js"],
+  ["extansion", "shared", "settings", "schema", "options.js"],
+  ["extansion", "shared", "settings", "schema", "rule-cards.js"],
+].map((segments) => path.join(repoRoot, ...segments));
+const settingsSchemaPath = path.join(repoRoot, "extansion", "shared", "settings", "schema.js");
+const settingsDefaultsPath = path.join(repoRoot, "extansion", "shared", "settings", "defaults.js");
+const settingsRulesPath = path.join(repoRoot, "extansion", "shared", "settings", "rules.js");
+const settingsProxySkipPath = path.join(repoRoot, "extansion", "shared", "settings", "proxy-skip.js");
+const settingsAiPath = path.join(repoRoot, "extansion", "shared", "settings", "ai.js");
+const settingsEffectivePath = path.join(repoRoot, "extansion", "shared", "settings", "effective.js");
+const settingsNormalizeAppearanceLayoutPath = path.join(
+  repoRoot,
+  "extansion",
+  "shared",
+  "settings",
+  "normalize",
+  "appearance-layout.js"
+);
+const settingsNormalizePreloadPath = path.join(
+  repoRoot,
+  "extansion",
+  "shared",
+  "settings",
+  "normalize",
+  "preload.js"
+);
+const settingsNormalizeSchedulerPath = path.join(
+  repoRoot,
+  "extansion",
+  "shared",
+  "settings",
+  "normalize",
+  "scheduler.js"
+);
+const settingsNormalizePath = path.join(repoRoot, "extansion", "shared", "settings", "normalize.js");
+const settingsStoragePath = path.join(repoRoot, "extansion", "shared", "settings", "storage.js");
 const settingsPath = path.join(repoRoot, "extansion", "shared", "settings.js");
 
 const storedSettings = {
@@ -65,13 +110,56 @@ const context = {
 context.globalThis = context;
 
 vm.createContext(context);
-vm.runInContext(readFileSync(i18nPath, "utf8"), context, { filename: i18nPath });
+for (const i18nPath of i18nPaths) {
+  vm.runInContext(readFileSync(i18nPath, "utf8"), context, { filename: i18nPath });
+}
 
 const i18nState = await context.ZeroLatencyI18n.initialize();
 assert.equal(i18nState.languageMode, "zh_CN");
 assert.equal(i18nState.localeId, "zh_CN");
 assert.equal(context.ZeroLatencyI18n.t("languageAuto", [], ""), "自动");
 
+vm.runInContext(readFileSync(settingsUtilsPath, "utf8"), context, {
+  filename: settingsUtilsPath,
+});
+for (const settingsSchemaSupportPath of settingsSchemaSupportPaths) {
+  vm.runInContext(readFileSync(settingsSchemaSupportPath, "utf8"), context, {
+    filename: settingsSchemaSupportPath,
+  });
+}
+vm.runInContext(readFileSync(settingsSchemaPath, "utf8"), context, {
+  filename: settingsSchemaPath,
+});
+vm.runInContext(readFileSync(settingsDefaultsPath, "utf8"), context, {
+  filename: settingsDefaultsPath,
+});
+vm.runInContext(readFileSync(settingsRulesPath, "utf8"), context, {
+  filename: settingsRulesPath,
+});
+vm.runInContext(readFileSync(settingsProxySkipPath, "utf8"), context, {
+  filename: settingsProxySkipPath,
+});
+vm.runInContext(readFileSync(settingsAiPath, "utf8"), context, {
+  filename: settingsAiPath,
+});
+vm.runInContext(readFileSync(settingsEffectivePath, "utf8"), context, {
+  filename: settingsEffectivePath,
+});
+vm.runInContext(readFileSync(settingsNormalizeAppearanceLayoutPath, "utf8"), context, {
+  filename: settingsNormalizeAppearanceLayoutPath,
+});
+vm.runInContext(readFileSync(settingsNormalizePreloadPath, "utf8"), context, {
+  filename: settingsNormalizePreloadPath,
+});
+vm.runInContext(readFileSync(settingsNormalizeSchedulerPath, "utf8"), context, {
+  filename: settingsNormalizeSchedulerPath,
+});
+vm.runInContext(readFileSync(settingsNormalizePath, "utf8"), context, {
+  filename: settingsNormalizePath,
+});
+vm.runInContext(readFileSync(settingsStoragePath, "utf8"), context, {
+  filename: settingsStoragePath,
+});
 vm.runInContext(readFileSync(settingsPath, "utf8"), context, { filename: settingsPath });
 
 const settingsApi = context.ZeroLatencySettings;

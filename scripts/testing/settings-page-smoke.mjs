@@ -82,7 +82,7 @@ async function smokeBrowser(browser) {
 
   try {
     await mkdir(profileDir, { recursive: true });
-    await prepareExtensionUnderTest({
+    const extensionFixture = await prepareExtensionUnderTest({
       extensionDir,
       targetDir: extensionUnderTestDir,
     });
@@ -130,6 +130,7 @@ async function smokeBrowser(browser) {
     const snapshot = await waitForSettingsPageSnapshot(pageClient);
 
     assert.equal(snapshot.hasSettingsUi, true);
+    assert.equal(snapshot.hasTaskClient, true);
     assert.equal(snapshot.hasRuleCardsApi, true);
     assert.equal(snapshot.hasSettingsApi, true);
     assert.ok(snapshot.ruleCardCount >= 1, "settings rule cards did not render");
@@ -137,6 +138,8 @@ async function smokeBrowser(browser) {
     assert.ok(snapshot.navButtonCount >= 3, "settings nav did not render");
     assert.equal(snapshot.historyDeleteButtonPresent, true);
     assert.match(snapshot.historyUtcText, /UTC$/u);
+    assert.equal(snapshot.historyNativeDateInputCount, 0);
+    assert.equal(snapshot.historyDatePartInputCount, 6);
     assert.equal(snapshot.excludeHttpPagesPresent, true);
     assert.equal(snapshot.excludeHttpPagesChecked, true);
     assert.equal(snapshot.sideEffectSafetyGuardPresent, true);
@@ -154,6 +157,8 @@ async function smokeBrowser(browser) {
       phase: "ok",
       executablePath: browser.executablePath,
       extensionId,
+      extensionSourceRoot: extensionFixture.sourceRoot,
+      usedPackagedExtension: extensionFixture.usedPackaged,
       snapshot,
     };
   } catch (error) {
@@ -198,6 +203,8 @@ async function waitForSettingsPageSnapshot(pageClient) {
           hasSettingsApi: typeof globalThis.ZeroLatencySettings?.cloneSettings === "function",
           hasSettingsUi:
             typeof globalThis.ZeroLatencySettingsUi?.compactInlineSettingDescriptions === "function",
+          hasTaskClient:
+            typeof globalThis.ZeroLatencySettingsTaskClient?.waitForTask === "function",
           hasRuleCardsApi:
             typeof globalThis.ZeroLatencySettingsRuleCards?.renderRuleCardList === "function",
           navButtonCount: document.querySelectorAll(".settings-nav-item").length,
@@ -229,6 +236,10 @@ async function waitForSettingsPageSnapshot(pageClient) {
           historyDeleteButtonPresent: Boolean(document.getElementById("history-delete-button")),
           historyUtcText:
             document.getElementById("history-delete-current-utc")?.textContent?.trim() || "",
+          historyNativeDateInputCount:
+            document.querySelectorAll(".history-delete-control input[type='date']").length,
+          historyDatePartInputCount:
+            document.querySelectorAll(".history-delete-control .history-date-input").length,
         }))())`
       );
       lastSnapshot = JSON.parse(snapshotJson || "{}");
@@ -237,6 +248,7 @@ async function waitForSettingsPageSnapshot(pageClient) {
         lastSnapshot.readyState === "complete" &&
         lastSnapshot.hasSettingsApi &&
         lastSnapshot.hasSettingsUi &&
+        lastSnapshot.hasTaskClient &&
         lastSnapshot.hasRuleCardsApi &&
         lastSnapshot.ruleCardCount >= 1 &&
         lastSnapshot.helpIconCount >= 1 &&
@@ -251,6 +263,8 @@ async function waitForSettingsPageSnapshot(pageClient) {
         lastSnapshot.dangerousSiteSafetyGuardDisabled &&
         lastSnapshot.aiProviderOptionCount >= 1 &&
         lastSnapshot.aiModelSelectPresent &&
+        lastSnapshot.historyNativeDateInputCount === 0 &&
+        lastSnapshot.historyDatePartInputCount === 6 &&
         /UTC$/u.test(lastSnapshot.historyUtcText)
       ) {
         return lastSnapshot;

@@ -6,8 +6,37 @@ const sharedSource = await readFile(
   new URL("../../extansion/scripts/navigation/shared.js", import.meta.url),
   "utf8"
 );
+const sharedTextSource = await readFile(
+  new URL("../../extansion/scripts/navigation/shared/text.js", import.meta.url),
+  "utf8"
+);
+const sharedUrlSource = await readFile(
+  new URL("../../extansion/scripts/navigation/shared/url.js", import.meta.url),
+  "utf8"
+);
+const sharedFocusSource = await readFile(
+  new URL("../../extansion/scripts/navigation/shared/focus.js", import.meta.url),
+  "utf8"
+);
+const sharedSafetySource = await readFile(
+  new URL("../../extansion/scripts/navigation/shared/safety.js", import.meta.url),
+  "utf8"
+);
+const safetyRuleSources = await Promise.all(
+  [
+    "../../extansion/shared/preload-safety-rules/constants.js",
+    "../../extansion/shared/preload-safety-rules/url.js",
+    "../../extansion/shared/preload-safety-rules/decision.js",
+    "../../extansion/shared/preload-safety-rules/candidate.js",
+    "../../extansion/shared/preload-safety-rules.js",
+  ].map((filePath) => readFile(new URL(filePath, import.meta.url), "utf8"))
+);
 const candidateScanSource = await readFile(
   new URL("../../extansion/scripts/navigation/candidate-scan.js", import.meta.url),
+  "utf8"
+);
+const candidateScanLinksSource = await readFile(
+  new URL("../../extansion/scripts/navigation/candidate-scan/links.js", import.meta.url),
   "utf8"
 );
 
@@ -79,8 +108,28 @@ const sandbox = {
 sandbox.globalThis = sandbox;
 
 const context = vm.createContext(sandbox);
+for (const [index, source] of safetyRuleSources.entries()) {
+  vm.runInContext(source, context, {
+    filename: `preload-safety-rules-${index}.js`,
+  });
+}
 vm.runInContext(sharedSource, context, {
   filename: "shared.js",
+});
+vm.runInContext(sharedTextSource, context, {
+  filename: "shared/text.js",
+});
+vm.runInContext(sharedUrlSource, context, {
+  filename: "shared/url.js",
+});
+vm.runInContext(sharedFocusSource, context, {
+  filename: "shared/focus.js",
+});
+vm.runInContext(sharedSafetySource, context, {
+  filename: "shared/safety.js",
+});
+vm.runInContext(candidateScanLinksSource, context, {
+  filename: "candidate-scan/links.js",
 });
 vm.runInContext(candidateScanSource, context, {
   filename: "candidate-scan.js",

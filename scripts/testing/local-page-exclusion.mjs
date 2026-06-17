@@ -8,7 +8,25 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const scriptPaths = [
+  ["extansion", "shared", "settings", "utils.js"],
+  ["extansion", "shared", "settings", "schema", "localize.js"],
+  ["extansion", "shared", "settings", "schema", "constants.js"],
+  ["extansion", "shared", "settings", "schema", "options.js"],
+  ["extansion", "shared", "settings", "schema", "rule-cards.js"],
+  ["extansion", "shared", "settings", "schema.js"],
+  ["extansion", "shared", "settings", "defaults.js"],
+  ["extansion", "shared", "settings", "rules.js"],
+  ["extansion", "shared", "settings", "proxy-skip.js"],
+  ["extansion", "shared", "settings", "ai.js"],
+  ["extansion", "shared", "settings", "effective.js"],
+  ["extansion", "shared", "settings", "normalize", "appearance-layout.js"],
+  ["extansion", "shared", "settings", "normalize", "preload.js"],
+  ["extansion", "shared", "settings", "normalize", "scheduler.js"],
+  ["extansion", "shared", "settings", "normalize.js"],
+  ["extansion", "shared", "settings", "storage.js"],
   ["extansion", "shared", "settings.js"],
+  ["extansion", "background", "tracking", "url", "google.js"],
+  ["extansion", "background", "tracking", "url", "network.js"],
   ["extansion", "background", "tracking", "url", "model.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
 

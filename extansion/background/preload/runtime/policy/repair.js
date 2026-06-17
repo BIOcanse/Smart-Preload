@@ -43,7 +43,9 @@ async function repairPreloadEntries(preloadState, normalWindowId, preloadWindowI
       continue;
     }
 
-    for (const entry of Object.values(sourceRuntimeEntry.sourceTabRuntime.hiddenTabEntriesByUrl)) {
+    for (const entry of Object.values(
+      getSourceTabPreloadChannelStore(sourceRuntimeEntry.sourceTabRuntime, "hiddenTab")
+    )) {
       const liveTab = entry.tabId ? await getTabMaybe(entry.tabId) : null;
 
       if (!liveTab) {
@@ -80,9 +82,7 @@ async function repairPreloadEntries(preloadState, normalWindowId, preloadWindowI
       entry.loadedUrl = liveTab.url || entry.loadedUrl;
       entry.status = liveTab.status || entry.status;
       entry.updatedAt = new Date().toISOString();
-      sourceRuntimeEntry.sourceTabRuntime.updatedAt = entry.updatedAt;
-      sourceRuntimeEntry.normalWindowRuntime.updatedAt = entry.updatedAt;
-      preloadState.updatedAt = entry.updatedAt;
+      markSourceTabPreloadChannelsUpdated(preloadState, sourceRuntimeEntry, entry.updatedAt);
     }
   }
 
@@ -101,7 +101,9 @@ async function cleanupUntrackedTabsInPreloadWindow(normalWindowRuntime, preloadW
   const trackedTabIds = new Set();
 
   for (const sourceTabRuntime of Object.values(normalWindowRuntime?.sourceTabs || {})) {
-    for (const entry of Object.values(sourceTabRuntime?.hiddenTabEntriesByUrl || {})) {
+    for (const entry of Object.values(
+      getSourceTabPreloadChannelStore(sourceTabRuntime, "hiddenTab")
+    )) {
       const tabId = normalizePositiveInteger(entry?.tabId);
 
       if (tabId !== null) {

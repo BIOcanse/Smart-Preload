@@ -4,12 +4,12 @@
   const {
     OPENAI_COMPATIBLE_PROVIDERS,
     normalizeProviderId,
-    isLmStudioProvider,
-    shouldRequestJson,
-    resolveMaxTokens,
-    applyFiniteNumberParam,
-    isPlainObject,
   } = namespace;
+  const {
+    buildOpenAiCompatibleRequest,
+    buildGeminiRequest,
+    buildClaudeRequest,
+  } = globalThis.ZeroLatencyAiProviderRequestBuilders || {};
 
   function buildAiProviderRequest(settings, prompt, options = {}) {
     const promptText = typeof prompt === "string" ? prompt.trim() : "";
@@ -88,157 +88,6 @@
     }
 
     return null;
-  }
-
-  function buildOpenAiCompatibleRequest({
-    providerId,
-    modelId,
-    endpointUrl,
-    apiKey,
-    promptText,
-    requestParams,
-    responseFormat,
-  }) {
-    const headers = {
-      "content-type": "application/json",
-    };
-
-    if (apiKey && !isLmStudioProvider(providerId)) {
-      headers.authorization = `Bearer ${apiKey}`;
-    }
-
-    if (providerId === "openrouter") {
-      headers["x-title"] = "Smart Preload";
-    }
-
-    const body = {
-      model: modelId,
-      messages: [
-        {
-          role: "user",
-          content: promptText,
-        },
-      ],
-    };
-    applyCommonOpenAiCompatibleParams(body, requestParams);
-
-    if (shouldRequestJson(responseFormat, requestParams)) {
-      body.response_format = { type: "json_object" };
-    }
-
-    return {
-      providerId,
-      modelId,
-      url: endpointUrl,
-      headers,
-      body,
-    };
-  }
-
-  function buildGeminiRequest({
-    providerId,
-    modelId,
-    endpointUrl,
-    apiKey,
-    promptText,
-    requestParams,
-    responseFormat,
-  }) {
-    const generationConfig = {};
-    applyFiniteNumberParam(generationConfig, "temperature", requestParams?.temperature);
-
-    if (shouldRequestJson(responseFormat, requestParams)) {
-      generationConfig.responseMimeType =
-        typeof requestParams?.responseMimeType === "string" && requestParams.responseMimeType
-          ? requestParams.responseMimeType
-          : "application/json";
-    }
-
-    if (Number.isFinite(Number(requestParams?.thinkingBudget))) {
-      generationConfig.thinkingConfig = {
-        thinkingBudget: Math.max(0, Math.round(Number(requestParams.thinkingBudget))),
-      };
-    }
-
-    return {
-      providerId,
-      modelId,
-      url: endpointUrl.replace("{model}", encodeURIComponent(modelId)),
-      headers: {
-        "content-type": "application/json",
-        "x-goog-api-key": apiKey,
-      },
-      body: {
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: promptText }],
-          },
-        ],
-        generationConfig,
-      },
-    };
-  }
-
-  function buildClaudeRequest({
-    providerId,
-    modelId,
-    endpointUrl,
-    apiKey,
-    promptText,
-    requestParams,
-  }) {
-    const body = {
-      model: modelId,
-      messages: [
-        {
-          role: "user",
-          content: promptText,
-        },
-      ],
-    };
-    const maxTokens = resolveMaxTokens(requestParams);
-
-    if (maxTokens) {
-      body.max_tokens = maxTokens;
-    }
-
-    applyFiniteNumberParam(body, "temperature", requestParams?.temperature);
-
-    return {
-      providerId,
-      modelId,
-      url: endpointUrl,
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true",
-      },
-      body,
-    };
-  }
-
-  function applyCommonOpenAiCompatibleParams(body, requestParams) {
-    const maxTokens = resolveMaxTokens(requestParams);
-
-    applyFiniteNumberParam(body, "temperature", requestParams?.temperature);
-
-    if (maxTokens) {
-      body.max_tokens = maxTokens;
-    }
-
-    if (typeof requestParams?.reasoningEffort === "string" && requestParams.reasoningEffort) {
-      body.reasoning_effort = requestParams.reasoningEffort;
-    }
-
-    if (Object.prototype.hasOwnProperty.call(requestParams ?? {}, "enableThinking")) {
-      body.enable_thinking = Boolean(requestParams.enableThinking);
-    }
-
-    if (isPlainObject(requestParams?.reasoning)) {
-      body.reasoning = { ...requestParams.reasoning };
-    }
   }
 
   Object.assign(namespace, {

@@ -9,6 +9,8 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const scriptPaths = [
   ["extansion", "background", "shared", "base.js"],
+  ["extansion", "background", "tracking", "url", "google.js"],
+  ["extansion", "background", "tracking", "url", "network.js"],
   ["extansion", "background", "tracking", "url", "model.js"],
   ["extansion", "background", "preload", "state", "model.js"],
   ["extansion", "background", "preload", "state", "lookup", "normal-windows.js"],

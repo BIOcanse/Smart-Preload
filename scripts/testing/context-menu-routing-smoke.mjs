@@ -4,9 +4,9 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { swEval } from "./lib/cdp-client.mjs";
-import { waitForExtensionServiceWorker as waitForExtensionServiceWorkerTarget } from "./lib/cdp-discovery.mjs";
 import { startBrowserIsolationSite } from "./lib/browser-isolation-site.mjs";
 import { prepareExtensionUnderTest } from "./lib/extension-fixture.mjs";
+import { waitForZeroLatencyExtensionServiceWorker } from "./lib/extension-service-worker.mjs";
 import {
   buildExtensionBrowserArgs,
   closeBrowserByDebugPort,
@@ -448,13 +448,10 @@ function compactDebugEvents(events) {
 }
 
 async function waitForExtensionServiceWorker(debugPort, timeoutMs = 20000) {
-  return waitForExtensionServiceWorkerTarget({
+  return waitForZeroLatencyExtensionServiceWorker({
     debugPort,
     timeoutMs,
-    isTargetManifest: ({ permissions }) =>
-      permissions.includes("nativeMessaging") &&
-      permissions.includes("tabs") &&
-      permissions.includes("windows"),
+    requiredPermissions: ["nativeMessaging", "tabs", "windows"],
   });
 }
 

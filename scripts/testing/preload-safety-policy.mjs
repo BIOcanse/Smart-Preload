@@ -2,14 +2,34 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
-const policySource = await readFile(
-  new URL("../../extansion/background/preload/safety-policy.js", import.meta.url),
-  "utf8"
+const safetyRuleSources = await Promise.all(
+  [
+    "../../extansion/shared/preload-safety-rules/constants.js",
+    "../../extansion/shared/preload-safety-rules/url.js",
+    "../../extansion/shared/preload-safety-rules/decision.js",
+    "../../extansion/shared/preload-safety-rules/candidate.js",
+    "../../extansion/shared/preload-safety-rules.js",
+  ].map((filePath) => readFile(new URL(filePath, import.meta.url), "utf8"))
+);
+const policySources = await Promise.all(
+  [
+    "../../extansion/background/preload/safety-policy/normalize.js",
+    "../../extansion/background/preload/safety-policy/dangerous-site.js",
+    "../../extansion/background/preload/safety-policy/decision.js",
+    "../../extansion/background/preload/safety-policy.js",
+  ].map((filePath) => readFile(new URL(filePath, import.meta.url), "utf8"))
 );
 const context = vm.createContext({ URL, globalThis: {} });
-vm.runInContext(policySource, context, {
-  filename: "safety-policy.js",
-});
+for (const [index, source] of safetyRuleSources.entries()) {
+  vm.runInContext(source, context, {
+    filename: `preload-safety-rules-${index}.js`,
+  });
+}
+for (const [index, source] of policySources.entries()) {
+  vm.runInContext(source, context, {
+    filename: `safety-policy-${index}.js`,
+  });
+}
 
 const policy = context.globalThis.ZeroLatencyPreloadSafetyPolicy;
 

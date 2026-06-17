@@ -11,6 +11,8 @@
         "extension:open-settings",
         "native-app:update-status",
         "native-app:update-to-version",
+        "background-task:snapshot",
+        "background-task:get",
         "visit-graph:reset",
         "visit-graph:delete-history-range",
       ].includes(envelope.messageType)
@@ -34,6 +36,14 @@
       case "native-app:update-to-version":
         return envelope.context?.fromExtensionUi === true
           ? allowDecision("native-app-update-to-version")
+          : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
+      case "background-task:snapshot":
+        return envelope.context?.fromExtensionUi === true
+          ? allowDecision("background-task-snapshot")
+          : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
+      case "background-task:get":
+        return envelope.context?.fromExtensionUi === true
+          ? allowDecision("background-task-get")
           : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
       case "visit-graph:reset":
         return allowDecision("reset-graph");

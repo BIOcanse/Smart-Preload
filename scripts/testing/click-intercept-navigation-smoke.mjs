@@ -1,20 +1,14 @@
-import { spawn } from "node:child_process";
-import { createServer } from "node:http";
 import { mkdir, rm } from "node:fs/promises";
-import { existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { CdpClient, pageEval, swEval } from "./lib/cdp-client.mjs";
-import { waitForTarget, waitForExtensionServiceWorker as waitForExtensionServiceWorkerTarget } from "./lib/cdp-discovery.mjs";
-import { prepareExtensionUnderTest as copyExtensionFixture } from "./lib/extension-fixture.mjs";
+import { CdpClient, swEval } from "./lib/cdp-client.mjs";
+import { waitForTarget } from "./lib/cdp-discovery.mjs";
 import {
   findFirstExistingExecutable,
   getSharedPlaywrightChromiumPathCandidates,
 } from "./lib/browser-paths.mjs";
 import {
-  escapeHtml,
-  fetchJson,
   getEventName,
   getFreePort,
   rmWithRetry,
@@ -22,6 +16,18 @@ import {
   sleep,
   stripHash,
 } from "./lib/test-utils.mjs";
+import {
+  closeClickInterceptChrome,
+  launchClickInterceptChrome,
+  prepareClickInterceptExtension,
+  startClickInterceptServer,
+  waitForClickInterceptExtensionServiceWorker,
+} from "./lib/click-intercept-smoke-support.mjs";
+import {
+  dispatchLeftClick,
+  dispatchMouseMove,
+  waitForLinkPoint,
+} from "./lib/cdp-input-helpers.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,14 +61,20 @@ async function main() {
   const debugPort = await getFreePort();
   const scenarios = buildScenarioUrls(webPort);
   console.error(`[click-smoke] starting test server on ${webPort}`);
-  const server = await startTestServer(webPort, scenarios);
+  const server = await startClickInterceptServer(webPort, scenarios);
   console.error(`[click-smoke] launching chromium on debug port ${debugPort}`);
-  const chrome = launchChrome({ debugPort, scenarios });
+  const chrome = launchClickInterceptChrome({
+    chromiumPath,
+    debugPort,
+    extensionUnderTestDir,
+    profileDir,
+    scenarios,
+  });
   const clients = [];
 
   try {
     console.error("[click-smoke] waiting for extension service worker");
-    const serviceWorkerTarget = await waitForExtensionServiceWorker(debugPort);
+    const serviceWorkerTarget = await waitForClickInterceptExtensionServiceWorker(debugPort);
     const serviceWorker = serviceWorkerTarget.client;
     clients.push(serviceWorker);
 
@@ -101,7 +113,7 @@ async function main() {
     for (const client of clients.reverse()) {
       client.close();
     }
-    await closeChrome({ chrome, debugPort });
+    await closeClickInterceptChrome({ chrome, debugPort });
     server.close();
     await rmWithRetry(runRoot);
   }
@@ -137,7 +149,7 @@ async function runClickScenario({ debugPort, serviceWorker, scenario, clients })
   await page.send("Runtime.enable");
   await page.send("Page.enable");
   await page.send("Page.bringToFront");
-  const clickPoint = await waitForClickPoint(page);
+  const clickPoint = await waitForLinkPoint(page, "target-link");
   await dispatchMouseMove(page, clickPoint);
   await sleep(600);
   await dispatchMouseMove(page, {
@@ -159,7 +171,7 @@ async function runClickScenario({ debugPort, serviceWorker, scenario, clients })
 
   const beforeEventCount = await getDebugEventCount(serviceWorker);
 
-  await dispatchRealClick(page, clickPoint);
+  await dispatchLeftClick(page, clickPoint);
   console.error(`[click-smoke] ${scenario.id}: click dispatched`);
 
   const finalState = await waitForClickedTarget({
@@ -364,73 +376,6 @@ async function waitForClickedTarget({
   return lastState || { sourceExists: null, activeTab: null, tabs: [] };
 }
 
-async function waitForClickPoint(page, timeoutMs = 5000) {
-  const startedAt = Date.now();
-  let lastState = null;
-
-  while (Date.now() - startedAt < timeoutMs) {
-    lastState = await getClickPointState(page);
-    if (lastState?.found === true) {
-      return lastState;
-    }
-    await sleep(100);
-  }
-
-  throw new Error(`target-link missing: ${JSON.stringify(lastState)}`);
-}
-
-async function getClickPointState(page) {
-  return pageEval(page, () => {
-    const link = document.getElementById("target-link");
-    if (!link) {
-      return {
-        found: false,
-        href: location.href,
-        title: document.title,
-        readyState: document.readyState,
-        bodyText: document.body?.innerText?.slice(0, 300) || "",
-      };
-    }
-    const rect = link.getBoundingClientRect();
-    return {
-      found: true,
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2,
-      width: rect.width,
-      height: rect.height,
-      href: link.href,
-      target: link.target || "_self",
-    };
-  });
-}
-
-async function dispatchRealClick(page, point) {
-  await dispatchMouseMove(page, point);
-  await page.send("Input.dispatchMouseEvent", {
-    type: "mousePressed",
-    x: point.x,
-    y: point.y,
-    button: "left",
-    clickCount: 1,
-  });
-  await page.send("Input.dispatchMouseEvent", {
-    type: "mouseReleased",
-    x: point.x,
-    y: point.y,
-    button: "left",
-    clickCount: 1,
-  });
-}
-
-async function dispatchMouseMove(page, point) {
-  await page.send("Input.dispatchMouseEvent", {
-    type: "mouseMoved",
-    x: point.x,
-    y: point.y,
-    button: "none",
-  });
-}
-
 async function cleanupScenarioTabs(serviceWorker, { sourceTabId, targetUrl }) {
   await swEval(serviceWorker, async ({ sourceTabId, targetUrl }) => {
     const tabs = await chrome.tabs.query({});
@@ -486,176 +431,11 @@ async function waitForTabComplete(serviceWorker, tabId, timeoutMs = 12000) {
   throw new Error(`Timed out waiting for tab ${tabId} to complete`);
 }
 
-async function waitForExtensionServiceWorker(debugPort, timeoutMs = 20000) {
-  return waitForExtensionServiceWorkerTarget({
-    debugPort,
-    timeoutMs,
-    isTargetManifest: ({ permissions }) =>
-      permissions.includes("nativeMessaging") &&
-      permissions.includes("bookmarks") &&
-      permissions.includes("tabs") &&
-      permissions.includes("windows"),
-  });
-}
-
-function launchChrome({ debugPort, scenarios }) {
-  if (!chromiumPath || !existsSync(chromiumPath)) {
-    throw new Error("Playwright Chromium executable was not found.");
-  }
-
-  const resolverRules = [...new Set(scenarios.flatMap((scenario) => [
-    scenario.sourceHost,
-    scenario.targetHost,
-  ]))]
-    .map((host) => `MAP ${host} 127.0.0.1`)
-    .join(", ");
-  const args = [
-    `--user-data-dir=${profileDir}`,
-    `--remote-debugging-port=${debugPort}`,
-    `--disable-extensions-except=${extensionUnderTestDir}`,
-    `--load-extension=${extensionUnderTestDir}`,
-    "--enable-extensions",
-    "--enable-unsafe-extension-debugging",
-    `--host-resolver-rules=${resolverRules}`,
-    "--proxy-server=direct://",
-    "--proxy-bypass-list=*",
-    "--no-first-run",
-    "--no-sandbox",
-    "--no-default-browser-check",
-    "--disable-default-apps",
-    "--disable-sync",
-    "--disable-popup-blocking",
-    "--disable-features=Translate,AutofillServerCommunication,DisableLoadExtensionCommandLineSwitch",
-    "--window-size=1280,900",
-    `${scenarios[0].sourceUrl}?startup=1`,
-  ];
-
-  const child = spawn(chromiumPath, args, {
-    stdio: ["ignore", "pipe", "pipe"],
-    windowsHide: true,
-  });
-
-  child.stdout.on("data", (chunk) => process.stdout.write(chunk));
-  child.stderr.on("data", (chunk) => process.stderr.write(chunk));
-  return child;
-}
-
-async function closeChrome({ chrome, debugPort }) {
-  try {
-    const version = await fetchJson(`http://127.0.0.1:${debugPort}/json/version`);
-    if (version?.webSocketDebuggerUrl) {
-      const browser = await CdpClient.connect(version.webSocketDebuggerUrl);
-      try {
-        await browser.send("Browser.close");
-      } finally {
-        browser.close();
-      }
-    }
-  } catch (_error) {
-    // Fall back to terminating the launcher process below.
-  }
-
-  if (!chrome.killed) {
-    try {
-      chrome.kill();
-    } catch (_error) {
-      // Ignore process cleanup errors.
-    }
-  }
-
-  await waitForProcessExit(chrome, 5000);
-}
-
-async function waitForProcessExit(child, timeoutMs) {
-  if (child.exitCode !== null || child.signalCode !== null) {
-    return;
-  }
-
-  await Promise.race([
-    new Promise((resolve) => child.once("exit", resolve)),
-    sleep(timeoutMs),
-  ]);
-}
-
 async function prepareExtensionUnderTest() {
-  await copyExtensionFixture({
+  await prepareClickInterceptExtension({
     extensionDir,
     targetDir: extensionUnderTestDir,
   });
-}
-
-async function startTestServer(port, scenarios) {
-  const scenarioBySourcePath = new Map(
-    scenarios.map((scenario) => [`${scenario.sourceHost}/source/${scenario.id}`, scenario])
-  );
-  const scenarioByTargetPath = new Map(
-    scenarios.map((scenario) => [`${scenario.targetHost}/target/${scenario.id}`, scenario])
-  );
-
-  const server = createServer((request, response) => {
-    const requestUrl = new URL(request.url || "/", `http://${request.headers.host}`);
-    const host = (request.headers.host || "").split(":")[0];
-    const key = `${host}${requestUrl.pathname}`;
-    response.setHeader("Cache-Control", "no-store");
-
-    if (scenarioBySourcePath.has(key)) {
-      respondHtml(response, renderSourcePage(scenarioBySourcePath.get(key)));
-      return;
-    }
-
-    if (scenarioByTargetPath.has(key)) {
-      respondHtml(response, renderTargetPage(scenarioByTargetPath.get(key)));
-      return;
-    }
-
-    response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-    response.end("not found");
-  });
-
-  await new Promise((resolve) => server.listen(port, "127.0.0.1", resolve));
-  return server;
-}
-
-function renderSourcePage(scenario) {
-  const targetAttr = scenario.targetHint === "_blank" ? ' target="_blank"' : "";
-  return `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Source ${scenario.id}</title>
-    <style>
-      body { font-family: sans-serif; margin: 40px; }
-      a { display: inline-block; padding: 18px 24px; font-size: 20px; }
-    </style>
-  </head>
-  <body>
-    <main>
-      <h1>Source ${scenario.id}</h1>
-      <a id="target-link" href="${escapeHtml(scenario.targetUrl)}"${targetAttr}>Open target ${scenario.id}</a>
-    </main>
-  </body>
-</html>`;
-}
-
-function renderTargetPage(scenario) {
-  return `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Target ${scenario.id}</title>
-  </head>
-  <body>
-    <main>
-      <h1 id="target-marker">Target ${scenario.id}</h1>
-      <p>${escapeHtml(scenario.targetUrl)}</p>
-    </main>
-  </body>
-</html>`;
-}
-
-function respondHtml(response, html) {
-  response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-  response.end(html);
 }
 
 main().catch((error) => {

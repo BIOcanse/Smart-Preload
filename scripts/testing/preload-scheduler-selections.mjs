@@ -1,58 +1,14 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import path from "node:path";
-import vm from "node:vm";
-import { fileURLToPath } from "node:url";
+import { createPreloadSchedulerFixtures } from "./lib/preload-scheduler-fixtures.mjs";
+import { loadPreloadSchedulerVmContext } from "./lib/preload-scheduler-vm.mjs";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const repoRoot = path.resolve(__dirname, "..", "..");
-const scriptPaths = [
-  ["extansion", "shared", "settings.js"],
-  ["extansion", "background", "shared", "base.js"],
-  ["extansion", "background", "tracking", "url", "model.js"],
-  ["extansion", "background", "preload", "state", "model.js"],
-  ["extansion", "background", "preload", "state", "normalize", "entries.js"],
-  ["extansion", "background", "preload", "state", "normalize", "runtime.js"],
-  ["extansion", "background", "preload", "proxy-skip-policy.js"],
-  ["extansion", "background", "preload", "native-only-policy.js"],
-  ["extansion", "background", "preload", "scoring.js"],
-  ["extansion", "background", "preload", "prediction", "strategy", "flags.js"],
-  ["extansion", "background", "preload", "prediction", "strategy", "scenario.js"],
-  ["extansion", "background", "preload", "prediction", "strategy", "same-origin.js"],
-  ["extansion", "background", "preload", "prediction", "strategy", "cross-site-current-tab.js"],
-  ["extansion", "background", "preload", "prediction", "strategy", "cross-site-new-tab.js"],
-  ["extansion", "background", "preload", "prediction", "strategy-router.js"],
-  ["extansion", "background", "preload", "scheduler", "allocation.js"],
-  ["extansion", "background", "preload", "scheduler", "attention.js"],
-  ["extansion", "background", "preload", "scheduler", "selections.js"],
-].map((segments) => path.join(repoRoot, ...segments));
-
-const context = {
-  console,
-  Math,
-  Number,
-  Date,
-  URL,
-  navigator: {
-    hardwareConcurrency: 8,
-    deviceMemory: 8,
-    userAgent: "node-test",
-  },
-  BOOKMARK_PRELOAD_BUCKET_STARTUP_GOOGLE_SEARCH: "startupGoogleSearch",
-  BOOKMARK_PRELOAD_BUCKET_NEW_GOOGLE_SEARCH_TAB: "newGoogleSearchTab",
-};
-context.globalThis = context;
-context.ZeroLatencySupport = {
-  supportsHiddenTabPreloadRuntime: () => true,
-};
-vm.createContext(context);
-
-for (const scriptPath of scriptPaths) {
-  vm.runInContext(readFileSync(scriptPath, "utf8"), context, { filename: scriptPath });
-}
-
-context.settingsApi = context.ZeroLatencySettings;
+const context = loadPreloadSchedulerVmContext();
+const {
+  buildCandidateLink,
+  buildExpectedSchedulerScoreSum,
+  buildSnapshot,
+  buildTarget,
+} = createPreloadSchedulerFixtures(context);
 
 const {
   applyPreloadSchedulerCandidateSelection,
@@ -725,6 +681,29 @@ context.synchronizePrefetchEntriesForSourceTab = (state, windowId, tabId, target
   synchronizedSelections.push(["prefetch", windowId, tabId, targets.length]);
   return state;
 };
+context.ZeroLatencyPreloadDiff = {
+  async applySourceTabSelection({ preloadState, sourceWindowId, sourceTabId, selection }) {
+    let nextPreloadState = await context.synchronizePreloadsForSourceTab(
+      preloadState,
+      sourceWindowId,
+      sourceTabId,
+      selection.tabTargets
+    );
+    nextPreloadState = context.synchronizePrerenderEntriesForSourceTab(
+      nextPreloadState,
+      sourceWindowId,
+      sourceTabId,
+      selection.selectedTargets.filter((target) => target.strategy === "prerender")
+    );
+    nextPreloadState = context.synchronizePrefetchEntriesForSourceTab(
+      nextPreloadState,
+      sourceWindowId,
+      sourceTabId,
+      selection.selectedTargets.filter((target) => target.strategy === "prefetch")
+    );
+    return nextPreloadState;
+  },
+};
 rebuiltSlotLimits = null;
 const storedRescheduleResult = await rescheduleStoredPreloadSelections(rescheduleState, {
   settings,
@@ -872,60 +851,5 @@ assert.ok(
       target.strategy === "prefetch"
   )
 );
-
-function buildSnapshot({ sourceTabId, sourcePageUrl, hiddenScores, nativeScores, scoreSignals }) {
-  return context.normalizePreloadCandidateSelectionSnapshot({
-    sourceTabId,
-    sourceWindowId: 10,
-    sourcePageUrl,
-    updatedAt: "2026-01-01T00:00:00.000Z",
-    scoreSignals,
-    selectedTargets: [
-      ...hiddenScores.map((score, index) =>
-        buildTarget(sourceTabId, "hidden-tab", score, index)
-      ),
-      ...nativeScores.map((score, index) =>
-        buildTarget(sourceTabId, index % 2 === 0 ? "prerender" : "prefetch", score, index)
-      ),
-    ],
-  });
-}
-
-function buildTarget(sourceTabId, strategy, score, index, extra = {}) {
-  return {
-    url: `https://target.example/${sourceTabId}/${strategy}/${index}`,
-    nodeId: `https://target.example/${sourceTabId}`,
-    score,
-    targetHint: "_self",
-    strategy,
-    ...extra,
-  };
-}
-
-function buildCandidateLink(sourceTabId, strategy, index) {
-  return {
-    url: `https://target.example/${sourceTabId}/${strategy}/${index}`,
-    targetHint: "_self",
-    visibility: 100,
-    strategy,
-  };
-}
-
-function buildExpectedSchedulerScoreSum(scores) {
-  return (Array.isArray(scores) ? scores : []).reduce(
-    (sum, score) => sum + buildExpectedSchedulerLinkScoreSignal(score),
-    0
-  );
-}
-
-function buildExpectedSchedulerLinkScoreSignal(score) {
-  const normalizedScore = Number(score);
-
-  if (!Number.isFinite(normalizedScore) || normalizedScore <= 0) {
-    return 0;
-  }
-
-  return normalizedScore ** 1.5;
-}
 
 console.log("preload scheduler selection tests passed");

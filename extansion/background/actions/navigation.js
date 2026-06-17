@@ -58,54 +58,7 @@
         await recordTabReplacement(envelope.raw);
         return;
       case "handle-created-tab":
-        {
-          if (envelope.raw.openerTabId == null) {
-            return;
-          }
-
-          const fallbackActivation =
-            await globalThis.ZeroLatencyPreloadRuntimeManager.activateUpdatedTabNavigationTarget?.({
-              tabId: envelope.raw.id,
-              changeInfo: {
-                url: envelope.raw.pendingUrl || envelope.raw.url || "",
-              },
-              tab: envelope.raw,
-            });
-          const fallbackPayload = {
-            tabId: envelope.raw.id,
-            openerTabId: envelope.raw.openerTabId ?? null,
-            url: envelope.raw.pendingUrl || envelope.raw.url || "",
-            handled: fallbackActivation?.handled === true,
-            reason: fallbackActivation?.reason ?? null,
-            debug: fallbackActivation?.debug ?? null,
-            activatedTabId: fallbackActivation?.tabId ?? null,
-          };
-          globalThis.ZeroLatencyDiagnostics?.record?.(
-            "tracking.tab-created.contextmenu-preload-fallback",
-            fallbackPayload
-          );
-          globalThis.ZeroLatencyDebugEvents?.record?.(
-            "tracking.tab-created.contextmenu-preload-fallback",
-            fallbackPayload
-          );
-
-          if (fallbackActivation?.handled === true) {
-            const activationPayload = {
-              tabId: envelope.raw.id,
-              openerTabId: envelope.raw.openerTabId ?? null,
-              url: envelope.raw.pendingUrl || envelope.raw.url || "",
-              activatedTabId: fallbackActivation.tabId ?? null,
-            };
-            globalThis.ZeroLatencyDiagnostics?.record?.(
-              "tracking.tab-created.contextmenu-preload-activated",
-              activationPayload
-            );
-            globalThis.ZeroLatencyDebugEvents?.record?.(
-              "tracking.tab-created.contextmenu-preload-activated",
-              activationPayload
-            );
-          }
-        }
+        await handleCreatedTabContextMenuFallback(envelope.raw);
         return;
       case "handle-removed-tab":
         await handleRemovedTab(envelope.raw.tabId);
@@ -116,52 +69,8 @@
         );
         return;
       case "update-preloaded-tab-status":
-        {
-          const fallbackUrl =
-            envelope.raw.changeInfo?.url ?? envelope.raw.tab?.pendingUrl ?? envelope.raw.tab?.url ?? "";
-
-          if (envelope.raw.tab?.openerTabId != null) {
-            const fallbackActivation =
-              await globalThis.ZeroLatencyPreloadRuntimeManager.activateUpdatedTabNavigationTarget?.(
-                envelope.raw
-              );
-
-            const fallbackPayload = {
-              tabId: envelope.raw.tabId,
-              openerTabId: envelope.raw.tab?.openerTabId ?? null,
-              url: fallbackUrl,
-              handled: fallbackActivation?.handled === true,
-              reason: fallbackActivation?.reason ?? null,
-              debug: fallbackActivation?.debug ?? null,
-              activatedTabId: fallbackActivation?.tabId ?? null,
-            };
-            globalThis.ZeroLatencyDiagnostics?.record?.(
-              "tracking.tab-updated.contextmenu-preload-fallback",
-              fallbackPayload
-            );
-            globalThis.ZeroLatencyDebugEvents?.record?.(
-              "tracking.tab-updated.contextmenu-preload-fallback",
-              fallbackPayload
-            );
-
-            if (fallbackActivation?.handled === true) {
-              const activationPayload = {
-                tabId: envelope.raw.tabId,
-                openerTabId: envelope.raw.tab?.openerTabId ?? null,
-                url: fallbackUrl,
-                activatedTabId: fallbackActivation.tabId ?? null,
-              };
-              globalThis.ZeroLatencyDiagnostics?.record?.(
-                "tracking.tab-updated.contextmenu-preload-activated",
-                activationPayload
-              );
-              globalThis.ZeroLatencyDebugEvents?.record?.(
-                "tracking.tab-updated.contextmenu-preload-activated",
-                activationPayload
-              );
-              return;
-            }
-          }
+        if (await handleUpdatedTabContextMenuFallback(envelope.raw)) {
+          return;
         }
         await updatePreloadedTabStatus(
           envelope.raw.tabId,
@@ -217,48 +126,6 @@
       default:
         return;
     }
-  }
-
-  async function shouldSkipNavigationForExcludedSourceTab(tabId, reason) {
-    const normalizedTabId = normalizePositiveInteger(tabId);
-
-    if (normalizedTabId === null) {
-      return false;
-    }
-
-    const tab = await getTabMaybe(normalizedTabId);
-
-    if (
-      globalThis.ZeroLatencyPreloadIncognitoPolicy?.shouldExcludeIncognitoPreloadSource?.(
-        tab,
-        getEffectiveExtensionSettings()
-      ) === true
-    ) {
-      globalThis.ZeroLatencyDebugEvents?.record?.("navigation.skip-incognito-source", {
-        tabId: normalizedTabId,
-        windowId: tab?.windowId ?? null,
-        url: tab?.url || "",
-        reason,
-      });
-      return true;
-    }
-
-    if (
-      globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadSource?.(
-        tab,
-        getEffectiveExtensionSettings()
-      ) !== true
-    ) {
-      return false;
-    }
-
-    globalThis.ZeroLatencyDebugEvents?.record?.("navigation.skip-proxy-source", {
-      tabId: normalizedTabId,
-      windowId: tab?.windowId ?? null,
-      url: tab?.url || "",
-      reason,
-    });
-    return true;
   }
 
   globalThis.ZeroLatencyNavigationActions = {

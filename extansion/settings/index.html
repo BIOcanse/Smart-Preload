@@ -151,14 +151,94 @@
                 <p class="settings-item-warning is-info is-hidden" id="history-delete-status"></p>
               </div>
               <div class="settings-item-control history-delete-control">
-                <label class="history-delete-field" for="history-delete-start">
-                  <span data-i18n="settingsHistoryDeletionStartDate">Start UTC date</span>
-                  <input id="history-delete-start" class="text-input" type="date" />
-                </label>
-                <label class="history-delete-field" for="history-delete-end">
-                  <span data-i18n="settingsHistoryDeletionEndDate">End UTC date</span>
-                  <input id="history-delete-end" class="text-input" type="date" />
-                </label>
+                <fieldset class="history-delete-field">
+                  <legend data-i18n="settingsHistoryDeletionStartDate">Start UTC date</legend>
+                  <div class="history-date-parts">
+                    <label class="history-date-part" for="history-delete-start-year">
+                      <span data-i18n="settingsHistoryDeletionYear">Year</span>
+                      <input
+                        id="history-delete-start-year"
+                        class="text-input history-date-input"
+                        type="number"
+                        inputmode="numeric"
+                        min="1970"
+                        max="9999"
+                        placeholder="YYYY"
+                        autocomplete="off"
+                      />
+                    </label>
+                    <label class="history-date-part" for="history-delete-start-month">
+                      <span data-i18n="settingsHistoryDeletionMonth">Month</span>
+                      <input
+                        id="history-delete-start-month"
+                        class="text-input history-date-input"
+                        type="number"
+                        inputmode="numeric"
+                        min="1"
+                        max="12"
+                        placeholder="MM"
+                        autocomplete="off"
+                      />
+                    </label>
+                    <label class="history-date-part" for="history-delete-start-day">
+                      <span data-i18n="settingsHistoryDeletionDay">Day</span>
+                      <input
+                        id="history-delete-start-day"
+                        class="text-input history-date-input"
+                        type="number"
+                        inputmode="numeric"
+                        min="1"
+                        max="31"
+                        placeholder="DD"
+                        autocomplete="off"
+                      />
+                    </label>
+                  </div>
+                </fieldset>
+                <fieldset class="history-delete-field">
+                  <legend data-i18n="settingsHistoryDeletionEndDate">End UTC date</legend>
+                  <div class="history-date-parts">
+                    <label class="history-date-part" for="history-delete-end-year">
+                      <span data-i18n="settingsHistoryDeletionYear">Year</span>
+                      <input
+                        id="history-delete-end-year"
+                        class="text-input history-date-input"
+                        type="number"
+                        inputmode="numeric"
+                        min="1970"
+                        max="9999"
+                        placeholder="YYYY"
+                        autocomplete="off"
+                      />
+                    </label>
+                    <label class="history-date-part" for="history-delete-end-month">
+                      <span data-i18n="settingsHistoryDeletionMonth">Month</span>
+                      <input
+                        id="history-delete-end-month"
+                        class="text-input history-date-input"
+                        type="number"
+                        inputmode="numeric"
+                        min="1"
+                        max="12"
+                        placeholder="MM"
+                        autocomplete="off"
+                      />
+                    </label>
+                    <label class="history-date-part" for="history-delete-end-day">
+                      <span data-i18n="settingsHistoryDeletionDay">Day</span>
+                      <input
+                        id="history-delete-end-day"
+                        class="text-input history-date-input"
+                        type="number"
+                        inputmode="numeric"
+                        min="1"
+                        max="31"
+                        placeholder="DD"
+                        autocomplete="off"
+                      />
+                    </label>
+                  </div>
+                </fieldset>
                 <button
                   id="history-delete-button"
                   class="danger-button"
@@ -711,17 +791,74 @@
       </main>
     </div>
 
+    <script src="../shared/i18n/constants.js"></script>
+    <script src="../shared/i18n/locale.js"></script>
+    <script src="../shared/i18n/messages.js"></script>
+    <script src="../shared/i18n/dom.js"></script>
     <script src="../shared/i18n.js"></script>
+    <script src="../shared/ai-model-catalog/defaults.js"></script>
+    <script src="../shared/ai-model-catalog/providers.js"></script>
+    <script src="../shared/ai-model-catalog/lookup.js"></script>
     <script src="../shared/ai-model-catalog.js"></script>
+    <script src="../shared/lmstudio/constants.js"></script>
+    <script src="../shared/lmstudio/models.js"></script>
+    <script src="../shared/lmstudio/http.js"></script>
     <script src="../shared/lmstudio.js"></script>
+    <script src="../shared/settings/utils.js"></script>
+    <script src="../shared/settings/schema/localize.js"></script>
+    <script src="../shared/settings/schema/constants.js"></script>
+    <script src="../shared/settings/schema/options.js"></script>
+    <script src="../shared/settings/schema/rule-cards.js"></script>
+    <script src="../shared/settings/schema.js"></script>
+    <script src="../shared/settings/defaults.js"></script>
+    <script src="../shared/settings/rules.js"></script>
+    <script src="../shared/settings/proxy-skip.js"></script>
+    <script src="../shared/settings/ai.js"></script>
+    <script src="../shared/settings/effective.js"></script>
+    <script src="../shared/settings/normalize/appearance-layout.js"></script>
+    <script src="../shared/settings/normalize/preload.js"></script>
+    <script src="../shared/settings/normalize/scheduler.js"></script>
+    <script src="../shared/settings/normalize.js"></script>
+    <script src="../shared/settings/storage.js"></script>
     <script src="../shared/settings.js"></script>
+    <script src="ai-models/provider.js"></script>
+    <script src="ai-models/filters.js"></script>
+    <script src="ai-models/loader.js"></script>
+    <script src="ai-models/lmstudio-loader.js"></script>
+    <script src="ai-models/model-select.js"></script>
+    <script src="ai-models/options-refresh.js"></script>
+    <script src="ai-models/warning.js"></script>
+    <script src="ai-models/controls.js"></script>
     <script src="ai-models.js"></script>
+    <script src="task-client.js"></script>
+    <script src="app-updates/constants.js"></script>
+    <script src="app-updates/version.js"></script>
+    <script src="app-updates/catalog.js"></script>
+    <script src="app-updates/service.js"></script>
+    <script src="app-updates/view.js"></script>
+    <script src="app-updates/controller.js"></script>
     <script src="app-updates.js"></script>
+    <script src="elements.js"></script>
     <script src="ui-components.js"></script>
     <script src="rule-cards.js"></script>
+    <script src="rule-card-controller.js"></script>
+    <script src="history-deletion/range.js"></script>
+    <script src="history-deletion/task-runner.js"></script>
+    <script src="history-deletion/clock.js"></script>
     <script src="history-deletion.js"></script>
     <script src="performance-warning.js"></script>
     <script src="navigation.js"></script>
+    <script src="scheduler-form.js"></script>
+    <script src="base-form/read.js"></script>
+    <script src="base-form/sync.js"></script>
+    <script src="base-form/computed.js"></script>
+    <script src="base-form.js"></script>
+    <script src="language-controls.js"></script>
+    <script src="status-bar.js"></script>
+    <script src="page/context.js"></script>
+    <script src="page/render.js"></script>
+    <script src="page/events.js"></script>
+    <script src="page/actions.js"></script>
     <script src="settings.js"></script>
   </body>
 </html>

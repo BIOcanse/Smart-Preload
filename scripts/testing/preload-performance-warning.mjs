@@ -8,7 +8,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const scriptPaths = [
-  ["extansion", "background", "preload", "runtime", "policy", "watchdog.js"],
+  ["extansion", "background", "preload", "runtime", "policy", "performance-warning", "constants.js"],
+  ["extansion", "background", "preload", "runtime", "policy", "performance-warning", "normalize.js"],
+  ["extansion", "background", "preload", "runtime", "policy", "performance-warning", "pressure.js"],
+  ["extansion", "background", "preload", "runtime", "policy", "performance-warning", "samples.js"],
+  ["extansion", "background", "preload", "runtime", "policy", "performance-warning", "state.js"],
+  ["extansion", "background", "preload", "runtime", "policy", "performance-warning.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
 
 const context = {
