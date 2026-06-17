@@ -10,6 +10,7 @@
     const settingsHistoryDeletion = globalThis.ZeroLatencySettingsHistoryDeletion;
     const settingsPerformanceWarning = globalThis.ZeroLatencySettingsPerformanceWarning;
     const settingsNavigation = globalThis.ZeroLatencySettingsNavigation;
+    const settingsDialogs = globalThis.ZeroLatencySettingsDialogs;
     const settingsSchedulerForm = globalThis.ZeroLatencySettingsSchedulerForm;
     const settingsStatusBar = globalThis.ZeroLatencySettingsStatusBar;
     const settingsBaseForm = globalThis.ZeroLatencySettingsBaseForm;
@@ -72,6 +73,10 @@
         draftSettings = nextSettings;
       },
     });
+    const dialogs = settingsDialogs.create({
+      translate: t,
+      settingsApi,
+    });
 
     const context = {
       settingsApi,
@@ -81,6 +86,7 @@
       settingsHistoryDeletion,
       settingsPerformanceWarning,
       settingsNavigation,
+      dialogs,
       i18n,
       t,
       pageElements,

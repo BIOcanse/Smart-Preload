@@ -62,6 +62,12 @@
   "commonHelp": {
     "message": "Aide"
   },
+  "settingsDialogCancel": {
+    "message": "Annuler"
+  },
+  "settingsDialogConfirm": {
+    "message": "Confirmer"
+  },
   "popupCurrentPage": {
     "message": "Page actuelle"
   },
@@ -847,6 +853,24 @@
   },
   "settingsRealPreloadSensitiveSceneWarning": {
     "message": "Pour les examens en ligne, la banque et les workflows sensibles similaires, désactivez Real Preload ou mettez le préchargement en pause afin d’éviter des actions de page non souhaitées."
+  },
+  "settingsRealPreloadRiskDialogTitle": {
+    "message": "Real Preload peut encore présenter des risques"
+  },
+  "settingsRealPreloadRiskDialogBody": {
+    "message": "Même avec plusieurs protections, Real Preload ouvre toujours de vraies pages en arrière-plan et peut déclencher un comportement inattendu sur certains sites."
+  },
+  "settingsRealPreloadRiskDialogAdvice": {
+    "message": "Désactivez-le ou mettez le préchargement en pause pour les examens en ligne, la banque, le trading, les panneaux d’administration, les sites non sûrs et les autres workflows sensibles."
+  },
+  "settingsRealPreloadRiskCancel": {
+    "message": "Le garder désactivé"
+  },
+  "settingsRealPreloadRiskConfirm": {
+    "message": "Activer quand même"
+  },
+  "settingsRealPreloadRiskRejected": {
+    "message": "Real Preload reste désactivé."
   },
   "settingsSkipSensitivePages": {
     "message": "Ignorer les pages d’examen et bancaires"

@@ -1,0 +1,101 @@
+.settings-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(21, 29, 25, 0.36);
+}
+
+.settings-dialog {
+  display: grid;
+  gap: 18px;
+  width: min(560px, 100%);
+  padding: 22px;
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
+  background: var(--surface-strong);
+  box-shadow: 0 22px 60px rgba(35, 48, 41, 0.22);
+}
+
+.settings-dialog.is-warning {
+  border-color: #d6b469;
+}
+
+.settings-dialog-header,
+.settings-dialog-body {
+  display: grid;
+  gap: 10px;
+}
+
+.settings-dialog-title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.settings-dialog-body p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.settings-dialog-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.settings-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 0;
+}
+
+.settings-dialog-button {
+  min-width: 104px;
+}
+
+.danger-button {
+  border: 1px solid #b45b4f;
+  border-radius: 999px;
+  background: #9f4b42;
+  color: #ffffff;
+  padding: 11px 18px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.danger-button:hover {
+  background: #8d4038;
+}
+
+@media (max-width: 680px) {
+  .settings-dialog-backdrop {
+    align-items: end;
+    padding: 16px;
+  }
+
+  .settings-dialog {
+    border-radius: 16px;
+  }
+
+  .settings-dialog-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .settings-dialog-button,
+  .settings-dialog-actions .ghost-button,
+  .settings-dialog-actions .primary-button,
+  .settings-dialog-actions .danger-button {
+    width: 100%;
+  }
+}

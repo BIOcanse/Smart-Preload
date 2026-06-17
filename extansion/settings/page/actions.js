@@ -76,6 +76,11 @@
 
     context.baseForm.syncMutuallyExclusivePreloadModeControls(event?.target);
 
+    if (await shouldCancelRealPreloadEnable(context)) {
+      revertRealPreloadEnable(context);
+      return;
+    }
+
     if (event?.target === formElements.aiPredictionProvider) {
       aiControls?.syncProviderFieldsFromSettings?.(context.getDraftSettings());
     }
@@ -127,6 +132,16 @@
 
   async function saveCurrentSettings(context) {
     context.setDraftSettings(context.baseForm.readFormSettings());
+    if (
+      !(await context.dialogs.confirmRealPreloadEnableIfNeeded(
+        context.getSavedSettings(),
+        context.getDraftSettings()
+      ))
+    ) {
+      revertRealPreloadEnable(context);
+      return;
+    }
+
     context.statusBar.setStatus(
       context.t("commonSaving", [], "Saving"),
       context.t("settingsWritingLocalSettings", [], "Writing settings to local extension storage.")
@@ -150,6 +165,45 @@
       context.statusBar.setStatus(
         context.t("commonFailed", [], "Failed"),
         context.t("settingsCouldNotSave", [], "Could not save settings.")
+      );
+    }
+  }
+
+  async function shouldCancelRealPreloadEnable(context) {
+    context.setDraftSettings(context.baseForm.readFormSettings());
+    const draftSettings = context.getDraftSettings();
+
+    if (context.settingsApi.isRealPreloadEnabled?.(draftSettings) !== true) {
+      context.dialogs.resetRealPreloadRiskAcceptance();
+      return false;
+    }
+
+    const confirmed = await context.dialogs.confirmRealPreloadEnableIfNeeded(
+      context.getSavedSettings(),
+      draftSettings
+    );
+    return !confirmed;
+  }
+
+  function revertRealPreloadEnable(context) {
+    const { formElements } = context;
+    formElements.realPreloadEnabled.checked = false;
+    formElements.crossSiteCurrentTabSwap.checked = false;
+    context.dialogs.resetRealPreloadRiskAcceptance();
+    context.setDraftSettings(context.baseForm.readFormSettings());
+    const draftSettings = context.getDraftSettings();
+    renderSettingsPageForm(context, draftSettings);
+    context.baseForm.updateComputedState(draftSettings);
+    context.settingsNavigation?.queueSync?.();
+
+    if (context.statusBar.isDirty()) {
+      context.statusBar.setDirtyStatus(
+        context.t("settingsRealPreloadRiskRejected", [], "Real Preload remains off.")
+      );
+    } else {
+      context.statusBar.setStatus(
+        context.t("commonReady", [], "Ready"),
+        context.t("settingsNoUnsavedChanges", [], "No unsaved changes.")
       );
     }
   }
