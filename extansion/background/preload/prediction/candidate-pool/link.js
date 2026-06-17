@@ -51,7 +51,8 @@ function buildLinkPreloadCandidate({
         ...candidate,
         url: candidateUrl,
       },
-      candidateUrl
+      candidateUrl,
+      settings
     ) ?? null;
 
   if (realPreloadSafety?.skipPreload === true) {

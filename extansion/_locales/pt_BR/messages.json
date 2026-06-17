@@ -845,6 +845,15 @@
   "settingsRealPreloadDesc": {
     "message": "Usa abas reais ocultas em segundo plano para aproximar a latência percebida de zero. Fica desativado por padrão porque consome muita memória."
   },
+  "settingsRealPreloadSensitiveSceneWarning": {
+    "message": "Em provas online, bancos e fluxos sensíveis semelhantes, desative o Real Preload ou pause o pré-carregamento para evitar ações de página não intencionais."
+  },
+  "settingsSkipSensitivePages": {
+    "message": "Ignorar páginas de prova e banco"
+  },
+  "settingsSkipSensitivePagesDesc": {
+    "message": "Não pré-carrega páginas de origem nem links que correspondam a regras locais de prova, monitoramento e banco. Usa uma biblioteca separada de cenários sensíveis, não a lista de sites perigosos."
+  },
   "settingsSideEffectLinkSafetyGuard": {
     "message": "Prote??o para links com efeitos colaterais"
   },

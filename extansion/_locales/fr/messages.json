@@ -845,6 +845,15 @@
   "settingsRealPreloadDesc": {
     "message": "Utilise de vrais onglets masqués en arrière-plan pour tendre vers une latence perçue nulle. Désactivé par défaut car cela consomme beaucoup de mémoire."
   },
+  "settingsRealPreloadSensitiveSceneWarning": {
+    "message": "Pour les examens en ligne, la banque et les workflows sensibles similaires, désactivez Real Preload ou mettez le préchargement en pause afin d’éviter des actions de page non souhaitées."
+  },
+  "settingsSkipSensitivePages": {
+    "message": "Ignorer les pages d’examen et bancaires"
+  },
+  "settingsSkipSensitivePagesDesc": {
+    "message": "Ne précharge pas les pages sources ni les liens qui correspondent aux règles locales d’examen, de surveillance et de banque. Cette protection utilise une bibliothèque séparée des sites dangereux."
+  },
   "settingsSideEffectLinkSafetyGuard": {
     "message": "Protection des liens ? effets secondaires"
   },

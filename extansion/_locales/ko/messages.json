@@ -845,6 +845,15 @@
   "settingsRealPreloadDesc": {
     "message": "숨겨진 실제 백그라운드 탭을 사용해 체감 지연을 거의 0에 가깝게 줄입니다. 메모리를 많이 쓰기 때문에 기본값은 꺼짐입니다."
   },
+  "settingsRealPreloadSensitiveSceneWarning": {
+    "message": "온라인 시험, 은행 업무 같은 민감한 상황에서는 의도치 않은 페이지 동작을 피하기 위해 실제 프리로드를 끄거나 프리로드를 일시 중지하세요."
+  },
+  "settingsSkipSensitivePages": {
+    "message": "시험 및 은행 페이지 건너뛰기"
+  },
+  "settingsSkipSensitivePagesDesc": {
+    "message": "로컬 시험, 감독, 은행 규칙과 일치하는 원본 페이지나 링크는 프리로드하지 않습니다. 위험 사이트 목록이 아닌 별도의 민감 상황 라이브러리를 사용합니다."
+  },
   "settingsSideEffectLinkSafetyGuard": {
     "message": "부작용 링크 안전 보호"
   },

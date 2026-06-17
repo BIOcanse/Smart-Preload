@@ -43,6 +43,7 @@
       tabSiteSelectionLimit: 2,
       realPreloadEnabled: false,
       interactionPreloadEnabled: true,
+      skipSensitivePages: true,
       ignoreWaterfallDynamicLinks: true,
       excludeIncognitoWindows: true,
       proxySkip: {

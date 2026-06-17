@@ -13,6 +13,7 @@ function buildPreloadCandidateRegistrationResponse({
     contentScriptPolicy: {
       ignoreWaterfallDynamicLinks:
         runtimeSettings.preloading.ignoreWaterfallDynamicLinks !== false,
+      skipSensitivePages: runtimeSettings.preloading.skipSensitivePages !== false,
     },
     crossSiteCurrentTabSwapEnabled:
       isCrossSiteCurrentTabSwapStrategyEnabled(runtimeSettings),

@@ -845,6 +845,15 @@
   "settingsRealPreloadDesc": {
     "message": "使用隱藏的真實背景分頁，盡量把體感延遲降為 0。預設關閉，因為它會大量占用記憶體。"
   },
+  "settingsRealPreloadSensitiveSceneWarning": {
+    "message": "線上考試、銀行等敏感場景中，請關閉真實預載或暫停預載，以免觸發非預期頁面操作。"
+  },
+  "settingsSkipSensitivePages": {
+    "message": "跳過考試和銀行頁面"
+  },
+  "settingsSkipSensitivePagesDesc": {
+    "message": "不要預載命中本地考試、監考和銀行規則的來源頁面或連結。它使用獨立的敏感場景庫，不屬於危險網站清單。"
+  },
   "settingsSideEffectLinkSafetyGuard": {
     "message": "副作用連結安全保護"
   },

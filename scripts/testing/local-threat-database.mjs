@@ -16,12 +16,18 @@ const safetyRuleSources = await Promise.all(
     "../../extansion/shared/preload-safety-rules/decision.js",
     "../../extansion/shared/preload-safety-rules/candidate.js",
     "../../extansion/shared/preload-safety-rules.js",
+    "../../extansion/shared/sensitive-site-rules/constants.js",
+    "../../extansion/shared/sensitive-site-rules/url.js",
+    "../../extansion/shared/sensitive-site-rules/match.js",
+    "../../extansion/shared/sensitive-site-rules.js",
   ].map((filePath) => readFile(new URL(filePath, import.meta.url), "utf8"))
 );
 const safetyPolicySources = await Promise.all(
   [
+    "../../extansion/background/preload/sensitive-site-policy.js",
     "../../extansion/background/preload/safety-policy/normalize.js",
     "../../extansion/background/preload/safety-policy/dangerous-site.js",
+    "../../extansion/background/preload/safety-policy/sensitive-site.js",
     "../../extansion/background/preload/safety-policy/decision.js",
     "../../extansion/background/preload/safety-policy.js",
   ].map((filePath) => readFile(new URL(filePath, import.meta.url), "utf8"))

@@ -845,6 +845,15 @@
   "settingsRealPreloadDesc": {
     "message": "Usa pestañas reales ocultas en segundo plano para acercar la latencia percibida a cero. Está desactivado por defecto porque usa mucha memoria."
   },
+  "settingsRealPreloadSensitiveSceneWarning": {
+    "message": "En exámenes en línea, banca y flujos sensibles similares, desactiva Real Preload o pausa la precarga para evitar acciones de página no deseadas."
+  },
+  "settingsSkipSensitivePages": {
+    "message": "Omitir páginas de examen y banca"
+  },
+  "settingsSkipSensitivePagesDesc": {
+    "message": "No precarga páginas de origen ni enlaces que coincidan con reglas locales de exámenes, supervisión y banca. Usa una biblioteca de escenarios sensibles separada, no la lista de sitios peligrosos."
+  },
   "settingsSideEffectLinkSafetyGuard": {
     "message": "Protecci?n para enlaces con efectos secundarios"
   },

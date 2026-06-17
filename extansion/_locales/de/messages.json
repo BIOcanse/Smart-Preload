@@ -845,6 +845,15 @@
   "settingsRealPreloadDesc": {
     "message": "Verwendet versteckte echte Hintergrund-Tabs für nahezu null wahrgenommene Verzögerung. Standardmäßig aus, weil es viel Arbeitsspeicher belegt."
   },
+  "settingsRealPreloadSensitiveSceneWarning": {
+    "message": "Bei Online-Prüfungen, Banking und ähnlichen sensiblen Abläufen sollten Sie Real Preload ausschalten oder das Vorladen pausieren, um unbeabsichtigte Seitenaktionen zu vermeiden."
+  },
+  "settingsSkipSensitivePages": {
+    "message": "Prüfungs- und Bankseiten überspringen"
+  },
+  "settingsSkipSensitivePagesDesc": {
+    "message": "Quellseiten oder Links, die lokalen Prüfungs-, Proctoring- und Banking-Regeln entsprechen, werden nicht vorgeladen. Dafür wird eine separate Bibliothek für sensible Szenarien genutzt, nicht die Liste gefährlicher Websites."
+  },
   "settingsSideEffectLinkSafetyGuard": {
     "message": "Schutz f?r Links mit Nebenwirkungen"
   },

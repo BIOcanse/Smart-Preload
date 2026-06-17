@@ -14,6 +14,7 @@
       preloadingEnabled: getElement("preloading-enabled"),
       interactionPreloadEnabled: getElement("interaction-preload-enabled"),
       realPreloadEnabled: getElement("real-preload-enabled"),
+      skipSensitivePages: getElement("skip-sensitive-pages"),
       ignoreWaterfallDynamicLinks: getElement("ignore-waterfall-dynamic-links"),
       excludeIncognitoWindows: getElement("exclude-incognito-windows"),
       proxySkipEnabled: getElement("proxy-skip-enabled"),
