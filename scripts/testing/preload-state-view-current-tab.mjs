@@ -8,14 +8,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const scriptPaths = [
-  ["extansion", "background", "shared", "base.js"],
-  ["extansion", "background", "tracking", "url", "google.js"],
-  ["extansion", "background", "tracking", "url", "network.js"],
-  ["extansion", "background", "tracking", "url", "model.js"],
-  ["extansion", "background", "preload", "state", "model.js"],
-  ["extansion", "background", "preload", "state", "lookup", "normal-windows.js"],
-  ["extansion", "background", "preload", "state", "lookup", "source-tabs.js"],
-  ["extansion", "background", "preload", "state", "view.js"],
+  ["extension", "background", "shared", "base.js"],
+  ["extension", "background", "tracking", "url", "google.js"],
+  ["extension", "background", "tracking", "url", "network.js"],
+  ["extension", "background", "tracking", "url", "model.js"],
+  ["extension", "background", "preload", "state", "model.js"],
+  ["extension", "background", "preload", "state", "lookup", "normal-windows.js"],
+  ["extension", "background", "preload", "state", "lookup", "source-tabs.js"],
+  ["extension", "background", "preload", "state", "view.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
 
 const context = {

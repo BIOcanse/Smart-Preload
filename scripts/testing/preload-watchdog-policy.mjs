@@ -8,9 +8,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const scriptPaths = [
-  ["extansion", "background", "preload", "runtime", "policy", "watchdog", "preflight.js"],
+  ["extension", "background", "preload", "runtime", "policy", "watchdog", "preflight.js"],
   [
-    "extansion",
+    "extension",
     "background",
     "preload",
     "runtime",
@@ -18,8 +18,8 @@ const scriptPaths = [
     "watchdog",
     "heartbeat-pressure.js",
   ],
-  ["extansion", "background", "preload", "runtime", "policy", "watchdog", "maintenance.js"],
-  ["extansion", "background", "preload", "runtime", "policy", "watchdog.js"],
+  ["extension", "background", "preload", "runtime", "policy", "watchdog", "maintenance.js"],
+  ["extension", "background", "preload", "runtime", "policy", "watchdog.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
 
 const counters = {

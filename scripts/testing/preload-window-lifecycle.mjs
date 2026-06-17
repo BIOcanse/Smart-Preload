@@ -9,10 +9,10 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 
 const scriptPaths = [
-  ["extansion", "background", "preload", "runtime", "lifecycle", "windows", "warmup.js"],
-  ["extansion", "background", "preload", "runtime", "lifecycle", "windows", "removed.js"],
-  ["extansion", "background", "preload", "runtime", "lifecycle", "windows", "bounds.js"],
-  ["extansion", "background", "preload", "runtime", "lifecycle", "windows.js"],
+  ["extension", "background", "preload", "runtime", "lifecycle", "windows", "warmup.js"],
+  ["extension", "background", "preload", "runtime", "lifecycle", "windows", "removed.js"],
+  ["extension", "background", "preload", "runtime", "lifecycle", "windows", "bounds.js"],
+  ["extension", "background", "preload", "runtime", "lifecycle", "windows.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
 
 const removedWindowIds = [];

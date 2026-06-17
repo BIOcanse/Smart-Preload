@@ -11,7 +11,7 @@ const repoRoot = path.resolve(__dirname, "..", "..");
 const scriptPaths = [
   path.join(
     repoRoot,
-    "extansion",
+    "extension",
     "background",
     "core",
     "state",
@@ -21,7 +21,7 @@ const scriptPaths = [
   ),
   path.join(
     repoRoot,
-    "extansion",
+    "extension",
     "background",
     "core",
     "state",

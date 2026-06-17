@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const defaultOutputPath = path.join(
   repoRoot,
-  "extansion",
+  "extension",
   "background",
   "security",
   "local-threat-library.js"

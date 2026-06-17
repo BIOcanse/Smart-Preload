@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="extansion/images/icon-128.png" width="96" alt="Smart Preload logo">
+  <img src="extension/images/icon-128.png" width="96" alt="Smart Preload logo">
 </p>
 
 # Smart Preload / Zero Latency Web

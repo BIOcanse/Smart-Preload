@@ -4,25 +4,25 @@ import vm from "node:vm";
 
 const safetyRuleSources = await Promise.all(
   [
-    "../../extansion/shared/preload-safety-rules/constants.js",
-    "../../extansion/shared/preload-safety-rules/url.js",
-    "../../extansion/shared/preload-safety-rules/decision.js",
-    "../../extansion/shared/preload-safety-rules/candidate.js",
-    "../../extansion/shared/preload-safety-rules.js",
-    "../../extansion/shared/sensitive-site-rules/constants.js",
-    "../../extansion/shared/sensitive-site-rules/url.js",
-    "../../extansion/shared/sensitive-site-rules/match.js",
-    "../../extansion/shared/sensitive-site-rules.js",
+    "../../extension/shared/preload-safety-rules/constants.js",
+    "../../extension/shared/preload-safety-rules/url.js",
+    "../../extension/shared/preload-safety-rules/decision.js",
+    "../../extension/shared/preload-safety-rules/candidate.js",
+    "../../extension/shared/preload-safety-rules.js",
+    "../../extension/shared/sensitive-site-rules/constants.js",
+    "../../extension/shared/sensitive-site-rules/url.js",
+    "../../extension/shared/sensitive-site-rules/match.js",
+    "../../extension/shared/sensitive-site-rules.js",
   ].map((filePath) => readFile(new URL(filePath, import.meta.url), "utf8"))
 );
 const policySources = await Promise.all(
   [
-    "../../extansion/background/preload/sensitive-site-policy.js",
-    "../../extansion/background/preload/safety-policy/normalize.js",
-    "../../extansion/background/preload/safety-policy/dangerous-site.js",
-    "../../extansion/background/preload/safety-policy/sensitive-site.js",
-    "../../extansion/background/preload/safety-policy/decision.js",
-    "../../extansion/background/preload/safety-policy.js",
+    "../../extension/background/preload/sensitive-site-policy.js",
+    "../../extension/background/preload/safety-policy/normalize.js",
+    "../../extension/background/preload/safety-policy/dangerous-site.js",
+    "../../extension/background/preload/safety-policy/sensitive-site.js",
+    "../../extension/background/preload/safety-policy/decision.js",
+    "../../extension/background/preload/safety-policy.js",
   ].map((filePath) => readFile(new URL(filePath, import.meta.url), "utf8"))
 );
 const context = vm.createContext({

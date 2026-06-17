@@ -7,7 +7,7 @@ $ErrorActionPreference = "Stop"
 
 $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = [System.IO.Path]::GetFullPath((Join-Path $ScriptRoot ".."))
-$ExtensionRoot = Join-Path $RepoRoot "extansion"
+$ExtensionRoot = Join-Path $RepoRoot "extension"
 $AppRoot = Join-Path $RepoRoot "app"
 $DistRoot = Join-Path $RepoRoot "dist"
 $LicensePath = Join-Path $RepoRoot "LICENSE"
@@ -19,7 +19,7 @@ if ([string]::IsNullOrWhiteSpace($Version)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($Version)) {
-  throw "Version was not provided and could not be read from extansion\manifest.json."
+  throw "Version was not provided and could not be read from extension\manifest.json."
 }
 
 $DistFull = [System.IO.Path]::GetFullPath($DistRoot).TrimEnd('\') + '\'

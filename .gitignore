@@ -4,7 +4,7 @@ vs_BuildTools.exe
 app/.cargo/
 app/target/
 app/target-codex/
-extansion/wasm/visit-graph-engine/target/
+extension/wasm/visit-graph-engine/target/
 
 # Local debug/output scratch space
 docs/
@@ -13,7 +13,7 @@ dist/
 .claude/
 .codex-browser-profiles/
 scripts/debug-consent/
-extansion/shared/local-ai-test-config.js
+extension/shared/local-ai-test-config.js
 
 # OS/editor noise
 .DS_Store

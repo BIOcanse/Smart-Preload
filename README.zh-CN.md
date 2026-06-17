@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="extansion/images/icon-128.png" width="96" alt="智能预加载图标">
+  <img src="extension/images/icon-128.png" width="96" alt="智能预加载图标">
 </p>
 
 # 智能预加载 / Zero Latency Web

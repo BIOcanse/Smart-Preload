@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
-const runtimeActionsPath = path.join(repoRoot, "extansion", "background", "actions", "runtime.js");
+const runtimeActionsPath = path.join(repoRoot, "extension", "background", "actions", "runtime.js");
 const runtimeActionsSource = readFileSync(runtimeActionsPath, "utf8");
 
 function createHarness({ preloadingEnabled = true, servicePaused = false } = {}) {

@@ -22,7 +22,7 @@ import { fetchJson, getFreePort, rmWithRetry, sleep } from "./lib/test-utils.mjs
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
-const extensionDir = path.join(repoRoot, "extansion");
+const extensionDir = path.join(repoRoot, "extension");
 const runRoot = path.join(os.tmpdir(), `zlw-popup-ui-smoke-${process.pid}-${Date.now()}`);
 
 const browserGroups = [

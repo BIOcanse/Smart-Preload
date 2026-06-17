@@ -3,35 +3,35 @@ import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
 const modelSource = await readFile(
-  new URL("../../extansion/background/core/tasks/model.js", import.meta.url),
+  new URL("../../extension/background/core/tasks/model.js", import.meta.url),
   "utf8"
 );
 const storeUtilsSource = await readFile(
-  new URL("../../extansion/background/core/tasks/runtime/store/utils.js", import.meta.url),
+  new URL("../../extension/background/core/tasks/runtime/store/utils.js", import.meta.url),
   "utf8"
 );
 const storeLogsSource = await readFile(
-  new URL("../../extansion/background/core/tasks/runtime/store/logs.js", import.meta.url),
+  new URL("../../extension/background/core/tasks/runtime/store/logs.js", import.meta.url),
   "utf8"
 );
 const storeLifecycleSource = await readFile(
-  new URL("../../extansion/background/core/tasks/runtime/store/lifecycle.js", import.meta.url),
+  new URL("../../extension/background/core/tasks/runtime/store/lifecycle.js", import.meta.url),
   "utf8"
 );
 const storeSnapshotSource = await readFile(
-  new URL("../../extansion/background/core/tasks/runtime/store/snapshot.js", import.meta.url),
+  new URL("../../extension/background/core/tasks/runtime/store/snapshot.js", import.meta.url),
   "utf8"
 );
 const storeSource = await readFile(
-  new URL("../../extansion/background/core/tasks/runtime/store.js", import.meta.url),
+  new URL("../../extension/background/core/tasks/runtime/store.js", import.meta.url),
   "utf8"
 );
 const queueSource = await readFile(
-  new URL("../../extansion/background/core/tasks/runtime/queue.js", import.meta.url),
+  new URL("../../extension/background/core/tasks/runtime/queue.js", import.meta.url),
   "utf8"
 );
 const runtimeSource = await readFile(
-  new URL("../../extansion/background/core/tasks/runtime.js", import.meta.url),
+  new URL("../../extension/background/core/tasks/runtime.js", import.meta.url),
   "utf8"
 );
 
