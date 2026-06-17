@@ -62,6 +62,12 @@
   "commonHelp": {
     "message": "帮助"
   },
+  "settingsDialogCancel": {
+    "message": "取消"
+  },
+  "settingsDialogConfirm": {
+    "message": "確認"
+  },
   "popupCurrentPage": {
     "message": "当前页面"
   },
@@ -847,6 +853,24 @@
   },
   "settingsRealPreloadSensitiveSceneWarning": {
     "message": "線上考試、銀行等敏感場景中，請關閉真實預載或暫停預載，以免觸發非預期頁面操作。"
+  },
+  "settingsRealPreloadRiskDialogTitle": {
+    "message": "真實預載依舊可能存在風險"
+  },
+  "settingsRealPreloadRiskDialogBody": {
+    "message": "即便已加入多重安全防護，真實預載仍會開啟真實背景頁面，在某些網站上仍可能觸發非預期行為。"
+  },
+  "settingsRealPreloadRiskDialogAdvice": {
+    "message": "線上考試、銀行、交易、後台管理、危險網站和其他敏感流程中，請關閉真實預載或暫停預載。"
+  },
+  "settingsRealPreloadRiskCancel": {
+    "message": "保持關閉"
+  },
+  "settingsRealPreloadRiskConfirm": {
+    "message": "仍然開啟"
+  },
+  "settingsRealPreloadRiskRejected": {
+    "message": "真實預載保持關閉。"
   },
   "settingsSkipSensitivePages": {
     "message": "跳過考試和銀行頁面"

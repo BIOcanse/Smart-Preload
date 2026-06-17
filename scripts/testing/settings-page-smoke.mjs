@@ -130,6 +130,7 @@ async function smokeBrowser(browser) {
     const snapshot = await waitForSettingsPageSnapshot(pageClient);
 
     assert.equal(snapshot.hasSettingsUi, true);
+    assert.equal(snapshot.hasSettingsDialogs, true);
     assert.equal(snapshot.hasTaskClient, true);
     assert.equal(snapshot.hasRuleCardsApi, true);
     assert.equal(snapshot.hasSettingsApi, true);
@@ -156,6 +157,14 @@ async function smokeBrowser(browser) {
     assert.equal(snapshot.dangerousSiteSafetyGuardDisabled, true);
     assert.ok(snapshot.aiProviderOptionCount >= 1, "AI provider options did not render");
     assert.equal(snapshot.aiModelSelectPresent, true);
+    const dialogProbe = await probeRealPreloadRiskDialog(pageClient);
+    assert.equal(dialogProbe.opened, true);
+    assert.equal(dialogProbe.confirmed, false);
+    assert.equal(dialogProbe.removedAfterCancel, true);
+    assert.match(dialogProbe.title, /Real Preload|真实预加载|真實預載/u);
+    const toggleProbe = await probeRealPreloadRiskToggle(pageClient);
+    assert.equal(toggleProbe.dialogOpened, true);
+    assert.equal(toggleProbe.checkedAfterCancel, false);
 
     return {
       name: browser.name,
@@ -209,6 +218,8 @@ async function waitForSettingsPageSnapshot(pageClient) {
           hasSettingsApi: typeof globalThis.ZeroLatencySettings?.cloneSettings === "function",
           hasSettingsUi:
             typeof globalThis.ZeroLatencySettingsUi?.compactInlineSettingDescriptions === "function",
+          hasSettingsDialogs:
+            typeof globalThis.ZeroLatencySettingsDialogs?.create === "function",
           hasTaskClient:
             typeof globalThis.ZeroLatencySettingsTaskClient?.waitForTask === "function",
           hasRuleCardsApi:
@@ -259,6 +270,7 @@ async function waitForSettingsPageSnapshot(pageClient) {
         lastSnapshot.readyState === "complete" &&
         lastSnapshot.hasSettingsApi &&
         lastSnapshot.hasSettingsUi &&
+        lastSnapshot.hasSettingsDialogs &&
         lastSnapshot.hasTaskClient &&
         lastSnapshot.hasRuleCardsApi &&
         lastSnapshot.ruleCardCount >= 1 &&
@@ -299,6 +311,73 @@ async function waitForSettingsPageSnapshot(pageClient) {
       2
     )}; last error: ${lastError?.stack || lastError?.message || ""}`
   );
+}
+
+async function probeRealPreloadRiskToggle(pageClient) {
+  const resultJson = await runtimeEval(
+    pageClient,
+    `(async () => JSON.stringify(await (async () => {
+      const checkbox = document.getElementById("real-preload-enabled");
+      if (!checkbox) {
+        return { dialogOpened: false, checkedAfterCancel: null };
+      }
+      checkbox.checked = false;
+      checkbox.click();
+
+      const startedAt = Date.now();
+      let dialog = null;
+      while (Date.now() - startedAt < 3000) {
+        dialog = document.querySelector(".settings-dialog");
+        if (dialog) {
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+
+      const cancel = dialog?.querySelector(".settings-dialog-actions button");
+      cancel?.click();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+
+      return {
+        dialogOpened: Boolean(dialog),
+        checkedAfterCancel: document.getElementById("real-preload-enabled")?.checked === true,
+      };
+    })()))()`,
+    { timeoutMs: 10000 }
+  );
+  return JSON.parse(resultJson || "{}");
+}
+
+async function probeRealPreloadRiskDialog(pageClient) {
+  const resultJson = await runtimeEval(
+    pageClient,
+    `(async () => JSON.stringify(await (async () => {
+      const controller = globalThis.ZeroLatencySettingsDialogs.create({
+        translate: (_key, _substitutions, fallback) => fallback,
+        settingsApi: globalThis.ZeroLatencySettings,
+      });
+      const promise = controller.confirmRealPreloadEnableIfNeeded(
+        { preloading: { realPreloadEnabled: false } },
+        { preloading: { realPreloadEnabled: true } }
+      );
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const dialog = document.querySelector(".settings-dialog");
+      const title = dialog?.querySelector(".settings-dialog-title")?.textContent?.trim() || "";
+      const cancel = dialog?.querySelector(".settings-dialog-actions button");
+      cancel?.click();
+      const confirmed = await promise;
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      return {
+        opened: Boolean(dialog),
+        title,
+        confirmed,
+        removedAfterCancel: !document.querySelector(".settings-dialog"),
+      };
+    })()))()`,
+    { timeoutMs: 10000 }
+  );
+  return JSON.parse(resultJson || "{}");
 }
 
 function extractExtensionId(url) {

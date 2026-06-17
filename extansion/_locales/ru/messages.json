@@ -62,6 +62,12 @@
   "commonHelp": {
     "message": "Справка"
   },
+  "settingsDialogCancel": {
+    "message": "Отмена"
+  },
+  "settingsDialogConfirm": {
+    "message": "Подтвердить"
+  },
   "popupCurrentPage": {
     "message": "Текущая страница"
   },
@@ -847,6 +853,24 @@
   },
   "settingsRealPreloadSensitiveSceneWarning": {
     "message": "Для онлайн-экзаменов, банковских операций и похожих чувствительных сценариев отключайте Real Preload или ставьте предзагрузку на паузу, чтобы избежать нежелательных действий страницы."
+  },
+  "settingsRealPreloadRiskDialogTitle": {
+    "message": "Real Preload всё ещё может быть рискованным"
+  },
+  "settingsRealPreloadRiskDialogBody": {
+    "message": "Даже с несколькими защитами Real Preload всё равно открывает настоящие фоновые страницы и на некоторых сайтах может вызвать неожиданное поведение."
+  },
+  "settingsRealPreloadRiskDialogAdvice": {
+    "message": "Отключайте его или ставьте предзагрузку на паузу для онлайн-экзаменов, банков, торговли, админ-панелей, небезопасных сайтов и других чувствительных сценариев."
+  },
+  "settingsRealPreloadRiskCancel": {
+    "message": "Оставить выключенным"
+  },
+  "settingsRealPreloadRiskConfirm": {
+    "message": "Всё равно включить"
+  },
+  "settingsRealPreloadRiskRejected": {
+    "message": "Real Preload остаётся выключенным."
   },
   "settingsSkipSensitivePages": {
     "message": "Пропускать экзаменационные и банковские страницы"

@@ -62,6 +62,12 @@
   "commonHelp": {
     "message": "Hilfe"
   },
+  "settingsDialogCancel": {
+    "message": "Abbrechen"
+  },
+  "settingsDialogConfirm": {
+    "message": "Bestätigen"
+  },
   "popupCurrentPage": {
     "message": "Aktuelle Seite"
   },
@@ -847,6 +853,24 @@
   },
   "settingsRealPreloadSensitiveSceneWarning": {
     "message": "Bei Online-Prüfungen, Banking und ähnlichen sensiblen Abläufen sollten Sie Real Preload ausschalten oder das Vorladen pausieren, um unbeabsichtigte Seitenaktionen zu vermeiden."
+  },
+  "settingsRealPreloadRiskDialogTitle": {
+    "message": "Real Preload kann weiterhin riskant sein"
+  },
+  "settingsRealPreloadRiskDialogBody": {
+    "message": "Auch mit mehreren Sicherheitsmaßnahmen öffnet Real Preload echte Hintergrundseiten und kann auf manchen Websites unerwartetes Verhalten auslösen."
+  },
+  "settingsRealPreloadRiskDialogAdvice": {
+    "message": "Schalten Sie es bei Online-Prüfungen, Banking, Handel, Admin-Oberflächen, unsicheren Websites und anderen sensiblen Abläufen aus oder pausieren Sie das Vorladen."
+  },
+  "settingsRealPreloadRiskCancel": {
+    "message": "Aus lassen"
+  },
+  "settingsRealPreloadRiskConfirm": {
+    "message": "Trotzdem aktivieren"
+  },
+  "settingsRealPreloadRiskRejected": {
+    "message": "Real Preload bleibt ausgeschaltet."
   },
   "settingsSkipSensitivePages": {
     "message": "Prüfungs- und Bankseiten überspringen"
