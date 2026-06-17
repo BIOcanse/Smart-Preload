@@ -429,10 +429,16 @@
     "message": "KI-Vorhersageassistent"
   },
   "settingsAiPredictionAssistantDesc": {
-    "message": "W?hle einen externen KI-Anbieter und ein Modell f?r Keyword-Scoring. Die Erweiterung verwendet deinen API-Schl?ssel direkt; lokale Modelle werden nicht heruntergeladen oder verwaltet."
+    "message": "Wähle einen externen KI-Anbieter und ein Modell für Keyword-Scoring. Die Erweiterung verwendet deinen API-Schlüssel direkt; lokale Modelle werden nicht heruntergeladen oder verwaltet."
   },
+  "settingsAiModelSelectionAdvice": {
+    "message": "Standardmäßig zeigt die Liste die neuesten empfohlenen Modelle. Wechseln Sie zu Alle Modelle, wenn Sie ein bestimmtes Modell benötigen, und wählen Sie möglichst schnelle, günstige Text- oder Chatmodelle."
+  },
+  "settingsAiModelListModeRecommended": { "message": "Neueste empfohlene Modelle" },
+  "settingsAiModelListModeAll": { "message": "Alle Modelle" },
+  "settingsAiModelListRecommendedTitle": { "message": "{0} neueste empfohlene Modelle aus {1} geladenen Modellen werden angezeigt. Wechseln Sie zu Alle Modelle, um jede Option zu sehen." },
   "settingsAiProviderApiKey": {
-    "message": "Anbieter-API-Schl?ssel"
+    "message": "Anbieter-API-Schlüssel"
   },
   "settingsAiProviderApiKeyDesc": {
     "message": "Wird im lokalen Erweiterungsspeicher abgelegt und nur vom Service Worker verwendet, wenn KI-Vorhersage aktiv ist. LM Studio ignoriert dieses Feld."
@@ -441,7 +447,7 @@
     "message": "Anbieter-Endpunkt"
   },
   "settingsAiProviderEndpointDesc": {
-    "message": "Standardwert beibehalten, au?er du nutzt einen OpenAI-kompatiblen lokalen Dienst wie LM Studio."
+    "message": "Standardwert beibehalten, außer du nutzt einen OpenAI-kompatiblen lokalen Dienst wie LM Studio."
   },
   "settingsWindowWatchdog": {
     "message": "Fenster-Watchdog"
@@ -639,13 +645,13 @@
     "message": "Die Aufgabe wurde nicht abgeschlossen."
   },
   "settingsAiProviderMissingWarning": {
-    "message": "KI-Scoring bleibt deaktiviert, bis {0} ein Modell, einen Endpunkt und einen API-Schl?ssel hat."
+    "message": "KI-Scoring bleibt deaktiviert, bis {0} ein Modell, einen Endpunkt und einen API-Schlüssel hat."
   },
   "settingsAiKeyOptionalPlaceholder": {
-    "message": "Optional f?r lokale kompatible Endpunkte"
+    "message": "Optional für lokale kompatible Endpunkte"
   },
   "settingsAiLmStudioKeyIgnoredPlaceholder": {
-    "message": "F?r LM Studio ignoriert"
+    "message": "Für LM Studio ignoriert"
   },
   "settingsAiLmStudioLoadingModel": {
     "message": "LM-Studio-Modell wird geladen: {0}"
@@ -654,16 +660,22 @@
     "message": "Erforderlich"
   },
   "settingsAiEnterKeyToLoadModels": {
-    "message": "API-Schl?ssel eingeben, um Modelle zu laden"
+    "message": "API-Schlüssel eingeben, um Modelle zu laden"
   },
   "settingsAiLoadingModels": {
-    "message": "Unterst?tzte Modelle werden geladen..."
+    "message": "Modelle werden geladen..."
   },
   "settingsAiSelectProviderFirst": {
-    "message": "Zuerst Anbieter ausw?hlen"
+    "message": "Zuerst Anbieter auswählen"
   },
   "settingsAiNoSupportedModels": {
-    "message": "Keine unterst?tzten leichten Modelle gefunden"
+    "message": "Keine Modelle gefunden"
+  },
+  "settingsAiLoadingModelsGeneric": {
+    "message": "Modelle werden geladen..."
+  },
+  "settingsAiNoModelsFound": {
+    "message": "Keine Modelle gefunden"
   },
   "settingsHistoryDeletionTitle": {
     "message": "Verlaufseinträge löschen"

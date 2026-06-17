@@ -431,6 +431,12 @@
   "settingsAiPredictionAssistantDesc": {
     "message": "选择用于关键词评分的外部 AI 服务和模型。插件直接使用你的 API key，不下载或管理本地模型。"
   },
+  "settingsAiModelSelectionAdvice": {
+    "message": "預設顯示最新推薦模型套裝。需要指定模型時可切換到全部模型；盡可能選擇速度快、價格低的文字或聊天模型。"
+  },
+  "settingsAiModelListModeRecommended": { "message": "最新推薦模型" },
+  "settingsAiModelListModeAll": { "message": "全部模型" },
+  "settingsAiModelListRecommendedTitle": { "message": "已從 {1} 個已載入模型中顯示 {0} 個最新推薦模型。切換到全部模型可查看所有選項。" },
   "settingsAiProviderApiKey": {
     "message": "服务 API key"
   },
@@ -657,13 +663,19 @@
     "message": "输入 API key 以加载模型"
   },
   "settingsAiLoadingModels": {
-    "message": "正在加载支持的模型..."
+    "message": "正在載入模型..."
   },
   "settingsAiSelectProviderFirst": {
     "message": "请先选择服务"
   },
   "settingsAiNoSupportedModels": {
-    "message": "未找到支持的轻量模型"
+    "message": "找不到模型"
+  },
+  "settingsAiLoadingModelsGeneric": {
+    "message": "正在載入模型..."
+  },
+  "settingsAiNoModelsFound": {
+    "message": "找不到模型"
   },
   "settingsHistoryDeletionTitle": {
     "message": "刪除歷史記錄"

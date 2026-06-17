@@ -431,6 +431,12 @@
   "settingsAiPredictionAssistantDesc": {
     "message": "Выберите внешнего поставщика ИИ и модель для оценки ключевых слов. Расширение напрямую использует ваш API-ключ; оно не скачивает и не управляет локальными моделями."
   },
+  "settingsAiModelSelectionAdvice": {
+    "message": "По умолчанию список показывает последний набор рекомендуемых моделей. Переключитесь на Все модели, если нужна конкретная модель, и по возможности выбирайте быстрые и недорогие текстовые или чат-модели."
+  },
+  "settingsAiModelListModeRecommended": { "message": "Последние рекомендуемые модели" },
+  "settingsAiModelListModeAll": { "message": "Все модели" },
+  "settingsAiModelListRecommendedTitle": { "message": "Показано {0} последних рекомендуемых моделей из {1} загруженных. Переключитесь на Все модели, чтобы увидеть все варианты." },
   "settingsAiProviderApiKey": {
     "message": "API-ключ провайдера"
   },
@@ -657,13 +663,19 @@
     "message": "Введите API-ключ для загрузки моделей"
   },
   "settingsAiLoadingModels": {
-    "message": "Загрузка поддерживаемых моделей..."
+    "message": "Загрузка моделей..."
   },
   "settingsAiSelectProviderFirst": {
     "message": "Сначала выберите провайдера"
   },
   "settingsAiNoSupportedModels": {
-    "message": "Поддерживаемые легкие модели не найдены"
+    "message": "Модели не найдены"
+  },
+  "settingsAiLoadingModelsGeneric": {
+    "message": "Загрузка моделей..."
+  },
+  "settingsAiNoModelsFound": {
+    "message": "Модели не найдены"
   },
   "settingsHistoryDeletionTitle": {
     "message": "Удаление записей истории"

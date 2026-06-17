@@ -431,6 +431,12 @@
   "settingsAiPredictionAssistantDesc": {
     "message": "키워드 점수 계산에 사용할 외부 AI 제공자와 모델을 선택합니다. 확장 프로그램은 API 키를 직접 사용하며 로컬 모델을 다운로드하거나 관리하지 않습니다."
   },
+  "settingsAiModelSelectionAdvice": {
+    "message": "기본적으로 최신 추천 모델 세트를 표시합니다. 특정 모델이 필요하면 모든 모델로 전환하고, 가능하면 빠르고 저렴한 텍스트 또는 채팅 모델을 선택하세요."
+  },
+  "settingsAiModelListModeRecommended": { "message": "최신 추천 모델" },
+  "settingsAiModelListModeAll": { "message": "모든 모델" },
+  "settingsAiModelListRecommendedTitle": { "message": "불러온 모델 {1}개 중 최신 추천 모델 {0}개를 표시합니다. 모든 옵션을 보려면 모든 모델로 전환하세요." },
   "settingsAiProviderApiKey": {
     "message": "공급자 API 키"
   },
@@ -657,13 +663,19 @@
     "message": "모델을 로드하려면 API 키를 입력하세요"
   },
   "settingsAiLoadingModels": {
-    "message": "지원 모델 로드 중..."
+    "message": "모델을 불러오는 중..."
   },
   "settingsAiSelectProviderFirst": {
     "message": "먼저 공급자를 선택하세요"
   },
   "settingsAiNoSupportedModels": {
-    "message": "지원되는 경량 모델을 찾을 수 없습니다"
+    "message": "모델을 찾을 수 없음"
+  },
+  "settingsAiLoadingModelsGeneric": {
+    "message": "모델을 불러오는 중..."
+  },
+  "settingsAiNoModelsFound": {
+    "message": "모델을 찾을 수 없음"
   },
   "settingsHistoryDeletionTitle": {
     "message": "기록 삭제"

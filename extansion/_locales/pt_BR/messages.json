@@ -426,11 +426,17 @@
     "message": "Peso do áudio"
   },
   "settingsAiPredictionAssistant": {
-    "message": "Assistente de previs?o por IA"
+    "message": "Assistente de previsão por IA"
   },
   "settingsAiPredictionAssistantDesc": {
     "message": "Escolha um provedor externo de IA e um modelo para pontuação de palavras-chave. A extensão usa sua chave de API diretamente; ela não baixa nem gerencia modelos locais."
   },
+  "settingsAiModelSelectionAdvice": {
+    "message": "Por padrão, a lista mostra o conjunto mais recente de modelos recomendados. Mude para Todos os modelos se precisar de um modelo específico e prefira modelos de texto ou chat rápidos e baratos."
+  },
+  "settingsAiModelListModeRecommended": { "message": "Modelos recomendados recentes" },
+  "settingsAiModelListModeAll": { "message": "Todos os modelos" },
+  "settingsAiModelListRecommendedTitle": { "message": "Mostrando {0} modelos recomendados recentes de {1} modelos carregados. Mude para Todos os modelos para ver todas as opções." },
   "settingsAiProviderApiKey": {
     "message": "Chave de API do provedor"
   },
@@ -651,19 +657,25 @@
     "message": "Carregando modelo do LM Studio: {0}"
   },
   "settingsAiKeyRequiredPlaceholder": {
-    "message": "Obrigat?rio"
+    "message": "Obrigatório"
   },
   "settingsAiEnterKeyToLoadModels": {
     "message": "Insira uma chave de API para carregar modelos"
   },
   "settingsAiLoadingModels": {
-    "message": "Carregando modelos compat?veis..."
+    "message": "Carregando modelos..."
   },
   "settingsAiSelectProviderFirst": {
     "message": "Selecione um provedor primeiro"
   },
   "settingsAiNoSupportedModels": {
-    "message": "Nenhum modelo leve compat?vel encontrado"
+    "message": "Nenhum modelo encontrado"
+  },
+  "settingsAiLoadingModelsGeneric": {
+    "message": "Carregando modelos..."
+  },
+  "settingsAiNoModelsFound": {
+    "message": "Nenhum modelo encontrado"
   },
   "settingsHistoryDeletionTitle": {
     "message": "Excluir registros do histórico"

@@ -426,16 +426,22 @@
     "message": "Peso de audio"
   },
   "settingsAiPredictionAssistant": {
-    "message": "Asistente de predicci?n con IA"
+    "message": "Asistente de predicción con IA"
   },
   "settingsAiPredictionAssistantDesc": {
-    "message": "Elige un proveedor de IA externo y un modelo para puntuar palabras clave. La extensi?n usa tu clave API directamente; no descarga ni administra modelos locales."
+    "message": "Elige un proveedor de IA externo y un modelo para puntuar palabras clave. La extensión usa tu clave API directamente; no descarga ni administra modelos locales."
   },
+  "settingsAiModelSelectionAdvice": {
+    "message": "De forma predeterminada, la lista muestra el conjunto de modelos recomendados más reciente. Cambia a Todos los modelos si necesitas uno específico y prioriza modelos de texto o chat rápidos y económicos."
+  },
+  "settingsAiModelListModeRecommended": { "message": "Modelos recomendados recientes" },
+  "settingsAiModelListModeAll": { "message": "Todos los modelos" },
+  "settingsAiModelListRecommendedTitle": { "message": "Se muestran {0} modelos recomendados recientes de {1} modelos cargados. Cambia a Todos los modelos para ver todas las opciones." },
   "settingsAiProviderApiKey": {
     "message": "Clave API del proveedor"
   },
   "settingsAiProviderApiKeyDesc": {
-    "message": "Se guarda en el almacenamiento local de la extensi?n y solo la usa el service worker cuando la predicci?n con IA est? activada. LM Studio ignora este campo."
+    "message": "Se guarda en el almacenamiento local de la extensión y solo la usa el service worker cuando la predicción con IA está activada. LM Studio ignora este campo."
   },
   "settingsAiProviderEndpoint": {
     "message": "Endpoint del proveedor"
@@ -576,7 +582,7 @@
     "message": "Eliminando el modelo seleccionado y limpiando el runtime port?til si no se usa."
   },
   "settingsAiModelActionFailed": {
-    "message": "Fall? la acci?n del modelo de IA."
+    "message": "Falló la acción del modelo de IA."
   },
   "settingsModelStateUpdatedDirty": {
     "message": "Estado del modelo actualizado. A?n hay otros cambios sin guardar pendientes."
@@ -639,7 +645,7 @@
     "message": "La tarea no termin?."
   },
   "settingsAiProviderMissingWarning": {
-    "message": "La puntuaci?n con IA seguir? desactivada hasta que {0} tenga modelo, endpoint y clave API."
+    "message": "La puntuación con IA seguirá desactivada hasta que {0} tenga modelo, endpoint y clave API."
   },
   "settingsAiKeyOptionalPlaceholder": {
     "message": "Opcional para endpoints locales compatibles"
@@ -657,13 +663,19 @@
     "message": "Introduce una clave API para cargar modelos"
   },
   "settingsAiLoadingModels": {
-    "message": "Cargando modelos compatibles..."
+    "message": "Cargando modelos..."
   },
   "settingsAiSelectProviderFirst": {
     "message": "Selecciona primero un proveedor"
   },
   "settingsAiNoSupportedModels": {
-    "message": "No se encontraron modelos ligeros compatibles"
+    "message": "No se encontraron modelos"
+  },
+  "settingsAiLoadingModelsGeneric": {
+    "message": "Cargando modelos..."
+  },
+  "settingsAiNoModelsFound": {
+    "message": "No se encontraron modelos"
   },
   "settingsHistoryDeletionTitle": {
     "message": "Eliminar registros del historial"

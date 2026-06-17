@@ -37,6 +37,7 @@
       schedulerAttentionMediaWeight: getElement("scheduler-attention-media-weight"),
       schedulerAttentionAudioWeight: getElement("scheduler-attention-audio-weight"),
       aiPredictionProvider: getElement("ai-prediction-provider"),
+      aiModelListMode: getElement("ai-model-list-mode"),
       aiPredictionModel: getElement("ai-prediction-model"),
       aiProviderApiKey: getElement("ai-provider-api-key"),
       aiProviderEndpoint: getElement("ai-provider-endpoint"),

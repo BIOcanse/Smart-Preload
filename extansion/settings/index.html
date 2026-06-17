@@ -590,10 +590,18 @@
                   Choose an external AI provider and model for keyword scoring. The extension uses
                   your API key directly; it does not download or manage local models.
                 </p>
+                <p class="settings-item-warning is-info" data-i18n="settingsAiModelSelectionAdvice">
+                  Choose a fast, inexpensive text or chat model when possible. Advanced models are
+                  not hidden, so slower or more expensive choices may increase latency and cost.
+                </p>
                 <p class="settings-item-warning is-hidden" id="ai-prediction-mismatch-warning"></p>
               </div>
               <div class="settings-item-control compound-setting-control">
                 <select id="ai-prediction-provider" class="select-input"></select>
+                <select id="ai-model-list-mode" class="select-input">
+                  <option value="recommended" data-i18n="settingsAiModelListModeRecommended">Latest recommended models</option>
+                  <option value="all" data-i18n="settingsAiModelListModeAll">All models</option>
+                </select>
                 <select id="ai-prediction-model" class="select-input" disabled></select>
                 <label class="switch">
                   <input id="ai-prediction-enabled" type="checkbox" />
@@ -842,6 +850,7 @@
     <script src="../shared/settings.js"></script>
     <script src="ai-models/provider.js"></script>
     <script src="ai-models/filters.js"></script>
+    <script src="ai-models/recommendations.js"></script>
     <script src="ai-models/loader.js"></script>
     <script src="ai-models/lmstudio-loader.js"></script>
     <script src="ai-models/model-select.js"></script>
