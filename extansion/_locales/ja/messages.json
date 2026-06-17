@@ -431,6 +431,12 @@
   "settingsAiPredictionAssistantDesc": {
     "message": "キーワードスコアリングに使う外部AIプロバイダーとモデルを選択します。拡張機能はAPIキーを直接使用し、ローカルモデルのダウンロードや管理は行いません。"
   },
+  "settingsAiModelSelectionAdvice": {
+    "message": "既定では最新の推奨モデルセットを表示します。特定のモデルが必要な場合はすべてのモデルに切り替え、可能な限り高速で低コストのテキストまたはチャットモデルを選択してください。"
+  },
+  "settingsAiModelListModeRecommended": { "message": "最新の推奨モデル" },
+  "settingsAiModelListModeAll": { "message": "すべてのモデル" },
+  "settingsAiModelListRecommendedTitle": { "message": "読み込んだ {1} 個のモデルから最新の推奨モデル {0} 個を表示しています。すべての候補を見るには、すべてのモデルに切り替えてください。" },
   "settingsAiProviderApiKey": {
     "message": "プロバイダーAPIキー"
   },
@@ -657,13 +663,19 @@
     "message": "モデルを読み込むにはAPIキーを入力してください"
   },
   "settingsAiLoadingModels": {
-    "message": "対応モデルを読み込み中..."
+    "message": "モデルを読み込み中..."
   },
   "settingsAiSelectProviderFirst": {
     "message": "先にプロバイダーを選択してください"
   },
   "settingsAiNoSupportedModels": {
-    "message": "対応する軽量モデルが見つかりません"
+    "message": "モデルが見つかりません"
+  },
+  "settingsAiLoadingModelsGeneric": {
+    "message": "モデルを読み込み中..."
+  },
+  "settingsAiNoModelsFound": {
+    "message": "モデルが見つかりません"
   },
   "settingsHistoryDeletionTitle": {
     "message": "履歴レコードの削除"

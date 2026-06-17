@@ -19,7 +19,7 @@
       return {
         status: "missing-key",
         models: [],
-        message: "Enter an API key to load supported models.",
+        message: "Enter an API key to load models.",
       };
     }
 
@@ -28,7 +28,7 @@
     if (!request) {
       return {
         status: "catalog",
-        models: modelFilters.filterAndSortBasicModels(catalogModels, providerId, catalogModels),
+        models: modelFilters.filterAndSortProviderModels(catalogModels, providerId, catalogModels),
         message: "Model listing is not available for this provider.",
       };
     }
@@ -47,7 +47,7 @@
 
       const parsed = responseText ? JSON.parse(responseText) : {};
       const remoteModels = normalizeModelListResponse(providerId, parsed);
-      const models = modelFilters.filterAndSortBasicModels(
+      const models = modelFilters.filterAndSortProviderModels(
         remoteModels,
         providerId,
         catalogModels
@@ -58,13 +58,13 @@
         models,
         message:
           models.length > 0
-            ? "Loaded models supported by the current key."
-            : "No lightweight models were returned by this provider.",
+            ? "Loaded models available to the current key."
+            : "No models were returned by this provider.",
       };
     } catch (error) {
       return {
         status: "fallback",
-        models: modelFilters.filterAndSortBasicModels(catalogModels, providerId, catalogModels),
+        models: modelFilters.filterAndSortProviderModels(catalogModels, providerId, catalogModels),
         message: `Could not load provider models; showing curated presets. ${
           error instanceof Error ? error.message : String(error)
         }`,
@@ -158,7 +158,7 @@
 
   globalThis.ZeroLatencySettingsAiModels = {
     loadProviderModelOptions,
-    filterAndSortBasicModels: modelFilters.filterAndSortBasicModels,
+    filterAndSortProviderModels: modelFilters.filterAndSortProviderModels,
     isLmStudioProvider: providerTools.isLmStudioProvider,
   };
 })();

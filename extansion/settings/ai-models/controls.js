@@ -95,6 +95,9 @@
         enabled: elements.aiPredictionEnabled.checked,
         providerId,
         modelId: aiModelIds[providerId],
+        modelListMode:
+          settingsApi?.normalizeAiModelListMode?.(elements.aiModelListMode?.value) ||
+          "recommended",
         apiKeys: aiApiKeys,
         modelIds: aiModelIds,
         endpointUrls: aiEndpointUrls,
@@ -109,6 +112,9 @@
         settingsApi?.AI_PROVIDER_OPTIONS?.[0] ??
         {};
       const providerIsLmStudio = isProviderLmStudio(providerId);
+      const modelListMode =
+        settingsApi?.normalizeAiModelListMode?.(aiPrediction.modelListMode) ||
+        "recommended";
       const modelId =
         aiPrediction.modelIds?.[providerId] ||
         provider.defaultModelId ||
@@ -119,6 +125,9 @@
         ? provider.endpointUrl || globalThis.ZeroLatencyLmStudio?.CHAT_COMPLETIONS_URL || ""
         : aiPrediction.endpointUrls?.[providerId] || provider.endpointUrl || "";
 
+      if (elements.aiModelListMode) {
+        elements.aiModelListMode.value = modelListMode;
+      }
       modelSelect.renderModelSelectOptions({
         providerId,
         selectedModelId: modelId,
@@ -127,7 +136,7 @@
         placeholder:
           !apiKey && provider.apiKeyOptional !== true
             ? t("settingsAiEnterKeyToLoadModels", [], "Enter an API key to load models")
-            : t("settingsAiLoadingModels", [], "Loading supported models..."),
+            : t("settingsAiLoadingModelsGeneric", [], "Loading models..."),
       });
       elements.aiProviderApiKey.value = apiKey;
       elements.aiProviderEndpoint.value = endpointUrl;

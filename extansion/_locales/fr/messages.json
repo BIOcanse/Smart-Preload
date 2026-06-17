@@ -426,22 +426,28 @@
     "message": "Poids audio"
   },
   "settingsAiPredictionAssistant": {
-    "message": "Assistant de pr?diction IA"
+    "message": "Assistant de prédiction IA"
   },
   "settingsAiPredictionAssistantDesc": {
-    "message": "Choisissez un fournisseur d?IA externe et un mod?le pour le score des mots-cl?s. L?extension utilise directement votre cl? API; elle ne t?l?charge ni ne g?re de mod?les locaux."
+    "message": "Choisissez un fournisseur d’IA externe et un modèle pour le score des mots-clés. L’extension utilise directement votre clé API; elle ne télécharge ni ne gère de modèles locaux."
   },
+  "settingsAiModelSelectionAdvice": {
+    "message": "Par défaut, la liste affiche le dernier ensemble de modèles recommandés. Passez à Tous les modèles si vous avez besoin d’un modèle précis, et privilégiez des modèles texte ou chat rapides et peu coûteux."
+  },
+  "settingsAiModelListModeRecommended": { "message": "Derniers modèles recommandés" },
+  "settingsAiModelListModeAll": { "message": "Tous les modèles" },
+  "settingsAiModelListRecommendedTitle": { "message": "{0} derniers modèles recommandés sont affichés sur {1} modèles chargés. Passez à Tous les modèles pour voir toutes les options." },
   "settingsAiProviderApiKey": {
-    "message": "Cl? API du fournisseur"
+    "message": "Clé API du fournisseur"
   },
   "settingsAiProviderApiKeyDesc": {
-    "message": "Stock?e dans le stockage local de l?extension et utilis?e uniquement par le service worker lorsque la pr?diction IA est activ?e. LM Studio ignore ce champ."
+    "message": "Stockée dans le stockage local de l’extension et utilisée uniquement par le service worker lorsque la prédiction IA est activée. LM Studio ignore ce champ."
   },
   "settingsAiProviderEndpoint": {
     "message": "Point de terminaison du fournisseur"
   },
   "settingsAiProviderEndpointDesc": {
-    "message": "Conservez la valeur par d?faut sauf si vous utilisez un service local compatible OpenAI comme LM Studio."
+    "message": "Conservez la valeur par défaut sauf si vous utilisez un service local compatible OpenAI comme LM Studio."
   },
   "settingsWindowWatchdog": {
     "message": "Surveillance de fen?tre"
@@ -537,7 +543,7 @@
     "message": "Enregistrer les paramètres"
   },
   "settingsAiModelTask": {
-    "message": "T?che du mod?le IA"
+    "message": "Tâche du modèle IA"
   },
   "settingsReadingLocalSettings": {
     "message": "Lecture des param?tres locaux de l?extension."
@@ -576,7 +582,7 @@
     "message": "Suppression du mod?le s?lectionn? et nettoyage du runtime portable s?il est inutilis?."
   },
   "settingsAiModelActionFailed": {
-    "message": "?chec de l?action sur le mod?le IA."
+    "message": "Échec de l’action sur le modèle IA."
   },
   "settingsModelStateUpdatedDirty": {
     "message": "?tat du mod?le mis ? jour. D?autres modifications non enregistr?es sont encore en attente."
@@ -639,31 +645,37 @@
     "message": "La t?che ne s?est pas termin?e."
   },
   "settingsAiProviderMissingWarning": {
-    "message": "Le scoring IA restera d?sactiv? tant que {0} n?a pas de mod?le, endpoint et cl? API."
+    "message": "Le scoring IA restera désactivé tant que {0} n’a pas de modèle, endpoint et clé API."
   },
   "settingsAiKeyOptionalPlaceholder": {
     "message": "Facultatif pour les endpoints locaux compatibles"
   },
   "settingsAiLmStudioKeyIgnoredPlaceholder": {
-    "message": "Ignor? pour LM Studio"
+    "message": "Ignoré pour LM Studio"
   },
   "settingsAiLmStudioLoadingModel": {
-    "message": "Chargement du mod?le LM Studio : {0}"
+    "message": "Chargement du modèle LM Studio : {0}"
   },
   "settingsAiKeyRequiredPlaceholder": {
     "message": "Obligatoire"
   },
   "settingsAiEnterKeyToLoadModels": {
-    "message": "Saisissez une cl? API pour charger les mod?les"
+    "message": "Saisissez une clé API pour charger les modèles"
   },
   "settingsAiLoadingModels": {
-    "message": "Chargement des mod?les pris en charge..."
+    "message": "Chargement des modèles..."
   },
   "settingsAiSelectProviderFirst": {
-    "message": "S?lectionnez d?abord un fournisseur"
+    "message": "Sélectionnez d’abord un fournisseur"
   },
   "settingsAiNoSupportedModels": {
-    "message": "Aucun mod?le l?ger pris en charge trouv?"
+    "message": "Aucun modèle trouvé"
+  },
+  "settingsAiLoadingModelsGeneric": {
+    "message": "Chargement des modèles..."
+  },
+  "settingsAiNoModelsFound": {
+    "message": "Aucun modèle trouvé"
   },
   "settingsHistoryDeletionTitle": {
     "message": "Suppression des enregistrements d'historique"

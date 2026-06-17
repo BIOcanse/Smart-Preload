@@ -73,6 +73,7 @@
         enabled: false,
         providerId: "deepseek",
         modelId: "deepseek-v4-flash",
+        modelListMode: "recommended",
         apiKeys: createDefaultAiProviderMap(""),
         modelIds: createDefaultAiProviderModelIds(),
         endpointUrls: createDefaultAiProviderEndpointUrls(),

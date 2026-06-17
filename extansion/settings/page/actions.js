@@ -100,6 +100,7 @@
     }
     if (
       event?.target === formElements.aiPredictionProvider ||
+      event?.target === formElements.aiModelListMode ||
       event?.target === formElements.aiProviderApiKey ||
       event?.target === formElements.aiProviderEndpoint
     ) {

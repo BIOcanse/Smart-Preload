@@ -146,6 +146,10 @@ async function smokeBrowser(browser) {
     assert.equal(snapshot.skipSensitivePagesPresent, true);
     assert.equal(snapshot.skipSensitivePagesChecked, true);
     assert.match(
+      snapshot.aiModelSelectionAdviceText,
+      /fast|快速|快|schnell|rápido|rapide|rápido|быстр|高速|빠르/u
+    );
+    assert.match(
       snapshot.realPreloadSensitiveWarningText,
       /exam|考试|考試|Prüfung|examen|exámenes|prova|экзамен|試験|시험/u
     );
@@ -157,6 +161,9 @@ async function smokeBrowser(browser) {
     assert.equal(snapshot.dangerousSiteSafetyGuardDisabled, true);
     assert.ok(snapshot.aiProviderOptionCount >= 1, "AI provider options did not render");
     assert.equal(snapshot.aiModelSelectPresent, true);
+    assert.equal(snapshot.aiModelListModePresent, true);
+    assert.equal(snapshot.aiModelListModeValue, "recommended");
+    assert.ok(snapshot.aiModelListModeOptionCount >= 2, "AI model list mode options did not render");
     const dialogProbe = await probeRealPreloadRiskDialog(pageClient);
     assert.equal(dialogProbe.opened, true);
     assert.equal(dialogProbe.confirmed, false);
@@ -254,7 +261,14 @@ async function waitForSettingsPageSnapshot(pageClient) {
           languageOptionCount: document.getElementById("language-mode")?.options?.length || 0,
           aiProviderOptionCount:
             document.getElementById("ai-prediction-provider")?.options?.length || 0,
+          aiModelListModePresent: Boolean(document.getElementById("ai-model-list-mode")),
+          aiModelListModeValue:
+            document.getElementById("ai-model-list-mode")?.value || "",
+          aiModelListModeOptionCount:
+            document.getElementById("ai-model-list-mode")?.options?.length || 0,
           aiModelSelectPresent: Boolean(document.getElementById("ai-prediction-model")),
+          aiModelSelectionAdviceText:
+            document.querySelector("[data-i18n='settingsAiModelSelectionAdvice']")?.textContent?.trim() || "",
           historyDeleteButtonPresent: Boolean(document.getElementById("history-delete-button")),
           historyUtcText:
             document.getElementById("history-delete-current-utc")?.textContent?.trim() || "",
@@ -280,6 +294,9 @@ async function waitForSettingsPageSnapshot(pageClient) {
         lastSnapshot.excludeHttpPagesChecked &&
         lastSnapshot.skipSensitivePagesPresent &&
         lastSnapshot.skipSensitivePagesChecked &&
+        /fast|快速|快|schnell|rápido|rapide|rápido|быстр|高速|빠르/u.test(
+          lastSnapshot.aiModelSelectionAdviceText
+        ) &&
         /exam|考试|考試|Prüfung|examen|exámenes|prova|экзамен|試験|시험/u.test(
           lastSnapshot.realPreloadSensitiveWarningText
         ) &&
@@ -290,6 +307,9 @@ async function waitForSettingsPageSnapshot(pageClient) {
         lastSnapshot.dangerousSiteSafetyGuardChecked &&
         lastSnapshot.dangerousSiteSafetyGuardDisabled &&
         lastSnapshot.aiProviderOptionCount >= 1 &&
+        lastSnapshot.aiModelListModePresent &&
+        lastSnapshot.aiModelListModeValue === "recommended" &&
+        lastSnapshot.aiModelListModeOptionCount >= 2 &&
         lastSnapshot.aiModelSelectPresent &&
         lastSnapshot.historyNativeDateInputCount === 0 &&
         lastSnapshot.historyDatePartInputCount === 6 &&

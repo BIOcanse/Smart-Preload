@@ -66,7 +66,7 @@
         selectedModelId,
         models: modelSelect.getCuratedAiModelOptions(providerId),
         disabled: false,
-        placeholder: t("settingsAiLoadingModels", [], "Loading supported models..."),
+        placeholder: t("settingsAiLoadingModelsGeneric", [], "Loading models..."),
       });
 
       const result = await modelLoader?.loadProviderModelOptions?.({
@@ -83,18 +83,35 @@
       const models = Array.isArray(result?.models)
         ? result.models
         : modelSelect.getCuratedAiModelOptions(providerId);
+      const modelListMode =
+        readFormSettings?.()?.preloading?.aiPrediction?.modelListMode ||
+        elements.aiModelListMode?.value ||
+        "recommended";
+      const displayModels =
+        globalThis.ZeroLatencySettingsAiModelRecommendations?.selectModelsForListMode?.({
+          models,
+          mode: modelListMode,
+          providerId,
+          selectedModelId,
+        }) ?? models;
       const selectedAfterRender = modelSelect.renderModelSelectOptions({
         providerId,
         selectedModelId,
-        models,
-        disabled: models.length === 0,
+        models: displayModels,
+        disabled: displayModels.length === 0,
         placeholder:
-          models.length === 0
-            ? t("settingsAiNoSupportedModels", [], "No supported lightweight models found")
+          displayModels.length === 0
+            ? t("settingsAiNoModelsFound", [], "No models found")
             : "",
       });
 
-      elements.aiPredictionModel.title = result?.message || "";
+      elements.aiPredictionModel.title = buildModelListTitle({
+        result,
+        modelListMode,
+        modelCount: models.length,
+        displayCount: displayModels.length,
+        translate: t,
+      });
 
       if (selectedAfterRender !== selectedModelId) {
         const nextSettings = readFormSettings?.();
@@ -117,6 +134,22 @@
       refreshOptionsForCurrentProvider,
       refreshModelOptions,
     };
+  }
+
+  function buildModelListTitle({ result, modelListMode, modelCount, displayCount, translate }) {
+    const message = result?.message || "";
+
+    if (modelListMode === "all" || modelCount <= displayCount) {
+      return message;
+    }
+
+    const suffix = translate?.(
+      "settingsAiModelListRecommendedTitle",
+      [displayCount, modelCount],
+      `Showing ${displayCount} latest recommended models from ${modelCount} loaded models. Switch to All models to see every option.`
+    );
+
+    return message ? `${message} ${suffix}` : suffix;
   }
 
   globalThis.ZeroLatencySettingsAiModelOptionsRefresher = {

@@ -32,6 +32,10 @@
     return normalizedMap;
   }
 
+  function normalizeAiModelListMode(value) {
+    return value === "all" ? "all" : "recommended";
+  }
+
   function getAiModelInfo(providerId, modelId) {
     const modelInfo = AI_MODEL_CATALOG?.getModel?.(providerId, modelId);
     return isPlainObject(modelInfo) ? cloneSettings(modelInfo) : null;
@@ -80,6 +84,7 @@
       enabled: Boolean(mergedValue.enabled),
       providerId,
       modelId: modelIds[providerId] || AI_PROVIDER_BY_ID[providerId]?.defaultModelId || "",
+      modelListMode: normalizeAiModelListMode(mergedValue.modelListMode),
       apiKeys,
       modelIds,
       endpointUrls,
@@ -111,6 +116,7 @@
 
   globalThis.ZeroLatencySettingsAi = {
     normalizeAiProviderId,
+    normalizeAiModelListMode,
     getAiModelInfo,
     getAiProviderModels,
     getAiRequestParams,
