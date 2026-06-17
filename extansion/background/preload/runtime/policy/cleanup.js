@@ -31,7 +31,9 @@ async function closeHiddenTabsForNormalWindowRuntime(normalWindowRuntime) {
   }
 
   for (const sourceTabRuntime of Object.values(normalWindowRuntime.sourceTabs || {})) {
-    for (const entry of Object.values(sourceTabRuntime.hiddenTabEntriesByUrl || {})) {
+    for (const entry of Object.values(
+      getSourceTabPreloadChannelStore(sourceTabRuntime, "hiddenTab")
+    )) {
       await closeTabIfExists(entry.tabId);
     }
   }
@@ -51,7 +53,9 @@ async function cleanupErroneousPreloadWindows(preloadState) {
     }
 
     for (const sourceTabRuntime of Object.values(normalWindowRuntime?.sourceTabs || {})) {
-      for (const entry of Object.values(sourceTabRuntime?.hiddenTabEntriesByUrl || {})) {
+      for (const entry of Object.values(
+        getSourceTabPreloadChannelStore(sourceTabRuntime, "hiddenTab")
+      )) {
         if (Number.isFinite(entry?.tabId)) {
           trackedPreloadTabIds.add(entry.tabId);
         }

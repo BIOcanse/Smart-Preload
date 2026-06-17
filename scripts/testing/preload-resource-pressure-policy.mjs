@@ -8,8 +8,29 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const scriptPaths = [
+  ["extansion", "shared", "settings", "utils.js"],
+  ["extansion", "shared", "settings", "schema", "localize.js"],
+  ["extansion", "shared", "settings", "schema", "constants.js"],
+  ["extansion", "shared", "settings", "schema", "options.js"],
+  ["extansion", "shared", "settings", "schema", "rule-cards.js"],
+  ["extansion", "shared", "settings", "schema.js"],
+  ["extansion", "shared", "settings", "defaults.js"],
+  ["extansion", "shared", "settings", "rules.js"],
+  ["extansion", "shared", "settings", "proxy-skip.js"],
+  ["extansion", "shared", "settings", "ai.js"],
+  ["extansion", "shared", "settings", "effective.js"],
+  ["extansion", "shared", "settings", "normalize", "appearance-layout.js"],
+  ["extansion", "shared", "settings", "normalize", "preload.js"],
+  ["extansion", "shared", "settings", "normalize", "scheduler.js"],
+  ["extansion", "shared", "settings", "normalize.js"],
+  ["extansion", "shared", "settings", "storage.js"],
   ["extansion", "shared", "settings.js"],
   ["extansion", "background", "shared", "base.js"],
+  ["extansion", "background", "preload", "runtime", "diff", "hidden-tabs", "channel.js"],
+  ["extansion", "background", "preload", "runtime", "diff", "hidden-tabs", "safety.js"],
+  ["extansion", "background", "preload", "runtime", "diff", "hidden-tabs", "entries.js"],
+  ["extansion", "background", "preload", "runtime", "diff", "hidden-tabs.js"],
+  ["extansion", "background", "preload", "runtime", "source-tabs", "channels.js"],
   ["extansion", "background", "preload", "runtime", "source-tabs", "hidden-tabs.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
 
@@ -71,6 +92,7 @@ assert.deepEqual(JSON.parse(JSON.stringify(context.ZeroLatencyDebugEvents.events
   normalWindowId: 10,
   sourceTabId: 20,
   targetCount: 1,
+  channel: "scheduled",
   policy: "sleep",
   reason: "game-process",
 });

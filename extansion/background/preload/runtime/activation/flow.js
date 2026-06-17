@@ -72,61 +72,31 @@ async function activatePreloadedPage(message, sender) {
     return { handled: false };
   }
 
-  const safetyDecision =
-    globalThis.ZeroLatencyPreloadSafetyPolicy?.inspectPreloadCandidate?.(
-      {
-        url: targetUrl,
-        realPreloadSafety: entry.realPreloadSafety ?? null,
-      },
-      targetUrl
-    ) ?? null;
+  const safetyResponse = await blockUnsafePreloadedActivationIfNeeded({
+    preloadState,
+    sourceRuntimeEntry,
+    sourceTab,
+    sourceTabId,
+    targetUrl,
+    entry,
+    preloadedTab,
+  });
 
-  if (safetyDecision?.realPreloadBlocked === true || safetyDecision?.skipPreload === true) {
-    await closeTabIfExists(preloadedTab.id);
-    delete sourceRuntimeEntry.sourceTabRuntime.hiddenTabEntriesByUrl[targetUrl];
-    markSourceRuntimeUpdated(preloadState, sourceRuntimeEntry, new Date().toISOString());
-    pruneSourceTabRuntime(preloadState, sourceTab.windowId, sourceTabId);
-    await savePreloadState(preloadState);
-    globalThis.ZeroLatencyDebugEvents?.record?.("preload-activation.safety-blocked", {
-      sourceTabId: sourceTab.id,
-      sourceWindowId: sourceTab.windowId,
-      targetUrl,
-      preloadedTabId: preloadedTab.id,
-      reason: safetyDecision.reason || "unsafe-real-preload",
-      reasons: safetyDecision.reasons || [],
-    });
-    return { handled: false, reason: "real-preload-safety-guard" };
+  if (safetyResponse) {
+    return safetyResponse;
   }
 
   const activatedWhileLoading = resolvedEntryStatus !== "complete";
   const trackingTargetUrl = resolveActivatedTrackingTargetUrl(targetUrl, preloadedTab, entry);
-  const destinationWindowId = targetWindowId ?? sourceTab.windowId;
-  const destinationWindow = await getWindowMaybe(destinationWindowId);
-  const sourceDestinationMatch =
-    globalThis.ZeroLatencyPreloadIncognitoPolicy?.resolveSourceTargetIncognitoMatch?.(
-      sourceTab,
-      null,
-      destinationWindow
-    );
-  const sourcePreloadMatch =
-    globalThis.ZeroLatencyPreloadIncognitoPolicy?.resolveSourceTargetIncognitoMatch?.(
-      sourceTab,
-      preloadedTab,
-      null
-    );
+  const incognitoGuard = await validatePreloadedActivationIncognitoContext({
+    sourceTab,
+    preloadedTab,
+    targetWindowId,
+    targetUrl,
+  });
 
-  if (sourceDestinationMatch?.matches === false || sourcePreloadMatch?.matches === false) {
-    globalThis.ZeroLatencyDebugEvents?.record?.("preload-activation.incognito-mismatch", {
-      sourceTabId: sourceTab.id,
-      sourceWindowId: sourceTab.windowId,
-      targetUrl,
-      preloadedTabId: preloadedTab.id,
-      targetWindowId: destinationWindowId,
-      sourceIncognito: sourcePreloadMatch?.sourceIncognito ?? sourceTab?.incognito === true,
-      preloadedIncognito: preloadedTab?.incognito === true,
-      destinationIncognito: destinationWindow?.incognito === true,
-    });
-    return { handled: false, reason: "incognito-context-mismatch" };
+  if (!incognitoGuard.ok) {
+    return incognitoGuard.response;
   }
 
   if (activatedWhileLoading) {
@@ -194,18 +164,4 @@ async function activatePreloadedPage(message, sender) {
     handled: true,
     tabId: activatedTab.id,
   };
-}
-
-function resolveActivatedTrackingTargetUrl(requestedUrl, preloadedTab, entry) {
-  const candidates = [preloadedTab?.url, entry?.loadedUrl, requestedUrl];
-
-  for (const candidateUrl of candidates) {
-    const normalizedCandidateUrl = normalizePageUrlForIndex(candidateUrl || "");
-
-    if (normalizedCandidateUrl && isTrackableAndAllowedUrl(candidateUrl || "")) {
-      return normalizedCandidateUrl;
-    }
-  }
-
-  return requestedUrl;
 }

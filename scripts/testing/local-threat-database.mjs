@@ -2,12 +2,42 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
-const threatDatabaseSource = await readFile(
-  new URL("../../extansion/background/security/threat-database.js", import.meta.url),
+const threatDatabaseSources = await Promise.all(
+  [
+    "../../extansion/background/security/threat-database/fingerprint.js",
+    "../../extansion/background/security/threat-database/sources.js",
+    "../../extansion/background/security/threat-database.js",
+  ].map((filePath) => readFile(new URL(filePath, import.meta.url), "utf8"))
+);
+const safetyRuleSources = await Promise.all(
+  [
+    "../../extansion/shared/preload-safety-rules/constants.js",
+    "../../extansion/shared/preload-safety-rules/url.js",
+    "../../extansion/shared/preload-safety-rules/decision.js",
+    "../../extansion/shared/preload-safety-rules/candidate.js",
+    "../../extansion/shared/preload-safety-rules.js",
+  ].map((filePath) => readFile(new URL(filePath, import.meta.url), "utf8"))
+);
+const safetyPolicySources = await Promise.all(
+  [
+    "../../extansion/background/preload/safety-policy/normalize.js",
+    "../../extansion/background/preload/safety-policy/dangerous-site.js",
+    "../../extansion/background/preload/safety-policy/decision.js",
+    "../../extansion/background/preload/safety-policy.js",
+  ].map((filePath) => readFile(new URL(filePath, import.meta.url), "utf8"))
+);
+const candidatePoolMergeSource = await readFile(
+  new URL(
+    "../../extansion/background/preload/prediction/candidate-pool/merge.js",
+    import.meta.url
+  ),
   "utf8"
 );
-const safetyPolicySource = await readFile(
-  new URL("../../extansion/background/preload/safety-policy.js", import.meta.url),
+const candidatePoolLinkSource = await readFile(
+  new URL(
+    "../../extansion/background/preload/prediction/candidate-pool/link.js",
+    import.meta.url
+  ),
   "utf8"
 );
 const candidatePoolSource = await readFile(
@@ -16,9 +46,11 @@ const candidatePoolSource = await readFile(
 );
 const context = vm.createContext({ URL, BigInt, globalThis: {} });
 
-vm.runInContext(threatDatabaseSource, context, {
-  filename: "threat-database.js",
-});
+for (const [index, source] of threatDatabaseSources.entries()) {
+  vm.runInContext(source, context, {
+    filename: `threat-database-${index}.js`,
+  });
+}
 
 const blockedUrl = "https://malware.example/landing/payload";
 const normalizedUrl =
@@ -64,9 +96,16 @@ const subdomainDecision = context.globalThis.ZeroLatencyLocalThreatDatabase.insp
 assert.equal(subdomainDecision.blocked, true);
 assert.equal(subdomainDecision.evidence.matchScope, "host-subtree");
 
-vm.runInContext(safetyPolicySource, context, {
-  filename: "safety-policy.js",
-});
+for (const [index, source] of safetyRuleSources.entries()) {
+  vm.runInContext(source, context, {
+    filename: `preload-safety-rules-${index}.js`,
+  });
+}
+for (const [index, source] of safetyPolicySources.entries()) {
+  vm.runInContext(source, context, {
+    filename: `safety-policy-${index}.js`,
+  });
+}
 
 const decision = context.globalThis.ZeroLatencyPreloadSafetyPolicy.inspectPreloadCandidate({
   url: blockedUrl,
@@ -114,6 +153,12 @@ context.normalizePageUrlForIndex = (rawUrl) => rawUrl;
 context.isSameOriginUrl = (leftUrl, rightUrl) => new URL(leftUrl).origin === new URL(rightUrl).origin;
 context.getRecordedLinkTargetHint = () => null;
 
+vm.runInContext(candidatePoolMergeSource, context, {
+  filename: "candidate-pool/merge.js",
+});
+vm.runInContext(candidatePoolLinkSource, context, {
+  filename: "candidate-pool/link.js",
+});
 vm.runInContext(candidatePoolSource, context, {
   filename: "candidate-pool.js",
 });

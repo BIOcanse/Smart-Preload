@@ -13,14 +13,20 @@ async function handleRemovedTab(tabId) {
   const expectedPreloadRemoval = consumeExpectedPreloadRemoval(tabId);
 
   if (preloadTabEntry) {
-    const entry = preloadTabEntry.sourceTabRuntime.hiddenTabEntriesByUrl?.[preloadTabEntry.url];
+    const entry = getSourceTabPreloadEntry(
+      preloadTabEntry.sourceTabRuntime,
+      "hiddenTab",
+      preloadTabEntry.url
+    );
 
     if (entry) {
       if (expectedPreloadRemoval) {
-        delete preloadTabEntry.sourceTabRuntime.hiddenTabEntriesByUrl[preloadTabEntry.url];
-        preloadTabEntry.sourceTabRuntime.updatedAt = new Date().toISOString();
-        preloadTabEntry.normalWindowRuntime.updatedAt = new Date().toISOString();
-        preloadState.updatedAt = new Date().toISOString();
+        deleteSourceTabPreloadEntry(
+          preloadTabEntry.sourceTabRuntime,
+          "hiddenTab",
+          preloadTabEntry.url
+        );
+        markSourceTabPreloadChannelsUpdated(preloadState, preloadTabEntry);
         pruneSourceTabRuntime(
           preloadState,
           preloadTabEntry.normalWindowId,
@@ -31,9 +37,7 @@ async function handleRemovedTab(tabId) {
         entry.loadedUrl = null;
         entry.status = "missing";
         entry.updatedAt = new Date().toISOString();
-        preloadTabEntry.sourceTabRuntime.updatedAt = entry.updatedAt;
-        preloadTabEntry.normalWindowRuntime.updatedAt = entry.updatedAt;
-        preloadState.updatedAt = entry.updatedAt;
+        markSourceTabPreloadChannelsUpdated(preloadState, preloadTabEntry, entry.updatedAt);
       }
     }
   }
@@ -59,7 +63,15 @@ async function updatePreloadedTabStatus(tabId, changeInfo, tab) {
     return;
   }
 
-  const entry = preloadEntry.sourceTabRuntime.hiddenTabEntriesByUrl[preloadEntry.url];
+  const entry = getSourceTabPreloadEntry(
+    preloadEntry.sourceTabRuntime,
+    "hiddenTab",
+    preloadEntry.url
+  );
+
+  if (!entry) {
+    return;
+  }
 
   if (changeInfo.status) {
     entry.status = changeInfo.status;
@@ -70,8 +82,6 @@ async function updatePreloadedTabStatus(tabId, changeInfo, tab) {
   }
 
   entry.updatedAt = new Date().toISOString();
-  preloadEntry.sourceTabRuntime.updatedAt = entry.updatedAt;
-  preloadEntry.normalWindowRuntime.updatedAt = entry.updatedAt;
-  preloadState.updatedAt = entry.updatedAt;
+  markSourceTabPreloadChannelsUpdated(preloadState, preloadEntry, entry.updatedAt);
   await savePreloadState(preloadState);
 }

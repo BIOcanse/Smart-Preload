@@ -4,53 +4,13 @@ function synchronizePrerenderEntriesForSourceTab(
   sourceTabId,
   targets
 ) {
-  const existingRuntimeEntry = getSourceTabRuntimeForWindow(
+  return synchronizeSpeculationEntriesForSourceTab(
     preloadState,
     normalWindowId,
-    sourceTabId
+    sourceTabId,
+    targets,
+    "prerender"
   );
-
-  if (!existingRuntimeEntry && targets.length === 0) {
-    return preloadState;
-  }
-
-  const sourceRuntimeEntry =
-    existingRuntimeEntry ?? ensureSourceTabRuntime(preloadState, normalWindowId, sourceTabId);
-  const nextEntries = {};
-
-  for (const [url, entry] of Object.entries(
-    sourceRuntimeEntry.sourceTabRuntime.prerenderEntriesByUrl || {}
-  )) {
-    if (entry?.interactionPreload) {
-      nextEntries[url] = entry;
-    }
-  }
-
-  for (const target of targets) {
-    nextEntries[target.url] = {
-      requestedUrl: target.url,
-      nodeId: target.nodeId,
-      score: target.score,
-      scoreBreakdown: target.scoreBreakdown ?? null,
-      transitionMetrics: target.transitionMetrics ?? null,
-      aiKeywordMatch: target.aiKeywordMatch ?? null,
-      bookmarkPreload: target.bookmarkPreload ?? null,
-      realPreloadSafety: target.realPreloadSafety ?? null,
-      interactionPreload: target.interactionPreload ?? null,
-      siteSelection: target.siteSelection ?? null,
-      status: "prerender",
-      strategy: "prerender",
-      targetHint: target.targetHint,
-      updatedAt: new Date().toISOString(),
-    };
-  }
-
-  sourceRuntimeEntry.sourceTabRuntime.prerenderEntriesByUrl = nextEntries;
-  sourceRuntimeEntry.sourceTabRuntime.updatedAt = new Date().toISOString();
-  sourceRuntimeEntry.normalWindowRuntime.updatedAt = sourceRuntimeEntry.sourceTabRuntime.updatedAt;
-  preloadState.updatedAt = sourceRuntimeEntry.sourceTabRuntime.updatedAt;
-  pruneSourceTabRuntime(preloadState, normalWindowId, sourceTabId);
-  return preloadState;
 }
 
 function synchronizePrefetchEntriesForSourceTab(
@@ -59,6 +19,28 @@ function synchronizePrefetchEntriesForSourceTab(
   sourceTabId,
   targets
 ) {
+  return synchronizeSpeculationEntriesForSourceTab(
+    preloadState,
+    normalWindowId,
+    sourceTabId,
+    targets,
+    "prefetch"
+  );
+}
+
+function synchronizeSpeculationEntriesForSourceTab(
+  preloadState,
+  normalWindowId,
+  sourceTabId,
+  targets,
+  strategy
+) {
+  const channel = getSourceTabSpeculationChannelForStrategy(strategy);
+
+  if (!channel) {
+    return preloadState;
+  }
+
   const existingRuntimeEntry = getSourceTabRuntimeForWindow(
     preloadState,
     normalWindowId,
@@ -71,38 +53,40 @@ function synchronizePrefetchEntriesForSourceTab(
 
   const sourceRuntimeEntry =
     existingRuntimeEntry ?? ensureSourceTabRuntime(preloadState, normalWindowId, sourceTabId);
-  const nextEntries = {};
-
-  for (const [url, entry] of Object.entries(
-    sourceRuntimeEntry.sourceTabRuntime.prefetchEntriesByUrl || {}
-  )) {
-    if (entry?.interactionPreload) {
-      nextEntries[url] = entry;
-    }
-  }
+  const nextEntries = copyInteractionPreloadEntries(
+    getSourceTabPreloadChannelStore(sourceRuntimeEntry.sourceTabRuntime, channel)
+  );
 
   for (const target of targets) {
-    nextEntries[target.url] = {
-      requestedUrl: target.url,
-      nodeId: target.nodeId,
-      score: target.score,
-      scoreBreakdown: target.scoreBreakdown ?? null,
-      transitionMetrics: target.transitionMetrics ?? null,
-      aiKeywordMatch: target.aiKeywordMatch ?? null,
-      bookmarkPreload: target.bookmarkPreload ?? null,
-      realPreloadSafety: target.realPreloadSafety ?? null,
-      interactionPreload: target.interactionPreload ?? null,
-      siteSelection: target.siteSelection ?? null,
-      status: "prefetch",
-      strategy: "prefetch",
-      updatedAt: new Date().toISOString(),
-    };
+    nextEntries[target.url] = buildSpeculationPreloadEntry(target, strategy);
   }
 
-  sourceRuntimeEntry.sourceTabRuntime.prefetchEntriesByUrl = nextEntries;
-  sourceRuntimeEntry.sourceTabRuntime.updatedAt = new Date().toISOString();
-  sourceRuntimeEntry.normalWindowRuntime.updatedAt = sourceRuntimeEntry.sourceTabRuntime.updatedAt;
-  preloadState.updatedAt = sourceRuntimeEntry.sourceTabRuntime.updatedAt;
+  setSourceTabPreloadChannelStore(sourceRuntimeEntry.sourceTabRuntime, channel, nextEntries);
+  markSourceTabPreloadChannelsUpdated(preloadState, sourceRuntimeEntry);
   pruneSourceTabRuntime(preloadState, normalWindowId, sourceTabId);
   return preloadState;
+}
+
+function buildSpeculationPreloadEntry(target, strategy) {
+  const entry = {
+    requestedUrl: target.url,
+    nodeId: target.nodeId,
+    score: target.score,
+    scoreBreakdown: target.scoreBreakdown ?? null,
+    transitionMetrics: target.transitionMetrics ?? null,
+    aiKeywordMatch: target.aiKeywordMatch ?? null,
+    bookmarkPreload: target.bookmarkPreload ?? null,
+    realPreloadSafety: target.realPreloadSafety ?? null,
+    interactionPreload: target.interactionPreload ?? null,
+    siteSelection: target.siteSelection ?? null,
+    status: strategy,
+    strategy,
+    updatedAt: new Date().toISOString(),
+  };
+
+  if (strategy === "prerender") {
+    entry.targetHint = target.targetHint;
+  }
+
+  return entry;
 }

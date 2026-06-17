@@ -7,7 +7,11 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
-const scoringPath = path.join(repoRoot, "extansion", "background", "preload", "scoring.js");
+const scoringScriptPaths = [
+  ["extansion", "background", "preload", "scoring", "constants.js"],
+  ["extansion", "background", "preload", "scoring", "multipliers.js"],
+  ["extansion", "background", "preload", "scoring.js"],
+].map((segments) => path.join(repoRoot, ...segments));
 const allocationPath = path.join(
   repoRoot,
   "extansion",
@@ -16,6 +20,54 @@ const allocationPath = path.join(
   "scheduler",
   "allocation.js"
 );
+const allocationScriptPaths = [
+  path.join(
+    repoRoot,
+    "extansion",
+    "background",
+    "preload",
+    "scheduler",
+    "allocation",
+    "constants.js"
+  ),
+  path.join(
+    repoRoot,
+    "extansion",
+    "background",
+    "preload",
+    "scheduler",
+    "allocation",
+    "cap.js"
+  ),
+  path.join(
+    repoRoot,
+    "extansion",
+    "background",
+    "preload",
+    "scheduler",
+    "allocation",
+    "slot-input.js"
+  ),
+  path.join(
+    repoRoot,
+    "extansion",
+    "background",
+    "preload",
+    "scheduler",
+    "allocation",
+    "slot-state.js"
+  ),
+  path.join(
+    repoRoot,
+    "extansion",
+    "background",
+    "preload",
+    "scheduler",
+    "allocation",
+    "slots.js"
+  ),
+  allocationPath,
+];
 
 const context = {
   console,
@@ -25,8 +77,12 @@ const context = {
 };
 context.globalThis = context;
 vm.createContext(context);
-vm.runInContext(readFileSync(scoringPath, "utf8"), context, { filename: scoringPath });
-vm.runInContext(readFileSync(allocationPath, "utf8"), context, { filename: allocationPath });
+for (const scriptPath of scoringScriptPaths) {
+  vm.runInContext(readFileSync(scriptPath, "utf8"), context, { filename: scriptPath });
+}
+for (const scriptPath of allocationScriptPaths) {
+  vm.runInContext(readFileSync(scriptPath, "utf8"), context, { filename: scriptPath });
+}
 
 const { resolveAsymptoticPreloadCap, allocateTabPreloadSlots } =
   context.ZeroLatencyPreloadSchedulerAllocation;

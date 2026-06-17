@@ -4,6 +4,7 @@
     ...globalThis.ZeroLatencyCoreSettingsMessages,
     ...globalThis.ZeroLatencyCoreServiceControlMessages,
     ...globalThis.ZeroLatencyCoreNativeAppUpdateMessages,
+    ...globalThis.ZeroLatencyCoreTaskMessages,
     ...globalThis.ZeroLatencyCoreAiModelMessages,
   };
 })();

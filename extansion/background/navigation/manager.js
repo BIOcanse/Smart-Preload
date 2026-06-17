@@ -1,168 +1,121 @@
 (function () {
-  // Background-side navigation supervisor for page click flows. Keep policy
-  // here so the content script stays a thin DOM/event adapter.
+  const clickContext = globalThis.ZeroLatencyNavigationClickContext;
+  const preloadActivation = globalThis.ZeroLatencyNavigationPreloadActivation;
+  const currentTabSource = globalThis.ZeroLatencyNavigationCurrentTabSource;
+
   async function resolveClickNavigation(message, sender) {
-    const sourceTab = sender?.tab ?? null;
-    const sourcePageUrl =
-      typeof message?.sourcePageUrl === "string" ? message.sourcePageUrl : sourceTab?.url || "";
-    const targetUrl = typeof message?.targetUrl === "string" ? message.targetUrl : "";
-    const targetHint = message?.targetHint === "_blank" ? "_blank" : "_self";
-    const resolutionExpiresAt = normalizeClickResolutionDeadline(message?.resolutionExpiresAt);
-    const indexedSourcePageUrl = normalizePageUrlForIndex(sourcePageUrl);
-    const indexedTargetUrl = normalizePageUrlForIndex(targetUrl);
+    const context = clickContext.buildClickNavigationContext(message, sender);
 
-    if (!sourceTab?.id || !targetUrl || !indexedSourcePageUrl || !indexedTargetUrl) {
+    if (!context.isValid) {
       return {
         handled: false,
         action: "skip",
       };
     }
 
-    if (isExcludedTrackingPage(sourcePageUrl) || isExcludedTrackingPage(targetUrl)) {
+    if (
+      isExcludedTrackingPage(context.sourcePageUrl) ||
+      isExcludedTrackingPage(context.targetUrl)
+    ) {
       return {
         handled: false,
         action: "skip",
       };
     }
 
-    if (isClickResolutionDeadlineExpired(resolutionExpiresAt)) {
-      globalThis.ZeroLatencyDebugEvents?.record?.("navigation.click.resolution.deadline-expired", {
-        sourceTabId: sourceTab.id,
-        sourcePageUrl: indexedSourcePageUrl,
-        targetUrl,
-        targetHint,
-      });
+    if (clickContext.isClickResolutionDeadlineExpired(context.resolutionExpiresAt)) {
+      globalThis.ZeroLatencyDebugEvents?.record?.(
+        "navigation.click.resolution.deadline-expired",
+        {
+          sourceTabId: context.sourceTab.id,
+          sourcePageUrl: context.indexedSourcePageUrl,
+          targetUrl: context.targetUrl,
+          targetHint: context.targetHint,
+        }
+      );
       return {
         handled: false,
-        action: targetHint === "_blank" ? "navigate-reserved-tab" : "navigate-current-tab",
-        targetUrl,
+        action:
+          context.targetHint === "_blank"
+            ? "navigate-reserved-tab"
+            : "navigate-current-tab",
+        targetUrl: context.targetUrl,
       };
     }
 
     await globalThis.ZeroLatencyLearning.rememberSourcePage(
       {
-        pageUrl: indexedSourcePageUrl,
+        pageUrl: context.indexedSourcePageUrl,
       },
       sender
     );
     await globalThis.ZeroLatencyLearning.recordLinkBehavior(
       {
-        sourcePageUrl: indexedSourcePageUrl,
-        targetUrl: indexedTargetUrl,
-        targetHint,
+        sourcePageUrl: context.indexedSourcePageUrl,
+        targetUrl: context.indexedTargetUrl,
+        targetHint: context.targetHint,
       },
       sender
     );
 
-    const sameOriginNavigation = isSameOriginUrl(sourcePageUrl, targetUrl);
-
-    if (targetHint === "_self") {
-      if (!sameOriginNavigation) {
-        globalThis.ZeroLatencyDebugEvents?.record?.(
-          "navigation.click.cross-site-current-tab.activation-attempt",
+    if (context.targetHint === "_self") {
+      if (!context.isSameOriginNavigation) {
+        const activation = await preloadActivation.tryActivateClickPreload(
           {
-            sourceTabId: sourceTab.id,
-            sourcePageUrl: indexedSourcePageUrl,
-            targetUrl,
-          }
-        );
-        const activation = await globalThis.ZeroLatencyPreloadRuntimeManager.activateIfReady(
-          {
-            url: targetUrl,
+            channel: "cross-site-current-tab",
+            sourceTab: context.sourceTab,
+            indexedSourcePageUrl: context.indexedSourcePageUrl,
+            targetUrl: context.targetUrl,
             openInNewTab: false,
-            resolutionExpiresAt,
+            resolutionExpiresAt: context.resolutionExpiresAt,
           },
           sender
         );
 
-        if (activation?.handled === true) {
-          globalThis.ZeroLatencyDebugEvents?.record?.(
-            "navigation.click.cross-site-current-tab.activation-hit",
-            {
-              sourceTabId: sourceTab.id,
-              sourcePageUrl: indexedSourcePageUrl,
-              targetUrl,
-              activatedTabId: activation?.tabId ?? null,
-            }
-          );
-          return {
-            handled: true,
-            action: "preload-activated",
-          };
+        if (activation.handled) {
+          return activation;
         }
-
-        globalThis.ZeroLatencyDebugEvents?.record?.(
-          "navigation.click.cross-site-current-tab.activation-miss",
-          {
-            sourceTabId: sourceTab.id,
-            sourcePageUrl: indexedSourcePageUrl,
-            targetUrl,
-          }
-        );
       }
 
-      await lockCurrentTabNavigationSource(sourceTab, indexedSourcePageUrl);
+      await currentTabSource.lockCurrentTabNavigationSource(
+        context.sourceTab,
+        context.indexedSourcePageUrl
+      );
       return {
         handled: false,
         action: "navigate-current-tab",
-        targetUrl,
+        targetUrl: context.targetUrl,
       };
     }
 
-    if (targetHint === "_blank" && !sameOriginNavigation) {
-      globalThis.ZeroLatencyDebugEvents?.record?.(
-        "navigation.click.cross-site-new-tab.activation-attempt",
+    if (context.targetHint === "_blank" && !context.isSameOriginNavigation) {
+      const activation = await preloadActivation.tryActivateClickPreload(
         {
-          sourceTabId: sourceTab.id,
-          sourcePageUrl: indexedSourcePageUrl,
-          targetUrl,
-        }
-      );
-      const activation = await globalThis.ZeroLatencyPreloadRuntimeManager.activateIfReady(
-        {
-          url: targetUrl,
+          channel: "cross-site-new-tab",
+          sourceTab: context.sourceTab,
+          indexedSourcePageUrl: context.indexedSourcePageUrl,
+          targetUrl: context.targetUrl,
           openInNewTab: true,
-          resolutionExpiresAt,
+          resolutionExpiresAt: context.resolutionExpiresAt,
         },
         sender
       );
 
-      if (activation?.handled === true) {
-        globalThis.ZeroLatencyDebugEvents?.record?.(
-          "navigation.click.cross-site-new-tab.activation-hit",
-          {
-            sourceTabId: sourceTab.id,
-            sourcePageUrl: indexedSourcePageUrl,
-            targetUrl,
-            activatedTabId: activation?.tabId ?? null,
-          }
-        );
-        return {
-          handled: true,
-          action: "preload-activated",
-        };
+      if (activation.handled) {
+        return activation;
       }
-
-      globalThis.ZeroLatencyDebugEvents?.record?.(
-        "navigation.click.cross-site-new-tab.activation-miss",
-        {
-          sourceTabId: sourceTab.id,
-          sourcePageUrl: indexedSourcePageUrl,
-          targetUrl,
-        }
-      );
 
       return {
         handled: false,
         action: "navigate-reserved-tab",
-        targetUrl,
+        targetUrl: context.targetUrl,
       };
     }
 
     return {
       handled: false,
       action: "allow-browser-default",
-      targetUrl,
+      targetUrl: context.targetUrl,
     };
   }
 
@@ -174,50 +127,8 @@
     return globalThis.ZeroLatencyLearning.recordLinkBehavior(message, sender);
   }
 
-  function normalizeClickResolutionDeadline(value) {
-    const numericValue = Number(value);
-    return Number.isFinite(numericValue) && numericValue > 0 ? numericValue : null;
-  }
-
-  function isClickResolutionDeadlineExpired(deadline) {
-    return Number.isFinite(deadline) && Date.now() >= deadline;
-  }
-
   async function primeSourcePage(message, sender) {
     return globalThis.ZeroLatencyLearning.rememberSourcePage(message, sender);
-  }
-
-  async function lockCurrentTabNavigationSource(sourceTab, sourcePageUrl) {
-    const normalizedSourcePageUrl = normalizePageUrlForIndex(sourcePageUrl || sourceTab?.url || "");
-
-    if (!sourceTab?.id || !normalizedSourcePageUrl) {
-      return;
-    }
-
-    const preloadState = await loadPreloadState();
-
-    if (isPreloadTab(preloadState, sourceTab.id)) {
-      return;
-    }
-
-    const trackingState = await loadTrackingState();
-    const sourceTabId = String(sourceTab.id);
-    const trackedSource = trackingState.tabState?.[sourceTabId] ?? null;
-    const sourceNodeId = trackedSource?.nodeId ?? buildNodeSeed(normalizedSourcePageUrl).nodeId;
-    const occurredAt = new Date().toISOString();
-
-    trackingState.pendingSources[sourceTabId] = {
-      nodeId: sourceNodeId,
-      pageUrl: normalizedSourcePageUrl,
-      createdAt: occurredAt,
-    };
-
-    await saveTrackingState(trackingState);
-    globalThis.ZeroLatencyDiagnostics?.record?.("tracking.current-tab-source-lock.saved", {
-      tabId: sourceTab.id,
-      sourcePageUrl: normalizedSourcePageUrl,
-      sourceNodeId,
-    });
   }
 
   globalThis.ZeroLatencyNavigationManager = {

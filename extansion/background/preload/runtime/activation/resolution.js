@@ -15,7 +15,11 @@ async function resolveActivatablePreloadedEntry({
       normalWindowId,
       sourceTabId
     );
-    const entry = sourceRuntimeEntry?.sourceTabRuntime?.hiddenTabEntriesByUrl?.[targetUrl] ?? null;
+    const entry = getSourceTabPreloadEntry(
+      sourceRuntimeEntry?.sourceTabRuntime,
+      "hiddenTab",
+      targetUrl
+    );
     const preloadedTab = entry?.tabId ? await getTabMaybe(entry.tabId) : null;
     const resolvedStatus = preloadedTab?.status || entry?.status || null;
 
@@ -23,9 +27,7 @@ async function resolveActivatablePreloadedEntry({
       entry.status = resolvedStatus;
       entry.loadedUrl = preloadedTab.url || entry.loadedUrl;
       entry.updatedAt = new Date().toISOString();
-      sourceRuntimeEntry.sourceTabRuntime.updatedAt = entry.updatedAt;
-      sourceRuntimeEntry.normalWindowRuntime.updatedAt = entry.updatedAt;
-      preloadState.updatedAt = entry.updatedAt;
+      markSourceTabPreloadChannelsUpdated(preloadState, sourceRuntimeEntry, entry.updatedAt);
     }
 
     if (!entry) {

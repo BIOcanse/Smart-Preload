@@ -674,6 +674,15 @@
   "settingsHistoryDeletionEndDate": {
     "message": "終了 UTC 日付"
   },
+  "settingsHistoryDeletionYear": {
+    "message": "年"
+  },
+  "settingsHistoryDeletionMonth": {
+    "message": "月"
+  },
+  "settingsHistoryDeletionDay": {
+    "message": "日"
+  },
   "settingsHistoryDeletionDelete": {
     "message": "履歴を削除"
   },

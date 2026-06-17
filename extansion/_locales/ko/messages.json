@@ -674,6 +674,15 @@
   "settingsHistoryDeletionEndDate": {
     "message": "종료 UTC 날짜"
   },
+  "settingsHistoryDeletionYear": {
+    "message": "연도"
+  },
+  "settingsHistoryDeletionMonth": {
+    "message": "월"
+  },
+  "settingsHistoryDeletionDay": {
+    "message": "일"
+  },
   "settingsHistoryDeletionDelete": {
     "message": "기록 삭제"
   },

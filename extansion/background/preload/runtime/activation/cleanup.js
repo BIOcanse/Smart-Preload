@@ -6,7 +6,7 @@ async function clearStaleActivationEntry({
   targetUrl,
   entry,
 }) {
-  delete sourceRuntimeEntry.sourceTabRuntime.hiddenTabEntriesByUrl[targetUrl];
+  deleteSourceTabPreloadEntry(sourceRuntimeEntry.sourceTabRuntime, "hiddenTab", targetUrl);
   pruneSourceTabRuntime(preloadState, sourceTab.windowId, sourceTabId);
   await savePreloadState(preloadState);
   globalThis.ZeroLatencyDebugEvents?.record?.("preload-activation.stale-entry", {

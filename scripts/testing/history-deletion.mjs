@@ -10,6 +10,8 @@ const repoRoot = path.resolve(__dirname, "..", "..");
 const scriptPaths = [
   ["extansion", "background", "shared", "base.js"],
   ["extansion", "background", "core", "state", "config.js"],
+  ["extansion", "background", "tracking", "url", "google.js"],
+  ["extansion", "background", "tracking", "url", "network.js"],
   ["extansion", "background", "tracking", "url", "model.js"],
   ["extansion", "background", "tracking", "graph", "model", "schema.js"],
   ["extansion", "background", "tracking", "graph", "model", "normalize", "learning.js"],
@@ -22,7 +24,13 @@ const scriptPaths = [
   ["extansion", "background", "tracking", "graph", "indexes", "transitions", "query", "window.js"],
   ["extansion", "background", "tracking", "graph", "indexes", "transitions", "query", "source.js"],
   ["extansion", "background", "tracking", "graph", "indexes", "keywords.js"],
+  ["extansion", "background", "tracking", "graph", "indexes", "transitions", "messages", "buckets.js"],
+  ["extansion", "background", "tracking", "graph", "indexes", "transitions", "messages", "page-indexes.js"],
+  ["extansion", "background", "tracking", "graph", "indexes", "transitions", "messages", "records.js"],
   ["extansion", "background", "tracking", "graph", "indexes", "transitions", "messages.js"],
+  ["extansion", "background", "tracking", "history-deletion", "range.js"],
+  ["extansion", "background", "tracking", "history-deletion", "stores.js"],
+  ["extansion", "background", "tracking", "history-deletion", "rebuild.js"],
   ["extansion", "background", "tracking", "history-deletion.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
 

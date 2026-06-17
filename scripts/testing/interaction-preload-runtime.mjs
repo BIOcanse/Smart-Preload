@@ -1,102 +1,8 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import path from "node:path";
-import vm from "node:vm";
-import { fileURLToPath } from "node:url";
+import { buildInteractionPreloadRuntimeState } from "./lib/interaction-preload-runtime-fixtures.mjs";
+import { loadInteractionPreloadRuntimeVmContext } from "./lib/interaction-preload-runtime-vm.mjs";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const repoRoot = path.resolve(__dirname, "..", "..");
-const scriptPaths = [
-  ["extansion", "background", "shared", "base.js"],
-  ["extansion", "background", "preload", "state", "model.js"],
-  ["extansion", "background", "preload", "state", "normalize", "entries.js"],
-  ["extansion", "background", "preload", "state", "normalize", "runtime.js"],
-  ["extansion", "background", "preload", "state", "lookup", "normal-windows.js"],
-  ["extansion", "background", "preload", "state", "lookup", "source-tabs.js"],
-  ["extansion", "background", "preload", "state", "lookup", "pruning.js"],
-  ["extansion", "background", "preload", "incognito-policy.js"],
-  ["extansion", "background", "preload", "runtime", "source-tabs", "hidden-tabs.js"],
-  ["extansion", "background", "preload", "runtime", "source-tabs", "speculation.js"],
-  ["extansion", "background", "preload", "runtime", "interaction.js"],
-].map((segments) => path.join(repoRoot, ...segments));
-
-const context = {
-  console,
-  Date,
-  Number,
-  URL,
-  setTimeout,
-};
-context.globalThis = context;
-context.ZeroLatencyDebugEvents = {
-  events: [],
-  record(name, payload) {
-    this.events.push({ name, payload });
-  },
-};
-context.currentSettings = {
-  preloading: {
-    enabled: true,
-    interactionPreloadEnabled: true,
-    excludeIncognitoWindows: true,
-  },
-};
-context.getEffectiveExtensionSettings = () => context.currentSettings;
-context.getPreloadResourcePressureState = async () => ({ shouldDeferHiddenTabs: false });
-context.reassignSourceTabRuntimeIfNeeded = async (preloadState) => preloadState;
-context.closeTabIfExists = async (tabId) => {
-  context.closedTabIds.push(tabId);
-};
-context.getTabMaybe = async () => null;
-context.getWindowMaybe = async () => ({ type: "normal" });
-context.primePreloadEntry = async (_windowId, entry) => {
-  entry.tabId = 9001;
-  entry.loadedUrl = entry.requestedUrl;
-  entry.status = "complete";
-};
-context.isExtensionServicePaused = async () => false;
-context.isPreloadTab = () => false;
-context.isExcludedGooglePage = () => false;
-context.isExcludedTrackingPage = () => false;
-context.isTrackableAndAllowedUrl = (rawUrl) => /^https?:\/\//i.test(String(rawUrl || ""));
-context.normalizeNavigableUrl = (rawUrl, baseUrl) => {
-  try {
-    return new URL(rawUrl, baseUrl).href;
-  } catch {
-    return "";
-  }
-};
-context.buildNodeSeed = (rawUrl) => {
-  const parsedUrl = new URL(rawUrl);
-  return {
-    nodeId: parsedUrl.origin,
-    pageUrl: parsedUrl.href,
-  };
-};
-context.isSameOriginUrl = (leftUrl, rightUrl) => new URL(leftUrl).origin === new URL(rightUrl).origin;
-context.determinePreloadStrategy = () => "prerender";
-context.supportsHiddenTabPreloadStrategy = () => true;
-context.ZeroLatencyPreloadWindowManager = {
-  async ensureWindow(preloadState, normalWindowId) {
-    const runtime = context.ensureNormalWindowRuntime(preloadState, normalWindowId);
-    runtime.preloadWindow.windowId = 99;
-    return { windowId: 99, created: true };
-  },
-  async maintainHiddenState() {},
-};
-context.closedTabIds = [];
-context.savedPreloadState = null;
-context.loadPreloadState = async () => context.savedPreloadState;
-context.savePreloadState = async (preloadState) => {
-  context.savedPreloadState = preloadState;
-};
-
-vm.createContext(context);
-
-for (const scriptPath of scriptPaths) {
-  vm.runInContext(readFileSync(scriptPath, "utf8"), context, { filename: scriptPath });
-}
+const context = loadInteractionPreloadRuntimeVmContext();
 
 const interactionMetadata = {
   trigger: "hover",
@@ -104,77 +10,7 @@ const interactionMetadata = {
   startedAt: "2026-06-02T00:00:00.000Z",
   updatedAt: "2026-06-02T00:00:00.000Z",
 };
-const preloadState = {
-  normalWindowsById: {
-    1: {
-      normalWindowId: 1,
-      preloadWindow: context.createEmptyPreloadWindowState(),
-      sourceTabs: {
-        2: {
-          sourceTabId: 2,
-          hiddenTabEntriesByUrl: {
-            "https://interaction.example/hidden": {
-              tabId: 101,
-              requestedUrl: "https://interaction.example/hidden",
-              loadedUrl: "https://interaction.example/hidden",
-              nodeId: "https://interaction.example",
-              score: 0,
-              status: "complete",
-              interactionPreload: interactionMetadata,
-            },
-            "https://regular.example/hidden": {
-              tabId: 102,
-              requestedUrl: "https://regular.example/hidden",
-              loadedUrl: "https://regular.example/hidden",
-              nodeId: "https://regular.example",
-              score: 5,
-              status: "complete",
-            },
-          },
-          prerenderEntriesByUrl: {
-            "https://interaction.example/prerender": {
-              requestedUrl: "https://interaction.example/prerender",
-              nodeId: "https://interaction.example",
-              score: 0,
-              status: "prerender",
-              strategy: "prerender",
-              targetHint: "_self",
-              interactionPreload: interactionMetadata,
-            },
-            "https://regular.example/prerender": {
-              requestedUrl: "https://regular.example/prerender",
-              nodeId: "https://regular.example",
-              score: 5,
-              status: "prerender",
-              strategy: "prerender",
-              targetHint: "_self",
-            },
-          },
-          prefetchEntriesByUrl: {
-            "https://interaction.example/prefetch": {
-              requestedUrl: "https://interaction.example/prefetch",
-              nodeId: "https://interaction.example",
-              score: 0,
-              status: "prefetch",
-              strategy: "prefetch",
-              interactionPreload: interactionMetadata,
-            },
-            "https://regular.example/prefetch": {
-              requestedUrl: "https://regular.example/prefetch",
-              nodeId: "https://regular.example",
-              score: 5,
-              status: "prefetch",
-              strategy: "prefetch",
-            },
-          },
-          updatedAt: null,
-        },
-      },
-      updatedAt: null,
-    },
-  },
-  updatedAt: null,
-};
+const preloadState = buildInteractionPreloadRuntimeState(context, interactionMetadata);
 
 await context.synchronizePreloadsForSourceTab(preloadState, 1, 2, []);
 assert.ok(
@@ -187,7 +23,20 @@ assert.ok(
     "https://regular.example/hidden"
   ]
 );
+assert.ok(
+  preloadState.normalWindowsById[1].sourceTabs[2].hiddenTabEntriesByUrl[
+    "https://bookmark.example/hidden"
+  ]
+);
 assert.deepEqual(context.closedTabIds, [102]);
+
+await context.ZeroLatencyBookmarkPreloadDiff.syncTargets(preloadState, 1, 2, []);
+assert.ok(
+  !preloadState.normalWindowsById[1].sourceTabs[2].hiddenTabEntriesByUrl[
+    "https://bookmark.example/hidden"
+  ]
+);
+assert.deepEqual(context.closedTabIds, [102, 103]);
 
 context.synchronizePrerenderEntriesForSourceTab(preloadState, 1, 2, []);
 context.synchronizePrefetchEntriesForSourceTab(preloadState, 1, 2, []);

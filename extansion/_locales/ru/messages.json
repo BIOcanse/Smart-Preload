@@ -674,6 +674,15 @@
   "settingsHistoryDeletionEndDate": {
     "message": "Конечная дата UTC"
   },
+  "settingsHistoryDeletionYear": {
+    "message": "Год"
+  },
+  "settingsHistoryDeletionMonth": {
+    "message": "Месяц"
+  },
+  "settingsHistoryDeletionDay": {
+    "message": "День"
+  },
   "settingsHistoryDeletionDelete": {
     "message": "Удалить историю"
   },

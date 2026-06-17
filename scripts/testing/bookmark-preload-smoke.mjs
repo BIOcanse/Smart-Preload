@@ -1,19 +1,29 @@
-import { spawn } from "node:child_process";
-import { createServer } from "node:http";
 import { mkdir, rm, writeFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { CdpClient, pageEval, swEval } from "./lib/cdp-client.mjs";
-import { waitForTarget, waitForExtensionServiceWorker as waitForExtensionServiceWorkerTarget } from "./lib/cdp-discovery.mjs";
-import { prepareExtensionUnderTest as copyExtensionFixture } from "./lib/extension-fixture.mjs";
-import { getChromePathCandidates } from "./lib/browser-paths.mjs";
+import { waitForTarget } from "./lib/cdp-discovery.mjs";
 import {
-  escapeHtml,
-  getFreePort,
-  sleep,
-} from "./lib/test-utils.mjs";
+  launchBookmarkSmokeChrome,
+  prepareBookmarkExtensionUnderTest,
+  waitForBookmarkExtensionServiceWorker,
+} from "./lib/bookmark-preload-smoke-browser.mjs";
+import {
+  buildBookmarkSmokeUrls,
+  startBookmarkSmokeServer,
+} from "./lib/bookmark-preload-smoke-site.mjs";
+import {
+  getDebugSnapshot,
+  getRuntimeOccupancy,
+  requestCandidateRefresh,
+  waitForPageReady,
+  waitForRuntimeCondition,
+  waitForSnapshotCondition,
+  waitForTabComplete,
+} from "./lib/bookmark-preload-smoke-probes.mjs";
+import { getChromePathCandidates } from "./lib/browser-paths.mjs";
+import { getFreePort, sleep } from "./lib/test-utils.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,15 +37,6 @@ const extensionUnderTestDir = path.join(os.tmpdir(), `zlw-ext-smoke-${process.pi
 
 const chromePathCandidates = getChromePathCandidates();
 
-const TEST_HOSTS = [
-  "www.google.test",
-  "bookmark-high.test",
-  "bookmark-mid.test",
-  "bookmark-low.test",
-  "page-result.test",
-  "nongoogle.test",
-];
-
 async function main() {
   await mkdir(runDir, { recursive: true });
   await rm(profileDir, { recursive: true, force: true });
@@ -44,12 +45,18 @@ async function main() {
 
   const webPort = await getFreePort();
   const debugPort = await getFreePort();
-  const server = await startTestServer(webPort);
-  const chrome = launchChrome({ webPort, debugPort });
+  const server = await startBookmarkSmokeServer(webPort);
+  const chrome = launchBookmarkSmokeChrome({
+    chromePathCandidates,
+    debugPort,
+    extensionUnderTestDir,
+    profileDir,
+    webPort,
+  });
   const clients = [];
 
   try {
-    const serviceWorkerTarget = await waitForExtensionServiceWorker(debugPort);
+    const serviceWorkerTarget = await waitForBookmarkExtensionServiceWorker(debugPort);
     const extensionId = new URL(serviceWorkerTarget.url).host;
     const serviceWorker = serviceWorkerTarget.client;
     clients.push(serviceWorker);
@@ -63,7 +70,7 @@ async function main() {
     });
 
     console.log("[bookmark-smoke] setup extension state");
-    const urls = buildTestUrls(webPort);
+    const urls = buildBookmarkSmokeUrls(webPort);
     await setupExtensionState(serviceWorker, urls);
     await waitForEffectiveTestSettings(serviceWorker);
 
@@ -133,19 +140,6 @@ async function main() {
   }
 }
 
-function buildTestUrls(port) {
-  return {
-    startupGoogle: `http://www.google.test:${port}/search?q=startup-smoke`,
-    newGoogle: `http://www.google.test:${port}/search?q=newtab-smoke`,
-    nonGoogle: `http://nongoogle.test:${port}/plain`,
-    bookmarkHigh: `http://bookmark-high.test:${port}/bookmark/high`,
-    bookmarkMid: `http://bookmark-mid.test:${port}/bookmark/mid`,
-    bookmarkLow: `http://bookmark-low.test:${port}/bookmark/low`,
-    resultA: `http://page-result.test:${port}/result/a`,
-    resultB: `http://page-result.test:${port}/result/b`,
-  };
-}
-
 async function setupExtensionState(serviceWorker, urls) {
   await swEval(serviceWorker, async ({ urls }) => {
     if (!chrome.bookmarks?.create || !chrome.bookmarks?.getTree) {
@@ -166,6 +160,9 @@ async function setupExtensionState(serviceWorker, urls) {
     settings.preloading.enabled = true;
     settings.preloading.realPreloadEnabled = true;
     settings.preloading.aiPrediction.enabled = false;
+    settings.tracking.excludeHttpPages = false;
+    settings.tracking.excludeLocalPages = false;
+    settings.tracking.excludePrivateNetworkPages = false;
     settings.preloadWindow.watchdogEnabled = false;
     settings.preloadWindow.fullscreenPressurePolicy = "ignore";
     settings.experiments.crossSiteCurrentTabSwap = true;
@@ -333,8 +330,13 @@ async function runGoogleBookmarkScenario({
   await waitForTabComplete(serviceWorker, state.tabId);
   console.log(`[bookmark-smoke] google scenario: request refresh tab ${state.tabId}`);
   await requestCandidateRefresh(serviceWorker, state.tabId);
-  console.log(`[bookmark-smoke] google scenario: probe prediction tab ${state.tabId}`);
-  const predictionProbe = await probeBookmarkPrediction(serviceWorker, state.tabId);
+  console.log(`[bookmark-smoke] google scenario: wait prediction probe tab ${state.tabId}`);
+  const predictionProbe = await waitForBookmarkPredictionProbe(
+    serviceWorker,
+    state.tabId,
+    expectedBucket,
+    expectedTopHost
+  );
 
   console.log(`[bookmark-smoke] google scenario: wait snapshot tab ${state.tabId}`);
   const snapshot = await waitForSnapshotCondition(serviceWorker, state.tabId, (nextSnapshot) =>
@@ -485,6 +487,39 @@ async function probeBookmarkPrediction(serviceWorker, tabId) {
   }, { tabId });
 }
 
+async function waitForBookmarkPredictionProbe(
+  serviceWorker,
+  tabId,
+  expectedBucket,
+  expectedTopHost,
+  timeoutMs = 12000
+) {
+  const startedAt = Date.now();
+  let lastProbe = null;
+
+  while (Date.now() - startedAt < timeoutMs) {
+    lastProbe = await probeBookmarkPrediction(serviceWorker, tabId);
+    const bookmarkTargets = (lastProbe.directSelection?.tabTargets || []).filter(
+      (target) => target.bookmarkPreload
+    );
+    const topBookmark = bookmarkTargets[0] || null;
+    const topUrl = topBookmark?.url || topBookmark?.requestedUrl || "";
+
+    if (
+      lastProbe.ruleEnabled === true &&
+      topBookmark?.bookmarkPreload?.bucketKey === expectedBucket &&
+      topUrl.includes(expectedTopHost)
+    ) {
+      return lastProbe;
+    }
+
+    await requestCandidateRefresh(serviceWorker, tabId);
+    await sleep(700);
+  }
+
+  return lastProbe;
+}
+
 async function runSyntheticBookmarkTrackingChecks({ serviceWorker, urls }) {
   return swEval(serviceWorker, async ({ urls }) => {
     const normalizeBuckets = (buckets) => JSON.parse(JSON.stringify(buckets || {}));
@@ -593,249 +628,11 @@ async function runSyntheticBookmarkTrackingChecks({ serviceWorker, urls }) {
   }, { urls });
 }
 
-async function requestCandidateRefresh(serviceWorker, tabId) {
-  await swEval(serviceWorker, async ({ tabId }) => {
-    await requestPreloadCandidateRefreshForTab(tabId);
-    await requestPreloadCandidateRefreshForOpenTabs();
-    return true;
-  }, { tabId });
-}
-
-async function getDebugSnapshot(serviceWorker, tabId) {
-  return swEval(serviceWorker, async ({ tabId }) => {
-    const tab = await chrome.tabs.get(tabId);
-    return globalThis.ZeroLatencyCoreMessages.handleDebugSnapshot({
-      tabId,
-      pageUrl: tab.url,
-    });
-  }, { tabId });
-}
-
-async function getRuntimeOccupancy(serviceWorker, tabId) {
-  return swEval(serviceWorker, async ({ tabId }) => {
-    const preloadState = await loadPreloadState();
-    const runtimeEntry = findSourceTabRuntime(preloadState, tabId);
-    const sourceTabRuntime = runtimeEntry?.sourceTabRuntime || null;
-    const preloadWindowId = runtimeEntry?.normalWindowRuntime?.preloadWindow?.windowId || null;
-    const hiddenEntries = Object.values(sourceTabRuntime?.hiddenTabEntriesByUrl || {}).map(
-      (entry) => ({
-        requestedUrl: entry.requestedUrl,
-        loadedUrl: entry.loadedUrl,
-        score: entry.score,
-        scoreBreakdown: entry.scoreBreakdown ?? null,
-        bookmarkPreload: entry.bookmarkPreload ?? null,
-        siteSelection: entry.siteSelection ?? null,
-        status: entry.status,
-      })
-    );
-    const preloadTabs = preloadWindowId
-      ? await chrome.tabs.query({ windowId: preloadWindowId })
-      : [];
-    const sentinelUrl = PRELOAD_WINDOW_SENTINEL_URL;
-    return {
-      preloadWindowId,
-      hiddenEntries,
-      hiddenEntryCount: Object.keys(sourceTabRuntime?.hiddenTabEntriesByUrl || {}).length,
-      prerenderEntryCount: Object.keys(sourceTabRuntime?.prerenderEntriesByUrl || {}).length,
-      prefetchEntryCount: Object.keys(sourceTabRuntime?.prefetchEntriesByUrl || {}).length,
-      preloadWindowTabUrls: preloadTabs.map((tab) => tab.url || ""),
-      sentinelCount: preloadTabs.filter((tab) => (tab.url || "") === sentinelUrl).length,
-      nonSentinelPreloadTabCount: preloadTabs.filter((tab) => (tab.url || "") !== sentinelUrl).length,
-      knownRuntime: globalThis.snapshotKnownPreloadRuntime?.() || null,
-    };
-  }, { tabId });
-}
-
-async function waitForRuntimeCondition(serviceWorker, tabId, predicate, timeoutMs = 12000) {
-  const startedAt = Date.now();
-  let lastRuntime = null;
-
-  while (Date.now() - startedAt < timeoutMs) {
-    lastRuntime = await getRuntimeOccupancy(serviceWorker, tabId);
-    if (predicate(lastRuntime)) {
-      return lastRuntime;
-    }
-    await requestCandidateRefresh(serviceWorker, tabId);
-    await sleep(700);
-  }
-
-  return lastRuntime;
-}
-
-async function waitForSnapshotCondition(serviceWorker, tabId, predicate, timeoutMs = 12000) {
-  const startedAt = Date.now();
-  let lastSnapshot = null;
-
-  while (Date.now() - startedAt < timeoutMs) {
-    lastSnapshot = await getDebugSnapshot(serviceWorker, tabId);
-    if (predicate(lastSnapshot)) {
-      return lastSnapshot;
-    }
-    await requestCandidateRefresh(serviceWorker, tabId);
-    await sleep(700);
-  }
-
-  return lastSnapshot;
-}
-
-async function waitForTabComplete(serviceWorker, tabId, timeoutMs = 12000) {
-  const startedAt = Date.now();
-  let lastStatus = null;
-
-  while (Date.now() - startedAt < timeoutMs) {
-    const status = await swEval(serviceWorker, async ({ tabId }) => {
-      const tab = await chrome.tabs.get(tabId);
-      return { status: tab.status, url: tab.url };
-    }, { tabId });
-    lastStatus = status;
-    if (status.status === "complete") {
-      await sleep(700);
-      return status;
-    }
-    await sleep(300);
-  }
-
-  throw new Error(
-    `Timed out waiting for tab ${tabId} to complete: ${JSON.stringify(lastStatus)}`
-  );
-}
-
-async function waitForPageReady(page, timeoutMs = 10000) {
-  const startedAt = Date.now();
-  while (Date.now() - startedAt < timeoutMs) {
-    const readyState = await pageEval(page, () => document.readyState);
-    if (readyState === "complete" || readyState === "interactive") {
-      await sleep(300);
-      return;
-    }
-    await sleep(200);
-  }
-  throw new Error("Timed out waiting for settings page readiness");
-}
-
-async function waitForExtensionServiceWorker(debugPort, timeoutMs = 20000) {
-  return waitForExtensionServiceWorkerTarget({
-    debugPort,
-    timeoutMs,
-    isTargetManifest: ({ manifest, permissions }) =>
-      manifest?.background?.service_worker === "service-worker.js" &&
-      manifest?.options_page === "settings/index.html" &&
-      permissions.includes("nativeMessaging") &&
-      permissions.includes("bookmarks") &&
-      permissions.includes("storage"),
-  });
-}
-
-function launchChrome({ webPort, debugPort }) {
-  const chromePath = chromePathCandidates.find((candidate) => candidate && existsSync(candidate));
-  if (!chromePath) {
-    throw new Error("Chrome executable was not found.");
-  }
-
-  const resolverRules = TEST_HOSTS
-    .map((host) => `MAP ${host} 127.0.0.1`)
-    .join(", ");
-  const args = [
-    `--user-data-dir=${profileDir}`,
-    `--remote-debugging-port=${debugPort}`,
-    `--disable-extensions-except=${extensionUnderTestDir}`,
-    `--load-extension=${extensionUnderTestDir}`,
-    "--enable-extensions",
-    "--enable-unsafe-extension-debugging",
-    `--host-resolver-rules=${resolverRules}`,
-    "--no-first-run",
-    "--no-default-browser-check",
-    "--no-sandbox",
-    "--disable-default-apps",
-    "--disable-sync",
-    "--disable-features=Translate,AutofillServerCommunication,DisableLoadExtensionCommandLineSwitch",
-    "--window-size=1280,900",
-    `http://www.google.test:${webPort}/search?q=startup-smoke`,
-  ];
-
-  const child = spawn(chromePath, args, {
-    stdio: ["ignore", "pipe", "pipe"],
-    windowsHide: false,
-  });
-
-  child.stdout.on("data", (chunk) => process.stdout.write(chunk));
-  child.stderr.on("data", (chunk) => process.stderr.write(chunk));
-  return child;
-}
-
 async function prepareExtensionUnderTest() {
-  await copyExtensionFixture({
+  await prepareBookmarkExtensionUnderTest({
     extensionDir,
     targetDir: extensionUnderTestDir,
   });
-}
-
-async function startTestServer(port) {
-  const server = createServer((request, response) => {
-    const requestUrl = new URL(request.url || "/", `http://${request.headers.host}`);
-    const host = (request.headers.host || "").split(":")[0];
-    response.setHeader("Cache-Control", "no-store");
-
-    if (host === "www.google.test" && requestUrl.pathname === "/search") {
-      respondHtml(response, renderGoogleSearchPage(requestUrl));
-      return;
-    }
-
-    if (host === "nongoogle.test" && requestUrl.pathname === "/plain") {
-      respondHtml(response, renderNonGooglePage(port));
-      return;
-    }
-
-    respondHtml(response, renderTargetPage(host, requestUrl.pathname));
-  });
-
-  await new Promise((resolve) => server.listen(port, "127.0.0.1", resolve));
-  return server;
-}
-
-function renderGoogleSearchPage(requestUrl) {
-  const query = requestUrl.searchParams.get("q") || "";
-  return `<!doctype html>
-<html>
-  <head><title>Google smoke ${escapeHtml(query)}</title></head>
-  <body>
-    <main>
-      <h1>Google smoke ${escapeHtml(query)}</h1>
-      <a href="/search?udm=50&q=${encodeURIComponent(query)}">AI mode should not be preferred</a>
-      <a href="http://page-result.test:${requestUrl.port}/result/a">Result A</a>
-      <a href="http://page-result.test:${requestUrl.port}/result/b" target="_blank">Result B blank</a>
-      <a href="http://bookmark-low.test:${requestUrl.port}/bookmark/low">Visible low bookmark page</a>
-    </main>
-  </body>
-</html>`;
-}
-
-function renderNonGooglePage(port) {
-  return `<!doctype html>
-<html>
-  <head><title>Non Google smoke</title></head>
-  <body>
-    <h1>Non Google smoke</h1>
-    <a href="http://bookmark-high.test:${port}/bookmark/high">Bookmark-looking link outside Google</a>
-    <a href="http://page-result.test:${port}/result/a">Normal result</a>
-  </body>
-</html>`;
-}
-
-function renderTargetPage(host, pathname) {
-  return `<!doctype html>
-<html>
-  <head><title>${escapeHtml(host)} ${escapeHtml(pathname)}</title></head>
-  <body>
-    <h1>${escapeHtml(host)}</h1>
-    <p>Target page ${escapeHtml(pathname)}</p>
-  </body>
-</html>`;
-}
-
-function respondHtml(response, html) {
-  response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-  response.end(html);
 }
 
 main().catch((error) => {

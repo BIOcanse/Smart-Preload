@@ -4,9 +4,10 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { CdpClient, pageEval, swEval } from "./lib/cdp-client.mjs";
-import { waitForTarget, waitForExtensionServiceWorker as waitForExtensionServiceWorkerTarget } from "./lib/cdp-discovery.mjs";
+import { waitForTarget } from "./lib/cdp-discovery.mjs";
 import { startBrowserIsolationSite } from "./lib/browser-isolation-site.mjs";
 import { prepareExtensionUnderTest as copyExtensionFixture } from "./lib/extension-fixture.mjs";
+import { waitForZeroLatencyExtensionServiceWorker } from "./lib/extension-service-worker.mjs";
 import { createNativeAppFixture } from "./lib/native-app-fixture.mjs";
 import {
   configureRealPreloadTestState,
@@ -35,6 +36,13 @@ import {
   sleep,
   stripHash,
 } from "./lib/test-utils.mjs";
+import {
+  closeNativeContextMenu,
+  dispatchMouseMove,
+  dispatchRightClick,
+  dispatchSyntheticContextMenu,
+  waitForLinkPoint,
+} from "./lib/cdp-input-helpers.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -451,36 +459,47 @@ async function waitForContextMenuFallbackActivation(
   let lastState = null;
 
   while (Date.now() - startedAt < timeoutMs) {
-    lastState = await swEval(
-      serviceWorker,
-      async ({ windowId, createdTabId, targetUrl }) => {
-        const tabs = await chrome.tabs.query({ windowId });
-        const createdTab = Number.isFinite(createdTabId)
-          ? await chrome.tabs.get(createdTabId).catch(() => null)
-          : null;
-        const activeTarget = tabs.find(
-          (tab) => tab.active === true && stripHashForSmoke(tab.url) === stripHashForSmoke(targetUrl)
-        );
-        return {
-          createdTabClosed: createdTab === null,
-          activeTarget: Boolean(activeTarget),
-          activeTargetTabId: activeTarget?.id ?? null,
-          activeTargetWindowId: activeTarget?.windowId ?? null,
-          activeUrl: activeTarget?.url ?? null,
-        };
+    try {
+      lastState = await swEval(
+        serviceWorker,
+        async ({ windowId, createdTabId, targetUrl }) => {
+          const tabs = await chrome.tabs.query({ windowId });
+          const createdTab = Number.isFinite(createdTabId)
+            ? await chrome.tabs.get(createdTabId).catch(() => null)
+            : null;
+          const activeTarget = tabs.find(
+            (tab) =>
+              tab.active === true && stripHashForSmoke(tab.url) === stripHashForSmoke(targetUrl)
+          );
+          return {
+            createdTabClosed: createdTab === null,
+            activeTarget: Boolean(activeTarget),
+            activeTargetTabId: activeTarget?.id ?? null,
+            activeTargetWindowId: activeTarget?.windowId ?? null,
+            activeUrl: activeTarget?.url ?? null,
+          };
 
-        function stripHashForSmoke(value) {
-          try {
-            const parsedUrl = new URL(value);
-            parsedUrl.hash = "";
-            return parsedUrl.href;
-          } catch {
-            return String(value || "");
+          function stripHashForSmoke(value) {
+            try {
+              const parsedUrl = new URL(value);
+              parsedUrl.hash = "";
+              return parsedUrl.href;
+            } catch {
+              return String(value || "");
+            }
           }
-        }
-      },
-      { windowId, createdTabId, targetUrl }
-    );
+        },
+        { windowId, createdTabId, targetUrl },
+        { timeoutMs: 2500 }
+      );
+    } catch (error) {
+      lastState = {
+        createdTabClosed: false,
+        activeTarget: false,
+        activeTargetWindowId: null,
+        transientError: error instanceof Error ? error.message : String(error),
+      };
+    }
 
     if (lastState.createdTabClosed && lastState.activeTarget) {
       return lastState;
@@ -493,42 +512,54 @@ async function waitForContextMenuFallbackActivation(
 }
 
 async function readPreloadState(serviceWorker, source) {
-  return swEval(
-    serviceWorker,
-    async ({ sourceTabId, sourceWindowId }) => {
-      const preloadState = await loadPreloadState();
-      const runtimeEntry = findSourceTabRuntime(preloadState, sourceTabId);
-      const normalWindowRuntime = runtimeEntry?.normalWindowRuntime ?? null;
-      const sourceRuntime = runtimeEntry?.sourceTabRuntime ?? null;
-      const preloadWindow = normalWindowRuntime?.preloadWindow ?? {};
-      const livePreloadWindow =
-        preloadWindow.windowId != null
-          ? await chrome.windows.get(preloadWindow.windowId).catch(() => null)
-          : null;
-      const snapshots = preloadState.scheduler?.candidateSelectionSnapshotsByTabId ?? {};
-      const snapshot = snapshots[String(sourceTabId)] ?? null;
-      const events = globalThis.ZeroLatencyDebugEvents?.snapshot?.(250) ?? [];
+  let lastError = null;
 
-      return {
-        sourceWindowId,
-        preloadWindow: {
-          windowId: preloadWindow.windowId ?? null,
-          hwnd: preloadWindow.hwnd ?? null,
-          hiddenBySystem: preloadWindow.hiddenBySystem === true,
-          lastSystemHideError: preloadWindow.lastSystemHideError ?? null,
-          systemHideFailureCount: preloadWindow.systemHideFailureCount ?? 0,
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      return await swEval(
+        serviceWorker,
+        async ({ sourceTabId, sourceWindowId }) => {
+          const preloadState = await loadPreloadState();
+          const runtimeEntry = findSourceTabRuntime(preloadState, sourceTabId);
+          const normalWindowRuntime = runtimeEntry?.normalWindowRuntime ?? null;
+          const sourceRuntime = runtimeEntry?.sourceTabRuntime ?? null;
+          const preloadWindow = normalWindowRuntime?.preloadWindow ?? {};
+          const livePreloadWindow =
+            preloadWindow.windowId != null
+              ? await chrome.windows.get(preloadWindow.windowId).catch(() => null)
+              : null;
+          const snapshots = preloadState.scheduler?.candidateSelectionSnapshotsByTabId ?? {};
+          const snapshot = snapshots[String(sourceTabId)] ?? null;
+          const events = globalThis.ZeroLatencyDebugEvents?.snapshot?.(250) ?? [];
+
+          return {
+            sourceWindowId,
+            preloadWindow: {
+              windowId: preloadWindow.windowId ?? null,
+              hwnd: preloadWindow.hwnd ?? null,
+              hiddenBySystem: preloadWindow.hiddenBySystem === true,
+              lastSystemHideError: preloadWindow.lastSystemHideError ?? null,
+              systemHideFailureCount: preloadWindow.systemHideFailureCount ?? 0,
+            },
+            preloadWindowVisible:
+              livePreloadWindow == null ? null : livePreloadWindow.state !== "minimized",
+            hiddenEntries: Object.values(sourceRuntime?.hiddenTabEntriesByUrl || {}),
+            prerenderEntries: Object.values(sourceRuntime?.prerenderEntriesByUrl || {}),
+            prefetchEntries: Object.values(sourceRuntime?.prefetchEntriesByUrl || {}),
+            scoreSignals: snapshot?.scoreSignals ?? null,
+            events,
+          };
         },
-        preloadWindowVisible:
-          livePreloadWindow == null ? null : livePreloadWindow.state !== "minimized",
-        hiddenEntries: Object.values(sourceRuntime?.hiddenTabEntriesByUrl || {}),
-        prerenderEntries: Object.values(sourceRuntime?.prerenderEntriesByUrl || {}),
-        prefetchEntries: Object.values(sourceRuntime?.prefetchEntriesByUrl || {}),
-        scoreSignals: snapshot?.scoreSignals ?? null,
-        events,
-      };
-    },
-    { sourceTabId: source.tabId, sourceWindowId: source.windowId }
-  );
+        { sourceTabId: source.tabId, sourceWindowId: source.windowId },
+        { timeoutMs: 6000 }
+      );
+    } catch (error) {
+      lastError = error;
+      await sleep(300 * attempt);
+    }
+  }
+
+  throw lastError ?? new Error("Failed to read preload state");
 }
 
 async function setupExtensionState(serviceWorker) {
@@ -544,13 +575,10 @@ async function setupExtensionState(serviceWorker) {
 }
 
 async function waitForExtensionServiceWorker(debugPort, timeoutMs = 20000) {
-  return waitForExtensionServiceWorkerTarget({
+  return waitForZeroLatencyExtensionServiceWorker({
     debugPort,
     timeoutMs,
-    isTargetManifest: ({ permissions }) =>
-      permissions.includes("nativeMessaging") &&
-      permissions.includes("tabs") &&
-      permissions.includes("windows"),
+    requiredPermissions: ["nativeMessaging", "tabs", "windows"],
   });
 }
 
@@ -571,109 +599,6 @@ async function prepareExtensionUnderTest(targetDir) {
     extensionDir,
     targetDir,
   });
-}
-
-async function waitForLinkPoint(page, linkId, timeoutMs = 5000) {
-  const startedAt = Date.now();
-  let lastState = null;
-
-  while (Date.now() - startedAt < timeoutMs) {
-    lastState = await pageEval(page, (id) => {
-      const link = document.getElementById(id);
-
-      if (!link) {
-        return {
-          found: false,
-          readyState: document.readyState,
-          bodyText: document.body?.innerText?.slice(0, 300) || "",
-        };
-      }
-
-      const rect = link.getBoundingClientRect();
-      return {
-        found: true,
-        x: rect.left + rect.width / 2,
-        y: rect.top + rect.height / 2,
-        href: link.href,
-      };
-    }, linkId);
-
-    if (lastState?.found === true) {
-      return lastState;
-    }
-
-    await sleep(100);
-  }
-
-  throw new Error(`Timed out waiting for ${linkId}: ${JSON.stringify(lastState)}`);
-}
-
-async function dispatchRightClick(page, point) {
-  await dispatchMouseMove(page, point);
-  await page.send("Input.dispatchMouseEvent", {
-    type: "mousePressed",
-    x: point.x,
-    y: point.y,
-    button: "right",
-    buttons: 2,
-    clickCount: 1,
-  });
-  await page.send("Input.dispatchMouseEvent", {
-    type: "mouseReleased",
-    x: point.x,
-    y: point.y,
-    button: "right",
-    buttons: 0,
-    clickCount: 1,
-  });
-}
-
-async function dispatchMouseMove(page, point) {
-  await page.send("Input.dispatchMouseEvent", {
-    type: "mouseMoved",
-    x: point.x,
-    y: point.y,
-    button: "none",
-    buttons: 0,
-  });
-}
-
-async function closeNativeContextMenu(page) {
-  await page.send("Input.dispatchKeyEvent", {
-    type: "keyDown",
-    key: "Escape",
-    code: "Escape",
-    windowsVirtualKeyCode: 27,
-    nativeVirtualKeyCode: 27,
-  });
-  await page.send("Input.dispatchKeyEvent", {
-    type: "keyUp",
-    key: "Escape",
-    code: "Escape",
-    windowsVirtualKeyCode: 27,
-    nativeVirtualKeyCode: 27,
-  });
-}
-
-async function dispatchSyntheticContextMenu(page, linkId) {
-  await pageEval(page, (id) => {
-    const link = document.getElementById(id);
-    if (!link) {
-      throw new Error(`link missing: ${id}`);
-    }
-    const rect = link.getBoundingClientRect();
-    link.dispatchEvent(
-      new MouseEvent("contextmenu", {
-        bubbles: true,
-        cancelable: true,
-        view: window,
-        button: 2,
-        buttons: 2,
-        clientX: rect.left + rect.width / 2,
-        clientY: rect.top + rect.height / 2,
-      })
-    );
-  }, linkId);
 }
 
 main().catch((error) => {

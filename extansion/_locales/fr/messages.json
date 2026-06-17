@@ -674,6 +674,15 @@
   "settingsHistoryDeletionEndDate": {
     "message": "Date de fin UTC"
   },
+  "settingsHistoryDeletionYear": {
+    "message": "Année"
+  },
+  "settingsHistoryDeletionMonth": {
+    "message": "Mois"
+  },
+  "settingsHistoryDeletionDay": {
+    "message": "Jour"
+  },
   "settingsHistoryDeletionDelete": {
     "message": "Supprimer l'historique"
   },

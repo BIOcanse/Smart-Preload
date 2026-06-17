@@ -21,6 +21,8 @@
       case "open-settings":
       case "get-service-state":
       case "native-app-update-status":
+      case "background-task-snapshot":
+      case "background-task-get":
         return "direct";
       case "register-preload-candidates":
       case "preload-interaction-status":
