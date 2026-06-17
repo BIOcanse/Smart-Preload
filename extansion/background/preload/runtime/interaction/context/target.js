@@ -25,7 +25,8 @@ function resolveInteractionPreloadTargetContext({ message, sourceTab, sourcePage
         targetHint: message?.targetHint,
         trigger: message?.trigger,
       },
-      targetUrl
+      targetUrl,
+      settings
     ) ?? null;
 
   if (safetyDecision?.skipPreload === true || safetyDecision?.realPreloadBlocked === true) {

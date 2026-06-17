@@ -80,6 +80,30 @@ async function resolveInteractionPreloadSourceContext(message, sender) {
     return { ok: false, reason: "proxy-skip" };
   }
 
+  if (
+    globalThis.ZeroLatencyPreloadSensitiveSitePolicy?.shouldSkipSensitivePreloadSource?.(
+      sourcePageUrl,
+      settings
+    )
+  ) {
+    const preloadState = await loadPreloadState();
+    const cleanup =
+      await globalThis.ZeroLatencyPreloadSensitiveSitePolicy.clearSensitivePreloadState(
+        preloadState,
+        settings,
+        {
+          tabs: [sourceTab],
+          reason: "interaction-preload",
+        }
+      );
+
+    if (cleanup.mutated) {
+      await savePreloadState(cleanup.preloadState);
+    }
+
+    return { ok: false, reason: "sensitive-site-skip" };
+  }
+
   return {
     ok: true,
     sourceTab,

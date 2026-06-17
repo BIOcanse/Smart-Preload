@@ -29,6 +29,10 @@ const safetyRuleSources = await Promise.all(
     "../../extansion/shared/preload-safety-rules/decision.js",
     "../../extansion/shared/preload-safety-rules/candidate.js",
     "../../extansion/shared/preload-safety-rules.js",
+    "../../extansion/shared/sensitive-site-rules/constants.js",
+    "../../extansion/shared/sensitive-site-rules/url.js",
+    "../../extansion/shared/sensitive-site-rules/match.js",
+    "../../extansion/shared/sensitive-site-rules.js",
   ].map((filePath) => readFile(new URL(filePath, import.meta.url), "utf8"))
 );
 const candidateScanSource = await readFile(
@@ -70,6 +74,14 @@ const anchors = [
   makeAnchor("https://example.com/files?download=1", {
     text: "Download query",
     top: 120,
+  }),
+  makeAnchor("https://www.bankofamerica.com/accounts", {
+    text: "Online banking",
+    top: 140,
+  }),
+  makeAnchor("https://school.example/courses/intro/quizzes/final", {
+    text: "Final quiz",
+    top: 160,
   }),
 ];
 
@@ -156,6 +168,17 @@ const downloadDecision = navigationContent.inspectAnchorSideEffectPreloadSafety(
 assert.equal(downloadDecision.skipPreload, true);
 assert.ok(downloadDecision.reasons.includes("download-attribute"));
 
+const sensitiveDecision = navigationContent.inspectAnchorSideEffectPreloadSafety(
+  makeAnchor("https://www.bankofamerica.com/accounts", {
+    text: "Online banking",
+  }),
+  "https://www.bankofamerica.com/accounts"
+);
+assert.equal(sensitiveDecision.skipPreload, true);
+assert.equal(sensitiveDecision.sideEffectBlocked, false);
+assert.equal(sensitiveDecision.sensitiveSiteBlocked, true);
+assert.ok(sensitiveDecision.reasons.includes("sensitive-site-banking"));
+
 const candidateLinks = navigationContent.collectCandidateLinks();
 assert.equal(
   Array.from(candidateLinks, (link) => String(link.url)).join("\n"),
@@ -173,6 +196,8 @@ console.log(
         "content candidate scan drops download attribute links",
         "content candidate scan drops unsafe MIME links",
         "content candidate scan drops download query links",
+        "content candidate scan drops sensitive banking links",
+        "content candidate scan drops sensitive exam links",
       ],
     },
     null,

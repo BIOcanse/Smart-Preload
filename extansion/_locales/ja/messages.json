@@ -845,6 +845,15 @@
   "settingsRealPreloadDesc": {
     "message": "非表示の実タブをバックグラウンドで使い、体感遅延をほぼゼロに近づけます。メモリを大量に使うため、既定ではオフです。"
   },
+  "settingsRealPreloadSensitiveSceneWarning": {
+    "message": "オンライン試験、銀行などの重要な操作では、予期しないページ操作を避けるため Real Preload をオフにするか、プリロードを一時停止してください。"
+  },
+  "settingsSkipSensitivePages": {
+    "message": "試験・銀行ページをスキップ"
+  },
+  "settingsSkipSensitivePagesDesc": {
+    "message": "ローカルの試験、監督、銀行ルールに一致する元ページやリンクはプリロードしません。危険サイト一覧とは別のセンシティブ場面ライブラリを使います。"
+  },
   "settingsSideEffectLinkSafetyGuard": {
     "message": "副作用リンクの安全保護"
   },

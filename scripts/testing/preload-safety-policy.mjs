@@ -9,17 +9,32 @@ const safetyRuleSources = await Promise.all(
     "../../extansion/shared/preload-safety-rules/decision.js",
     "../../extansion/shared/preload-safety-rules/candidate.js",
     "../../extansion/shared/preload-safety-rules.js",
+    "../../extansion/shared/sensitive-site-rules/constants.js",
+    "../../extansion/shared/sensitive-site-rules/url.js",
+    "../../extansion/shared/sensitive-site-rules/match.js",
+    "../../extansion/shared/sensitive-site-rules.js",
   ].map((filePath) => readFile(new URL(filePath, import.meta.url), "utf8"))
 );
 const policySources = await Promise.all(
   [
+    "../../extansion/background/preload/sensitive-site-policy.js",
     "../../extansion/background/preload/safety-policy/normalize.js",
     "../../extansion/background/preload/safety-policy/dangerous-site.js",
+    "../../extansion/background/preload/safety-policy/sensitive-site.js",
     "../../extansion/background/preload/safety-policy/decision.js",
     "../../extansion/background/preload/safety-policy.js",
   ].map((filePath) => readFile(new URL(filePath, import.meta.url), "utf8"))
 );
-const context = vm.createContext({ URL, globalThis: {} });
+const context = vm.createContext({
+  URL,
+  globalThis: {},
+  isPlainObject(value) {
+    return Boolean(value && typeof value === "object" && !Array.isArray(value));
+  },
+  createEmptyPreloadState() {
+    return {};
+  },
+});
 for (const [index, source] of safetyRuleSources.entries()) {
   vm.runInContext(source, context, {
     filename: `preload-safety-rules-${index}.js`,
@@ -87,6 +102,7 @@ assert.equal(dangerousSiteDecision.skipPreload, true);
 assert.equal(dangerousSiteDecision.realPreloadBlocked, true);
 assert.equal(dangerousSiteDecision.sideEffectBlocked, false);
 assert.equal(dangerousSiteDecision.dangerousSiteBlocked, true);
+assert.equal(dangerousSiteDecision.sensitiveSiteBlocked, false);
 assert.ok(dangerousSiteDecision.reasons.includes("dangerous-site-verdict"));
 assert.ok(dangerousSiteDecision.dangerousSiteReasons.includes("dangerous-site-malware"));
 assert.equal(dangerousSiteDecision.dangerousSiteEvidence.verdict, "unsafe");
@@ -96,6 +112,39 @@ assert.deepEqual(
   Array.from(dangerousSiteDecision.dangerousSiteEvidence.threatTypes),
   ["MALWARE", "SOCIAL_ENGINEERING"]
 );
+
+const bankingDecision = policy.inspectPreloadCandidate({
+  url: "https://www.bankofamerica.com/accounts",
+});
+assert.equal(bankingDecision.skipPreload, true);
+assert.equal(bankingDecision.realPreloadBlocked, true);
+assert.equal(bankingDecision.sideEffectBlocked, false);
+assert.equal(bankingDecision.dangerousSiteBlocked, false);
+assert.equal(bankingDecision.sensitiveSiteBlocked, true);
+assert.ok(bankingDecision.reasons.includes("sensitive-site-banking"));
+assert.ok(bankingDecision.sensitiveSiteReasons.includes("sensitive-site-banking"));
+assert.equal(bankingDecision.sensitiveSiteEvidence.matches[0].category, "banking");
+
+const examDecision = policy.inspectPreloadCandidate({
+  url: "https://school.example/courses/intro/quizzes/final",
+});
+assert.equal(examDecision.skipPreload, true);
+assert.equal(examDecision.sensitiveSiteBlocked, true);
+assert.ok(examDecision.reasons.includes("sensitive-site-exam"));
+
+const sensitiveDisabledDecision = policy.inspectPreloadCandidate(
+  {
+    url: "https://www.bankofamerica.com/accounts",
+  },
+  "",
+  {
+    preloading: {
+      skipSensitivePages: false,
+    },
+  }
+);
+assert.equal(sensitiveDisabledDecision.skipPreload, false);
+assert.equal(sensitiveDisabledDecision.sensitiveSiteBlocked, false);
 
 console.log(
   JSON.stringify(
@@ -110,6 +159,9 @@ console.log(
         "safe link",
         "invalid URL",
         "dangerous site verdict",
+        "sensitive banking site",
+        "sensitive exam path",
+        "sensitive guard disabled",
       ],
     },
     null,

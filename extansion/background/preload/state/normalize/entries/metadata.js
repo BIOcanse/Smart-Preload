@@ -42,6 +42,12 @@
           .filter(Boolean)
           .slice(0, 8)
       : [];
+    const sensitiveSiteReasons = Array.isArray(nextValue.sensitiveSiteReasons)
+      ? nextValue.sensitiveSiteReasons
+          .map((reason) => (typeof reason === "string" ? reason.trim() : ""))
+          .filter(Boolean)
+          .slice(0, 8)
+      : [];
     const reason =
       typeof nextValue.reason === "string" && nextValue.reason.trim()
         ? nextValue.reason.trim()
@@ -73,6 +79,25 @@
             : [],
         }
       : null;
+    const rawSensitiveSiteEvidence = isPlainObject(nextValue.sensitiveSiteEvidence)
+      ? nextValue.sensitiveSiteEvidence
+      : null;
+    const sensitiveSiteEvidence = rawSensitiveSiteEvidence
+      ? {
+          libraryVersion: Number(rawSensitiveSiteEvidence.libraryVersion) || 0,
+          matches: Array.isArray(rawSensitiveSiteEvidence.matches)
+            ? rawSensitiveSiteEvidence.matches
+                .map((match) => ({
+                  category: typeof match?.category === "string" ? match.category.trim() : "",
+                  reason: typeof match?.reason === "string" ? match.reason.trim() : "",
+                  field: typeof match?.field === "string" ? match.field.trim() : "",
+                  value: typeof match?.value === "string" ? match.value.trim() : "",
+                }))
+                .filter((match) => match.category && match.reason)
+                .slice(0, 12)
+            : [],
+        }
+      : null;
 
     return {
       enabled: true,
@@ -81,11 +106,14 @@
       realPreloadBlocked: nextValue.realPreloadBlocked === true,
       sideEffectBlocked: nextValue.sideEffectBlocked === true,
       dangerousSiteBlocked: nextValue.dangerousSiteBlocked === true,
+      sensitiveSiteBlocked: nextValue.sensitiveSiteBlocked === true,
       reason,
       reasons,
       sideEffectReasons,
       dangerousSiteReasons,
+      sensitiveSiteReasons,
       dangerousSiteEvidence,
+      sensitiveSiteEvidence,
     };
   }
 

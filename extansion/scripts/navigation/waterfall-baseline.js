@@ -8,6 +8,10 @@
       state.ignoreWaterfallDynamicLinks = policy.ignoreWaterfallDynamicLinks;
     }
 
+    if (typeof policy?.skipSensitivePages === "boolean") {
+      state.skipSensitivePages = policy.skipSensitivePages;
+    }
+
     if (!state.ignoreWaterfallDynamicLinks) {
       resetWaterfallBaseline();
     }

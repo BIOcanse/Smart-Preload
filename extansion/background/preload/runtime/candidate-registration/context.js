@@ -136,6 +136,48 @@ async function resolvePreloadCandidateRegistrationContext(message, sender) {
     };
   }
 
+  if (
+    globalThis.ZeroLatencyPreloadSensitiveSitePolicy?.shouldSkipSensitivePreloadSource?.(
+      sourcePageUrl,
+      runtimeSettings
+    )
+  ) {
+    const preloadState = await loadPreloadState();
+    const cleanup =
+      await globalThis.ZeroLatencyPreloadSensitiveSitePolicy.clearSensitivePreloadState(
+        preloadState,
+        runtimeSettings,
+        {
+          tabs: [sourceTab],
+          reason: "candidate-registration",
+        }
+      );
+
+    if (cleanup.mutated) {
+      await savePreloadState(cleanup.preloadState);
+    }
+
+    globalThis.ZeroLatencyDebugEvents?.record?.("preload-candidates.skip-sensitive-site-source", {
+      sourceTabId: sourceTab.id,
+      sourceWindowId: sourceTab.windowId,
+      pageUrl: sourcePageUrl,
+    });
+    return {
+      ok: false,
+      response: {
+        ok: true,
+        preloadedCount: 0,
+        skipped: true,
+        reason: "sensitive-site-skip",
+        contentScriptPolicy: {
+          ignoreWaterfallDynamicLinks:
+            runtimeSettings.preloading.ignoreWaterfallDynamicLinks !== false,
+          skipSensitivePages: runtimeSettings.preloading.skipSensitivePages !== false,
+        },
+      },
+    };
+  }
+
   const preloadState = await loadPreloadState();
 
   if (isPreloadTab(preloadState, sourceTab.id)) {

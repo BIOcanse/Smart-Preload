@@ -18,6 +18,7 @@
       settings.preloading.interactionPreloadEnabled !== false;
     elements.realPreloadEnabled.checked =
       settingsApi.isRealPreloadEnabled?.(settings) === true;
+    elements.skipSensitivePages.checked = settings.preloading.skipSensitivePages !== false;
     elements.ignoreWaterfallDynamicLinks.checked =
       settings.preloading.ignoreWaterfallDynamicLinks;
     elements.excludeIncognitoWindows.checked =

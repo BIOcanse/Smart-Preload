@@ -5,6 +5,7 @@ async function clearPreloadCandidateRefreshExclusionsForOpenTabs(
 ) {
   const incognitoPolicy = globalThis.ZeroLatencyPreloadIncognitoPolicy;
   const proxySkipPolicy = globalThis.ZeroLatencyPreloadProxySkipPolicy;
+  const sensitiveSitePolicy = globalThis.ZeroLatencyPreloadSensitiveSitePolicy;
   const incognitoCleanup = await incognitoPolicy?.clearExcludedIncognitoPreloadState?.(
     preloadState,
     runtimeSettings,
@@ -21,12 +22,26 @@ async function clearPreloadCandidateRefreshExclusionsForOpenTabs(
       reason: "open-tabs-refresh",
     }
   );
+  const sensitiveCleanup = await sensitiveSitePolicy?.clearSensitivePreloadState?.(
+    proxyCleanup?.preloadState ?? incognitoCleanup?.preloadState ?? preloadState,
+    runtimeSettings,
+    {
+      tabs,
+      reason: "open-tabs-refresh",
+    }
+  );
   const nextPreloadState =
-    proxyCleanup?.preloadState ?? incognitoCleanup?.preloadState ?? preloadState;
+    sensitiveCleanup?.preloadState ??
+    proxyCleanup?.preloadState ??
+    incognitoCleanup?.preloadState ??
+    preloadState;
 
   return {
     preloadState: nextPreloadState,
-    mutated: incognitoCleanup?.mutated === true || proxyCleanup?.mutated === true,
+    mutated:
+      incognitoCleanup?.mutated === true ||
+      proxyCleanup?.mutated === true ||
+      sensitiveCleanup?.mutated === true,
   };
 }
 
@@ -37,6 +52,7 @@ async function clearPreloadCandidateRefreshExclusionsForTab(
 ) {
   const incognitoPolicy = globalThis.ZeroLatencyPreloadIncognitoPolicy;
   const proxySkipPolicy = globalThis.ZeroLatencyPreloadProxySkipPolicy;
+  const sensitiveSitePolicy = globalThis.ZeroLatencyPreloadSensitiveSitePolicy;
   let cleanupState = preloadState;
   let cleanupMutated = false;
 
@@ -70,6 +86,21 @@ async function clearPreloadCandidateRefreshExclusionsForTab(
       cleanupMutated = true;
     }
   }
+  if (sensitiveSitePolicy?.shouldSkipSensitivePreloadSource?.(tab, runtimeSettings) === true) {
+    const cleanup = await sensitiveSitePolicy.clearSensitivePreloadState(
+      cleanupState,
+      runtimeSettings,
+      {
+        tabs: [tab],
+        reason: "single-tab-refresh",
+      }
+    );
+
+    if (cleanup.mutated) {
+      cleanupState = cleanup.preloadState;
+      cleanupMutated = true;
+    }
+  }
 
   return {
     preloadState: cleanupState,
@@ -85,6 +116,10 @@ function shouldSkipPreloadCandidateRefreshForTab(tab, preloadState, runtimeSetti
       runtimeSettings
     ) === true ||
     globalThis.ZeroLatencyPreloadProxySkipPolicy?.shouldSkipProxyPreloadSource?.(
+      tab,
+      runtimeSettings
+    ) === true ||
+    globalThis.ZeroLatencyPreloadSensitiveSitePolicy?.shouldSkipSensitivePreloadSource?.(
       tab,
       runtimeSettings
     ) === true ||

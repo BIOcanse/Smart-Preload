@@ -38,6 +38,7 @@
     waterfallBaselineStartedAt: 0,
     waterfallBaselineLocked: false,
     ignoreWaterfallDynamicLinks: true,
+    skipSensitivePages: true,
     lastReportedPageDigestFingerprint: null,
     attentionActivityTimerId: null,
     lastUserInputAt: 0,

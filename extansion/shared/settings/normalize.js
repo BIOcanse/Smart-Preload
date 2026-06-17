@@ -61,6 +61,8 @@
       normalized.preloading.ignoreWaterfallDynamicLinks !== false;
     normalized.preloading.interactionPreloadEnabled =
       normalized.preloading.interactionPreloadEnabled !== false;
+    normalized.preloading.skipSensitivePages =
+      normalized.preloading.skipSensitivePages !== false;
     normalized.preloading.excludeIncognitoWindows =
       normalized.preloading.excludeIncognitoWindows !== false;
     normalized.preloading.realPreloadEnabled =

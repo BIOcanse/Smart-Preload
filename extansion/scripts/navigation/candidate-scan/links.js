@@ -11,9 +11,14 @@
     isGoogleSearchInternalModeNavigation,
     collectAnchorPreloadSafety,
     inspectAnchorSideEffectPreloadSafety,
+    shouldSkipSensitivePagePreload,
   } = namespace;
 
   function collectCandidateLinks() {
+    if (shouldSkipSensitivePagePreload?.(location.href) === true) {
+      return [];
+    }
+
     const seen = new Set();
     const links = [];
     const anchors = document.querySelectorAll("a[href]");

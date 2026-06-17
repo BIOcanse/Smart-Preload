@@ -142,6 +142,12 @@ async function smokeBrowser(browser) {
     assert.equal(snapshot.historyDatePartInputCount, 6);
     assert.equal(snapshot.excludeHttpPagesPresent, true);
     assert.equal(snapshot.excludeHttpPagesChecked, true);
+    assert.equal(snapshot.skipSensitivePagesPresent, true);
+    assert.equal(snapshot.skipSensitivePagesChecked, true);
+    assert.match(
+      snapshot.realPreloadSensitiveWarningText,
+      /exam|考试|考試|Prüfung|examen|exámenes|prova|экзамен|試験|시험/u
+    );
     assert.equal(snapshot.sideEffectSafetyGuardPresent, true);
     assert.equal(snapshot.sideEffectSafetyGuardChecked, true);
     assert.equal(snapshot.sideEffectSafetyGuardDisabled, true);
@@ -214,6 +220,11 @@ async function waitForSettingsPageSnapshot(pageClient) {
           footerText: document.getElementById("footer-status-text")?.textContent?.trim() || "",
           preloadTogglePresent: Boolean(document.getElementById("preloading-enabled")),
           realPreloadTogglePresent: Boolean(document.getElementById("real-preload-enabled")),
+          skipSensitivePagesPresent: Boolean(document.getElementById("skip-sensitive-pages")),
+          skipSensitivePagesChecked:
+            document.getElementById("skip-sensitive-pages")?.checked === true,
+          realPreloadSensitiveWarningText:
+            document.querySelector("[data-i18n='settingsRealPreloadSensitiveSceneWarning']")?.textContent?.trim() || "",
           excludeHttpPagesPresent: Boolean(document.getElementById("exclude-http-pages")),
           excludeHttpPagesChecked:
             document.getElementById("exclude-http-pages")?.checked === true,
@@ -255,6 +266,11 @@ async function waitForSettingsPageSnapshot(pageClient) {
         lastSnapshot.historyDeleteButtonPresent &&
         lastSnapshot.excludeHttpPagesPresent &&
         lastSnapshot.excludeHttpPagesChecked &&
+        lastSnapshot.skipSensitivePagesPresent &&
+        lastSnapshot.skipSensitivePagesChecked &&
+        /exam|考试|考試|Prüfung|examen|exámenes|prova|экзамен|試験|시험/u.test(
+          lastSnapshot.realPreloadSensitiveWarningText
+        ) &&
         lastSnapshot.sideEffectSafetyGuardPresent &&
         lastSnapshot.sideEffectSafetyGuardChecked &&
         lastSnapshot.sideEffectSafetyGuardDisabled &&

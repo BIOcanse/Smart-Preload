@@ -298,10 +298,29 @@
                 <p class="settings-item-desc" data-i18n="settingsRealPreloadDesc">
                   Use hidden real background tabs for near-zero perceived latency. Off by default because it uses a large amount of memory.
                 </p>
+                <p class="settings-item-warning" data-i18n="settingsRealPreloadSensitiveSceneWarning">
+                  In online exams, banking, and similar sensitive workflows, turn off Real Preload or pause preloading to avoid unintended page actions.
+                </p>
               </div>
               <div class="settings-item-control">
                 <label class="switch">
                   <input id="real-preload-enabled" type="checkbox" />
+                  <span class="switch-track"></span>
+                </label>
+              </div>
+            </article>
+            <article class="settings-item is-wide">
+              <div class="settings-item-info">
+                <label class="settings-item-label" for="skip-sensitive-pages" data-i18n="settingsSkipSensitivePages">
+                  Skip exam and banking pages
+                </label>
+                <p class="settings-item-desc" data-i18n="settingsSkipSensitivePagesDesc">
+                  Do not preload source pages or links that match local exam, proctoring, and banking rules. This uses a separate sensitive-scene library, not the dangerous-site list.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <label class="switch">
+                  <input id="skip-sensitive-pages" type="checkbox" />
                   <span class="switch-track"></span>
                 </label>
               </div>
