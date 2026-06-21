@@ -76,8 +76,16 @@ Smart Preload / Zero Latency Web esta licenciado bajo la [Apache License 2.0](LI
 
 ## Imagenes Promocionales de Chrome Web Store
 
-![Imagen promocional pequena para Chrome Web Store](assets/chrome-web-store/google-store-small-promo-440x280.png)
+![Imagen promocional pequena para Chrome Web Store](assets/chrome-web-store/out/es/small-tile.png)
 
-![Imagen promocional marquee para Chrome Web Store](assets/chrome-web-store/google-store-marquee-promo-1400x560.png)
+![Imagen promocional marquee para Chrome Web Store](assets/chrome-web-store/out/es/marquee.png)
 
-![Captura de pantalla para Chrome Web Store](assets/chrome-web-store/google-store-screenshot-1280x800.png)
+![Captura de pantalla para Chrome Web Store 1](assets/chrome-web-store/out/es/screenshot-1.png)
+
+![Captura de pantalla para Chrome Web Store 2](assets/chrome-web-store/out/es/screenshot-2.png)
+
+![Captura de pantalla para Chrome Web Store 3](assets/chrome-web-store/out/es/screenshot-3.png)
+
+![Captura de pantalla para Chrome Web Store 4](assets/chrome-web-store/out/es/screenshot-4.png)
+
+![Captura de pantalla para Chrome Web Store 5](assets/chrome-web-store/out/es/screenshot-5.png)

@@ -76,8 +76,16 @@ Windows app 的 `portable` 文件夹保存的是 app 绑定文件和日志，不
 
 ## Chrome 网上应用店宣传图
 
-![Chrome 网上应用店小尺寸宣传图](assets/chrome-web-store/google-store-small-promo-440x280.png)
+![Chrome ???????????](assets/chrome-web-store/out/zh_CN/small-tile.png)
 
-![Chrome 网上应用店横幅宣传图](assets/chrome-web-store/google-store-marquee-promo-1400x560.png)
+![Chrome ??????????](assets/chrome-web-store/out/zh_CN/marquee.png)
 
-![Chrome 网上应用店截图](assets/chrome-web-store/google-store-screenshot-1280x800.png)
+![Chrome ??????? 1](assets/chrome-web-store/out/zh_CN/screenshot-1.png)
+
+![Chrome ??????? 2](assets/chrome-web-store/out/zh_CN/screenshot-2.png)
+
+![Chrome ??????? 3](assets/chrome-web-store/out/zh_CN/screenshot-3.png)
+
+![Chrome ??????? 4](assets/chrome-web-store/out/zh_CN/screenshot-4.png)
+
+![Chrome ??????? 5](assets/chrome-web-store/out/zh_CN/screenshot-5.png)
