@@ -76,8 +76,16 @@ Smart Preload / Zero Latency Web은 [Apache License 2.0](LICENSE)에 따라 라�
 
 ## Chrome 웹 스토어 홍보 이미지
 
-![Chrome 웹 스토어용 소형 홍보 이미지](assets/chrome-web-store/google-store-small-promo-440x280.png)
+![Chrome ? ???? ?? ?? ???](assets/chrome-web-store/out/ko/small-tile.png)
 
-![Chrome 웹 스토어용 마키 홍보 이미지](assets/chrome-web-store/google-store-marquee-promo-1400x560.png)
+![Chrome ? ???? ?? ?? ???](assets/chrome-web-store/out/ko/marquee.png)
 
-![Chrome 웹 스토어용 스크린샷](assets/chrome-web-store/google-store-screenshot-1280x800.png)
+![Chrome ? ???? ???? 1](assets/chrome-web-store/out/ko/screenshot-1.png)
+
+![Chrome ? ???? ???? 2](assets/chrome-web-store/out/ko/screenshot-2.png)
+
+![Chrome ? ???? ???? 3](assets/chrome-web-store/out/ko/screenshot-3.png)
+
+![Chrome ? ???? ???? 4](assets/chrome-web-store/out/ko/screenshot-4.png)
+
+![Chrome ? ???? ???? 5](assets/chrome-web-store/out/ko/screenshot-5.png)
