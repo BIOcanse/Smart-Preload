@@ -42,6 +42,7 @@
       siteSelectionLimit: 3,
       tabSiteSelectionLimit: 2,
       realPreloadEnabled: false,
+      realPreloadRiskAcknowledged: false,
       interactionPreloadEnabled: true,
       skipSensitivePages: true,
       ignoreWaterfallDynamicLinks: true,

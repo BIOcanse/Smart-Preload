@@ -884,6 +884,51 @@
   "settingsRealPreloadRiskRejected": {
     "message": "Real Preload bleibt ausgeschaltet."
   },
+  "settingsDialogTypedConfirmationInputLabel": {
+    "message": "Bestätigungstext eingeben"
+  },
+  "settingsDialogTypedConfirmationMismatch": {
+    "message": "Der Text muss exakt übereinstimmen, bevor Sie fortfahren können."
+  },
+  "settingsRealPreloadTypedConfirmTitle": {
+    "message": "Bestätigungssatz eingeben"
+  },
+  "settingsRealPreloadTypedConfirmBody": {
+    "message": "Um ein versehentliches Aktivieren zu verhindern, kopieren Sie den Satz unten in das Eingabefeld."
+  },
+  "settingsRealPreloadTypedConfirmInstruction": {
+    "message": "Der Text muss mit dem angezeigten Satz übereinstimmen, bevor Real Preload erstmals aktiviert werden kann."
+  },
+  "settingsRealPreloadTypedConfirmSentence": {
+    "message": "Ich verstehe, dass Real Preload echte Hintergrundseiten öffnet. Ich werde es aktivieren und die Risiken akzeptieren."
+  },
+  "settingsRealPreloadTypedConfirmInputLabel": {
+    "message": "Bestätigungssatz"
+  },
+  "settingsRealPreloadTypedConfirmMismatch": {
+    "message": "Der Bestätigungssatz stimmt nicht überein."
+  },
+  "settingsRealPreloadTypedConfirmContinue": {
+    "message": "Weiter"
+  },
+  "settingsRealPreloadDisclaimerTitle": {
+    "message": "Haftungsausschluss für Real Preload"
+  },
+  "settingsRealPreloadDisclaimerBody": {
+    "message": "Real Preload ist eine erweiterte lokale Funktion. Schutzmechanismen reduzieren bekannte Risiken, können aber nicht garantieren, dass jede Website frei von Nebenwirkungen bleibt."
+  },
+  "settingsRealPreloadDisclaimerItemPages": {
+    "message": "Versteckte echte Hintergrundseiten können weiterhin Sitzungen, Zähler, Serverzustände, Downloads oder websitespezifische Abläufe beeinflussen."
+  },
+  "settingsRealPreloadDisclaimerItemSensitive": {
+    "message": "Deaktivieren Sie es oder pausieren Sie das Preloading bei Online-Prüfungen, Banking, Handel, Admin-Bereichen, unsicheren Websites und anderen sensiblen Abläufen."
+  },
+  "settingsRealPreloadDisclaimerItemResponsibility": {
+    "message": "Sie sind dafür verantwortlich, wo Sie diese Funktion verwenden und die Preload-Grenzen passend zu Ihrem Gerät zu halten."
+  },
+  "settingsRealPreloadDisclaimerAgree": {
+    "message": "Ich stimme zu"
+  },
   "settingsSkipSensitivePages": {
     "message": "Prüfungs- und Bankseiten überspringen"
   },

@@ -884,6 +884,51 @@
   "settingsRealPreloadRiskRejected": {
     "message": "Real Preload reste désactivé."
   },
+  "settingsDialogTypedConfirmationInputLabel": {
+    "message": "Saisir le texte de confirmation"
+  },
+  "settingsDialogTypedConfirmationMismatch": {
+    "message": "Le texte doit correspondre exactement avant de continuer."
+  },
+  "settingsRealPreloadTypedConfirmTitle": {
+    "message": "Saisir la phrase de confirmation"
+  },
+  "settingsRealPreloadTypedConfirmBody": {
+    "message": "Pour éviter toute activation accidentelle, copiez la phrase ci-dessous dans le champ de saisie."
+  },
+  "settingsRealPreloadTypedConfirmInstruction": {
+    "message": "Le texte doit correspondre à la phrase affichée avant la première activation de Real Preload."
+  },
+  "settingsRealPreloadTypedConfirmSentence": {
+    "message": "Je comprends que Real Preload ouvre de vraies pages en arrière-plan. Je vais l’activer et accepter les risques."
+  },
+  "settingsRealPreloadTypedConfirmInputLabel": {
+    "message": "Phrase de confirmation"
+  },
+  "settingsRealPreloadTypedConfirmMismatch": {
+    "message": "La phrase de confirmation ne correspond pas."
+  },
+  "settingsRealPreloadTypedConfirmContinue": {
+    "message": "Continuer"
+  },
+  "settingsRealPreloadDisclaimerTitle": {
+    "message": "Clause de non-responsabilité de Real Preload"
+  },
+  "settingsRealPreloadDisclaimerBody": {
+    "message": "Real Preload est une fonction locale avancée. Les protections réduisent les risques connus, mais ne peuvent pas garantir que chaque site restera sans effet secondaire."
+  },
+  "settingsRealPreloadDisclaimerItemPages": {
+    "message": "Les vraies pages masquées en arrière-plan peuvent encore affecter les sessions, compteurs, états serveur, téléchargements ou flux propres à certains sites."
+  },
+  "settingsRealPreloadDisclaimerItemSensitive": {
+    "message": "Désactivez-la ou mettez le préchargement en pause pour les examens en ligne, la banque, le trading, les panneaux d’administration, les sites non sûrs et les autres flux sensibles."
+  },
+  "settingsRealPreloadDisclaimerItemResponsibility": {
+    "message": "Vous êtes responsable du choix des sites où utiliser cette fonction et du maintien de limites adaptées à votre appareil."
+  },
+  "settingsRealPreloadDisclaimerAgree": {
+    "message": "J’accepte"
+  },
   "settingsSkipSensitivePages": {
     "message": "Ignorer les pages d’examen et bancaires"
   },

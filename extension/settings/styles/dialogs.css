@@ -50,6 +50,61 @@
   line-height: 1.55;
 }
 
+.settings-dialog-text-confirmation {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.settings-dialog-expected-text {
+  overflow-wrap: anywhere;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: rgba(72, 128, 110, 0.08);
+  color: var(--ink);
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  user-select: text;
+}
+
+.settings-dialog-input-label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.settings-dialog-text-input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 14px;
+}
+
+.settings-dialog-text-input:focus {
+  outline: 3px solid rgba(72, 128, 110, 0.18);
+  border-color: var(--accent);
+}
+
+.settings-dialog-input-error {
+  margin: 0;
+  color: #9f4b42;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.settings-dialog-input-error.is-hidden {
+  display: none;
+}
+
 .settings-dialog-actions {
   display: flex;
   justify-content: flex-end;
@@ -75,6 +130,13 @@
 
 .danger-button:hover {
   background: #8d4038;
+}
+
+.settings-dialog-button:disabled,
+.settings-dialog-actions .danger-button:disabled,
+.settings-dialog-actions .primary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 680px) {

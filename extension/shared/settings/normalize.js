@@ -67,6 +67,8 @@
       normalized.preloading.excludeIncognitoWindows !== false;
     normalized.preloading.realPreloadEnabled =
       normalized.preloading.realPreloadEnabled === true;
+    normalized.preloading.realPreloadRiskAcknowledged =
+      normalized.preloading.realPreloadRiskAcknowledged === true;
     delete normalized.preloading.allNativePreloadMode;
     normalized.preloading.proxySkip = normalizeProxySkipSettings(
       normalized.preloading.proxySkip

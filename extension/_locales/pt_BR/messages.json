@@ -884,6 +884,51 @@
   "settingsRealPreloadRiskRejected": {
     "message": "O Real Preload permanece desligado."
   },
+  "settingsDialogTypedConfirmationInputLabel": {
+    "message": "Digite o texto de confirmação"
+  },
+  "settingsDialogTypedConfirmationMismatch": {
+    "message": "O texto precisa corresponder exatamente antes de continuar."
+  },
+  "settingsRealPreloadTypedConfirmTitle": {
+    "message": "Digite a frase de confirmação"
+  },
+  "settingsRealPreloadTypedConfirmBody": {
+    "message": "Para evitar ativação acidental, copie a frase abaixo no campo de entrada."
+  },
+  "settingsRealPreloadTypedConfirmInstruction": {
+    "message": "O texto precisa corresponder à frase exibida antes que o Real Preload possa ser ativado pela primeira vez."
+  },
+  "settingsRealPreloadTypedConfirmSentence": {
+    "message": "Entendo que o Real Preload abre páginas reais em segundo plano. Vou ativá-lo e aceitar os riscos."
+  },
+  "settingsRealPreloadTypedConfirmInputLabel": {
+    "message": "Frase de confirmação"
+  },
+  "settingsRealPreloadTypedConfirmMismatch": {
+    "message": "A frase de confirmação não corresponde."
+  },
+  "settingsRealPreloadTypedConfirmContinue": {
+    "message": "Continuar"
+  },
+  "settingsRealPreloadDisclaimerTitle": {
+    "message": "Aviso de isenção do Real Preload"
+  },
+  "settingsRealPreloadDisclaimerBody": {
+    "message": "O Real Preload é um recurso local avançado. As proteções reduzem riscos conhecidos, mas não garantem que todos os sites fiquem livres de efeitos colaterais."
+  },
+  "settingsRealPreloadDisclaimerItemPages": {
+    "message": "Páginas reais ocultas em segundo plano ainda podem afetar sessões, contadores, estado do servidor, downloads ou fluxos específicos do site."
+  },
+  "settingsRealPreloadDisclaimerItemSensitive": {
+    "message": "Desative ou pause o pré-carregamento em provas online, bancos, trading, painéis administrativos, sites inseguros e outros fluxos sensíveis."
+  },
+  "settingsRealPreloadDisclaimerItemResponsibility": {
+    "message": "Você é responsável por decidir onde usar este recurso e por manter limites de pré-carregamento adequados ao seu dispositivo."
+  },
+  "settingsRealPreloadDisclaimerAgree": {
+    "message": "Eu concordo"
+  },
   "settingsSkipSensitivePages": {
     "message": "Ignorar páginas de prova e banco"
   },
