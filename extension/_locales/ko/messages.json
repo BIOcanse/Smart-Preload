@@ -884,6 +884,51 @@
   "settingsRealPreloadRiskRejected": {
     "message": "Real Preload는 꺼진 상태로 유지됩니다."
   },
+  "settingsDialogTypedConfirmationInputLabel": {
+    "message": "확인 문구 입력"
+  },
+  "settingsDialogTypedConfirmationMismatch": {
+    "message": "계속하려면 텍스트가 정확히 일치해야 합니다."
+  },
+  "settingsRealPreloadTypedConfirmTitle": {
+    "message": "확인 문장 입력"
+  },
+  "settingsRealPreloadTypedConfirmBody": {
+    "message": "실수로 켜지는 것을 막기 위해 아래 문장을 입력란에 그대로 입력하세요."
+  },
+  "settingsRealPreloadTypedConfirmInstruction": {
+    "message": "Real Preload를 처음 켜려면 표시된 문장과 입력한 내용이 일치해야 합니다."
+  },
+  "settingsRealPreloadTypedConfirmSentence": {
+    "message": "Real Preload가 실제 백그라운드 페이지를 연다는 점을 이해하며, 이 기능을 켜고 위험을 감수하겠습니다."
+  },
+  "settingsRealPreloadTypedConfirmInputLabel": {
+    "message": "확인 문장"
+  },
+  "settingsRealPreloadTypedConfirmMismatch": {
+    "message": "확인 문장이 일치하지 않습니다."
+  },
+  "settingsRealPreloadTypedConfirmContinue": {
+    "message": "계속"
+  },
+  "settingsRealPreloadDisclaimerTitle": {
+    "message": "Real Preload 면책 고지"
+  },
+  "settingsRealPreloadDisclaimerBody": {
+    "message": "Real Preload는 고급 로컬 기능입니다. 안전 보호는 알려진 위험을 줄이지만 모든 사이트에서 부작용이 없다고 보장할 수는 없습니다."
+  },
+  "settingsRealPreloadDisclaimerItemPages": {
+    "message": "숨겨진 실제 백그라운드 페이지는 세션, 카운터, 서버 상태, 다운로드 또는 사이트별 흐름에 영향을 줄 수 있습니다."
+  },
+  "settingsRealPreloadDisclaimerItemSensitive": {
+    "message": "온라인 시험, 은행, 거래, 관리자 패널, 안전하지 않은 사이트 및 기타 민감한 작업에서는 이 기능을 끄거나 프리로드를 일시 중지하세요."
+  },
+  "settingsRealPreloadDisclaimerItemResponsibility": {
+    "message": "이 기능을 어디에서 사용할지 결정하고 장치에 맞는 프리로드 한도를 유지할 책임은 사용자에게 있습니다."
+  },
+  "settingsRealPreloadDisclaimerAgree": {
+    "message": "동의합니다"
+  },
   "settingsSkipSensitivePages": {
     "message": "시험 및 은행 페이지 건너뛰기"
   },

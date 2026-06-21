@@ -32,6 +32,8 @@
         tabSiteSelectionLimit: draftSettings.preloading.tabSiteSelectionLimit,
         interactionPreloadEnabled: elements.interactionPreloadEnabled.checked,
         realPreloadEnabled: elements.realPreloadEnabled.checked,
+        realPreloadRiskAcknowledged:
+          draftSettings.preloading.realPreloadRiskAcknowledged === true,
         skipSensitivePages: elements.skipSensitivePages.checked,
         ignoreWaterfallDynamicLinks: elements.ignoreWaterfallDynamicLinks.checked,
         excludeIncognitoWindows: elements.excludeIncognitoWindows.checked,

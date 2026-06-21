@@ -169,6 +169,18 @@ async function smokeBrowser(browser) {
     assert.equal(dialogProbe.confirmed, false);
     assert.equal(dialogProbe.removedAfterCancel, true);
     assert.match(dialogProbe.title, /Real Preload|真实预加载|真實預載/u);
+    const advancedDialogProbe = await probeRealPreloadAdvancedRiskDialog(pageClient);
+    const advancedDialogContext = JSON.stringify(advancedDialogProbe);
+    assert.equal(advancedDialogProbe.confirmed, true, advancedDialogContext);
+    assert.equal(advancedDialogProbe.typedDialogOpened, true, advancedDialogContext);
+    assert.equal(
+      advancedDialogProbe.confirmDisabledBeforeTyping,
+      true,
+      advancedDialogContext
+    );
+    assert.equal(advancedDialogProbe.disclaimerOpened, true, advancedDialogContext);
+    assert.equal(advancedDialogProbe.acknowledged, true, advancedDialogContext);
+    assert.equal(advancedDialogProbe.removedAfterConfirm, true, advancedDialogContext);
     const toggleProbe = await probeRealPreloadRiskToggle(pageClient);
     assert.equal(toggleProbe.dialogOpened, true);
     assert.equal(toggleProbe.checkedAfterCancel, false);
@@ -396,6 +408,81 @@ async function probeRealPreloadRiskDialog(pageClient) {
       };
     })()))()`,
     { timeoutMs: 10000 }
+  );
+  return JSON.parse(resultJson || "{}");
+}
+
+async function probeRealPreloadAdvancedRiskDialog(pageClient) {
+  const resultJson = await runtimeEval(
+    pageClient,
+    `(async () => JSON.stringify(await (async () => {
+      const controller = globalThis.ZeroLatencySettingsDialogs.create({
+        translate: (_key, _substitutions, fallback) => fallback,
+        settingsApi: globalThis.ZeroLatencySettings,
+      });
+      const draftSettings = {
+        preloading: {
+          realPreloadEnabled: true,
+          realPreloadRiskAcknowledged: false,
+        },
+      };
+      const promise = controller.confirmRealPreloadEnableIfNeeded(
+        {
+          preloading: {
+            realPreloadEnabled: false,
+            realPreloadRiskAcknowledged: false,
+          },
+        },
+        draftSettings
+      );
+
+      const firstDialog = await waitForSettingsDialog();
+      firstDialog?.querySelector(".settings-dialog-actions button:last-child")?.click();
+
+      const typedDialog = await waitForSettingsDialog();
+      const expectedText =
+        typedDialog?.querySelector(".settings-dialog-expected-text")?.textContent || "";
+      const input = typedDialog?.querySelector(".settings-dialog-text-input");
+      const typedConfirm = typedDialog?.querySelector(".settings-dialog-actions button:last-child");
+      const confirmDisabledBeforeTyping = typedConfirm?.disabled === true;
+      if (input) {
+        input.value = expectedText;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      typedConfirm?.click();
+
+      const disclaimerDialog = await waitForSettingsDialog();
+      const disclaimerTitle =
+        disclaimerDialog?.querySelector(".settings-dialog-title")?.textContent?.trim() || "";
+      disclaimerDialog?.querySelector(".settings-dialog-actions button:last-child")?.click();
+
+      const confirmed = await promise;
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+
+      return {
+        confirmed,
+        typedDialogOpened: Boolean(typedDialog),
+        confirmDisabledBeforeTyping,
+        disclaimerOpened: Boolean(disclaimerDialog),
+        disclaimerTitle,
+        acknowledged: draftSettings.preloading.realPreloadRiskAcknowledged === true,
+        removedAfterConfirm: !document.querySelector(".settings-dialog"),
+      };
+
+      async function waitForSettingsDialog() {
+        const startedAt = Date.now();
+        while (Date.now() - startedAt < 3000) {
+          const dialog = document.querySelector(".settings-dialog");
+          if (dialog) {
+            return dialog;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        return null;
+      }
+    })()))()`,
+    { timeoutMs: 15000 }
   );
   return JSON.parse(resultJson || "{}");
 }

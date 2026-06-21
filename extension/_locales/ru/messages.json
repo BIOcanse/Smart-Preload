@@ -884,6 +884,51 @@
   "settingsRealPreloadRiskRejected": {
     "message": "Real Preload остаётся выключенным."
   },
+  "settingsDialogTypedConfirmationInputLabel": {
+    "message": "Введите текст подтверждения"
+  },
+  "settingsDialogTypedConfirmationMismatch": {
+    "message": "Чтобы продолжить, текст должен совпадать точно."
+  },
+  "settingsRealPreloadTypedConfirmTitle": {
+    "message": "Введите фразу подтверждения"
+  },
+  "settingsRealPreloadTypedConfirmBody": {
+    "message": "Чтобы избежать случайного включения, скопируйте фразу ниже в поле ввода."
+  },
+  "settingsRealPreloadTypedConfirmInstruction": {
+    "message": "Перед первым включением Real Preload текст должен совпасть с показанной фразой."
+  },
+  "settingsRealPreloadTypedConfirmSentence": {
+    "message": "Я понимаю, что Real Preload открывает реальные фоновые страницы. Я включу эту функцию и принимаю риски."
+  },
+  "settingsRealPreloadTypedConfirmInputLabel": {
+    "message": "Фраза подтверждения"
+  },
+  "settingsRealPreloadTypedConfirmMismatch": {
+    "message": "Фраза подтверждения не совпадает."
+  },
+  "settingsRealPreloadTypedConfirmContinue": {
+    "message": "Продолжить"
+  },
+  "settingsRealPreloadDisclaimerTitle": {
+    "message": "Отказ от ответственности Real Preload"
+  },
+  "settingsRealPreloadDisclaimerBody": {
+    "message": "Real Preload — расширенная локальная функция. Защитные механизмы снижают известные риски, но не могут гарантировать отсутствие побочных эффектов на каждом сайте."
+  },
+  "settingsRealPreloadDisclaimerItemPages": {
+    "message": "Скрытые реальные фоновые страницы всё ещё могут влиять на сессии, счётчики, состояние сервера, загрузки или сценарии конкретных сайтов."
+  },
+  "settingsRealPreloadDisclaimerItemSensitive": {
+    "message": "Отключайте функцию или приостанавливайте предзагрузку для онлайн-экзаменов, банков, трейдинга, административных панелей, небезопасных сайтов и других чувствительных сценариев."
+  },
+  "settingsRealPreloadDisclaimerItemResponsibility": {
+    "message": "Вы отвечаете за выбор сайтов для использования этой функции и за подходящие лимиты предзагрузки для вашего устройства."
+  },
+  "settingsRealPreloadDisclaimerAgree": {
+    "message": "Я согласен"
+  },
   "settingsSkipSensitivePages": {
     "message": "Пропускать экзаменационные и банковские страницы"
   },

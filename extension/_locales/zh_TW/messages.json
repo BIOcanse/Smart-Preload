@@ -884,6 +884,51 @@
   "settingsRealPreloadRiskRejected": {
     "message": "真實預載保持關閉。"
   },
+  "settingsDialogTypedConfirmationInputLabel": {
+    "message": "輸入確認文字"
+  },
+  "settingsDialogTypedConfirmationMismatch": {
+    "message": "文字必須完全一致才能繼續。"
+  },
+  "settingsRealPreloadTypedConfirmTitle": {
+    "message": "輸入確認句"
+  },
+  "settingsRealPreloadTypedConfirmBody": {
+    "message": "為避免誤開啟，請把下方句子完整輸入到輸入框。"
+  },
+  "settingsRealPreloadTypedConfirmInstruction": {
+    "message": "文字必須和顯示句子一致，才能首次開啟真實預載。"
+  },
+  "settingsRealPreloadTypedConfirmSentence": {
+    "message": "我明確知曉真實預載會開啟真實背景頁面，我將開啟此功能並自行承擔相關風險。"
+  },
+  "settingsRealPreloadTypedConfirmInputLabel": {
+    "message": "確認句"
+  },
+  "settingsRealPreloadTypedConfirmMismatch": {
+    "message": "確認句不一致。"
+  },
+  "settingsRealPreloadTypedConfirmContinue": {
+    "message": "繼續"
+  },
+  "settingsRealPreloadDisclaimerTitle": {
+    "message": "真實預載免責聲明"
+  },
+  "settingsRealPreloadDisclaimerBody": {
+    "message": "真實預載是進階本機功能。安全保護可以降低已知風險，但不能保證每個網站都不會產生副作用。"
+  },
+  "settingsRealPreloadDisclaimerItemPages": {
+    "message": "隱藏的真實背景頁面仍可能影響登入狀態、計數、伺服器狀態、下載或特定網站流程。"
+  },
+  "settingsRealPreloadDisclaimerItemSensitive": {
+    "message": "在線上考試、銀行、交易、後台管理、危險網站等敏感場景中，請關閉真實預載或暫停預載。"
+  },
+  "settingsRealPreloadDisclaimerItemResponsibility": {
+    "message": "你需要自行判斷在哪些網站使用此功能，並根據裝置情況保持合適的預載上限。"
+  },
+  "settingsRealPreloadDisclaimerAgree": {
+    "message": "我同意"
+  },
   "settingsSkipSensitivePages": {
     "message": "跳過考試和銀行頁面"
   },
