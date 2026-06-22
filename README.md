@@ -10,6 +10,12 @@ Smart Preload uses intelligent preloading algorithms to reduce perceived loading
 
 It is most useful when you keep many tabs open, move through search results, compare pages, or repeatedly jump between related sites.
 
+## Main Download
+
+**Install Smart Preload from the [Chrome Web Store](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu).** This is the recommended download channel for most users.
+
+[GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) are for the optional Windows companion app, release notes, and manual packages.
+
 ![Popup ranking](assets/readme/en/popup-ranking.png)
 
 ## What The Ranking Means
@@ -55,10 +61,10 @@ The Windows app's `portable` folder stores app binding files and logs. It is not
 
 ## Install
 
-Download the latest version from [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest).
+Install the extension from the [Chrome Web Store](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu) for normal use.
 
-1. Install or load the extension in Chrome or Edge.
-2. Optional: extract the Windows companion app.
+1. Install the extension in Chrome or Edge.
+2. Optional: download and extract the Windows companion app from [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest).
 3. Run `install-register.cmd` from the app folder, or start the app once.
 4. Keep the app folder in its final location.
 

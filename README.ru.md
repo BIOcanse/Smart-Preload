@@ -10,6 +10,12 @@ Smart Preload использует интеллектуальные алгори
 
 Он особенно полезен, когда вы просматриваете результаты поиска, сравниваете страницы или часто переходите между связанными сайтами.
 
+## Основной способ установки
+
+**Обычным пользователям лучше устанавливать Smart Preload из [Chrome Web Store](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu).** Это рекомендуемый основной канал загрузки.
+
+[GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) предназначены в основном для опционального Windows-приложения, заметок к релизам и пакетов для ручной установки.
+
 ![Рейтинг в popup](assets/readme/ru/popup-ranking.png)
 
 ## Что Означает Рейтинг
@@ -55,10 +61,10 @@ Smart Preload использует интеллектуальные алгори
 
 ## Установка
 
-Скачайте последнюю версию на странице [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest).
+Для обычного использования установите расширение из [Chrome Web Store](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu).
 
-1. Установите или загрузите расширение в Chrome или Edge.
-2. Необязательно: распакуйте Windows-приложение.
+1. Установите расширение в Chrome или Edge.
+2. Необязательно: скачайте и распакуйте Windows-приложение со страницы [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest).
 3. Запустите `install-register.cmd` из папки app или один раз запустите приложение.
 4. Оставьте папку app в ее окончательном расположении.
 

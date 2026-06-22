@@ -10,6 +10,12 @@ Smart Preload nutzt intelligente Vorladealgorithmen, um wahrgenommene Wartezeite
 
 Es hilft besonders, wenn Sie Suchergebnisse durchgehen, Seiten vergleichen oder oft zwischen verwandten Websites wechseln.
 
+## Haupt-Download
+
+**Installieren Sie Smart Preload als normaler Nutzer bevorzugt aus dem [Chrome Web Store](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu).** Das ist der empfohlene Hauptkanal.
+
+[GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) sind fuer die optionale Windows-Begleitapp, Versionshinweise und manuelle Installationspakete gedacht.
+
 ![Popup ranking](assets/readme/de/popup-ranking.png)
 
 ## Was Die Rangliste Bedeutet
@@ -55,10 +61,10 @@ Der `portable` Ordner der Windows-App enthaelt Bindungsdateien und Logs, nicht d
 
 ## Installation
 
-Laden Sie die neueste Version ueber [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) herunter.
+Installieren Sie die Erweiterung fuer die normale Nutzung aus dem [Chrome Web Store](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu).
 
-1. Installieren oder laden Sie die Erweiterung in Chrome oder Edge.
-2. Optional: entpacken Sie die Windows-Begleitapp.
+1. Installieren Sie die Erweiterung in Chrome oder Edge.
+2. Optional: laden Sie die Windows-Begleitapp aus den [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) herunter und entpacken Sie sie.
 3. Fuehren Sie `install-register.cmd` im app-Ordner aus oder starten Sie die App einmal.
 4. Lassen Sie den app-Ordner an seinem endgueltigen Ort.
 

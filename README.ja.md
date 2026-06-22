@@ -10,6 +10,12 @@ Smart Preload はインテリジェントなプリロードアルゴリズムを
 
 検索結果を順に開く、商品や資料を比較する、関連ページを何度も行き来する、といった使い方に向いています。
 
+## 主なダウンロード先
+
+**通常のユーザーは、まず [Chrome ウェブストア](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu) から Smart Preload をインストールしてください。** これが推奨される主なダウンロード先です。
+
+[GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) は、任意の Windows 連携アプリ、リリースノート、手動インストール用パッケージ向けです。
+
 ![Popup ranking](assets/readme/ja/popup-ranking.png)
 
 ## ランキングの意味
@@ -55,10 +61,10 @@ Windows アプリの `portable` フォルダーには連携ファイルとログ
 
 ## インストール
 
-最新版は [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) からダウンロードしてください。
+通常の利用では [Chrome ウェブストア](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu) から拡張機能をインストールしてください。
 
-1. Chrome または Edge に拡張機能をインストールまたは読み込みます。
-2. 任意で Windows 連携アプリを展開します。
+1. Chrome または Edge に拡張機能をインストールします。
+2. 任意で [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) から Windows 連携アプリをダウンロードして展開します。
 3. app フォルダーの `install-register.cmd` を実行するか、アプリを一度起動します。
 4. app フォルダーは最終的な場所に置いてください。
 
