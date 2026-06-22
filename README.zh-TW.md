@@ -10,6 +10,12 @@
 
 它最適合多分頁工作、查資料、看搜尋結果、比價、查文件，以及經常在相關頁面之間切換的場景。
 
+## 主要下載管道
+
+**一般使用者請優先從 [Chrome 線上應用程式商店](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu) 安裝 Smart Preload。** 這是建議的主要下載管道。
+
+[GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) 主要用於下載選用的 Windows 配套 app、查看發布說明或取得手動安裝包。
+
 ![預載排行](assets/readme/zh-TW/popup-ranking.png)
 
 ## 排行有什麼用
@@ -55,10 +61,10 @@ Windows app 的 `portable` 資料夾保存的是 app 綁定檔案和日誌，不
 
 ## 安裝
 
-請從 [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) 下載最新版。
+一般使用請從 [Chrome 線上應用程式商店](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu) 安裝擴充功能。
 
-1. 先在 Chrome 或 Edge 中安裝或載入擴充功能。
-2. 選用：解壓縮 Windows 配套 app。
+1. 先在 Chrome 或 Edge 中安裝擴充功能。
+2. 選用：從 [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) 下載並解壓縮 Windows 配套 app。
 3. 在 app 資料夾中執行 `install-register.cmd`，或啟動一次 app。
 4. app 資料夾放好後不要隨意移動。
 

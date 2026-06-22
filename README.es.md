@@ -10,6 +10,12 @@ Smart Preload utiliza algoritmos inteligentes de precarga para reducir los tiemp
 
 Es mas util cuando revisas resultados de busqueda, comparas paginas o saltas con frecuencia entre sitios relacionados.
 
+## Descarga Principal
+
+**Los usuarios normales deberian instalar Smart Preload desde [Chrome Web Store](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu).** Es el canal de descarga principal recomendado.
+
+[GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) sirve principalmente para la app opcional de Windows, notas de version y paquetes de instalacion manual.
+
 ![Ranking del popup](assets/readme/es/popup-ranking.png)
 
 ## Para Que Sirve El Ranking
@@ -55,10 +61,10 @@ La carpeta `portable` de la app de Windows guarda archivos de vinculacion y logs
 
 ## Instalacion
 
-Descarga la version mas reciente desde [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest).
+Para el uso normal, instala la extension desde [Chrome Web Store](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu).
 
-1. Instala o carga la extension en Chrome o Edge.
-2. Opcional: extrae la app complementaria de Windows.
+1. Instala la extension en Chrome o Edge.
+2. Opcional: descarga y extrae la app complementaria de Windows desde [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest).
 3. Ejecuta `install-register.cmd` desde la carpeta app, o inicia la app una vez.
 4. Mantén la carpeta app en su ubicacion final.
 

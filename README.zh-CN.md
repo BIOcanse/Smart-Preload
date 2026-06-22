@@ -10,6 +10,12 @@
 
 它最适合多标签办公、查资料、看搜索结果、比价、查文档，以及经常在相关页面之间来回跳转的场景。
 
+## 主要下载渠道
+
+**普通用户请优先从 [Chrome 网上应用店](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu) 安装 Smart Preload。** 这是推荐的主要下载渠道。
+
+[GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) 主要用于下载可选的 Windows 配套 app、查看发布说明或获取手动安装包。
+
 ![预加载排行](assets/readme/zh-CN/popup-ranking.png)
 
 ## 排行有什么用
@@ -55,10 +61,10 @@ Windows app 的 `portable` 文件夹保存的是 app 绑定文件和日志，不
 
 ## 安装
 
-请从 [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) 下载最新版。
+普通使用请从 [Chrome 网上应用店](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu) 安装扩展。
 
-1. 先在 Chrome 或 Edge 中安装或加载扩展。
-2. 可选：解压 Windows 配套 app。
+1. 先在 Chrome 或 Edge 中安装扩展。
+2. 可选：从 [GitHub Releases](https://github.com/BIOcanse/Smart-Preload/releases/latest) 下载并解压 Windows 配套 app。
 3. 在 app 文件夹中运行 `install-register.cmd`，或者启动一次 app。
 4. app 文件夹放好后不要随意移动。
 
