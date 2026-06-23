@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .page { width: 1280px; height: 800px; }
+      .left { position: absolute; left: 72px; top: 0; width: 470px; height: 800px; display: flex; flex-direction: column; justify-content: center; }
+      .brand { font-size: 30px; } .brand .dot { width: 18px; height: 18px; }
+      .ext { margin: 14px 0 30px; font-size: 18px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+      h1 { font-size: 54px; line-height: 1.1; font-weight: 900; letter-spacing: -0.5px; }
+      .sub { margin-top: 22px; font-size: 22px; line-height: 1.5; font-weight: 600; color: var(--muted); }
+      .features { margin-top: 34px; display: flex; flex-direction: column; gap: 18px; }
+      .feature { font-size: 22px; } .feature .ck { width: 30px; height: 30px; font-size: 17px; font-weight: 900; }
+
+      .stage { position: absolute; left: 556px; top: 92px; width: 660px; height: 616px; }
+      .browser { height: 616px; }
+      .chrome { height: 50px; padding: 0 18px; } .dots i { width: 14px; height: 14px; }
+      .dots i:nth-child(1){ background: var(--coral);} .dots i:nth-child(2){ background: var(--amber);} .dots i:nth-child(3){ background: var(--green);}
+      .addr { height: 28px; margin-left: 10px; padding: 0 14px; font-size: 15px; }
+      .split { position: absolute; inset: 50px 0 0 0; display: flex; }
+      .pane { flex: 1; position: relative; overflow: hidden; }
+      .pane.l { border-right: 3px solid var(--ink); }
+      .lab { height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-bottom: 2px solid var(--line); font-size: 18px; font-weight: 800; }
+      .lab.off { color: var(--coral); } .lab.on { color: var(--green); }
+      .lab .st { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: var(--muted); }
+      .spin { width: 16px; height: 16px; border-radius: 999px; border: 3px solid var(--line); border-top-color: var(--amber); }
+      .ok { color: var(--green); font-weight: 800; }
+      .barline { height: 4px; background: var(--amber); }
+      .pg { padding: 18px; }
+      .pg .hero { border-radius: 9px; overflow: hidden; height: 96px; background: var(--line); }
+      .pg .hero b { display: block; height: 100%; }
+      .pg .t { height: 14px; border-radius: 999px; background: var(--line); margin: 16px 0; }
+      .pg .t.s { width: 60%; }
+      .pg .ln { height: 9px; border-radius: 999px; background: var(--line); margin: 10px 0; }
+      .pg .thumbs { display: flex; gap: 12px; margin-top: 14px; }
+      .pg .thumbs span { flex: 1; height: 70px; border-radius: 9px; background: var(--line); overflow: hidden; }
+      .pg .thumbs span b { display: block; height: 100%; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="grid-bg"></div>
+      <div class="blob" style="right:-120px;top:-130px;width:520px;height:520px;background:var(--green);opacity:.06"></div>
+      <div class="blob" style="left:-160px;bottom:-200px;width:480px;height:480px;background:var(--blue);opacity:.05"></div>
+      <div class="left">
+        <div class="brand"><span class="dot"></span><span data-i18n="brand">Smart Preload</span></div>
+        <div class="ext" data-i18n="ext">Browser extension</div>
+        <h1 data-i18n="s3_head"></h1>
+        <div class="sub" data-i18n="s3_sub"></div>
+        <div class="features">
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s3_f1"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s3_f2"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s3_f3"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s3_f4"></span></div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="browser">
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="addr">🔒 <span>docs.smartpreload.app</span></div></div>
+          <div class="split">
+            <!-- without preload: still loading -->
+            <div class="pane l">
+              <div class="lab off"><span data-i18n="cmp_off">Without preload</span><span class="st"><span class="spin"></span><span data-i18n="loading">Loading…</span></span></div>
+              <div class="barline" style="width:55%"></div>
+              <div class="pg">
+                <div class="hero"></div>
+                <div class="t"></div><div class="t s"></div>
+                <div class="ln" style="width:94%"></div><div class="ln" style="width:86%"></div>
+                <div class="thumbs"><span></span><span></span></div>
+              </div>
+            </div>
+            <!-- with smart preload: ready -->
+            <div class="pane">
+              <div class="lab on"><span data-i18n="cmp_on">Smart Preload</span><span class="st"><span class="ok" data-i18n="ready">ready</span> ✓</span></div>
+              <div class="barline" style="background:transparent"></div>
+              <div class="pg">
+                <div class="hero"><b style="background:linear-gradient(135deg,var(--blue),var(--green))"></b></div>
+                <div class="t" style="background:#c9d2c5"></div><div class="t s" style="background:#c9d2c5"></div>
+                <div class="ln" style="width:94%;background:#cfd8cb"></div><div class="ln" style="width:86%;background:#cfd8cb"></div>
+                <div class="thumbs"><span><b style="background:linear-gradient(135deg,var(--amber),var(--coral))"></b></span><span><b style="background:linear-gradient(135deg,var(--green),var(--blue))"></b></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="i18n.js"></script>
+    <script>
+      const lang = new URLSearchParams(location.search).get("lang") || "en";
+      const L = Object.assign({}, window.I18N.en, window.I18N[lang] || {});
+      document.querySelectorAll("[data-i18n]").forEach((el) => { const v = L[el.dataset.i18n]; if (v != null) el.textContent = v; });
+      document.documentElement.lang = lang.replace("_", "-");
+    </script>
+  </body>
+</html>

@@ -144,101 +144,106 @@
                 <p class="settings-item-desc" data-i18n="settingsHistoryDeletionDesc">
                   Delete local visit graph records in a UTC date range. The start date is included and the end date is excluded.
                 </p>
-                <p class="settings-item-desc history-utc-now">
-                  <span data-i18n="settingsHistoryDeletionCurrentUtc">Current UTC</span>:
-                  <span id="history-delete-current-utc">--</span>
-                </p>
                 <p class="settings-item-warning is-info is-hidden" id="history-delete-status"></p>
               </div>
               <div class="settings-item-control history-delete-control">
-                <fieldset class="history-delete-field">
-                  <legend data-i18n="settingsHistoryDeletionStartDate">Start UTC date</legend>
-                  <div class="history-date-parts">
-                    <label class="history-date-part" for="history-delete-start-year">
-                      <span data-i18n="settingsHistoryDeletionYear">Year</span>
-                      <input
-                        id="history-delete-start-year"
-                        class="text-input history-date-input"
-                        type="number"
-                        inputmode="numeric"
-                        min="1970"
-                        max="9999"
-                        placeholder="YYYY"
-                        autocomplete="off"
-                      />
-                    </label>
-                    <label class="history-date-part" for="history-delete-start-month">
-                      <span data-i18n="settingsHistoryDeletionMonth">Month</span>
-                      <input
-                        id="history-delete-start-month"
-                        class="text-input history-date-input"
-                        type="number"
-                        inputmode="numeric"
-                        min="1"
-                        max="12"
-                        placeholder="MM"
-                        autocomplete="off"
-                      />
-                    </label>
-                    <label class="history-date-part" for="history-delete-start-day">
-                      <span data-i18n="settingsHistoryDeletionDay">Day</span>
-                      <input
-                        id="history-delete-start-day"
-                        class="text-input history-date-input"
-                        type="number"
-                        inputmode="numeric"
-                        min="1"
-                        max="31"
-                        placeholder="DD"
-                        autocomplete="off"
-                      />
-                    </label>
+                <div class="history-delete-card">
+                  <div class="history-delete-meta">
+                    <span data-i18n="settingsHistoryDeletionCurrentUtc">Current UTC</span>
+                    <strong id="history-delete-current-utc">--</strong>
                   </div>
-                </fieldset>
-                <fieldset class="history-delete-field">
-                  <legend data-i18n="settingsHistoryDeletionEndDate">End UTC date</legend>
-                  <div class="history-date-parts">
-                    <label class="history-date-part" for="history-delete-end-year">
-                      <span data-i18n="settingsHistoryDeletionYear">Year</span>
-                      <input
-                        id="history-delete-end-year"
-                        class="text-input history-date-input"
-                        type="number"
-                        inputmode="numeric"
-                        min="1970"
-                        max="9999"
-                        placeholder="YYYY"
-                        autocomplete="off"
-                      />
-                    </label>
-                    <label class="history-date-part" for="history-delete-end-month">
-                      <span data-i18n="settingsHistoryDeletionMonth">Month</span>
-                      <input
-                        id="history-delete-end-month"
-                        class="text-input history-date-input"
-                        type="number"
-                        inputmode="numeric"
-                        min="1"
-                        max="12"
-                        placeholder="MM"
-                        autocomplete="off"
-                      />
-                    </label>
-                    <label class="history-date-part" for="history-delete-end-day">
-                      <span data-i18n="settingsHistoryDeletionDay">Day</span>
-                      <input
-                        id="history-delete-end-day"
-                        class="text-input history-date-input"
-                        type="number"
-                        inputmode="numeric"
-                        min="1"
-                        max="31"
-                        placeholder="DD"
-                        autocomplete="off"
-                      />
-                    </label>
+                  <div class="history-delete-range">
+                    <fieldset class="history-delete-field">
+                      <legend data-i18n="settingsHistoryDeletionStartDate">Start UTC date</legend>
+                      <div class="history-date-parts">
+                        <label class="history-date-part" for="history-delete-start-year">
+                          <span data-i18n="settingsHistoryDeletionYear">Year</span>
+                          <input
+                            id="history-delete-start-year"
+                            class="text-input history-date-input"
+                            type="number"
+                            inputmode="numeric"
+                            min="1970"
+                            max="9999"
+                            placeholder="YYYY"
+                            autocomplete="off"
+                          />
+                        </label>
+                        <label class="history-date-part" for="history-delete-start-month">
+                          <span data-i18n="settingsHistoryDeletionMonth">Month</span>
+                          <input
+                            id="history-delete-start-month"
+                            class="text-input history-date-input"
+                            type="number"
+                            inputmode="numeric"
+                            min="1"
+                            max="12"
+                            placeholder="MM"
+                            autocomplete="off"
+                          />
+                        </label>
+                        <label class="history-date-part" for="history-delete-start-day">
+                          <span data-i18n="settingsHistoryDeletionDay">Day</span>
+                          <input
+                            id="history-delete-start-day"
+                            class="text-input history-date-input"
+                            type="number"
+                            inputmode="numeric"
+                            min="1"
+                            max="31"
+                            placeholder="DD"
+                            autocomplete="off"
+                          />
+                        </label>
+                      </div>
+                    </fieldset>
+                    <div class="history-delete-range-separator" aria-hidden="true">&rarr;</div>
+                    <fieldset class="history-delete-field">
+                      <legend data-i18n="settingsHistoryDeletionEndDate">End UTC date</legend>
+                      <div class="history-date-parts">
+                        <label class="history-date-part" for="history-delete-end-year">
+                          <span data-i18n="settingsHistoryDeletionYear">Year</span>
+                          <input
+                            id="history-delete-end-year"
+                            class="text-input history-date-input"
+                            type="number"
+                            inputmode="numeric"
+                            min="1970"
+                            max="9999"
+                            placeholder="YYYY"
+                            autocomplete="off"
+                          />
+                        </label>
+                        <label class="history-date-part" for="history-delete-end-month">
+                          <span data-i18n="settingsHistoryDeletionMonth">Month</span>
+                          <input
+                            id="history-delete-end-month"
+                            class="text-input history-date-input"
+                            type="number"
+                            inputmode="numeric"
+                            min="1"
+                            max="12"
+                            placeholder="MM"
+                            autocomplete="off"
+                          />
+                        </label>
+                        <label class="history-date-part" for="history-delete-end-day">
+                          <span data-i18n="settingsHistoryDeletionDay">Day</span>
+                          <input
+                            id="history-delete-end-day"
+                            class="text-input history-date-input"
+                            type="number"
+                            inputmode="numeric"
+                            min="1"
+                            max="31"
+                            placeholder="DD"
+                            autocomplete="off"
+                          />
+                        </label>
+                      </div>
+                    </fieldset>
                   </div>
-                </fieldset>
+                </div>
                 <button
                   id="history-delete-button"
                   class="danger-button"
@@ -554,9 +559,16 @@
                 </fieldset>
                 <fieldset class="scheduler-group">
                   <legend data-i18n="settingsSchedulerAttentionPool">Attention pool</legend>
-                  <label class="scheduler-field" for="scheduler-attention-pool-hours">
-                    <span data-i18n="settingsSchedulerPoolHours">Pool hours</span>
-                    <input id="scheduler-attention-pool-hours" class="number-input" type="number" min="1" max="24" step="1" />
+                  <div class="scheduler-field scheduler-toggle-field" data-i18n-title="settingsSchedulerAttentionPoolEnabledDesc">
+                    <span data-i18n="settingsSchedulerAttentionPoolEnabled">Use attention pool</span>
+                    <label class="switch">
+                      <input id="scheduler-attention-pool-enabled" type="checkbox" data-i18n-aria-label="settingsSchedulerAttentionPoolEnabled" />
+                      <span class="switch-track"></span>
+                    </label>
+                  </div>
+                  <label class="scheduler-field" for="scheduler-attention-pool-minutes">
+                    <span data-i18n="settingsSchedulerPoolMinutes">Pool minutes</span>
+                    <input id="scheduler-attention-pool-minutes" class="number-input" type="number" min="5" max="1440" step="1" />
                   </label>
                   <label class="scheduler-field" for="scheduler-attention-segment-seconds">
                     <span data-i18n="settingsSchedulerSegmentSeconds">Segment seconds</span>
@@ -568,7 +580,7 @@
                   </label>
                   <label class="scheduler-field" for="scheduler-attention-input-window-seconds">
                     <span data-i18n="settingsSchedulerInputWindowSeconds">Input window seconds</span>
-                    <input id="scheduler-attention-input-window-seconds" class="number-input" type="number" min="10" max="600" step="1" />
+                    <input id="scheduler-attention-input-window-seconds" class="number-input" type="number" min="5" max="600" step="1" />
                   </label>
                   <label class="scheduler-field" for="scheduler-attention-media-weight">
                     <span data-i18n="settingsSchedulerMediaWeight">Video weight</span>
@@ -577,6 +589,30 @@
                   <label class="scheduler-field" for="scheduler-attention-audio-weight">
                     <span data-i18n="settingsSchedulerAudioWeight">Audio weight</span>
                     <input id="scheduler-attention-audio-weight" class="number-input" type="number" min="0" max="1" step="0.01" />
+                  </label>
+                  <label class="scheduler-field" for="scheduler-attention-link-soft-decay-seconds">
+                    <span data-i18n="settingsSchedulerLinkSoftSeconds">Link soft seconds</span>
+                    <input id="scheduler-attention-link-soft-decay-seconds" class="number-input" type="number" min="10" max="3600" step="1" />
+                  </label>
+                  <label class="scheduler-field" for="scheduler-attention-link-soft-decay-weight">
+                    <span data-i18n="settingsSchedulerLinkSoftWeight">Link soft weight</span>
+                    <input id="scheduler-attention-link-soft-decay-weight" class="number-input" type="number" min="0" max="1" step="0.05" />
+                  </label>
+                  <label class="scheduler-field" for="scheduler-attention-link-hard-decay-seconds">
+                    <span data-i18n="settingsSchedulerLinkHardSeconds">Link hard seconds</span>
+                    <input id="scheduler-attention-link-hard-decay-seconds" class="number-input" type="number" min="10" max="3600" step="1" />
+                  </label>
+                  <label class="scheduler-field" for="scheduler-attention-link-hard-decay-weight">
+                    <span data-i18n="settingsSchedulerLinkHardWeight">Link hard weight</span>
+                    <input id="scheduler-attention-link-hard-decay-weight" class="number-input" type="number" min="0" max="1" step="0.05" />
+                  </label>
+                  <label class="scheduler-field" for="scheduler-attention-link-zero-seconds">
+                    <span data-i18n="settingsSchedulerLinkZeroSeconds">Link zero seconds</span>
+                    <input id="scheduler-attention-link-zero-seconds" class="number-input" type="number" min="10" max="7200" step="1" />
+                  </label>
+                  <label class="scheduler-field" for="scheduler-attention-site-share-ratio">
+                    <span data-i18n="settingsSchedulerSiteShareRatio">Site share ratio</span>
+                    <input id="scheduler-attention-site-share-ratio" class="number-input" type="number" min="0" max="1" step="0.05" />
                   </label>
                 </fieldset>
               </div>
@@ -842,6 +878,7 @@
     <script src="../shared/settings/proxy-skip.js"></script>
     <script src="../shared/settings/ai.js"></script>
     <script src="../shared/settings/effective.js"></script>
+    <script src="../shared/settings/migrations.js"></script>
     <script src="../shared/settings/normalize/appearance-layout.js"></script>
     <script src="../shared/settings/normalize/preload.js"></script>
     <script src="../shared/settings/normalize/scheduler.js"></script>

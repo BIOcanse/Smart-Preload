@@ -42,6 +42,7 @@
     lastReportedPageDigestFingerprint: null,
     attentionActivityTimerId: null,
     lastUserInputAt: 0,
+    lastLinkInteractionAt: 0,
     lastAttentionActivityReportedAt: 0,
     lastAttentionActivitySignature: "",
     hoverPreloadIntent: null,

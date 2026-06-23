@@ -395,6 +395,33 @@
   "settingsSchedulerAttentionPool": {
     "message": "Pool de atenção"
   },
+  "settingsSchedulerAttentionPoolEnabled": {
+    "message": "Usar pool de atenção"
+  },
+  "settingsSchedulerAttentionPoolEnabledDesc": {
+    "message": "Quando desativado, o tempo de atenção não é registrado e o histórico salvo é ignorado na alocação de slots."
+  },
+  "settingsSchedulerPoolMinutes": {
+    "message": "Minutos do pool"
+  },
+  "settingsSchedulerLinkSoftSeconds": {
+    "message": "Segundos suaves do link"
+  },
+  "settingsSchedulerLinkSoftWeight": {
+    "message": "Peso suave do link"
+  },
+  "settingsSchedulerLinkHardSeconds": {
+    "message": "Segundos fortes do link"
+  },
+  "settingsSchedulerLinkHardWeight": {
+    "message": "Peso forte do link"
+  },
+  "settingsSchedulerLinkZeroSeconds": {
+    "message": "Segundos até zero do link"
+  },
+  "settingsSchedulerSiteShareRatio": {
+    "message": "Proporção compartilhada do site"
+  },
   "settingsSchedulerMin": {
     "message": "Mín."
   },

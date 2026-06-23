@@ -206,6 +206,15 @@
     grid-template-columns: 1fr;
   }
 
+  .history-delete-range {
+    grid-template-columns: 1fr;
+  }
+
+  .history-delete-range-separator {
+    width: 100%;
+    height: 24px;
+  }
+
   .history-date-parts {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

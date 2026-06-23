@@ -87,11 +87,15 @@
     };
   }
 
-  function computePreloadAttentionDwellShares(attentionPool, tabRefs) {
+  function computePreloadAttentionDwellShares(attentionPool, tabRefs, options = {}) {
     const pool = normalizePreloadAttentionPool(attentionPool);
+    const resolvedOptions = resolvePreloadAttentionOptions(options);
+    const siteShareRatio = resolvedOptions.siteShareRatio;
+    const tabShareRatio = 1 - siteShareRatio;
     const refs = (Array.isArray(tabRefs) ? tabRefs : [])
       .map((tabRef) => ({
         key: buildPreloadAttentionTabKey(tabRef),
+        siteKey: buildPreloadAttentionSiteKey(tabRef),
         tabId: normalizePositiveInteger(tabRef?.tabId),
       }))
       .filter((tabRef) => tabRef.key);
@@ -109,22 +113,47 @@
     }
 
     const requestedKeys = new Set(refs.map((ref) => ref.key));
+    const refsBySiteKey = new Map();
     const durationByKey = {};
 
-    for (const segment of pool.segments) {
-      const key = buildPreloadAttentionTabKey(segment);
-
-      if (!requestedKeys.has(key)) {
+    for (const ref of refs) {
+      if (!ref.siteKey) {
         continue;
       }
 
-      durationByKey[key] = (durationByKey[key] || 0) + segment.durationMs;
+      if (!refsBySiteKey.has(ref.siteKey)) {
+        refsBySiteKey.set(ref.siteKey, []);
+      }
+
+      refsBySiteKey.get(ref.siteKey).push(ref);
+    }
+    const siteDurationByKey = {};
+
+    for (const segment of pool.segments) {
+      const key = buildPreloadAttentionTabKey(segment);
+      const siteKey = buildPreloadAttentionSiteKey(segment);
+
+      if (requestedKeys.has(key)) {
+        durationByKey[key] =
+          (durationByKey[key] || 0) + segment.durationMs * tabShareRatio;
+      }
+
+      if (siteKey && refsBySiteKey.has(siteKey)) {
+        siteDurationByKey[siteKey] =
+          (siteDurationByKey[siteKey] || 0) + segment.durationMs * siteShareRatio;
+      }
     }
 
     for (const ref of refs) {
+      const siteRefs = refsBySiteKey.get(ref.siteKey) || [];
+      const sharedSiteDuration =
+        siteRefs.length > 0 ? (siteDurationByKey[ref.siteKey] || 0) / siteRefs.length : 0;
       shareByTabId[String(ref.tabId)] = Math.max(
         0,
-        Math.min(1, (durationByKey[ref.key] || 0) / pool.totalDurationMs)
+        Math.min(
+          1,
+          ((durationByKey[ref.key] || 0) + sharedSiteDuration) / pool.totalDurationMs
+        )
       );
     }
 
@@ -140,6 +169,21 @@
     }
 
     return `${tabId}\n${pageUrl}`;
+  }
+
+  function buildPreloadAttentionSiteKey(tabRef) {
+    const pageUrl = normalizeAttentionPageUrl(tabRef?.pageUrl || "");
+
+    if (!pageUrl) {
+      return "";
+    }
+
+    try {
+      const url = new URL(pageUrl);
+      return url.hostname.toLowerCase().replace(/^www\./, "");
+    } catch (_error) {
+      return "";
+    }
   }
 
   function normalizeAttentionPageUrl(rawUrl) {
@@ -160,6 +204,7 @@
     normalizePreloadAttentionAppendSegment,
     computePreloadAttentionDwellShares,
     buildPreloadAttentionTabKey,
+    buildPreloadAttentionSiteKey,
     normalizeAttentionPageUrl,
   };
 })();

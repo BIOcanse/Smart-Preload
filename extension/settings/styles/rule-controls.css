@@ -202,9 +202,55 @@
   padding: 12px 14px;
   border: 1px solid var(--line-strong);
   border-radius: 16px;
-  background: var(--surface);
+  background-color: var(--surface);
   color: var(--text);
   font: inherit;
+  transition:
+    border-color 0.16s ease,
+    background-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.number-input:hover,
+.select-input:hover,
+.text-input:hover {
+  border-color: rgba(66, 105, 93, 0.48);
+}
+
+.number-input:focus,
+.select-input:focus,
+.text-input:focus {
+  border-color: rgba(66, 105, 93, 0.72);
+  box-shadow: 0 0 0 3px rgba(79, 125, 110, 0.14);
+  outline: none;
+}
+
+.select-input {
+  appearance: none;
+  padding-right: 42px;
+  background-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 18 18' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4.5 6.75L9 11.25L13.5 6.75' stroke='%2342695D' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+  background-size: 18px 18px;
+  cursor: pointer;
+}
+
+.select-input:disabled,
+.number-input:disabled,
+.text-input:disabled {
+  border-color: var(--line);
+  background-color: var(--surface-muted);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.select-input:disabled {
+  opacity: 0.72;
+}
+
+.select-input option {
+  background: var(--surface);
+  color: var(--text);
 }
 
 .text-input[type="password"] {

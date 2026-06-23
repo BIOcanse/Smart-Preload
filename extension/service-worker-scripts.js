@@ -18,6 +18,7 @@
   "shared/settings/proxy-skip.js",
   "shared/settings/ai.js",
   "shared/settings/effective.js",
+  "shared/settings/migrations.js",
   "shared/settings/normalize/appearance-layout.js",
   "shared/settings/normalize/preload.js",
   "shared/settings/normalize/scheduler.js",

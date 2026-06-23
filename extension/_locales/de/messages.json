@@ -395,6 +395,33 @@
   "settingsSchedulerAttentionPool": {
     "message": "Aufmerksamkeitspool"
   },
+  "settingsSchedulerAttentionPoolEnabled": {
+    "message": "Aufmerksamkeitspool verwenden"
+  },
+  "settingsSchedulerAttentionPoolEnabledDesc": {
+    "message": "Wenn ausgeschaltet, wird keine Aufmerksamkeitszeit aufgezeichnet und gespeicherte Aufmerksamkeitsverlaeufe werden bei der Slot-Zuweisung ignoriert."
+  },
+  "settingsSchedulerPoolMinutes": {
+    "message": "Pool-Minuten"
+  },
+  "settingsSchedulerLinkSoftSeconds": {
+    "message": "Link-Soft-Sekunden"
+  },
+  "settingsSchedulerLinkSoftWeight": {
+    "message": "Link-Soft-Gewicht"
+  },
+  "settingsSchedulerLinkHardSeconds": {
+    "message": "Link-Hard-Sekunden"
+  },
+  "settingsSchedulerLinkHardWeight": {
+    "message": "Link-Hard-Gewicht"
+  },
+  "settingsSchedulerLinkZeroSeconds": {
+    "message": "Link-Null-Sekunden"
+  },
+  "settingsSchedulerSiteShareRatio": {
+    "message": "Site-Share-Anteil"
+  },
   "settingsSchedulerMin": {
     "message": "Min."
   },

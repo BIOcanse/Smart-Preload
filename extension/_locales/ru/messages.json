@@ -395,6 +395,33 @@
   "settingsSchedulerAttentionPool": {
     "message": "Пул внимания"
   },
+  "settingsSchedulerAttentionPoolEnabled": {
+    "message": "Использовать пул внимания"
+  },
+  "settingsSchedulerAttentionPoolEnabledDesc": {
+    "message": "Если выключено, время внимания не записывается, а сохраненная история внимания игнорируется при распределении слотов."
+  },
+  "settingsSchedulerPoolMinutes": {
+    "message": "Минуты пула"
+  },
+  "settingsSchedulerLinkSoftSeconds": {
+    "message": "Мягкое затухание ссылки, сек."
+  },
+  "settingsSchedulerLinkSoftWeight": {
+    "message": "Вес мягкого затухания ссылки"
+  },
+  "settingsSchedulerLinkHardSeconds": {
+    "message": "Сильное затухание ссылки, сек."
+  },
+  "settingsSchedulerLinkHardWeight": {
+    "message": "Вес сильного затухания ссылки"
+  },
+  "settingsSchedulerLinkZeroSeconds": {
+    "message": "Секунды до нуля для ссылки"
+  },
+  "settingsSchedulerSiteShareRatio": {
+    "message": "Доля общего времени сайта"
+  },
   "settingsSchedulerMin": {
     "message": "Мин."
   },

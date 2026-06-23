@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .page { width: 1400px; height: 560px; }
+      .left { position: absolute; left: 80px; top: 0; width: 600px; height: 560px; display: flex; flex-direction: column; justify-content: center; }
+      .brand { font-size: 28px; } .brand .dot { width: 17px; height: 17px; }
+      h1 { margin-top: 22px; font-size: 56px; line-height: 1.08; font-weight: 900; letter-spacing: -0.5px; }
+      .sub { margin-top: 18px; font-size: 22px; line-height: 1.45; font-weight: 600; color: var(--muted); max-width: 540px; }
+      .feats { margin-top: 26px; display: flex; flex-direction: column; gap: 14px; }
+      .feature { font-size: 21px; } .feature .ck { width: 28px; height: 28px; font-size: 16px; font-weight: 900; }
+
+      .stage { position: absolute; left: 736px; top: 56px; width: 600px; height: 448px; }
+      .browser { height: 448px; }
+      .chrome { height: 46px; padding: 0 16px; } .dots i { width: 13px; height: 13px; }
+      .dots i:nth-child(1){ background: var(--coral);} .dots i:nth-child(2){ background: var(--amber);} .dots i:nth-child(3){ background: var(--green);}
+      .addr { height: 26px; margin-left: 9px; padding: 0 13px; font-size: 14px; }
+      .content { position: absolute; inset: 46px 0 0 0; overflow: hidden; }
+      .result { position: absolute; left: 26px; width: 330px; z-index: 3; }
+      .result .head { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+      .result .fav { width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 13px; }
+      .result .url { font-size: 13px; color: var(--url); }
+      .result .title { font-size: 20px; line-height: 1.2; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .result .snip { height: 8px; border-radius: 999px; background: var(--line); } .result .snip + .snip { margin-top: 7px; width: 86%; }
+      .ghost { position: absolute; left: 296px; width: 280px; height: 104px; z-index: 1; opacity: 0.62; }
+      .ghost .bar { height: 14px; } .ghost .body { display: flex; gap: 11px; padding: 11px 13px; }
+      .ghost .lines { flex: 1; } .ghost .lines b { display: block; height: 9px; border-radius: 4px; background: rgba(17,24,39,.22); width: 76%; margin-bottom: 9px; }
+      .ghost .lines u { display: block; height: 6px; border-radius: 999px; background: var(--ghost-line); margin-bottom: 6px; }
+      .ghost .img { width: 34%; border-radius: 7px; background: var(--ghost-line); }
+      .ready { position: absolute; z-index: 4; padding: 3px 10px; font-size: 14px; } .ready .d { width: 7px; height: 7px; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="grid-bg"></div>
+      <div class="blob" style="right:-120px;top:-160px;width:520px;height:520px;background:var(--green);opacity:.06"></div>
+      <div class="blob" style="left:-180px;bottom:-220px;width:480px;height:480px;background:var(--blue);opacity:.05"></div>
+      <div class="left">
+        <div class="brand"><span class="dot"></span><span data-i18n="brand">Smart Preload</span></div>
+        <h1 data-i18n="mq_head"></h1>
+        <div class="sub" data-i18n="mq_sub"></div>
+        <div class="feats">
+          <div class="feature"><span class="ck">✓</span><span data-i18n="mq_f1"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="mq_f2"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="mq_f3"></span></div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="browser">
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="addr">🔒 <span>docs.smartpreload.app</span></div></div>
+          <div class="content">
+            <div class="ghost" style="top:14px;border:2px solid var(--blue)"><div class="bar" style="background:var(--blue);opacity:.4"></div><div class="body"><div class="lines"><b></b><u></u><u style="width:88%"></u><u style="width:60%"></u></div><div class="img"></div></div></div>
+            <div class="ready" style="top:18px;left:486px"><span class="d"></span><span>ready</span></div>
+            <div class="ghost" style="top:140px;border:2px solid var(--green)"><div class="bar" style="background:var(--green);opacity:.4"></div><div class="body"><div class="lines"><b></b><u></u><u style="width:88%"></u><u style="width:60%"></u></div><div class="img"></div></div></div>
+            <div class="ready" style="top:144px;left:486px"><span class="d"></span><span>ready</span></div>
+            <div class="ghost" style="top:266px;border:2px solid var(--amber)"><div class="bar" style="background:var(--amber);opacity:.4"></div><div class="body"><div class="lines"><b></b><u></u><u style="width:88%"></u><u style="width:60%"></u></div><div class="img"></div></div></div>
+            <div class="ready" style="top:270px;left:486px"><span class="d"></span><span>ready</span></div>
+
+            <div class="result" style="top:28px"><div class="head"><span class="fav" style="background:var(--ink)">G</span><span class="url">github.com</span></div><div class="title" data-i18n="s1_r1"></div><div class="snip"></div><div class="snip"></div></div>
+            <div class="result" style="top:154px"><div class="head"><span class="fav" style="background:var(--blue)">D</span><span class="url">docs.smartpreload.app</span></div><div class="title" data-i18n="s1_r2"></div><div class="snip"></div><div class="snip"></div></div>
+            <div class="result" style="top:280px"><div class="head"><span class="fav" style="background:var(--coral)">F</span><span class="url">forum.example.com</span></div><div class="title" data-i18n="s1_r3"></div><div class="snip"></div><div class="snip"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="i18n.js"></script>
+    <script>
+      const lang = new URLSearchParams(location.search).get("lang") || "en";
+      const L = Object.assign({}, window.I18N.en, window.I18N[lang] || {});
+      document.querySelectorAll("[data-i18n]").forEach((el) => { const v = L[el.dataset.i18n]; if (v != null) el.textContent = v; });
+      document.documentElement.lang = lang.replace("_", "-");
+    </script>
+  </body>
+</html>

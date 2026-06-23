@@ -42,13 +42,17 @@ async function schedulePreloadCandidateSelectionSnapshots({
       settings
     ) === true;
   const shouldDeferHiddenTabs = pressureState?.shouldDeferHiddenTabs === true;
+  const attentionPoolEnabled = schedulerSettings.attentionPoolEnabled !== false;
   const dwellShares =
     globalThis.ZeroLatencyPreloadSchedulerAttention.computePreloadAttentionDwellShares(
-      preloadState?.scheduler?.attentionPool,
+      attentionPoolEnabled ? preloadState?.scheduler?.attentionPool : null,
       normalizedSnapshots.map((snapshot) => ({
         tabId: snapshot.sourceTabId,
         pageUrl: snapshot.sourcePageUrl,
-      }))
+      })),
+      {
+        siteShareRatio: schedulerSettings.attentionSiteShareRatio,
+      }
     );
   const nativeAllocations = allocateSchedulerGroupSlots({
     snapshots: normalizedSnapshots,

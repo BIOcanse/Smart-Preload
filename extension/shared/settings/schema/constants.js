@@ -1,6 +1,6 @@
 (function () {
   const SETTINGS_STORAGE_KEY = "userSettingsV1";
-  const SETTINGS_STORAGE_VERSION = 29;
+  const SETTINGS_STORAGE_VERSION = 31;
   const AI_MODEL_CATALOG = globalThis.ZeroLatencyAiModelCatalog ?? null;
   const PRELOAD_RULE_CARD_IDS = [
     "nativePerPagePreloadLimit",

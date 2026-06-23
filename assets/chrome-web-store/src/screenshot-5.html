@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .page { width: 1280px; height: 800px; }
+      .left { position: absolute; left: 72px; top: 0; width: 470px; height: 800px; display: flex; flex-direction: column; justify-content: center; }
+      .brand { font-size: 30px; } .brand .dot { width: 18px; height: 18px; }
+      .ext { margin: 14px 0 30px; font-size: 18px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+      h1 { font-size: 54px; line-height: 1.1; font-weight: 900; letter-spacing: -0.5px; }
+      .sub { margin-top: 22px; font-size: 22px; line-height: 1.5; font-weight: 600; color: var(--muted); }
+      .features { margin-top: 34px; display: flex; flex-direction: column; gap: 18px; }
+      .feature { font-size: 22px; } .feature .ck { width: 30px; height: 30px; font-size: 17px; font-weight: 900; }
+
+      .stage { position: absolute; left: 556px; top: 0; width: 660px; height: 800px; display: flex; flex-direction: column; justify-content: center; gap: 26px; }
+      .popup { background: var(--white); border: 3px solid var(--ink); border-radius: 20px; box-shadow: 18px 22px 0 rgba(17,24,39,.13); overflow: hidden; width: 560px; }
+      .pop-h { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 3px solid var(--ink); background: var(--field); }
+      .pop-h .b { display: inline-flex; align-items: center; gap: 11px; font-weight: 900; font-size: 22px; }
+      .pop-h .b .dot { width: 16px; height: 16px; border-radius: 999px; background: var(--green); box-shadow: 0 0 14px rgba(22,163,74,.6); }
+      .stop { display: inline-flex; align-items: center; gap: 9px; padding: 10px 20px; border-radius: 999px; background: var(--coral); color: #fff; font-weight: 900; font-size: 19px; border: 3px solid var(--ink); }
+      .stop .sq { width: 13px; height: 13px; border-radius: 3px; background: #fff; }
+      .pop-b { padding: 16px 22px; display: flex; flex-direction: column; gap: 12px; }
+      .crow { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 13px; border: 2px solid var(--line); }
+      .crow .n { width: 30px; height: 30px; border-radius: 999px; background: var(--ink); color: #fff; display: grid; place-items: center; font-weight: 900; font-size: 16px; }
+      .crow.t .n { background: var(--green); }
+      .crow .nm { flex: 1; font-size: 20px; font-weight: 700; }
+      .crow .rd { display: inline-flex; align-items: center; gap: 7px; font-size: 16px; font-weight: 800; color: var(--green); }
+      .crow .rd i { width: 9px; height: 9px; border-radius: 999px; background: var(--green); display: block; }
+
+      .safe { display: flex; align-items: center; gap: 16px; width: 560px; background: var(--green-soft); border: 3px solid var(--green); border-radius: 18px; padding: 18px 22px; }
+      .safe .sh { width: 46px; height: 46px; border-radius: 12px; background: var(--green); color: #fff; display: grid; place-items: center; font-size: 26px; font-weight: 900; flex-shrink: 0; }
+      .safe .tx { font-size: 21px; font-weight: 800; color: var(--ink); }
+      .chips { display: flex; gap: 12px; }
+      .chips .chip { padding: 11px 22px; font-size: 19px; color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="grid-bg"></div>
+      <div class="blob" style="right:-120px;top:-130px;width:520px;height:520px;background:var(--green);opacity:.06"></div>
+      <div class="blob" style="left:-160px;bottom:-200px;width:480px;height:480px;background:var(--blue);opacity:.05"></div>
+      <div class="left">
+        <div class="brand"><span class="dot"></span><span data-i18n="brand">Smart Preload</span></div>
+        <div class="ext" data-i18n="ext">Browser extension</div>
+        <h1 data-i18n="s5_head"></h1>
+        <div class="sub" data-i18n="s5_sub"></div>
+        <div class="features">
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s5_f1"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s5_f2"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s5_f3"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s5_f4"></span></div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="popup">
+          <div class="pop-h"><span class="b"><span class="dot"></span><span data-i18n="brand">Smart Preload</span></span><span class="stop"><span class="sq"></span><span data-i18n="stop">Stop</span></span></div>
+          <div class="pop-b">
+            <div class="crow t"><span class="n">1</span><span class="nm" data-i18n="c1"></span><span class="rd"><i></i><span>ready</span></span></div>
+            <div class="crow"><span class="n">2</span><span class="nm" data-i18n="c2"></span><span class="rd"><i></i><span>ready</span></span></div>
+            <div class="crow"><span class="n">3</span><span class="nm" data-i18n="c3"></span><span class="rd"><i></i><span>ready</span></span></div>
+          </div>
+        </div>
+        <div class="safe"><span class="sh">✓</span><span class="tx" data-i18n="s5_safe"></span></div>
+        <div class="chips"><span class="chip">Chrome</span><span class="chip">Edge</span><span class="chip">GitHub</span><span class="chip">Apache-2.0</span></div>
+      </div>
+    </div>
+    <script src="i18n.js"></script>
+    <script>
+      const lang = new URLSearchParams(location.search).get("lang") || "en";
+      const L = Object.assign({}, window.I18N.en, window.I18N[lang] || {});
+      document.querySelectorAll("[data-i18n]").forEach((el) => { const v = L[el.dataset.i18n]; if (v != null) el.textContent = v; });
+      document.documentElement.lang = lang.replace("_", "-");
+    </script>
+  </body>
+</html>

@@ -41,6 +41,7 @@
         settings
       ) === true;
     const canCount =
+      runtimeOptions.enabled !== false &&
       sourceWindow?.type === "normal" &&
       sourceWindow?.focused === true &&
       tab?.active === true &&
@@ -60,7 +61,12 @@
         observedAt: new Date().toISOString(),
         counting: canCount,
         weight: canCount ? activity.weight : 0,
-        activityKind: canCount ? activity.kind : "inactive",
+        activityKind:
+          runtimeOptions.enabled === false
+            ? "disabled"
+            : canCount
+              ? activity.kind
+              : "inactive",
         expiresAt: canCount ? activity.expiresAt : null,
         reason,
       },

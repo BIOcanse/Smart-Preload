@@ -23,6 +23,7 @@
       return;
     }
 
+    namespace.recordLinkInteractionForAttention?.();
     const existingIntent = namespace.state.hoverPreloadIntent;
     if (
       existingIntent &&
@@ -114,6 +115,7 @@
       return;
     }
 
+    namespace.recordLinkInteractionForAttention?.();
     cancelPendingHoverPreloadIntent("contextmenu");
     void startInteractionPreload({
       sourcePageUrl: location.href,

@@ -28,7 +28,8 @@
       schedulerNativeTotalMin: getElement("scheduler-native-total-min"),
       schedulerNativeTotalMax: getElement("scheduler-native-total-max"),
       schedulerNativeHalfLifeTabs: getElement("scheduler-native-half-life-tabs"),
-      schedulerAttentionPoolHours: getElement("scheduler-attention-pool-hours"),
+      schedulerAttentionPoolEnabled: getElement("scheduler-attention-pool-enabled"),
+      schedulerAttentionPoolMinutes: getElement("scheduler-attention-pool-minutes"),
       schedulerAttentionSegmentSeconds: getElement("scheduler-attention-segment-seconds"),
       schedulerAttentionMaxGapSeconds: getElement("scheduler-attention-max-gap-seconds"),
       schedulerAttentionInputWindowSeconds: getElement(
@@ -36,6 +37,20 @@
       ),
       schedulerAttentionMediaWeight: getElement("scheduler-attention-media-weight"),
       schedulerAttentionAudioWeight: getElement("scheduler-attention-audio-weight"),
+      schedulerAttentionLinkSoftSeconds: getElement(
+        "scheduler-attention-link-soft-decay-seconds"
+      ),
+      schedulerAttentionLinkSoftWeight: getElement(
+        "scheduler-attention-link-soft-decay-weight"
+      ),
+      schedulerAttentionLinkHardSeconds: getElement(
+        "scheduler-attention-link-hard-decay-seconds"
+      ),
+      schedulerAttentionLinkHardWeight: getElement(
+        "scheduler-attention-link-hard-decay-weight"
+      ),
+      schedulerAttentionLinkZeroSeconds: getElement("scheduler-attention-link-zero-seconds"),
+      schedulerAttentionSiteShareRatio: getElement("scheduler-attention-site-share-ratio"),
       aiPredictionProvider: getElement("ai-prediction-provider"),
       aiModelListMode: getElement("ai-model-list-mode"),
       aiPredictionModel: getElement("ai-prediction-model"),

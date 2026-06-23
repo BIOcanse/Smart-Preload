@@ -395,6 +395,33 @@
   "settingsSchedulerAttentionPool": {
     "message": "주의 시간 풀"
   },
+  "settingsSchedulerAttentionPoolEnabled": {
+    "message": "주의 시간 풀 사용"
+  },
+  "settingsSchedulerAttentionPoolEnabledDesc": {
+    "message": "끄면 주의 시간이 기록되지 않고 슬롯 할당에서 저장된 주의 기록을 무시합니다."
+  },
+  "settingsSchedulerPoolMinutes": {
+    "message": "풀 분"
+  },
+  "settingsSchedulerLinkSoftSeconds": {
+    "message": "링크 약한 감쇠 초"
+  },
+  "settingsSchedulerLinkSoftWeight": {
+    "message": "링크 약한 감쇠 가중치"
+  },
+  "settingsSchedulerLinkHardSeconds": {
+    "message": "링크 강한 감쇠 초"
+  },
+  "settingsSchedulerLinkHardWeight": {
+    "message": "링크 강한 감쇠 가중치"
+  },
+  "settingsSchedulerLinkZeroSeconds": {
+    "message": "링크 0초 기준"
+  },
+  "settingsSchedulerSiteShareRatio": {
+    "message": "사이트 공유 비율"
+  },
   "settingsSchedulerMin": {
     "message": "최소"
   },

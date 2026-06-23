@@ -24,7 +24,53 @@
     const resolvedOptions = resolvePreloadAttentionOptions(options);
     const { observedAtMs, observedAt } = resolveAttentionObservationClock(observation);
     const previousCursor = normalizePreloadAttentionCursor(scheduler.activeTabCursor);
-    const nextCursor = buildAttentionCursorFromObservation(observation, observedAt);
+    const nextCursor = buildAttentionCursorFromObservation(
+      resolvedOptions.enabled === false
+        ? {
+            ...observation,
+            counting: false,
+            weight: 0,
+            activityKind: "disabled",
+          }
+        : observation,
+      observedAt
+    );
+
+    if (resolvedOptions.enabled === false) {
+      scheduler.activeTabCursor = nextCursor;
+      scheduler.updatedAt = observedAt;
+      targetState.scheduler = scheduler;
+      targetState.updatedAt = observedAt;
+
+      recordSchedulerEvent("scheduler.attention.observation", {
+        reason: typeof observation?.reason === "string" ? observation.reason : null,
+        observedAt,
+        previous: summarizeAttentionCursor(previousCursor),
+        next: summarizeAttentionCursor(nextCursor),
+        elapsedMs: 0,
+        wallElapsedMs: 0,
+        weightedElapsedMs: 0,
+        previousWeight: previousCursor.weight,
+        minSliceMs: resolvedOptions.minSliceMs,
+        maxObservableGapMs: resolvedOptions.maxObservableGapMs,
+        segmentDurationMs: resolvedOptions.segmentDurationMs,
+        shouldRecordElapsed: false,
+        pendingBeforeMs: 0,
+        pendingAfterMs: 0,
+        recordedDurationMs: 0,
+        committedSegmentCount: 0,
+        skippedLongGap: false,
+        attentionPoolEnabled: false,
+        poolTotalDurationMs: scheduler.attentionPool.totalDurationMs,
+      });
+
+      return {
+        preloadState: targetState,
+        recordedDurationMs: 0,
+        skippedLongGap: false,
+      };
+    }
+
     const timing = buildAttentionObservationTiming({
       previousCursor,
       observedAtMs,
@@ -63,6 +109,7 @@
       recordedDurationMs: commit.recordedDurationMs,
       committedSegmentCount: commit.committedSegmentCount,
       skippedLongGap: timing.skippedLongGap,
+      attentionPoolEnabled: true,
       poolTotalDurationMs: scheduler.attentionPool.totalDurationMs,
     });
 

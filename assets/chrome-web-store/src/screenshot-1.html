@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .page { width: 1280px; height: 800px; }
+      .left { position: absolute; left: 72px; top: 0; width: 470px; height: 800px;
+        display: flex; flex-direction: column; justify-content: center; }
+      .brand { font-size: 30px; }
+      .brand .dot { width: 18px; height: 18px; }
+      .ext { margin: 14px 0 30px; font-size: 18px; font-weight: 800; letter-spacing: 3px;
+        text-transform: uppercase; color: var(--muted); }
+      h1 { font-size: 54px; line-height: 1.1; font-weight: 900; letter-spacing: -0.5px; }
+      .sub { margin-top: 22px; font-size: 22px; line-height: 1.5; font-weight: 600; color: var(--muted); }
+      .features { margin-top: 34px; display: flex; flex-direction: column; gap: 18px; }
+      .feature { font-size: 22px; }
+      .feature .ck { width: 30px; height: 30px; font-size: 17px; font-weight: 900; }
+
+      .stage { position: absolute; left: 556px; top: 92px; width: 660px; height: 616px; }
+      .chrome { height: 50px; padding: 0 18px; }
+      .dots i { width: 14px; height: 14px; }
+      .dots i:nth-child(1){ background: var(--coral);} .dots i:nth-child(2){ background: var(--amber);} .dots i:nth-child(3){ background: var(--green);}
+      .addr { height: 28px; margin-left: 10px; padding: 0 14px; font-size: 15px; }
+      .content { position: absolute; inset: 50px 0 0 0; overflow: hidden; }
+
+      .result { position: absolute; left: 28px; width: 372px; z-index: 3; }
+      .result .fav { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center;
+        color: #fff; font-weight: 800; font-size: 15px; }
+      .result .head { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+      .result .url { font-size: 15px; }
+      .result .title { font-size: 23px; line-height: 1.2; margin-bottom: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .result .snip { height: 9px; border-radius: 999px; background: var(--line); }
+      .result .snip + .snip { margin-top: 8px; width: 86%; }
+
+      .ghost { position: absolute; left: 326px; width: 318px; height: 120px; z-index: 1; opacity: 0.62; }
+      .ghost .bar { height: 16px; }
+      .ghost .body { display: flex; gap: 12px; padding: 13px 15px; }
+      .ghost .lines { flex: 1; }
+      .ghost .lines b { display: block; height: 10px; border-radius: 4px; background: rgba(17,24,39,.22); width: 76%; margin-bottom: 10px; }
+      .ghost .lines u { display: block; height: 7px; border-radius: 999px; background: var(--ghost-line); margin-bottom: 7px; }
+      .ghost .img { width: 34%; border-radius: 8px; background: var(--ghost-line); }
+      .ready { position: absolute; z-index: 4; padding: 4px 11px; font-size: 16px; }
+      .ready .d { width: 8px; height: 8px; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="grid-bg"></div>
+      <div class="blob" style="right:-120px;top:-120px;width:520px;height:520px;background:var(--green);opacity:.06"></div>
+      <div class="blob" style="left:-160px;bottom:-200px;width:480px;height:480px;background:var(--blue);opacity:.05"></div>
+
+      <div class="left">
+        <div class="brand"><span class="dot"></span><span data-i18n="brand">Smart Preload</span></div>
+        <div class="ext" data-i18n="ext">Browser extension</div>
+        <h1 data-i18n="s1_head"></h1>
+        <div class="sub" data-i18n="s1_sub"></div>
+        <div class="features">
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s1_f1"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s1_f2"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s1_f3"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s1_f4"></span></div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="browser" style="height:616px">
+          <div class="chrome">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <div class="addr">🔒 <span>docs.smartpreload.app</span></div>
+          </div>
+          <div class="content">
+            <!-- ghosts behind -->
+            <div class="ghost" style="top:18px;border:2px solid var(--blue)"><div class="bar" style="background:var(--blue);opacity:.4"></div><div class="body"><div class="lines"><b></b><u></u><u style="width:88%"></u><u style="width:60%"></u></div><div class="img"></div></div></div>
+            <div class="ready" style="top:24px;left:560px"><span class="d"></span><span>ready</span></div>
+            <div class="ghost" style="top:186px;border:2px solid var(--green)"><div class="bar" style="background:var(--green);opacity:.4"></div><div class="body"><div class="lines"><b></b><u></u><u style="width:88%"></u><u style="width:60%"></u></div><div class="img"></div></div></div>
+            <div class="ready" style="top:192px;left:560px"><span class="d"></span><span>ready</span></div>
+            <div class="ghost" style="top:354px;border:2px solid var(--amber)"><div class="bar" style="background:var(--amber);opacity:.4"></div><div class="body"><div class="lines"><b></b><u></u><u style="width:88%"></u><u style="width:60%"></u></div><div class="img"></div></div></div>
+            <div class="ready" style="top:360px;left:560px"><span class="d"></span><span>ready</span></div>
+
+            <!-- result rows -->
+            <div class="result" style="top:36px">
+              <div class="head"><span class="fav" style="background:var(--ink)">G</span><span class="url">github.com</span></div>
+              <div class="title" data-i18n="s1_r1"></div><div class="snip"></div><div class="snip"></div>
+            </div>
+            <div class="result" style="top:204px">
+              <div class="head"><span class="fav" style="background:var(--blue)">D</span><span class="url">docs.smartpreload.app</span></div>
+              <div class="title" data-i18n="s1_r2"></div><div class="snip"></div><div class="snip"></div>
+            </div>
+            <div class="result" style="top:372px">
+              <div class="head"><span class="fav" style="background:var(--coral)">F</span><span class="url">forum.example.com</span></div>
+              <div class="title" data-i18n="s1_r3"></div><div class="snip"></div><div class="snip"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="i18n.js"></script>
+    <script>
+      const lang = new URLSearchParams(location.search).get("lang") || "en";
+      const L = Object.assign({}, window.I18N.en, window.I18N[lang] || {});
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const v = L[el.dataset.i18n];
+        if (v != null) el.textContent = v;
+      });
+      document.documentElement.lang = lang.replace("_", "-");
+    </script>
+  </body>
+</html>

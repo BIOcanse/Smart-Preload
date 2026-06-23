@@ -27,6 +27,13 @@ const settingsRulesPath = path.join(repoRoot, "extension", "shared", "settings",
 const settingsProxySkipPath = path.join(repoRoot, "extension", "shared", "settings", "proxy-skip.js");
 const settingsAiPath = path.join(repoRoot, "extension", "shared", "settings", "ai.js");
 const settingsEffectivePath = path.join(repoRoot, "extension", "shared", "settings", "effective.js");
+const settingsMigrationsPath = path.join(
+  repoRoot,
+  "extension",
+  "shared",
+  "settings",
+  "migrations.js"
+);
 const settingsNormalizeAppearanceLayoutPath = path.join(
   repoRoot,
   "extension",
@@ -144,6 +151,9 @@ vm.runInContext(readFileSync(settingsAiPath, "utf8"), context, {
 });
 vm.runInContext(readFileSync(settingsEffectivePath, "utf8"), context, {
   filename: settingsEffectivePath,
+});
+vm.runInContext(readFileSync(settingsMigrationsPath, "utf8"), context, {
+  filename: settingsMigrationsPath,
 });
 vm.runInContext(readFileSync(settingsNormalizeAppearanceLayoutPath, "utf8"), context, {
   filename: settingsNormalizeAppearanceLayoutPath,
