@@ -133,6 +133,182 @@ assert.equal(
   }).experiments.crossSiteCurrentTabSwap,
   false
 );
+assert.equal(
+  context.ZeroLatencySettings.normalizeStoredSettings({}).preloading.scheduler
+    .attentionPoolEnabled,
+  true
+);
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify({
+      attentionPoolMinutes:
+        context.ZeroLatencySettings.normalizeStoredSettings({}).preloading.scheduler
+          .attentionPoolMinutes,
+      attentionInputWindowSeconds:
+        context.ZeroLatencySettings.normalizeStoredSettings({}).preloading.scheduler
+          .attentionInputWindowSeconds,
+      attentionMediaPlaybackWeight:
+        context.ZeroLatencySettings.normalizeStoredSettings({}).preloading.scheduler
+          .attentionMediaPlaybackWeight,
+      attentionAudioPlaybackWeight:
+        context.ZeroLatencySettings.normalizeStoredSettings({}).preloading.scheduler
+          .attentionAudioPlaybackWeight,
+      attentionSiteShareRatio:
+        context.ZeroLatencySettings.normalizeStoredSettings({}).preloading.scheduler
+          .attentionSiteShareRatio,
+    })
+  ),
+  {
+    attentionPoolMinutes: 30,
+    attentionInputWindowSeconds: 30,
+    attentionMediaPlaybackWeight: 0,
+    attentionAudioPlaybackWeight: 0,
+    attentionSiteShareRatio: 0.5,
+  }
+);
+assert.equal(
+  context.ZeroLatencySettings.normalizeStoredSettings({
+    preloading: { scheduler: { attentionPoolEnabled: false } },
+  }).preloading.scheduler.attentionPoolEnabled,
+  false
+);
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      context.ZeroLatencySettingsMigrations.migrateStoredSettingsToCurrentVersion({
+        version: 30,
+        preloading: {
+          scheduler: {
+            attentionPoolHours: 2,
+            attentionInputWindowSeconds: 60,
+            attentionMediaPlaybackWeight: 0.2,
+            attentionAudioPlaybackWeight: 0.07,
+          },
+        },
+      }).preloading.scheduler
+    )
+  ),
+  {
+    attentionPoolMinutes: 120,
+    attentionInputWindowSeconds: 30,
+    attentionMediaPlaybackWeight: 0,
+    attentionAudioPlaybackWeight: 0,
+  }
+);
+assert.equal(
+  context.ZeroLatencySettingsMigrations.migrateStoredSettingsToCurrentVersion({
+    version: 30,
+    preloading: {
+      scheduler: {
+        attentionPoolHours: 2,
+      },
+    },
+  }).preloading.scheduler.attentionPoolHours,
+  undefined
+);
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      context.ZeroLatencySettings.normalizeStoredSettings({
+        version: 30,
+        preloading: {
+          scheduler: {
+            attentionPoolHours: 5,
+            attentionInputWindowSeconds: 60,
+            attentionMediaPlaybackWeight: 0.2,
+            attentionAudioPlaybackWeight: 0.07,
+          },
+        },
+      }).preloading.scheduler
+    )
+  ),
+  {
+    attentionPoolEnabled: true,
+    nativeTotalMin: 3,
+    nativeTotalMax: 16,
+    nativeHalfLifeTabs: 8,
+    tabTotalMin: 1,
+    tabTotalMax: 4,
+    tabHalfLifeTabs: 8,
+    attentionPoolMinutes: 30,
+    attentionSegmentSeconds: 60,
+    attentionMaxObservableGapSeconds: 60,
+    attentionInputWindowSeconds: 30,
+    attentionMediaPlaybackWeight: 0,
+    attentionAudioPlaybackWeight: 0,
+    attentionLinkInteractionSoftDecaySeconds: 60,
+    attentionLinkInteractionSoftDecayWeight: 0.25,
+    attentionLinkInteractionHardDecaySeconds: 180,
+    attentionLinkInteractionHardDecayWeight: 0.1,
+    attentionLinkInteractionZeroSeconds: 300,
+    attentionSiteShareRatio: 0.5,
+  }
+);
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      context.ZeroLatencySettings.normalizeStoredSettings({
+        version: 30,
+        preloading: {
+          scheduler: {
+            attentionPoolHours: 2,
+            attentionInputWindowSeconds: 90,
+            attentionMediaPlaybackWeight: 0.4,
+            attentionAudioPlaybackWeight: 0.2,
+          },
+        },
+      }).preloading.scheduler
+    )
+  ).attentionPoolMinutes,
+  120
+);
+assert.equal(
+  context.ZeroLatencySettings.normalizeStoredSettings({
+    version: 31,
+    preloading: {
+      scheduler: {
+        attentionInputWindowSeconds: 60,
+      },
+    },
+  }).preloading.scheduler.attentionInputWindowSeconds,
+  60
+);
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      context.ZeroLatencySettings.normalizeStoredSettings({
+        preloading: {
+          scheduler: {
+            attentionInputWindowSeconds: 60,
+            attentionMediaPlaybackWeight: 0.2,
+            attentionAudioPlaybackWeight: 0.07,
+          },
+        },
+      }).preloading.scheduler
+    )
+  ),
+  {
+    attentionPoolEnabled: true,
+    nativeTotalMin: 3,
+    nativeTotalMax: 16,
+    nativeHalfLifeTabs: 8,
+    tabTotalMin: 1,
+    tabTotalMax: 4,
+    tabHalfLifeTabs: 8,
+    attentionPoolMinutes: 30,
+    attentionSegmentSeconds: 60,
+    attentionMaxObservableGapSeconds: 60,
+    attentionInputWindowSeconds: 60,
+    attentionMediaPlaybackWeight: 0.2,
+    attentionAudioPlaybackWeight: 0.07,
+    attentionLinkInteractionSoftDecaySeconds: 60,
+    attentionLinkInteractionSoftDecayWeight: 0.25,
+    attentionLinkInteractionHardDecaySeconds: 180,
+    attentionLinkInteractionHardDecayWeight: 0.1,
+    attentionLinkInteractionZeroSeconds: 300,
+    attentionSiteShareRatio: 0.5,
+  }
+);
 
 assert.deepEqual(JSON.parse(JSON.stringify(buildSchedulerDiscoverySlotLimits(settings))), {
   nativePageSlotLimit: 4,
@@ -722,17 +898,52 @@ assert.deepEqual(
   ),
   [
     [30, 1, 1],
-    [40, 0, 0],
+    [40, 1, 1],
   ]
 );
 assert.deepEqual(JSON.parse(JSON.stringify(synchronizedSelections)), [
   ["hidden-tab", 10, 30, 1],
   ["prerender", 10, 30, 0],
   ["prefetch", 10, 30, 0],
-  ["hidden-tab", 10, 40, 0],
+  ["hidden-tab", 10, 40, 1],
   ["prerender", 10, 40, 0],
   ["prefetch", 10, 40, 0],
 ]);
+
+const attentionDisabledSettings = context.ZeroLatencySettings.resolveEffectiveSettings({
+  ...context.ZeroLatencySettings.DEFAULT_SETTINGS,
+  preloading: {
+    ...context.ZeroLatencySettings.DEFAULT_SETTINGS.preloading,
+    realPreloadEnabled: true,
+    scheduler: {
+      ...context.ZeroLatencySettings.DEFAULT_SETTINGS.preloading.scheduler,
+      attentionPoolEnabled: false,
+      tabTotalMin: 5,
+      tabTotalMax: 5,
+    },
+  },
+});
+const attentionDisabledSelections = await schedulePreloadCandidateSelectionSnapshots({
+  snapshots: Object.values(rescheduleState.scheduler.candidateSelectionSnapshotsByTabId),
+  preloadState: rescheduleState,
+  settings: attentionDisabledSettings,
+});
+
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      attentionDisabledSelections.map((entry) => [
+        entry.sourceTabId,
+        entry.tabSlots,
+        entry.selection.tabTargets.length,
+      ])
+    )
+  ),
+  [
+    [30, 1, 1],
+    [40, 1, 1],
+  ]
+);
 
 const rememberedState = context.createEmptyPreloadState();
 let savedRememberedState = null;

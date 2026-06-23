@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .page { width: 440px; height: 280px; padding: 28px 30px; }
+      .brand { font-size: 25px; } .brand .dot { width: 15px; height: 15px; }
+      .tag { margin-top: 10px; font-size: 18px; font-weight: 800; color: var(--ink); line-height: 1.25; max-width: 270px; }
+      .feats { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+      .feature { font-size: 15px; } .feature .ck { width: 21px; height: 21px; font-size: 12px; font-weight: 900; }
+      .art { position: absolute; right: 22px; bottom: 22px; }
+      .gcard { width: 150px; height: 96px; background: var(--white); border: 2px solid var(--green); border-radius: 11px; box-shadow: 6px 7px 0 rgba(17,24,39,.08); overflow: hidden; }
+      .gcard .hd { height: 16px; background: var(--green); opacity: .4; }
+      .gcard .bd { padding: 11px 12px; }
+      .gcard .bd b { display: block; height: 9px; width: 78%; border-radius: 4px; background: rgba(17,24,39,.22); margin-bottom: 8px; }
+      .gcard .bd u { display: block; height: 6px; border-radius: 999px; background: var(--ghost-line); margin-bottom: 6px; }
+      .rbadge { position: absolute; right: -8px; top: -10px; display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 999px; background: var(--green); color: #fff; font-weight: 800; font-size: 13px; border: 2px solid var(--ink); }
+      .rbadge i { width: 7px; height: 7px; border-radius: 999px; background: #fff; display: block; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="grid-bg"></div>
+      <div class="blob" style="right:-90px;top:-90px;width:300px;height:300px;background:var(--green);opacity:.07"></div>
+      <div class="brand"><span class="dot"></span><span data-i18n="brand">Smart Preload</span></div>
+      <div class="tag" data-i18n="st_tag"></div>
+      <div class="feats">
+        <div class="feature"><span class="ck">✓</span><span data-i18n="st_f1"></span></div>
+        <div class="feature"><span class="ck">✓</span><span data-i18n="st_f2"></span></div>
+        <div class="feature"><span class="ck">✓</span><span data-i18n="st_f3"></span></div>
+      </div>
+      <div class="art">
+        <div class="gcard"><div class="hd"></div><div class="bd"><b></b><u style="width:92%"></u><u style="width:80%"></u><u style="width:55%"></u></div></div>
+        <span class="rbadge"><i></i><span>ready</span></span>
+      </div>
+    </div>
+    <script src="i18n.js"></script>
+    <script>
+      const lang = new URLSearchParams(location.search).get("lang") || "en";
+      const L = Object.assign({}, window.I18N.en, window.I18N[lang] || {});
+      document.querySelectorAll("[data-i18n]").forEach((el) => { const v = L[el.dataset.i18n]; if (v != null) el.textContent = v; });
+      document.documentElement.lang = lang.replace("_", "-");
+    </script>
+  </body>
+</html>

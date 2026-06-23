@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .page { width: 1280px; height: 800px; }
+      .left { position: absolute; left: 72px; top: 0; width: 470px; height: 800px; display: flex; flex-direction: column; justify-content: center; }
+      .brand { font-size: 30px; } .brand .dot { width: 18px; height: 18px; }
+      .ext { margin: 14px 0 30px; font-size: 18px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+      h1 { font-size: 52px; line-height: 1.1; font-weight: 900; letter-spacing: -0.5px; }
+      .sub { margin-top: 22px; font-size: 22px; line-height: 1.5; font-weight: 600; color: var(--muted); }
+      .rptag { margin-top: 28px; align-self: flex-start; padding: 12px 22px; font-size: 22px; }
+      .rptag .d { width: 14px; height: 14px; }
+      .features { margin-top: 28px; display: flex; flex-direction: column; gap: 16px; }
+      .feature { font-size: 21px; } .feature .ck { width: 28px; height: 28px; font-size: 16px; font-weight: 900; }
+
+      .stage { position: absolute; left: 556px; top: 92px; width: 660px; height: 616px; }
+      .browser { height: 616px; }
+      .chrome { height: 50px; padding: 0 18px; } .dots i { width: 14px; height: 14px; }
+      .dots i:nth-child(1){ background: var(--coral);} .dots i:nth-child(2){ background: var(--amber);} .dots i:nth-child(3){ background: var(--green);}
+      .addr { height: 28px; margin-left: 10px; padding: 0 14px; font-size: 15px; }
+      .page-content { position: absolute; inset: 50px 0 0 0; overflow: hidden; }
+      .nav { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 26px; border-bottom: 2px solid var(--line); }
+      .nav .lg { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 20px; }
+      .nav .lg i { width: 24px; height: 24px; border-radius: 7px; background: var(--green); display: block; }
+      .nav .mn { display: flex; gap: 20px; color: var(--muted); font-weight: 700; font-size: 16px; }
+      .hero2 { padding: 36px 38px; }
+      .hero2 h2 { font-size: 42px; font-weight: 900; margin-bottom: 18px; }
+      .hero2 .ln { height: 12px; border-radius: 999px; background: var(--line); margin-bottom: 12px; }
+      .hero2 .cols { display: flex; gap: 28px; margin-top: 22px; }
+      .hero2 .col { flex: 1; }
+      .hero2 .btn { margin-top: 16px; display: inline-flex; padding: 12px 26px; border-radius: 11px; background: var(--green); color: #fff; font-weight: 800; font-size: 19px; border: 3px solid var(--ink); }
+      .hero2 .img { width: 230px; height: 170px; border-radius: 13px; background: var(--field); border: 2px solid var(--line); }
+      .badge { position: absolute; top: 300px; left: 300px; transform: rotate(-7deg); display: inline-flex; align-items: center; gap: 12px; padding: 14px 30px; border-radius: 16px; background: var(--green); color: #fff; border: 4px solid var(--ink); box-shadow: 10px 12px 0 rgba(17,24,39,.2); font-size: 34px; font-weight: 900; }
+      .badge .tick { font-size: 40px; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="grid-bg"></div>
+      <div class="blob" style="right:-120px;top:-130px;width:520px;height:520px;background:var(--green);opacity:.07"></div>
+      <div class="blob" style="left:-160px;bottom:-200px;width:480px;height:480px;background:var(--blue);opacity:.05"></div>
+      <div class="left">
+        <div class="brand"><span class="dot"></span><span data-i18n="brand">Smart Preload</span></div>
+        <div class="ext" data-i18n="ext">Browser extension</div>
+        <h1 data-i18n="s4_head"></h1>
+        <div class="sub" data-i18n="s4_sub"></div>
+        <div class="tag-green rptag"><span class="d"></span><span data-i18n="realPreload">Real Preload</span></div>
+        <div class="features">
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s4_f1"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s4_f2"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s4_f3"></span></div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="browser">
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="addr">🔒 <span>docs.smartpreload.app</span></div></div>
+          <div class="page-content">
+            <div class="nav"><div class="lg"><i></i><span data-i18n="brand">Smart Preload</span></div><div class="mn"><span data-i18n="nav1">Docs</span><span data-i18n="nav2">Download</span><span data-i18n="nav3">Community</span></div></div>
+            <div class="hero2">
+              <h2 data-i18n="pageTitle">Getting Started</h2>
+              <div class="ln" style="width:60%"></div><div class="ln" style="width:46%;margin-bottom:30px"></div>
+              <div class="cols">
+                <div class="col">
+                  <div class="ln" style="width:90%"></div><div class="ln" style="width:96%"></div><div class="ln" style="width:80%"></div><div class="ln" style="width:70%"></div>
+                  <div class="btn" data-i18n="pageBtn">Install now</div>
+                </div>
+                <div class="img"></div>
+              </div>
+            </div>
+            <div class="badge"><span class="tick">✓</span><span data-i18n="instantMark">ready</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="i18n.js"></script>
+    <script>
+      const lang = new URLSearchParams(location.search).get("lang") || "en";
+      const L = Object.assign({}, window.I18N.en, window.I18N[lang] || {});
+      document.querySelectorAll("[data-i18n]").forEach((el) => { const v = L[el.dataset.i18n]; if (v != null) el.textContent = v; });
+      document.documentElement.lang = lang.replace("_", "-");
+    </script>
+  </body>
+</html>

@@ -63,24 +63,49 @@ const {
 context.getEffectiveExtensionSettings = () => ({
   preloading: {
     effectivePreloadScheduler: {
-      attentionPoolHours: 2,
+      attentionPoolEnabled: true,
+      attentionPoolMinutes: 120,
       attentionSegmentSeconds: 60,
       attentionMaxObservableGapSeconds: 45,
-      attentionInputWindowSeconds: 60,
+      attentionInputWindowSeconds: 30,
       attentionMediaPlaybackWeight: 0.2,
       attentionAudioPlaybackWeight: 0.07,
+      attentionLinkInteractionSoftDecaySeconds: 60,
+      attentionLinkInteractionSoftDecayWeight: 0.25,
+      attentionLinkInteractionHardDecaySeconds: 180,
+      attentionLinkInteractionHardDecayWeight: 0.1,
+      attentionLinkInteractionZeroSeconds: 300,
+      attentionSiteShareRatio: 0.5,
     },
   },
 });
 
 assert.deepEqual(JSON.parse(JSON.stringify(buildPreloadAttentionRuntimeOptions())), {
+  enabled: true,
   poolDurationMs: 7200000,
   segmentDurationMs: 60000,
   maxObservableGapMs: 45000,
-  inputWindowMs: 60000,
+  inputWindowMs: 30000,
   mediaPlaybackWeight: 0.2,
   audioPlaybackWeight: 0.07,
+  linkSoftDecayMs: 60000,
+  linkSoftDecayWeight: 0.25,
+  linkHardDecayMs: 180000,
+  linkHardDecayWeight: 0.1,
+  linkZeroMs: 300000,
+  siteShareRatio: 0.5,
 });
+
+const getEnabledAttentionSettings = context.getEffectiveExtensionSettings;
+context.getEffectiveExtensionSettings = () => ({
+  preloading: {
+    effectivePreloadScheduler: {
+      attentionPoolEnabled: false,
+    },
+  },
+});
+assert.equal(buildPreloadAttentionRuntimeOptions({ enabled: true }).enabled, false);
+context.getEffectiveExtensionSettings = getEnabledAttentionSettings;
 
 const startedAt = "2026-01-01T00:00:00.000Z";
 const attentionPool = appendPreloadAttentionDuration(
@@ -296,6 +321,62 @@ expiringState = expiringResult.preloadState;
 assert.equal(expiringResult.recordedDurationMs, 60000);
 assert.equal(expiringState.scheduler.attentionPool.totalDurationMs, 60000);
 
+let disabledState = context.createEmptyPreloadState();
+let disabledResult = recordPreloadAttentionObservation(
+  disabledState,
+  {
+    tabId: 6,
+    windowId: 10,
+    pageUrl: "https://disabled.example/",
+    observedAt: "2026-01-01T00:00:00.000Z",
+    counting: true,
+  },
+  { maxObservableGapMs: 10000, segmentDurationMs: 1000 }
+);
+disabledState = disabledResult.preloadState;
+disabledResult = recordPreloadAttentionObservation(
+  disabledState,
+  {
+    tabId: 6,
+    windowId: 10,
+    pageUrl: "https://disabled.example/",
+    observedAt: "2026-01-01T00:00:02.000Z",
+    counting: true,
+  },
+  { enabled: false, maxObservableGapMs: 10000, segmentDurationMs: 1000 }
+);
+disabledState = disabledResult.preloadState;
+assert.equal(disabledResult.recordedDurationMs, 0);
+assert.equal(disabledState.scheduler.attentionPool.totalDurationMs, 0);
+assert.equal(disabledState.scheduler.activeTabCursor.counting, false);
+disabledResult = recordPreloadAttentionObservation(
+  disabledState,
+  {
+    tabId: 6,
+    windowId: 10,
+    pageUrl: "https://disabled.example/",
+    observedAt: "2026-01-01T00:00:03.000Z",
+    counting: true,
+  },
+  { maxObservableGapMs: 10000, segmentDurationMs: 1000 }
+);
+disabledState = disabledResult.preloadState;
+assert.equal(disabledResult.recordedDurationMs, 0);
+disabledResult = recordPreloadAttentionObservation(
+  disabledState,
+  {
+    tabId: 6,
+    windowId: 10,
+    pageUrl: "https://disabled.example/",
+    observedAt: "2026-01-01T00:00:04.100Z",
+    counting: true,
+  },
+  { maxObservableGapMs: 10000, segmentDurationMs: 1000 }
+);
+disabledState = disabledResult.preloadState;
+assert.equal(disabledResult.recordedDurationMs, 1000);
+assert.equal(disabledState.scheduler.attentionPool.totalDurationMs, 1000);
+
 assert.deepEqual(
   JSON.parse(
     JSON.stringify(
@@ -304,6 +385,7 @@ assert.deepEqual(
           observedAt: "2026-01-01T00:00:30.000Z",
           documentVisible: true,
           lastUserInputAt: "2026-01-01T00:00:00.000Z",
+          lastLinkInteractionAt: "2026-01-01T00:00:00.000Z",
           videoPlaybackActive: true,
         },
         { inputWindowMs: 60000, mediaPlaybackWeight: 0.2, audioPlaybackWeight: 0.07 }
@@ -325,6 +407,7 @@ assert.deepEqual(
           observedAt: "2026-01-01T00:02:00.000Z",
           documentVisible: true,
           lastUserInputAt: "2026-01-01T00:00:00.000Z",
+          lastLinkInteractionAt: "2026-01-01T00:02:00.000Z",
           videoPlaybackActive: true,
         },
         { inputWindowMs: 60000, mediaPlaybackWeight: 0.2, audioPlaybackWeight: 0.07 }
@@ -334,7 +417,7 @@ assert.deepEqual(
   {
     kind: "video-playback",
     weight: 0.2,
-    expiresAt: null,
+    expiresAt: "2026-01-01T00:03:00.000Z",
   }
 );
 
@@ -346,6 +429,7 @@ assert.deepEqual(
           observedAt: "2026-01-01T00:02:00.000Z",
           documentVisible: true,
           lastUserInputAt: "2026-01-01T00:00:00.000Z",
+          lastLinkInteractionAt: "2026-01-01T00:02:00.000Z",
           audioPlaybackActive: true,
         },
         { inputWindowMs: 60000, mediaPlaybackWeight: 0.2, audioPlaybackWeight: 0.07 }
@@ -355,6 +439,90 @@ assert.deepEqual(
   {
     kind: "audio-playback",
     weight: 0.07,
+    expiresAt: "2026-01-01T00:03:00.000Z",
+  }
+);
+
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      resolveAttentionActivity(
+        {
+          observedAt: "2026-01-01T00:01:30.000Z",
+          documentVisible: true,
+          lastUserInputAt: "2026-01-01T00:01:20.000Z",
+          lastLinkInteractionAt: "2026-01-01T00:00:00.000Z",
+        },
+        {
+          inputWindowMs: 30000,
+          linkSoftDecayMs: 60000,
+          linkSoftDecayWeight: 0.25,
+          linkHardDecayMs: 180000,
+          linkHardDecayWeight: 0.1,
+          linkZeroMs: 300000,
+        }
+      )
+    )
+  ),
+  {
+    kind: "user-input:link-decayed",
+    weight: 0.25,
+    expiresAt: "2026-01-01T00:01:50.000Z",
+  }
+);
+
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      resolveAttentionActivity(
+        {
+          observedAt: "2026-01-01T00:03:30.000Z",
+          documentVisible: true,
+          lastUserInputAt: "2026-01-01T00:03:20.000Z",
+          lastLinkInteractionAt: "2026-01-01T00:00:00.000Z",
+        },
+        {
+          inputWindowMs: 30000,
+          linkSoftDecayMs: 60000,
+          linkSoftDecayWeight: 0.25,
+          linkHardDecayMs: 180000,
+          linkHardDecayWeight: 0.1,
+          linkZeroMs: 300000,
+        }
+      )
+    )
+  ),
+  {
+    kind: "user-input:link-decayed",
+    weight: 0.1,
+    expiresAt: "2026-01-01T00:03:50.000Z",
+  }
+);
+
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      resolveAttentionActivity(
+        {
+          observedAt: "2026-01-01T00:05:00.000Z",
+          documentVisible: true,
+          lastUserInputAt: "2026-01-01T00:04:50.000Z",
+          lastLinkInteractionAt: "2026-01-01T00:00:00.000Z",
+        },
+        {
+          inputWindowMs: 30000,
+          linkSoftDecayMs: 60000,
+          linkSoftDecayWeight: 0.25,
+          linkHardDecayMs: 180000,
+          linkHardDecayWeight: 0.1,
+          linkZeroMs: 300000,
+        }
+      )
+    )
+  ),
+  {
+    kind: "link-inactive",
+    weight: 0,
     expiresAt: null,
   }
 );
@@ -398,6 +566,54 @@ assert.deepEqual(
     )
   ),
   { 9: 1 }
+);
+
+const siteSharePool = context.createEmptyPreloadSchedulerState().attentionPool;
+const siteShareStartedAt = "2026-01-01T00:00:00.000Z";
+let siteShareState = appendPreloadAttentionDuration(
+  siteSharePool,
+  {
+    tabId: 10,
+    windowId: 10,
+    pageUrl: "https://www.shared.example/a",
+    durationMs: 1000,
+    startedAt: siteShareStartedAt,
+    endedAt: "2026-01-01T00:00:01.000Z",
+  },
+  { segmentDurationMs: 1000 }
+);
+siteShareState = appendPreloadAttentionDuration(
+  siteShareState,
+  {
+    tabId: 30,
+    windowId: 10,
+    pageUrl: "https://other.example/c",
+    durationMs: 1000,
+    startedAt: "2026-01-01T00:00:01.000Z",
+    endedAt: "2026-01-01T00:00:02.000Z",
+  },
+  { segmentDurationMs: 1000 }
+);
+
+assert.deepEqual(
+  JSON.parse(
+    JSON.stringify(
+      computePreloadAttentionDwellShares(
+        siteShareState,
+        [
+          { tabId: 10, pageUrl: "https://www.shared.example/a" },
+          { tabId: 20, pageUrl: "https://shared.example/b" },
+          { tabId: 30, pageUrl: "https://other.example/c" },
+        ],
+        { siteShareRatio: 0.5 }
+      )
+    )
+  ),
+  {
+    10: 0.375,
+    20: 0.125,
+    30: 0.5,
+  }
 );
 
 console.log("preload scheduler attention tests passed");

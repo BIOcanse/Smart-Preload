@@ -24,6 +24,7 @@
       return;
     }
 
+    namespace.recordLinkInteractionForAttention?.();
     const clickPlan = getPrimaryClickHandlingPlan(event, navigation);
 
     if (clickPlan.mode === "record-link-intent") {
@@ -78,6 +79,7 @@
       return;
     }
 
+    namespace.recordLinkInteractionForAttention?.();
     await sendNavigationLinkIntent(location.href, navigation.targetUrl, "_blank", {
       skipBehaviorLearning: true,
       userOverride: true,
@@ -97,6 +99,7 @@
       return;
     }
 
+    namespace.recordLinkInteractionForAttention?.();
     await sendNavigationPrimeSource(location.href);
   }
 

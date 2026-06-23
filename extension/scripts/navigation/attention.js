@@ -18,6 +18,10 @@
       prerendering: isPassivePrerenderContext(),
       lastUserInputAt:
         state.lastUserInputAt > 0 ? new Date(state.lastUserInputAt).toISOString() : null,
+      lastLinkInteractionAt:
+        state.lastLinkInteractionAt > 0
+          ? new Date(state.lastLinkInteractionAt).toISOString()
+          : null,
       videoPlaybackActive: hasActiveVideoPlayback(),
       audioPlaybackActive: hasActiveAudioPlayback(),
     };
@@ -26,6 +30,13 @@
   function recordUserInputForAttention() {
     state.lastUserInputAt = Date.now();
     void reportAttentionActivity({ throttle: true });
+  }
+
+  function recordLinkInteractionForAttention() {
+    const now = Date.now();
+    state.lastUserInputAt = now;
+    state.lastLinkInteractionAt = now;
+    void reportAttentionActivity();
   }
 
   async function reportAttentionActivity(options = {}) {
@@ -101,6 +112,7 @@
   Object.assign(namespace, {
     buildAttentionActivitySnapshot,
     recordUserInputForAttention,
+    recordLinkInteractionForAttention,
     reportAttentionActivity,
     startAttentionActivityReporter,
   });

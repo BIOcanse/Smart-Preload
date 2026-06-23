@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .page { width: 1280px; height: 800px; }
+      .left { position: absolute; left: 72px; top: 0; width: 470px; height: 800px; display: flex; flex-direction: column; justify-content: center; }
+      .brand { font-size: 30px; } .brand .dot { width: 18px; height: 18px; }
+      .ext { margin: 14px 0 30px; font-size: 18px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+      h1 { font-size: 54px; line-height: 1.1; font-weight: 900; letter-spacing: -0.5px; }
+      .sub { margin-top: 22px; font-size: 22px; line-height: 1.5; font-weight: 600; color: var(--muted); }
+      .features { margin-top: 34px; display: flex; flex-direction: column; gap: 18px; }
+      .feature { font-size: 22px; } .feature .ck { width: 30px; height: 30px; font-size: 17px; font-weight: 900; }
+
+      .stage { position: absolute; left: 556px; top: 92px; width: 660px; height: 616px; }
+      .chrome { height: 50px; padding: 0 18px; } .dots i { width: 14px; height: 14px; }
+      .dots i:nth-child(1){ background: var(--coral);} .dots i:nth-child(2){ background: var(--amber);} .dots i:nth-child(3){ background: var(--green);}
+      .addr { height: 28px; margin-left: 10px; padding: 0 14px; font-size: 15px; }
+      .content { position: absolute; inset: 50px 0 0 0; overflow: hidden; }
+      .pageline { position: absolute; height: 14px; border-radius: 999px; background: var(--line); opacity: .5; }
+
+      .panel { position: absolute; left: 36px; top: 120px; right: 36px; background: var(--white); border: 3px solid var(--ink); border-radius: 18px; box-shadow: 14px 16px 0 rgba(17,24,39,.14); padding: 18px 20px; }
+      .panel .h { display: flex; justify-content: space-between; font-size: 19px; font-weight: 900; color: var(--muted); padding: 0 6px 13px; border-bottom: 2px solid var(--line); }
+      .row { display: flex; align-items: center; gap: 14px; padding: 0 12px; height: 76px; border-radius: 13px; }
+      .row.top { background: #dcfce7; border: 2px solid var(--green); }
+      .row .n { width: 38px; height: 38px; border-radius: 999px; background: var(--ink); color: #fff; display: grid; place-items: center; font-weight: 900; font-size: 21px; flex-shrink: 0; }
+      .row.top .n { background: var(--green); }
+      .row .nm { flex: 1; font-size: 23px; font-weight: 700; }
+      .row .wt { width: 120px; height: 14px; border-radius: 999px; background: var(--line); overflow: hidden; }
+      .row .wt b { display: block; height: 100%; }
+      .row .fq { width: 40px; text-align: right; font-size: 22px; font-weight: 800; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="grid-bg"></div>
+      <div class="blob" style="right:-120px;top:-130px;width:520px;height:520px;background:var(--green);opacity:.06"></div>
+      <div class="blob" style="left:-160px;bottom:-200px;width:480px;height:480px;background:var(--blue);opacity:.05"></div>
+      <div class="left">
+        <div class="brand"><span class="dot"></span><span data-i18n="brand">Smart Preload</span></div>
+        <div class="ext" data-i18n="ext">Browser extension</div>
+        <h1 data-i18n="s2_head"></h1>
+        <div class="sub" data-i18n="s2_sub"></div>
+        <div class="features">
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s2_f1"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s2_f2"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s2_f3"></span></div>
+          <div class="feature"><span class="ck">✓</span><span data-i18n="s2_f4"></span></div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="browser" style="height:616px">
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="addr">🔒 <span>google.com/search</span></div></div>
+          <div class="content">
+            <div class="pageline" style="left:36px;top:26px;width:40%"></div>
+            <div class="pageline" style="left:36px;top:58px;width:54%;opacity:.3"></div>
+            <div class="panel">
+              <div class="h"><span data-i18n="rank_top">Top</span><span data-i18n="rank_weight">Weight</span><span data-i18n="rank_freq">Freq</span></div>
+              <div style="position:relative;margin-top:12px">
+                <div class="row top"><span class="n">1</span><span class="nm" data-i18n="c1"></span><span class="wt"><b style="width:93%;background:var(--green)"></b></span><span class="fq">12</span></div>
+                <div class="row" style="margin-top:6px"><span class="n">2</span><span class="nm" data-i18n="c2"></span><span class="wt"><b style="width:58%;background:var(--blue)"></b></span><span class="fq">7</span></div>
+                <div class="row" style="margin-top:6px"><span class="n">3</span><span class="nm" data-i18n="c3"></span><span class="wt"><b style="width:40%;background:var(--muted)"></b></span><span class="fq">4</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="i18n.js"></script>
+    <script>
+      const lang = new URLSearchParams(location.search).get("lang") || "en";
+      const L = Object.assign({}, window.I18N.en, window.I18N[lang] || {});
+      document.querySelectorAll("[data-i18n]").forEach((el) => { const v = L[el.dataset.i18n]; if (v != null) el.textContent = v; });
+      document.documentElement.lang = lang.replace("_", "-");
+    </script>
+  </body>
+</html>

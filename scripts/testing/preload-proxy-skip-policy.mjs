@@ -19,6 +19,7 @@ const scriptPaths = [
   ["extension", "shared", "settings", "proxy-skip.js"],
   ["extension", "shared", "settings", "ai.js"],
   ["extension", "shared", "settings", "effective.js"],
+  ["extension", "shared", "settings", "migrations.js"],
   ["extension", "shared", "settings", "normalize", "appearance-layout.js"],
   ["extension", "shared", "settings", "normalize", "preload.js"],
   ["extension", "shared", "settings", "normalize", "scheduler.js"],

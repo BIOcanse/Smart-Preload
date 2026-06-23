@@ -395,6 +395,33 @@
   "settingsSchedulerAttentionPool": {
     "message": "アテンションプール"
   },
+  "settingsSchedulerAttentionPoolEnabled": {
+    "message": "注意プールを使用"
+  },
+  "settingsSchedulerAttentionPoolEnabledDesc": {
+    "message": "オフにすると、注意時間を記録せず、スロット割り当てでも保存済みの注意履歴を無視します。"
+  },
+  "settingsSchedulerPoolMinutes": {
+    "message": "プール分数"
+  },
+  "settingsSchedulerLinkSoftSeconds": {
+    "message": "リンク弱減衰秒数"
+  },
+  "settingsSchedulerLinkSoftWeight": {
+    "message": "リンク弱減衰重み"
+  },
+  "settingsSchedulerLinkHardSeconds": {
+    "message": "リンク強減衰秒数"
+  },
+  "settingsSchedulerLinkHardWeight": {
+    "message": "リンク強減衰重み"
+  },
+  "settingsSchedulerLinkZeroSeconds": {
+    "message": "リンクゼロ秒数"
+  },
+  "settingsSchedulerSiteShareRatio": {
+    "message": "サイト共有比率"
+  },
   "settingsSchedulerMin": {
     "message": "最小"
   },

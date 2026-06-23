@@ -7,8 +7,27 @@
 
   function normalizePreloadSchedulerSettings(value) {
     const mergedValue = mergeSettings(DEFAULT_SETTINGS.preloading.scheduler, value);
+    const attentionLinkSoftDecaySeconds = clamp(
+      mergedValue.attentionLinkInteractionSoftDecaySeconds,
+      10,
+      3600,
+      DEFAULT_SETTINGS.preloading.scheduler.attentionLinkInteractionSoftDecaySeconds
+    );
+    const attentionLinkHardDecaySeconds = clamp(
+      mergedValue.attentionLinkInteractionHardDecaySeconds,
+      attentionLinkSoftDecaySeconds,
+      3600,
+      DEFAULT_SETTINGS.preloading.scheduler.attentionLinkInteractionHardDecaySeconds
+    );
+    const attentionLinkZeroSeconds = clamp(
+      mergedValue.attentionLinkInteractionZeroSeconds,
+      attentionLinkHardDecaySeconds,
+      7200,
+      DEFAULT_SETTINGS.preloading.scheduler.attentionLinkInteractionZeroSeconds
+    );
 
     return {
+      attentionPoolEnabled: mergedValue.attentionPoolEnabled !== false,
       nativeTotalMin: clamp(
         mergedValue.nativeTotalMin,
         1,
@@ -45,11 +64,11 @@
         100,
         DEFAULT_SETTINGS.preloading.scheduler.tabHalfLifeTabs
       ),
-      attentionPoolHours: clamp(
-        mergedValue.attentionPoolHours,
-        1,
-        24,
-        DEFAULT_SETTINGS.preloading.scheduler.attentionPoolHours
+      attentionPoolMinutes: clamp(
+        mergedValue.attentionPoolMinutes,
+        5,
+        1440,
+        DEFAULT_SETTINGS.preloading.scheduler.attentionPoolMinutes
       ),
       attentionSegmentSeconds: clamp(
         mergedValue.attentionSegmentSeconds,
@@ -65,7 +84,7 @@
       ),
       attentionInputWindowSeconds: clamp(
         mergedValue.attentionInputWindowSeconds,
-        10,
+        5,
         600,
         DEFAULT_SETTINGS.preloading.scheduler.attentionInputWindowSeconds
       ),
@@ -80,6 +99,27 @@
         0,
         1,
         DEFAULT_SETTINGS.preloading.scheduler.attentionAudioPlaybackWeight
+      ),
+      attentionLinkInteractionSoftDecaySeconds: attentionLinkSoftDecaySeconds,
+      attentionLinkInteractionSoftDecayWeight: clampNumber(
+        mergedValue.attentionLinkInteractionSoftDecayWeight,
+        0,
+        1,
+        DEFAULT_SETTINGS.preloading.scheduler.attentionLinkInteractionSoftDecayWeight
+      ),
+      attentionLinkInteractionHardDecaySeconds: attentionLinkHardDecaySeconds,
+      attentionLinkInteractionHardDecayWeight: clampNumber(
+        mergedValue.attentionLinkInteractionHardDecayWeight,
+        0,
+        1,
+        DEFAULT_SETTINGS.preloading.scheduler.attentionLinkInteractionHardDecayWeight
+      ),
+      attentionLinkInteractionZeroSeconds: attentionLinkZeroSeconds,
+      attentionSiteShareRatio: clampNumber(
+        mergedValue.attentionSiteShareRatio,
+        0,
+        1,
+        DEFAULT_SETTINGS.preloading.scheduler.attentionSiteShareRatio
       ),
     };
   }

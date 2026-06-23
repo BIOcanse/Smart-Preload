@@ -395,6 +395,33 @@
   "settingsSchedulerAttentionPool": {
     "message": "注意力时间池"
   },
+  "settingsSchedulerAttentionPoolEnabled": {
+    "message": "使用注意力時間池"
+  },
+  "settingsSchedulerAttentionPoolEnabledDesc": {
+    "message": "關閉後，不記錄注意力時間，槽位分配也會忽略已儲存的注意力歷史。"
+  },
+  "settingsSchedulerPoolMinutes": {
+    "message": "時間池分鐘數"
+  },
+  "settingsSchedulerLinkSoftSeconds": {
+    "message": "連結軟衰減秒數"
+  },
+  "settingsSchedulerLinkSoftWeight": {
+    "message": "連結軟衰減權重"
+  },
+  "settingsSchedulerLinkHardSeconds": {
+    "message": "連結硬衰減秒數"
+  },
+  "settingsSchedulerLinkHardWeight": {
+    "message": "連結硬衰減權重"
+  },
+  "settingsSchedulerLinkZeroSeconds": {
+    "message": "連結歸零秒數"
+  },
+  "settingsSchedulerSiteShareRatio": {
+    "message": "站點共享比例"
+  },
   "settingsSchedulerMin": {
     "message": "下限"
   },

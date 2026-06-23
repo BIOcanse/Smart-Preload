@@ -7,12 +7,19 @@
       elements.schedulerNativeTotalMin,
       elements.schedulerNativeTotalMax,
       elements.schedulerNativeHalfLifeTabs,
-      elements.schedulerAttentionPoolHours,
+      elements.schedulerAttentionPoolEnabled,
+      elements.schedulerAttentionPoolMinutes,
       elements.schedulerAttentionSegmentSeconds,
       elements.schedulerAttentionMaxGapSeconds,
       elements.schedulerAttentionInputWindowSeconds,
       elements.schedulerAttentionMediaWeight,
       elements.schedulerAttentionAudioWeight,
+      elements.schedulerAttentionLinkSoftSeconds,
+      elements.schedulerAttentionLinkSoftWeight,
+      elements.schedulerAttentionLinkHardSeconds,
+      elements.schedulerAttentionLinkHardWeight,
+      elements.schedulerAttentionLinkZeroSeconds,
+      elements.schedulerAttentionSiteShareRatio,
     ].filter(Boolean);
 
     function isSchedulerFormElement(element) {
@@ -27,7 +34,8 @@
         tabTotalMin: Number(elements.schedulerTabTotalMin.value),
         tabTotalMax: Number(elements.schedulerTabTotalMax.value),
         tabHalfLifeTabs: Number(elements.schedulerTabHalfLifeTabs.value),
-        attentionPoolHours: Number(elements.schedulerAttentionPoolHours.value),
+        attentionPoolEnabled: elements.schedulerAttentionPoolEnabled.checked,
+        attentionPoolMinutes: Number(elements.schedulerAttentionPoolMinutes.value),
         attentionSegmentSeconds: Number(elements.schedulerAttentionSegmentSeconds.value),
         attentionMaxObservableGapSeconds: Number(
           elements.schedulerAttentionMaxGapSeconds.value
@@ -37,6 +45,22 @@
         ),
         attentionMediaPlaybackWeight: Number(elements.schedulerAttentionMediaWeight.value),
         attentionAudioPlaybackWeight: Number(elements.schedulerAttentionAudioWeight.value),
+        attentionLinkInteractionSoftDecaySeconds: Number(
+          elements.schedulerAttentionLinkSoftSeconds.value
+        ),
+        attentionLinkInteractionSoftDecayWeight: Number(
+          elements.schedulerAttentionLinkSoftWeight.value
+        ),
+        attentionLinkInteractionHardDecaySeconds: Number(
+          elements.schedulerAttentionLinkHardSeconds.value
+        ),
+        attentionLinkInteractionHardDecayWeight: Number(
+          elements.schedulerAttentionLinkHardWeight.value
+        ),
+        attentionLinkInteractionZeroSeconds: Number(
+          elements.schedulerAttentionLinkZeroSeconds.value
+        ),
+        attentionSiteShareRatio: Number(elements.schedulerAttentionSiteShareRatio.value),
       };
     }
 
@@ -50,8 +74,10 @@
       elements.schedulerTabTotalMin.value = String(schedulerSettings.tabTotalMin);
       elements.schedulerTabTotalMax.value = String(schedulerSettings.tabTotalMax);
       elements.schedulerTabHalfLifeTabs.value = String(schedulerSettings.tabHalfLifeTabs);
-      elements.schedulerAttentionPoolHours.value = String(
-        schedulerSettings.attentionPoolHours
+      elements.schedulerAttentionPoolEnabled.checked =
+        schedulerSettings.attentionPoolEnabled !== false;
+      elements.schedulerAttentionPoolMinutes.value = String(
+        schedulerSettings.attentionPoolMinutes
       );
       elements.schedulerAttentionSegmentSeconds.value = String(
         schedulerSettings.attentionSegmentSeconds
@@ -68,6 +94,51 @@
       elements.schedulerAttentionAudioWeight.value = String(
         schedulerSettings.attentionAudioPlaybackWeight
       );
+      elements.schedulerAttentionLinkSoftSeconds.value = String(
+        schedulerSettings.attentionLinkInteractionSoftDecaySeconds
+      );
+      elements.schedulerAttentionLinkSoftWeight.value = String(
+        schedulerSettings.attentionLinkInteractionSoftDecayWeight
+      );
+      elements.schedulerAttentionLinkHardSeconds.value = String(
+        schedulerSettings.attentionLinkInteractionHardDecaySeconds
+      );
+      elements.schedulerAttentionLinkHardWeight.value = String(
+        schedulerSettings.attentionLinkInteractionHardDecayWeight
+      );
+      elements.schedulerAttentionLinkZeroSeconds.value = String(
+        schedulerSettings.attentionLinkInteractionZeroSeconds
+      );
+      elements.schedulerAttentionSiteShareRatio.value = String(
+        schedulerSettings.attentionSiteShareRatio
+      );
+      syncAttentionPoolFieldState(schedulerSettings);
+    }
+
+    function syncAttentionPoolFieldState(schedulerSettings) {
+      const enabled = schedulerSettings.attentionPoolEnabled !== false;
+      const group = elements.schedulerAttentionPoolEnabled?.closest(".scheduler-group");
+
+      group?.classList.toggle("has-disabled-attention-pool", !enabled);
+
+      for (const element of [
+        elements.schedulerAttentionPoolMinutes,
+        elements.schedulerAttentionSegmentSeconds,
+        elements.schedulerAttentionMaxGapSeconds,
+        elements.schedulerAttentionInputWindowSeconds,
+        elements.schedulerAttentionMediaWeight,
+        elements.schedulerAttentionAudioWeight,
+        elements.schedulerAttentionLinkSoftSeconds,
+        elements.schedulerAttentionLinkSoftWeight,
+        elements.schedulerAttentionLinkHardSeconds,
+        elements.schedulerAttentionLinkHardWeight,
+        elements.schedulerAttentionLinkZeroSeconds,
+        elements.schedulerAttentionSiteShareRatio,
+      ]) {
+        if (element) {
+          element.disabled = !enabled;
+        }
+      }
     }
 
     return {

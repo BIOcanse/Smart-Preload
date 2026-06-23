@@ -9,6 +9,9 @@
   } = globalThis.ZeroLatencySettingsSchema;
   const { DEFAULT_SETTINGS } = globalThis.ZeroLatencySettingsDefaults;
   const {
+    migrateStoredSettingsToCurrentVersion,
+  } = globalThis.ZeroLatencySettingsMigrations;
+  const {
     derivePreloadCapFromRuleCard,
     deriveSiteSelectionLimitFromRuleCard,
   } = globalThis.ZeroLatencySettingsRules;
@@ -35,7 +38,8 @@
   } = globalThis.ZeroLatencySettingsNormalizeScheduler;
 
   function normalizeStoredSettings(value) {
-    const normalized = mergeSettings(DEFAULT_SETTINGS, value);
+    const migratedValue = migrateStoredSettingsToCurrentVersion(value);
+    const normalized = mergeSettings(DEFAULT_SETTINGS, migratedValue);
     normalized.version = SETTINGS_STORAGE_VERSION;
     normalized.preloading.mode = ["conservative", "balanced", "aggressive"].includes(
       normalized.preloading.mode
@@ -90,7 +94,7 @@
       enabled: normalized.diagnostics?.enabled === true,
     };
     normalized.layout = normalizeLayoutSettings(
-      isPlainObject(value?.layout) ? value.layout : normalized.layout
+      isPlainObject(migratedValue?.layout) ? migratedValue.layout : normalized.layout
     );
     normalized.preloading.nativeMaxPreloadsPerSource = derivePreloadCapFromRuleCard(
       normalized.layout.ruleCards.items?.nativePerPagePreloadLimit,

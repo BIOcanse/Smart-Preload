@@ -395,6 +395,33 @@
   "settingsSchedulerAttentionPool": {
     "message": "R?serve d?attention"
   },
+  "settingsSchedulerAttentionPoolEnabled": {
+    "message": "Utiliser la réserve d’attention"
+  },
+  "settingsSchedulerAttentionPoolEnabledDesc": {
+    "message": "Si désactivé, le temps d’attention n’est pas enregistré et l’historique enregistré est ignoré lors de l’attribution des emplacements."
+  },
+  "settingsSchedulerPoolMinutes": {
+    "message": "Minutes de réserve"
+  },
+  "settingsSchedulerLinkSoftSeconds": {
+    "message": "Secondes de baisse douce"
+  },
+  "settingsSchedulerLinkSoftWeight": {
+    "message": "Poids de baisse douce"
+  },
+  "settingsSchedulerLinkHardSeconds": {
+    "message": "Secondes de baisse forte"
+  },
+  "settingsSchedulerLinkHardWeight": {
+    "message": "Poids de baisse forte"
+  },
+  "settingsSchedulerLinkZeroSeconds": {
+    "message": "Secondes avant zéro"
+  },
+  "settingsSchedulerSiteShareRatio": {
+    "message": "Part partagée du site"
+  },
   "settingsSchedulerMin": {
     "message": "Min."
   },

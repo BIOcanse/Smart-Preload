@@ -134,17 +134,69 @@
   line-height: 1.45;
 }
 
+.history-delete-item {
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+}
+
 .history-delete-control {
   display: grid;
-  grid-template-columns: repeat(2, minmax(180px, 1fr)) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
-  width: min(760px, 100%);
+  width: min(980px, 100%);
   min-width: 0;
+}
+
+.history-delete-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-muted);
+}
+
+.history-delete-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.history-delete-meta strong {
+  min-width: 0;
+  color: var(--accent-strong);
+  font-size: 12px;
+  text-align: right;
+  word-break: break-word;
+}
+
+.history-delete-range {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 1fr);
+  align-items: end;
+  gap: 12px;
+  min-width: 0;
+}
+
+.history-delete-range-separator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 44px;
+  color: var(--accent-strong);
+  font-size: 18px;
+  font-weight: 800;
 }
 
 .history-delete-field {
   display: grid;
-  gap: 6px;
+  gap: 7px;
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -156,11 +208,13 @@
 
 .history-delete-field legend {
   padding: 0;
+  color: var(--text);
+  font-size: 13px;
 }
 
 .history-date-parts {
   display: grid;
-  grid-template-columns: minmax(72px, 1fr) minmax(62px, 0.75fr) minmax(62px, 0.75fr);
+  grid-template-columns: minmax(82px, 1fr) minmax(68px, 0.78fr) minmax(68px, 0.78fr);
   gap: 8px;
   min-width: 0;
 }
@@ -174,12 +228,8 @@
 .history-date-input {
   width: 100%;
   min-width: 0;
-  padding: 10px 10px;
-}
-
-.history-utc-now {
-  font-size: 12px;
-  font-weight: 700;
+  min-height: 44px;
+  padding: 10px 11px;
 }
 
 .scheduler-settings-item {
@@ -213,6 +263,10 @@
   opacity: 0.52;
 }
 
+.scheduler-group.has-disabled-attention-pool .scheduler-field:not(.scheduler-toggle-field) {
+  opacity: 0.52;
+}
+
 .scheduler-field {
   display: grid;
   gap: 5px;
@@ -227,8 +281,14 @@
   padding: 10px 12px;
 }
 
+.scheduler-toggle-field {
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 34px;
+}
+
 .settings-item.has-disabled-select .compound-setting-control .select-input {
   color: var(--muted);
-  background: var(--surface-muted);
+  background-color: var(--surface-muted);
 }
 

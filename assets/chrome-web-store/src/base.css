@@ -1,0 +1,191 @@
+/* Shared design tokens + atoms for all Chrome Web Store assets.
+   Visual language matches the promo video (neo-brutalist paper + bold ink borders). */
+:root {
+  --paper: #f7f8f3;
+  --ink: #111827;
+  --muted: #5f6b7a;
+  --line: #d7ded6;
+  --ghost-line: #e6eae4;
+  --field: #eef2f0;
+  --green: #16a34a;
+  --green-soft: #f0fdf4;
+  --blue: #1a56db;
+  --link: #1a0dab;
+  --url: #14692b;
+  --amber: #f59e0b;
+  --coral: #e11d48;
+  --white: #ffffff;
+  --font: "Inter", "Noto Sans SC", "Microsoft YaHei", "Noto Sans JP", "Yu Gothic",
+    "Meiryo", "Malgun Gothic", "Noto Sans KR", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html,
+body {
+  background: var(--paper);
+}
+
+/* Each template sets .page to its exact canvas size. */
+.page {
+  position: relative;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+}
+
+.grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 900;
+}
+.brand .dot {
+  border-radius: 999px;
+  background: var(--green);
+  box-shadow: 0 0 18px rgba(22, 163, 74, 0.55);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  background: var(--white);
+  border: 2px solid var(--line);
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.tag-green {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  border: 3px solid var(--green);
+  color: var(--ink);
+  font-weight: 900;
+}
+.tag-green .d {
+  border-radius: 999px;
+  background: var(--green);
+}
+
+/* Neo-brutalist browser window */
+.browser {
+  background: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 22px;
+  box-shadow: 18px 22px 0 rgba(17, 24, 39, 0.13);
+  overflow: hidden;
+  position: relative;
+}
+.chrome {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 3px solid var(--ink);
+  background: var(--field);
+}
+.dots {
+  display: flex;
+  gap: 7px;
+}
+.dots i {
+  display: block;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+}
+.addr {
+  flex: 1;
+  border-radius: 999px;
+  border: 2px solid var(--line);
+  background: var(--white);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* SERP result row */
+.result .url {
+  color: var(--url);
+}
+.result .title {
+  color: var(--link);
+  font-weight: 700;
+}
+.result .snip {
+  color: #3c4655;
+}
+
+/* Ghost "ready" preview card */
+.ghost {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 6px 8px 0 rgba(17, 24, 39, 0.07);
+  overflow: hidden;
+  position: relative;
+}
+.ready {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  background: var(--green);
+  color: var(--white);
+  font-weight: 800;
+  border: 2px solid var(--ink);
+  white-space: nowrap;
+}
+.ready,
+.rbadge,
+.rd {
+  white-space: nowrap;
+}
+.ready .d {
+  border-radius: 999px;
+  background: var(--white);
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.feature .ck {
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--green);
+  color: var(--white);
+  flex-shrink: 0;
+}
