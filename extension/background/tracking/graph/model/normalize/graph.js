@@ -1,6 +1,11 @@
 function normalizeTrackingGraph(rawGraph) {
   const graph = isPlainObject(rawGraph) ? rawGraph : createEmptyGraph();
   const storedVersion = clampNonNegativeInt(graph.version, 0);
+
+  if (storedVersion >= 14 && hasUsableTrackingSnapshotIndexes(graph)) {
+    return normalizeTrackingGraphSnapshot(graph);
+  }
+
   const storedEdgeSnapshots = captureStoredEdgeSnapshots(graph.edges);
   const storedTransitionMessageBucketLayer = getStoredTransitionMessageBucketLayer(
     graph.transitionMessageBuckets
@@ -8,7 +13,7 @@ function normalizeTrackingGraph(rawGraph) {
   const storedPageTransitionBuckets = isPlainObject(graph.pageTransitionBuckets)
     ? graph.pageTransitionBuckets
     : null;
-  graph.version = 13;
+  graph.version = 14;
   graph.nodes = isPlainObject(graph.nodes) ? graph.nodes : {};
   graph.edges = isPlainObject(graph.edges) ? graph.edges : {};
   graph.linkBehaviorStore = normalizeLinkBehaviorStore(graph.linkBehaviorStore);
@@ -78,6 +83,74 @@ function normalizeTrackingGraph(rawGraph) {
 
   delete graph.recentTransitions;
 
+  return graph;
+}
+
+function hasUsableTrackingSnapshotIndexes(graph) {
+  return (
+    graph.persistenceMode === "incremental-checkpoint-v1" &&
+    isPlainObject(graph.nodes) &&
+    isPlainObject(graph.edges) &&
+    Array.isArray(graph.transitionBuckets?.total) &&
+    isPlainObject(graph.transitionBuckets?.byDay) &&
+    Array.isArray(graph.externalPageTransitionBuckets?.total) &&
+    isPlainObject(graph.externalPageTransitionBuckets?.byDay) &&
+    Array.isArray(graph.intraSitePageTransitionBuckets?.total) &&
+    isPlainObject(graph.intraSitePageTransitionBuckets?.byDay) &&
+    Array.isArray(graph.transitionMessageBuckets?.buckets) &&
+    Array.isArray(graph.pageTransitionMessageBuckets?.buckets)
+  );
+}
+
+function normalizeTrackingGraphSnapshot(graph) {
+  graph.version = 14;
+  graph.persistenceMode = "incremental-checkpoint-v1";
+  graph.nodes = isPlainObject(graph.nodes) ? graph.nodes : {};
+  graph.edges = isPlainObject(graph.edges) ? graph.edges : {};
+
+  for (const [edgeId, edge] of Object.entries(graph.edges)) {
+    normalizeEdgeRecord(graph, edgeId, edge);
+  }
+
+  graph.linkBehaviorStore = normalizeLinkBehaviorStore(graph.linkBehaviorStore);
+  graph.pageKeywordStore = normalizePageKeywordStore(graph.pageKeywordStore);
+  graph.recentForegroundPages = normalizeRecentForegroundPages(graph.recentForegroundPages);
+  const historyPagePool = normalizeHistoryPagePool(
+    graph.historyPageTitles,
+    graph.historyPageUrls,
+    graph.historyPageTexts,
+    graph.recentForegroundPages
+  );
+  graph.historyPageTitles = historyPagePool.titles;
+  graph.historyPageUrls = historyPagePool.urls;
+  graph.historyPageTexts = historyPagePool.texts;
+  graph.transitionMessages = normalizeTransitionMessages(
+    Array.isArray(graph.transitionMessages) ? graph.transitionMessages : []
+  ).slice(-MAX_HOT_TRANSITION_MESSAGES);
+  graph.transitionSequence = Math.max(
+    clampNonNegativeInt(graph.transitionSequence, 0),
+    getMaxTransitionSequence(graph.transitionMessages)
+  );
+  graph.transitionMessagesByDay = isPlainObject(graph.transitionMessagesByDay)
+    ? graph.transitionMessagesByDay
+    : {};
+  graph.pageKeywordBuckets = isPlainObject(graph.pageKeywordBuckets)
+    ? graph.pageKeywordBuckets
+    : createEmptyPageKeywordBuckets();
+
+  if (!isPlainObject(graph.pageKeywordBuckets.byKeyword)) {
+    graph.pageKeywordBuckets = createEmptyPageKeywordBuckets();
+
+    for (const pageKeywordEntry of Object.values(graph.pageKeywordStore)) {
+      indexPageKeywordEntry(graph, pageKeywordEntry);
+    }
+  }
+
+  graph.bookmarkPreloadBuckets = normalizeBookmarkPreloadBuckets(
+    graph.bookmarkPreloadBuckets
+  );
+  graph.updatedAt = typeof graph.updatedAt === "string" ? graph.updatedAt : null;
+  delete graph.recentTransitions;
   return graph;
 }
 

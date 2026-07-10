@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 use std::env;
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 use anyhow::Result;
 use regex::Regex;
@@ -15,35 +17,83 @@ pub struct SupportedBrowserProcessInfo {
     pub browser_kind: String,
 }
 
+const PERFORMANCE_SNAPSHOT_MAX_AGE: Duration = Duration::from_secs(1);
+
+#[derive(Clone)]
 pub struct SystemSnapshotter {
-    system: System,
+    inner: Arc<SystemSnapshotterInner>,
+}
+
+struct SystemSnapshotterInner {
+    process_sampler: SystemProcessSampler,
     hardware: HardwareSnapshot,
     gpu_pid_pattern: Regex,
+    cached_snapshot: Mutex<Option<CachedSystemSnapshot>>,
+}
+
+struct CachedSystemSnapshot {
+    collected_at: Instant,
+    snapshot: SystemSnapshot,
 }
 
 impl SystemSnapshotter {
     pub fn new() -> Result<Self> {
-        let mut system = System::new_all();
-        system.refresh_all();
+        let process_sampler = SystemProcessSampler::new();
+        let hardware = process_sampler.with_system(Duration::MAX, HardwareSnapshot::collect)??;
 
         Ok(Self {
-            hardware: HardwareSnapshot::collect(&system)?,
-            system,
-            gpu_pid_pattern: Regex::new(r"pid_(\\d+)")?,
+            inner: Arc::new(SystemSnapshotterInner {
+                process_sampler,
+                hardware,
+                gpu_pid_pattern: Regex::new(r"pid_(\d+)")?,
+                cached_snapshot: Mutex::new(None),
+            }),
         })
     }
 
-    pub fn collect_snapshot(&mut self) -> Result<SystemSnapshot> {
-        self.system.refresh_all();
+    pub fn process_sampler(&self) -> SystemProcessSampler {
+        self.inner.process_sampler.clone()
+    }
 
-        let chrome_processes = self.chrome_processes();
+    pub fn collect_activity_snapshot(&self) -> Result<ActivitySnapshot> {
+        activity::collect_activity_snapshot(&self.inner.process_sampler)
+    }
+
+    pub fn collect_snapshot(&self) -> Result<SystemSnapshot> {
+        let mut cached_snapshot = self
+            .inner
+            .cached_snapshot
+            .lock()
+            .map_err(|_| anyhow::anyhow!("system snapshot cache lock poisoned"))?;
+
+        if let Some(cached) = cached_snapshot.as_ref() {
+            if cached.collected_at.elapsed() < PERFORMANCE_SNAPSHOT_MAX_AGE {
+                return Ok(cached.snapshot.clone());
+            }
+        }
+
+        let snapshot = self.collect_uncached_snapshot()?;
+        *cached_snapshot = Some(CachedSystemSnapshot {
+            collected_at: Instant::now(),
+            snapshot: snapshot.clone(),
+        });
+        Ok(snapshot)
+    }
+
+    fn collect_uncached_snapshot(&self) -> Result<SystemSnapshot> {
+        let process_metrics = self
+            .inner
+            .process_sampler
+            .with_system(PROCESS_SAMPLE_MAX_AGE, collect_process_metrics)?;
+
+        let chrome_processes = process_metrics.chrome_processes;
         let chrome_pids: HashSet<u32> =
             chrome_processes.iter().map(|process| process.pid).collect();
         let gpu_metrics =
-            GpuMetrics::collect(&chrome_pids, &self.gpu_pid_pattern).unwrap_or_default();
+            GpuMetrics::collect(&chrome_pids, &self.inner.gpu_pid_pattern).unwrap_or_default();
 
-        let total_memory_bytes = self.system.total_memory();
-        let available_memory_bytes = self.system.available_memory();
+        let total_memory_bytes = process_metrics.total_memory_bytes;
+        let available_memory_bytes = process_metrics.available_memory_bytes;
         let used_memory_bytes = total_memory_bytes.saturating_sub(available_memory_bytes);
         let chrome_memory_bytes = chrome_processes
             .iter()
@@ -56,10 +106,10 @@ impl SystemSnapshotter {
 
         Ok(SystemSnapshot {
             generated_at: chrono_like_now(),
-            hardware: self.hardware.clone(),
+            hardware: self.inner.hardware.clone(),
             performance: PerformanceSnapshot {
                 system: SystemPerformanceSnapshot {
-                    cpu_usage_percent: self.system.global_cpu_usage(),
+                    cpu_usage_percent: process_metrics.global_cpu_usage_percent,
                     memory_usage_ratio: ratio(used_memory_bytes, total_memory_bytes),
                     used_memory_bytes,
                     available_memory_bytes,
@@ -77,9 +127,21 @@ impl SystemSnapshotter {
             },
         })
     }
+}
 
-    fn chrome_processes(&self) -> Vec<ChromeProcessSnapshot> {
-        self.system
+struct ProcessMetrics {
+    total_memory_bytes: u64,
+    available_memory_bytes: u64,
+    global_cpu_usage_percent: f32,
+    chrome_processes: Vec<ChromeProcessSnapshot>,
+}
+
+fn collect_process_metrics(system: &System) -> ProcessMetrics {
+    ProcessMetrics {
+        total_memory_bytes: system.total_memory(),
+        available_memory_bytes: system.available_memory(),
+        global_cpu_usage_percent: system.global_cpu_usage(),
+        chrome_processes: system
             .processes()
             .values()
             .filter_map(|process| {
@@ -93,7 +155,7 @@ impl SystemSnapshotter {
                     memory_bytes: process.memory(),
                 })
             })
-            .collect()
+            .collect(),
     }
 }
 

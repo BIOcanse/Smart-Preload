@@ -36,6 +36,8 @@ pub(super) fn hidden_window_monitor_snapshot() -> HiddenWindowMonitorSnapshot {
                 .cloned()
                 .map(|record| HiddenWindowMonitorInfo {
                     hwnd: record.hwnd,
+                    owner_process_id: record.owner_process_id,
+                    owner_browser_kind: record.owner_browser_kind,
                     tracked_since_ms: record.tracked_since_ms,
                     first_hide_requested_at_ms: record.first_hide_requested_at_ms,
                     last_hide_requested_at_ms: record.last_hide_requested_at_ms,

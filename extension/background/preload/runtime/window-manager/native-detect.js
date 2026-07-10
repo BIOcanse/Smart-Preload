@@ -33,10 +33,10 @@ async function detectCreatedPreloadWindowHwnd(previousChromeWindowHwnds, actualW
 
       return Number.isFinite(hwnd) && !previousChromeWindowHwnds.has(hwnd);
     });
-    const bestCandidate =
-      pickBestChromeWindowByBounds(createdWindowCandidates, actualWindow) ??
-      createdWindowCandidates[0] ??
-      null;
+    const bestCandidate = pickBestChromeWindowByBounds(
+      createdWindowCandidates,
+      actualWindow
+    );
     const bestCandidateHwnd = normalizePositiveFiniteNumber(bestCandidate?.hwnd);
 
     if (Number.isFinite(bestCandidateHwnd)) {
@@ -73,36 +73,49 @@ async function getNativeChromeWindows() {
 
   try {
     const windows = await nativeAppListChromeWindows();
-    return Array.isArray(windows) ? windows : [];
+    return (Array.isArray(windows) ? windows : []).filter(
+      matchesCurrentNativeBrowserFamily
+    );
   } catch (_error) {
     return [];
   }
 }
 
+function matchesCurrentNativeBrowserFamily(window) {
+  const browserKind = String(window?.browserKind || "").trim().toLowerCase();
+
+  if (!browserKind) {
+    return true;
+  }
+
+  const browserFamily =
+    typeof getNativeAppBrowserFamily === "function"
+      ? getNativeAppBrowserFamily()
+      : "chromium";
+  return browserFamily === "edge" ? browserKind === "edge" : browserKind !== "edge";
+}
+
 function pickBestChromeWindowByBounds(windows, actualWindow) {
   const liveWindow = actualWindow ?? {};
+  const matches = [...(Array.isArray(windows) ? windows : [])].filter((window) =>
+    matchesChromeWindowBounds(window, liveWindow)
+  );
 
-  return [...(Array.isArray(windows) ? windows : [])]
-    .filter((window) => matchesChromeWindowBounds(window, liveWindow))
-    .sort((left, right) => {
-      if (Boolean(left?.visible) !== Boolean(right?.visible)) {
-        return Number(Boolean(right?.visible)) - Number(Boolean(left?.visible));
-      }
+  if (matches.length !== 1) {
+    return null;
+  }
 
-      if (Boolean(left?.toolWindow) !== Boolean(right?.toolWindow)) {
-        return Number(Boolean(left?.toolWindow)) - Number(Boolean(right?.toolWindow));
-      }
-
-      if (Boolean(left?.minimized) !== Boolean(right?.minimized)) {
-        return Number(Boolean(left?.minimized)) - Number(Boolean(right?.minimized));
-      }
-
-      return 0;
-    })[0] ?? null;
+  return matches[0];
 }
 
 function pickBestPreloadSentinelWindow(windows) {
-  return [...(Array.isArray(windows) ? windows : [])]
+  const candidates = [...(Array.isArray(windows) ? windows : [])];
+
+  if (candidates.length !== 1) {
+    return null;
+  }
+
+  return candidates
     .sort((left, right) => {
       if (Boolean(left?.toolWindow) !== Boolean(right?.toolWindow)) {
         return Number(Boolean(right?.toolWindow)) - Number(Boolean(left?.toolWindow));

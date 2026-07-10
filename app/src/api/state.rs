@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 use anyhow::Result;
 
 use crate::lifecycle::target_extension_origin_is_installed;
-use crate::telemetry::{SystemSnapshot, SystemSnapshotter};
+use crate::telemetry::{ActivitySnapshot, SystemProcessSampler, SystemSnapshot, SystemSnapshotter};
 use tokio::sync::watch;
 
 use super::origin::normalize_extension_origin;
@@ -15,7 +15,7 @@ use super::persistence::{
 
 #[derive(Clone)]
 pub struct ApiState {
-    snapshotter: Arc<Mutex<SystemSnapshotter>>,
+    snapshotter: SystemSnapshotter,
     allowed_extension_origins: Arc<Mutex<BTreeSet<String>>>,
     extension_heartbeats: Arc<Mutex<BTreeMap<String, ExtensionHeartbeatLease>>>,
     debug_api_token: Arc<Mutex<Option<String>>>,
@@ -30,10 +30,7 @@ struct ExtensionHeartbeatLease {
 }
 
 impl ApiState {
-    pub fn new(
-        snapshotter: Arc<Mutex<SystemSnapshotter>>,
-        host_shutdown_tx: watch::Sender<bool>,
-    ) -> Self {
+    pub fn new(snapshotter: SystemSnapshotter, host_shutdown_tx: watch::Sender<bool>) -> Self {
         Self {
             snapshotter,
             allowed_extension_origins: Arc::new(Mutex::new(load_allowed_extension_origins())),
@@ -44,11 +41,15 @@ impl ApiState {
     }
 
     pub(crate) fn snapshot(&self) -> Result<SystemSnapshot> {
-        let mut snapshotter = self
-            .snapshotter
-            .lock()
-            .map_err(|_| anyhow::anyhow!("snapshotter lock poisoned"))?;
-        snapshotter.collect_snapshot()
+        self.snapshotter.collect_snapshot()
+    }
+
+    pub(crate) fn activity_snapshot(&self) -> Result<ActivitySnapshot> {
+        self.snapshotter.collect_activity_snapshot()
+    }
+
+    pub(crate) fn process_sampler(&self) -> SystemProcessSampler {
+        self.snapshotter.process_sampler()
     }
 
     pub(crate) fn get_allowed_extension_origin(&self) -> Option<String> {
@@ -141,9 +142,8 @@ impl ApiState {
 
         let stale_keys: Vec<String> = guard
             .iter()
-            .filter_map(|(key, lease)| {
-                (now.duration_since(lease.last_seen_at) > ttl).then(|| key.clone())
-            })
+            .filter(|(_key, lease)| now.duration_since(lease.last_seen_at) > ttl)
+            .map(|(key, _lease)| key.clone())
             .collect();
         let stale_hwnds: BTreeSet<u64> = stale_keys
             .iter()

@@ -40,7 +40,9 @@ const browserGroups = [
 ];
 
 async function main() {
-  const requested = new Set(process.argv.slice(2));
+  const argumentsList = process.argv.slice(2);
+  const preferPackaged = !argumentsList.includes("--source");
+  const requested = new Set(argumentsList.filter((argument) => argument !== "--source"));
   const selectedBrowsers = browserGroups.filter(
     (browser) => requested.size === 0 || requested.has(browser.name)
   );
@@ -50,7 +52,7 @@ async function main() {
 
   try {
     for (const browser of selectedBrowsers) {
-      results.push(await smokeBrowser(browser));
+      results.push(await smokeBrowser(browser, { preferPackaged }));
     }
   } finally {
     await rmWithRetry(runRoot).catch(() => {});
@@ -62,7 +64,7 @@ async function main() {
   }
 }
 
-async function smokeBrowser(browser) {
+async function smokeBrowser(browser, { preferPackaged = true } = {}) {
   if (!browser.executablePath || !existsSync(browser.executablePath)) {
     return {
       name: browser.name,
@@ -85,6 +87,7 @@ async function smokeBrowser(browser) {
     const extensionFixture = await prepareExtensionUnderTest({
       extensionDir,
       targetDir: extensionUnderTestDir,
+      preferPackaged,
     });
 
     child = spawnBrowser(
@@ -184,6 +187,13 @@ async function smokeBrowser(browser) {
     const toggleProbe = await probeRealPreloadRiskToggle(pageClient);
     assert.equal(toggleProbe.dialogOpened, true);
     assert.equal(toggleProbe.checkedAfterCancel, false);
+    const successfulToggleProbe = await probeRealPreloadRiskToggleSuccess(pageClient);
+    const successfulToggleContext = JSON.stringify(successfulToggleProbe);
+    assert.equal(successfulToggleProbe.dialogCount, 3, successfulToggleContext);
+    assert.equal(successfulToggleProbe.checkedAfterConfirm, true, successfulToggleContext);
+    assert.equal(successfulToggleProbe.savedRealPreloadEnabled, true, successfulToggleContext);
+    assert.equal(successfulToggleProbe.savedRiskAcknowledged, true, successfulToggleContext);
+    assert.equal(successfulToggleProbe.duplicateDialogOpened, false, successfulToggleContext);
 
     return {
       name: browser.name,
@@ -483,6 +493,100 @@ async function probeRealPreloadAdvancedRiskDialog(pageClient) {
       }
     })()))()`,
     { timeoutMs: 15000 }
+  );
+  return JSON.parse(resultJson || "{}");
+}
+
+async function probeRealPreloadRiskToggleSuccess(pageClient) {
+  const resultJson = await runtimeEval(
+    pageClient,
+    `(async () => JSON.stringify(await (async () => {
+      const checkbox = document.getElementById("real-preload-enabled");
+      const saveButton = document.getElementById("save-button");
+      if (!checkbox || !saveButton) {
+        return { dialogCount: 0, missingControls: true };
+      }
+
+      let dialogCount = 0;
+      checkbox.checked = false;
+      checkbox.click();
+
+      const riskDialog = await waitForNewDialog();
+      dialogCount += Boolean(riskDialog) ? 1 : 0;
+      riskDialog?.querySelector(".settings-dialog-actions button:last-child")?.click();
+
+      const typedDialog = await waitForNewDialog(riskDialog);
+      dialogCount += Boolean(typedDialog) ? 1 : 0;
+      const expectedText =
+        typedDialog?.querySelector(".settings-dialog-expected-text")?.textContent || "";
+      const input = typedDialog?.querySelector(".settings-dialog-text-input");
+      if (input) {
+        input.value = expectedText;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      typedDialog?.querySelector(".settings-dialog-actions button:last-child")?.click();
+
+      const disclaimerDialog = await waitForNewDialog(typedDialog);
+      dialogCount += Boolean(disclaimerDialog) ? 1 : 0;
+      disclaimerDialog?.querySelector(".settings-dialog-actions button:last-child")?.click();
+
+      await waitForNoDialog();
+      const checkedAfterConfirm = checkbox.checked === true;
+      saveButton.click();
+
+      const savedSettings = await waitForSavedSettings();
+      await new Promise((resolve) => setTimeout(resolve, 600));
+
+      return {
+        dialogCount,
+        checkedAfterConfirm,
+        savedRealPreloadEnabled:
+          savedSettings?.preloading?.realPreloadEnabled === true,
+        savedRiskAcknowledged:
+          savedSettings?.preloading?.realPreloadRiskAcknowledged === true,
+        duplicateDialogOpened: Boolean(document.querySelector(".settings-dialog")),
+      };
+
+      async function waitForNewDialog(previousDialog = null) {
+        const startedAt = Date.now();
+        while (Date.now() - startedAt < 4000) {
+          const dialog = document.querySelector(".settings-dialog");
+          if (dialog && dialog !== previousDialog) {
+            return dialog;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 25));
+        }
+        return null;
+      }
+
+      async function waitForNoDialog() {
+        const startedAt = Date.now();
+        while (Date.now() - startedAt < 4000) {
+          if (!document.querySelector(".settings-dialog")) {
+            await new Promise((resolve) => requestAnimationFrame(resolve));
+            return;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 25));
+        }
+      }
+
+      async function waitForSavedSettings() {
+        const startedAt = Date.now();
+        let settings = null;
+        while (Date.now() - startedAt < 5000) {
+          settings = await globalThis.ZeroLatencySettings.loadSettings(chrome.storage.local);
+          if (
+            settings?.preloading?.realPreloadEnabled === true &&
+            settings?.preloading?.realPreloadRiskAcknowledged === true
+          ) {
+            return settings;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        return settings;
+      }
+    })()))()`,
+    { timeoutMs: 20000 }
   );
   return JSON.parse(resultJson || "{}");
 }

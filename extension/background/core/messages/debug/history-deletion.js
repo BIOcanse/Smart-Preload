@@ -26,13 +26,13 @@ async function handleDeleteHistoryRange(message) {
           },
         });
 
-        const trackingState = await loadTrackingState();
+        const trackingState = await loadTrackingStateWithCompleteHistory();
         const deletion = globalThis.ZeroLatencyTrackingHistoryDeletion.deleteTrackingHistoryRange(
           trackingState,
           normalizedRange
         );
 
-        await saveTrackingState(deletion.state);
+        await replaceTrackingHistoryArchive(deletion.state);
         globalThis.ZeroLatencyDebugEvents?.record?.("tracking.history.delete-range", {
           range: deletion.result.range,
           deleted: deletion.result.deleted,

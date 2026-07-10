@@ -1,7 +1,11 @@
 use std::net::SocketAddr;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::mpsc::{self, Receiver, RecvTimeoutError, Sender};
+use std::sync::Arc;
 use std::thread::{self, JoinHandle};
+use std::time::Duration;
 
-use anyhow::Result;
+use anyhow::{anyhow, Context, Result};
 use axum::middleware;
 use axum::routing::{get, post};
 use axum::Router;
@@ -13,23 +17,129 @@ use crate::api::cors::apply_extension_cors;
 use crate::api::{routes, ApiState};
 use crate::runtime_debug::record_app_runtime_event;
 
-pub fn spawn_server(state: ApiState, shutdown_rx: watch::Receiver<bool>) -> JoinHandle<()> {
-    thread::spawn(move || {
-        let runtime = tokio::runtime::Builder::new_multi_thread()
+fn api_address() -> SocketAddr {
+    SocketAddr::from(([127, 0, 0, 1], 45831))
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum ServerStartup {
+    Ready(SocketAddr),
+    Failed(String),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ServerExit {
+    ShutdownRequested,
+    Unexpected,
+}
+
+pub struct ServerHandle {
+    join_handle: Option<JoinHandle<()>>,
+    startup_rx: Receiver<ServerStartup>,
+}
+
+impl ServerHandle {
+    pub fn wait_until_ready(&self, timeout: Duration) -> Result<SocketAddr> {
+        match self.startup_rx.recv_timeout(timeout) {
+            Ok(ServerStartup::Ready(address)) => Ok(address),
+            Ok(ServerStartup::Failed(error)) => Err(anyhow!(error)),
+            Err(RecvTimeoutError::Timeout) => {
+                Err(anyhow!("hardware API startup timed out after {timeout:?}"))
+            }
+            Err(RecvTimeoutError::Disconnected) => Err(anyhow!(
+                "hardware API thread exited before reporting readiness"
+            )),
+        }
+    }
+
+    pub fn join(mut self) -> thread::Result<()> {
+        self.join_handle
+            .take()
+            .map(JoinHandle::join)
+            .unwrap_or(Ok(()))
+    }
+}
+
+pub fn spawn_server(
+    state: ApiState,
+    shutdown_rx: watch::Receiver<bool>,
+    host_shutdown_tx: watch::Sender<bool>,
+) -> ServerHandle {
+    let (startup_tx, startup_rx) = mpsc::channel();
+    let ready_announced = Arc::new(AtomicBool::new(false));
+    let thread_ready_announced = Arc::clone(&ready_announced);
+    let join_handle = thread::spawn(move || {
+        let runtime = match tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .thread_name("zlw-api")
             .build()
-            .expect("failed to build tokio runtime");
-
-        runtime.block_on(async move {
-            if let Err(error) = run_server(state, shutdown_rx).await {
-                tracing::error!("hardware API server failed: {error:?}");
+        {
+            Ok(runtime) => runtime,
+            Err(error) => {
+                report_server_failure(
+                    &startup_tx,
+                    &thread_ready_announced,
+                    &host_shutdown_tx,
+                    format!("failed to build API runtime: {error}"),
+                );
+                return;
             }
-        });
-    })
+        };
+
+        match runtime.block_on(run_server(
+            state,
+            shutdown_rx,
+            startup_tx.clone(),
+            Arc::clone(&thread_ready_announced),
+        )) {
+            Ok(ServerExit::ShutdownRequested) => {}
+            Ok(ServerExit::Unexpected) => {
+                report_server_failure(
+                    &startup_tx,
+                    &thread_ready_announced,
+                    &host_shutdown_tx,
+                    "hardware API server exited without a shutdown request".to_string(),
+                );
+            }
+            Err(error) => {
+                report_server_failure(
+                    &startup_tx,
+                    &thread_ready_announced,
+                    &host_shutdown_tx,
+                    format!("hardware API server failed: {error:#}"),
+                );
+            }
+        }
+    });
+
+    ServerHandle {
+        join_handle: Some(join_handle),
+        startup_rx,
+    }
 }
 
-async fn run_server(state: ApiState, mut shutdown_rx: watch::Receiver<bool>) -> Result<()> {
+fn report_server_failure(
+    startup_tx: &Sender<ServerStartup>,
+    ready_announced: &AtomicBool,
+    host_shutdown_tx: &watch::Sender<bool>,
+    error: String,
+) {
+    tracing::error!("{error}");
+    record_app_runtime_event("api", "server-failed", Some(error.clone()));
+
+    if !ready_announced.load(Ordering::Acquire) {
+        let _ = startup_tx.send(ServerStartup::Failed(error));
+    }
+
+    let _ = host_shutdown_tx.send(true);
+}
+
+async fn run_server(
+    state: ApiState,
+    shutdown_rx: watch::Receiver<bool>,
+    startup_tx: Sender<ServerStartup>,
+    ready_announced: Arc<AtomicBool>,
+) -> Result<ServerExit> {
     let protected_routes = Router::new()
         .route("/health", get(routes::health))
         .route(
@@ -81,19 +191,72 @@ async fn run_server(state: ApiState, mut shutdown_rx: watch::Receiver<bool>) -> 
             apply_extension_cors,
         ));
 
-    let address = SocketAddr::from(([127, 0, 0, 1], 45831));
-    let listener = TcpListener::bind(address).await?;
+    let address = api_address();
+    let listener = TcpListener::bind(address)
+        .await
+        .with_context(|| format!("failed to bind hardware API at {address}"))?;
 
+    ready_announced.store(true, Ordering::Release);
+    startup_tx
+        .send(ServerStartup::Ready(address))
+        .map_err(|_| anyhow!("host stopped waiting for hardware API readiness"))?;
     record_app_runtime_event("api", "server-listening", Some(format!("http://{address}")));
     tracing::info!("hardware API listening on http://{address}");
 
+    let mut graceful_shutdown_rx = shutdown_rx.clone();
     axum::serve(listener, app)
         .with_graceful_shutdown(async move {
-            let _ = shutdown_rx.changed().await;
+            let _ = graceful_shutdown_rx.changed().await;
         })
         .await?;
 
     record_app_runtime_event("api", "server-stopped", None);
 
-    Ok(())
+    Ok(if *shutdown_rx.borrow() {
+        ServerExit::ShutdownRequested
+    } else {
+        ServerExit::Unexpected
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn startup_failure_is_reported_and_requests_host_shutdown() {
+        let (startup_tx, startup_rx) = mpsc::channel();
+        let ready_announced = AtomicBool::new(false);
+        let (shutdown_tx, shutdown_rx) = watch::channel(false);
+
+        report_server_failure(
+            &startup_tx,
+            &ready_announced,
+            &shutdown_tx,
+            "bind failed".to_string(),
+        );
+
+        assert_eq!(
+            startup_rx.recv().expect("startup failure should be sent"),
+            ServerStartup::Failed("bind failed".to_string())
+        );
+        assert!(*shutdown_rx.borrow());
+    }
+
+    #[test]
+    fn failure_after_readiness_only_requests_shutdown() {
+        let (startup_tx, startup_rx) = mpsc::channel();
+        let ready_announced = AtomicBool::new(true);
+        let (shutdown_tx, shutdown_rx) = watch::channel(false);
+
+        report_server_failure(
+            &startup_tx,
+            &ready_announced,
+            &shutdown_tx,
+            "serve exited".to_string(),
+        );
+
+        assert!(startup_rx.try_recv().is_err());
+        assert!(*shutdown_rx.borrow());
+    }
 }

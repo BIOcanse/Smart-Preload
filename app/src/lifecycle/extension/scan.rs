@@ -5,27 +5,49 @@ use std::io::BufReader;
 use std::path::Path;
 
 use super::manifest::is_target_extension_entry;
-use super::profile::chrome_profile_directories;
+use super::profile::discover_chrome_profile_directories;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) enum ExtensionScanStatus {
+    Present,
+    Absent,
+    PartialFailure,
+}
+
+#[derive(Debug)]
 pub(super) struct ExtensionScanResult {
     pub(super) extension_id: Option<String>,
     pub(super) extension_ids: Vec<String>,
     pub(super) enabled_extension_ids: Vec<String>,
     pub(super) disabled_extension_ids: Vec<String>,
-    pub(super) scan_succeeded: bool,
+    pub(super) status: ExtensionScanStatus,
 }
 
 pub(super) fn scan_for_registered_extension() -> ExtensionScanResult {
-    let mut scan_succeeded = false;
+    let discovery = discover_chrome_profile_directories();
+    let scans = discovery
+        .directories
+        .iter()
+        .map(|profile_directory| secure_preferences_target_extension_ids(profile_directory))
+        .collect::<Vec<_>>();
+
+    aggregate_profile_scans(scans, discovery.partial_failure)
+}
+
+fn aggregate_profile_scans(
+    scans: Vec<SecurePreferencesScan>,
+    discovery_partial_failure: bool,
+) -> ExtensionScanResult {
+    let mut readable_profile_count = 0_usize;
+    let mut unreadable_profile_count = usize::from(discovery_partial_failure);
     let mut extension_ids = BTreeSet::new();
     let mut enabled_extension_ids = BTreeSet::new();
     let mut disabled_extension_ids = BTreeSet::new();
 
-    for profile_directory in chrome_profile_directories() {
-        match secure_preferences_target_extension_ids(&profile_directory) {
+    for scan in scans {
+        match scan {
             SecurePreferencesScan::Found(found_entries) => {
-                scan_succeeded = true;
+                readable_profile_count += 1;
 
                 for entry in found_entries {
                     extension_ids.insert(entry.extension_id.clone());
@@ -38,9 +60,11 @@ pub(super) fn scan_for_registered_extension() -> ExtensionScanResult {
                 }
             }
             SecurePreferencesScan::ScannedNoMatch => {
-                scan_succeeded = true;
+                readable_profile_count += 1;
             }
-            SecurePreferencesScan::Unreadable => {}
+            SecurePreferencesScan::Unreadable => {
+                unreadable_profile_count += 1;
+            }
         }
     }
 
@@ -49,13 +73,22 @@ pub(super) fn scan_for_registered_extension() -> ExtensionScanResult {
     let extension_ids = extension_ids.into_iter().collect::<Vec<_>>();
     let enabled_extension_ids = enabled_extension_ids.into_iter().collect::<Vec<_>>();
     let disabled_extension_ids = disabled_extension_ids.into_iter().collect::<Vec<_>>();
+    let status = if !enabled_extension_ids.is_empty() {
+        ExtensionScanStatus::Present
+    } else if unreadable_profile_count > 0 || readable_profile_count == 0 {
+        ExtensionScanStatus::PartialFailure
+    } else if extension_ids.is_empty() {
+        ExtensionScanStatus::Absent
+    } else {
+        ExtensionScanStatus::Present
+    };
 
     ExtensionScanResult {
         extension_id: extension_ids.first().cloned(),
         extension_ids,
         enabled_extension_ids,
         disabled_extension_ids,
-        scan_succeeded,
+        status,
     }
 }
 
@@ -72,12 +105,14 @@ pub(super) fn profile_contains_target_extension_id(
     )
 }
 
+#[derive(Debug)]
 enum SecurePreferencesScan {
     Found(Vec<TargetExtensionEntry>),
     ScannedNoMatch,
     Unreadable,
 }
 
+#[derive(Debug)]
 struct TargetExtensionEntry {
     extension_id: String,
     enabled: bool,
@@ -158,5 +193,55 @@ mod tests {
         assert!(!is_extension_entry_enabled(&json!({
             "state": 0
         })));
+    }
+
+    #[test]
+    fn readable_no_match_profiles_confirm_absence() {
+        let result = aggregate_profile_scans(
+            vec![
+                SecurePreferencesScan::ScannedNoMatch,
+                SecurePreferencesScan::ScannedNoMatch,
+            ],
+            false,
+        );
+
+        assert_eq!(result.status, ExtensionScanStatus::Absent);
+    }
+
+    #[test]
+    fn unreadable_profile_prevents_a_partial_scan_from_confirming_absence() {
+        let result = aggregate_profile_scans(
+            vec![
+                SecurePreferencesScan::ScannedNoMatch,
+                SecurePreferencesScan::Unreadable,
+            ],
+            false,
+        );
+
+        assert_eq!(result.status, ExtensionScanStatus::PartialFailure);
+    }
+
+    #[test]
+    fn enabled_extension_is_present_even_when_another_profile_is_unreadable() {
+        let result = aggregate_profile_scans(
+            vec![
+                SecurePreferencesScan::Found(vec![TargetExtensionEntry {
+                    extension_id: "abcdefghijklmnopabcdefghijklmnop".to_string(),
+                    enabled: true,
+                }]),
+                SecurePreferencesScan::Unreadable,
+            ],
+            false,
+        );
+
+        assert_eq!(result.status, ExtensionScanStatus::Present);
+        assert_eq!(result.enabled_extension_ids.len(), 1);
+    }
+
+    #[test]
+    fn profile_discovery_error_is_a_partial_failure() {
+        let result = aggregate_profile_scans(vec![SecurePreferencesScan::ScannedNoMatch], true);
+
+        assert_eq!(result.status, ExtensionScanStatus::PartialFailure);
     }
 }

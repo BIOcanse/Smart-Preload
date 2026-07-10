@@ -51,7 +51,7 @@
       },
       preloadWindow: {
         watchdogEnabled: elements.watchdogEnabled.checked,
-        watchdogIntervalSeconds: Number(elements.watchdogIntervalSeconds.value) || 1,
+        watchdogIntervalSeconds: Number(elements.watchdogIntervalSeconds.value) || 30,
         fullscreenPressurePolicy: elements.fullscreenPressurePolicy.value,
         forceMinimize: elements.forceMinimize.checked,
       },

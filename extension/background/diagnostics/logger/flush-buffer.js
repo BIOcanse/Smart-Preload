@@ -2,8 +2,8 @@
   const DIAGNOSTIC_LOG_ENDPOINT = "/api/v1/diagnostics/logs";
   const MAX_BUFFERED_EVENTS = 2_000;
   const MAX_BATCH_SIZE = 100;
-  const DEFAULT_FLUSH_DELAY_MS = 1_000;
-  const RETRY_FLUSH_DELAY_MS = 5_000;
+  const DEFAULT_FLUSH_DELAY_MS = 10_000;
+  const RETRY_FLUSH_DELAY_MS = 30_000;
 
   function createDiagnosticLogBuffer({ sessionId, fetchNativeApp, isEnabled }) {
     let buffer = [];

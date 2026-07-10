@@ -84,6 +84,7 @@ const anchors = [
     top: 160,
   }),
 ];
+const documentElement = makeTraversalRoot(anchors);
 
 const sandbox = {
   URL,
@@ -96,13 +97,7 @@ const sandbox = {
     readyState: "complete",
     prerendering: false,
     activeElement: null,
-    documentElement: {
-      clientWidth: 1280,
-      clientHeight: 800,
-    },
-    querySelectorAll(selector) {
-      return selector === "a[href]" ? anchors : [];
-    },
+    documentElement,
   },
   window: {
     innerWidth: 1280,
@@ -150,6 +145,7 @@ vm.runInContext(candidateScanSource, context, {
 const navigationContent = context.ZeroLatencyNavigationContent;
 assert.equal(typeof navigationContent.inspectAnchorSideEffectPreloadSafety, "function");
 assert.equal(typeof navigationContent.collectCandidateLinks, "function");
+assert.equal(typeof navigationContent.processCandidateMutationWorkBatch, "function");
 
 const safeDecision = navigationContent.inspectAnchorSideEffectPreloadSafety(
   makeAnchor("https://example.com/docs/page"),
@@ -179,6 +175,10 @@ assert.equal(sensitiveDecision.sideEffectBlocked, false);
 assert.equal(sensitiveDecision.sensitiveSiteBlocked, true);
 assert.ok(sensitiveDecision.reasons.includes("sensitive-site-banking"));
 
+navigationContent.initializeCandidateAnchorIndex(documentElement);
+while (navigationContent.processCandidateMutationWorkBatch().hasPendingWork) {
+  // Drain the bounded initial index for this small fixture.
+}
 const candidateLinks = navigationContent.collectCandidateLinks();
 assert.equal(
   Array.from(candidateLinks, (link) => String(link.url)).join("\n"),
@@ -211,6 +211,9 @@ function makeAnchor(href, options = {}) {
   const top = Number.isFinite(Number(options.top)) ? Number(options.top) : 10;
 
   return {
+    nodeType: 1,
+    tagName: "A",
+    isConnected: true,
     href,
     target: options.target || "",
     rel: attributes.get("rel") || "",
@@ -226,6 +229,9 @@ function makeAnchor(href, options = {}) {
       return null;
     },
     getAttribute(name) {
+      if (name === "href") {
+        return href;
+      }
       return attributes.has(name) ? attributes.get(name) : null;
     },
     hasAttribute(name) {
@@ -242,4 +248,20 @@ function makeAnchor(href, options = {}) {
       };
     },
   };
+}
+
+function makeTraversalRoot(children) {
+  const root = {
+    nodeType: 1,
+    tagName: "HTML",
+    clientWidth: 1280,
+    clientHeight: 800,
+    firstElementChild: children[0] || null,
+  };
+
+  for (let index = 0; index < children.length; index += 1) {
+    children[index].nextElementSibling = children[index + 1] || null;
+  }
+
+  return root;
 }

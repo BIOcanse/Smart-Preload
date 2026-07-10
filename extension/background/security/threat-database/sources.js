@@ -1,28 +1,66 @@
 (function () {
+  const THREAT_LIBRARY_PATH = "background/security/local-threat-library.json";
   const {
     normalizeThreatHostname,
     fingerprintThreatUrl,
     fingerprintThreatHost,
     buildHostSuffixes,
   } = globalThis.ZeroLatencyThreatDatabaseFingerprint;
-  let cachedSourceSets = null;
+  let cachedSources = null;
+  let libraryLoadPromise = null;
+
+  async function initializeLibrary(options = {}) {
+    if (globalThis.ZeroLatencyLocalThreatLibrary) {
+      return globalThis.ZeroLatencyLocalThreatLibrary;
+    }
+
+    if (libraryLoadPromise) {
+      return libraryLoadPromise;
+    }
+
+    libraryLoadPromise = (async () => {
+      const fetchImpl = options.fetchImpl || globalThis.fetch;
+      const libraryUrl =
+        options.libraryUrl ||
+        globalThis.chrome?.runtime?.getURL?.(THREAT_LIBRARY_PATH) ||
+        THREAT_LIBRARY_PATH;
+
+      if (typeof fetchImpl !== "function") {
+        throw new Error("Threat library fetch is unavailable.");
+      }
+
+      const response = await fetchImpl(libraryUrl, { cache: "no-store" });
+
+      if (!response.ok) {
+        throw new Error(`Threat library load failed: HTTP ${response.status}`);
+      }
+
+      const library = await response.json();
+
+      if (!library || typeof library !== "object") {
+        throw new Error("Threat library payload is invalid.");
+      }
+
+      globalThis.ZeroLatencyLocalThreatLibrary = library;
+      cachedSources = null;
+      return library;
+    })().catch((error) => {
+      libraryLoadPromise = null;
+      throw error;
+    });
+
+    return libraryLoadPromise;
+  }
 
   function findThreatSourceMatch(normalizedUrl) {
     const fingerprint = fingerprintThreatUrl(normalizedUrl);
-    const urlMatch = findUrlSourceMatch(fingerprint);
-
-    return urlMatch || findHostSourceMatch(normalizedUrl);
+    return findUrlSourceMatch(fingerprint) || findHostSourceMatch(normalizedUrl);
   }
 
   function findUrlSourceMatch(fingerprint) {
-    const sourceSets = getSourceSets();
-
-    for (const sourceSet of sourceSets) {
-      if (sourceSet.urlFingerprints.has(fingerprint)) {
-        return {
-          source: sourceSet.source,
-          scope: "exact-url",
-        };
+    for (const sourceEntry of getSourceEntries()) {
+      if (containsSortedFingerprint(sourceEntry.urlFingerprints, fingerprint)) {
+        return { source: sourceEntry.source, scope: "exact-url" };
       }
     }
 
@@ -38,22 +76,12 @@
       return null;
     }
 
-    if (!hostname) {
-      return null;
-    }
-
-    const sourceSets = getSourceSets();
-    const hostFingerprints = buildHostSuffixes(hostname).map((host) =>
-      fingerprintThreatHost(host)
-    );
+    const hostFingerprints = buildHostSuffixes(hostname).map(fingerprintThreatHost);
 
     for (const hostFingerprint of hostFingerprints) {
-      for (const sourceSet of sourceSets) {
-        if (sourceSet.hostFingerprints.has(hostFingerprint)) {
-          return {
-            source: sourceSet.source,
-            scope: "host-subtree",
-          };
+      for (const sourceEntry of getSourceEntries()) {
+        if (containsSortedFingerprint(sourceEntry.hostFingerprints, hostFingerprint)) {
+          return { source: sourceEntry.source, scope: "host-subtree" };
         }
       }
     }
@@ -61,49 +89,53 @@
     return null;
   }
 
-  function getSourceSets() {
-    if (cachedSourceSets) {
-      return cachedSourceSets;
+  function getSourceEntries() {
+    if (cachedSources) {
+      return cachedSources;
     }
 
     const library = getLibraryMetadata();
-    const fingerprintsBySource =
-      library && typeof library.urlFingerprintsBySource === "object"
-        ? library.urlFingerprintsBySource
-        : {};
-    const hostFingerprintsBySource =
-      library && typeof library.hostFingerprintsBySource === "object"
-        ? library.hostFingerprintsBySource
-        : {};
-    const sourcesById = new Map(
+    const urlFingerprints = library.urlFingerprintsBySource || {};
+    const hostFingerprints = library.hostFingerprintsBySource || {};
+    const sourceById = Object.fromEntries(
       (Array.isArray(library.sources) ? library.sources : []).map((source) => [
         source?.id || "",
         source,
       ])
     );
+    const sourceIds = [...new Set([...Object.keys(urlFingerprints), ...Object.keys(hostFingerprints)])];
+    cachedSources = sourceIds.map((sourceId) => ({
+      source: sourceById[sourceId] || { id: sourceId },
+      urlFingerprints: normalizeSortedFingerprints(urlFingerprints[sourceId]),
+      hostFingerprints: normalizeSortedFingerprints(hostFingerprints[sourceId]),
+    }));
+    return cachedSources;
+  }
 
-    const sourceIds = [
-      ...new Set([
-        ...Object.keys(fingerprintsBySource),
-        ...Object.keys(hostFingerprintsBySource),
-      ]),
-    ];
+  function normalizeSortedFingerprints(value) {
+    return Array.isArray(value) ? value : [];
+  }
 
-    cachedSourceSets = sourceIds
-      .map((sourceId) => ({
-        source: sourcesById.get(sourceId) || { id: sourceId },
-        urlFingerprints: new Set(
-          Array.isArray(fingerprintsBySource[sourceId]) ? fingerprintsBySource[sourceId] : []
-        ),
-        hostFingerprints: new Set(
-          Array.isArray(hostFingerprintsBySource[sourceId])
-            ? hostFingerprintsBySource[sourceId]
-            : []
-        ),
-      }))
-      .filter((entry) => entry.urlFingerprints.size > 0 || entry.hostFingerprints.size > 0);
+  function containsSortedFingerprint(fingerprints, target) {
+    let low = 0;
+    let high = fingerprints.length - 1;
 
-    return cachedSourceSets;
+    while (low <= high) {
+      const middle = (low + high) >>> 1;
+      const value = String(fingerprints[middle]);
+
+      if (value === target) {
+        return true;
+      }
+
+      if (value < target) {
+        low = middle + 1;
+      } else {
+        high = middle - 1;
+      }
+    }
+
+    return false;
   }
 
   function getLibraryMetadata() {
@@ -117,7 +149,9 @@
   }
 
   globalThis.ZeroLatencyThreatDatabaseSources = {
+    initializeLibrary,
     findThreatSourceMatch,
     getLibraryMetadata,
+    containsSortedFingerprint,
   };
 })();

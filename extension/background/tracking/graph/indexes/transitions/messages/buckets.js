@@ -18,6 +18,7 @@ function registerTransitionMessageInBuckets(graph, transitionMessage) {
 
   if (targetMessages[targetMessages.length - 1] !== transitionMessage.sequenceNumber) {
     targetMessages.push(transitionMessage.sequenceNumber);
+    trimTransitionReferences(targetMessages, MAX_TRANSITION_REFERENCES_PER_ROUTE);
   }
 }
 
@@ -32,6 +33,13 @@ function registerTransitionMessageInDayGroups(graph, transitionMessage) {
 
   if (dayMessages[dayMessages.length - 1] !== transitionMessage.sequenceNumber) {
     dayMessages.push(transitionMessage.sequenceNumber);
+    trimTransitionReferences(dayMessages, MAX_TRANSITION_REFERENCES_PER_DAY);
+  }
+}
+
+function trimTransitionReferences(references, limit) {
+  if (references.length > limit) {
+    references.splice(0, references.length - limit);
   }
 }
 

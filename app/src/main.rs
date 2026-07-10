@@ -5,9 +5,9 @@ mod lifecycle;
 mod runtime_debug;
 mod telemetry;
 mod tray;
+mod update;
 mod window;
 
-use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -17,8 +17,10 @@ use tracing::info;
 
 use crate::api::ApiState;
 use crate::lifecycle::AppMode;
-use crate::runtime_debug::record_app_runtime_event;
-use crate::telemetry::SystemSnapshotter;
+use crate::runtime_debug::{record_app_runtime_event, shutdown_app_runtime_event_writer};
+use crate::telemetry::{SystemProcessSampler, SystemSnapshotter};
+
+const API_STARTUP_TIMEOUT: Duration = Duration::from_secs(10);
 
 fn main() -> Result<()> {
     tracing_subscriber::fmt()
@@ -27,15 +29,18 @@ fn main() -> Result<()> {
         .compact()
         .init();
 
-    match lifecycle::current_mode() {
-        AppMode::Install => print_lifecycle_status(lifecycle::install_portable_app()?),
+    let result = match lifecycle::current_mode() {
+        AppMode::Install => lifecycle::install_portable_app().and_then(print_lifecycle_status),
         AppMode::NativeMessaging => lifecycle::run_native_messaging_host(),
-        AppMode::Status => print_lifecycle_status(lifecycle::portable_install_status()?),
-        AppMode::Uninstall => print_lifecycle_status(lifecycle::uninstall_portable_app()?),
+        AppMode::Status => lifecycle::portable_install_status().and_then(print_lifecycle_status),
+        AppMode::Uninstall => lifecycle::uninstall_portable_app().and_then(print_lifecycle_status),
         AppMode::Watcher => lifecycle::cleanup_legacy_watcher_mode(),
         AppMode::Auto => run_auto_mode(),
         AppMode::Host => run_host(),
-    }
+    };
+
+    shutdown_app_runtime_event_writer();
+    result
 }
 
 fn print_lifecycle_status(status: lifecycle::PortableInstallStatus) -> Result<()> {
@@ -94,23 +99,37 @@ fn run_host() -> Result<()> {
     }
 
     let (shutdown_tx, shutdown_rx) = watch::channel(false);
-    let snapshotter = Arc::new(Mutex::new(SystemSnapshotter::new()?));
+    let snapshotter = SystemSnapshotter::new()?;
+    let process_sampler = snapshotter.process_sampler();
     let state = ApiState::new(snapshotter, shutdown_tx.clone());
-    let server_handle = api::spawn_server(state.clone(), shutdown_rx);
+    let server_handle = api::spawn_server(state.clone(), shutdown_rx, shutdown_tx.clone());
+
+    if let Err(error) = server_handle.wait_until_ready(API_STARTUP_TIMEOUT) {
+        record_app_runtime_event("host", "api-startup-failed", Some(error.to_string()));
+        let _ = shutdown_tx.send(true);
+        let _ = server_handle.join();
+        return Err(error);
+    }
+
     let tray_shutdown_rx = shutdown_tx.subscribe();
-    lifecycle::spawn_chrome_shutdown_monitor(shutdown_tx.clone());
+    lifecycle::spawn_chrome_shutdown_monitor(shutdown_tx.clone(), process_sampler.clone());
 
     if debug_force_host {
         record_app_runtime_event("host", "extension-monitor-skipped-debug-force", None);
     } else {
         lifecycle::spawn_extension_shutdown_monitor(shutdown_tx.clone());
-        spawn_extension_heartbeat_shutdown_monitor(state.clone(), shutdown_tx.clone());
+        spawn_extension_heartbeat_shutdown_monitor(
+            state.clone(),
+            shutdown_tx.clone(),
+            process_sampler,
+        );
     }
 
     record_app_runtime_event("host", "host-ready", None);
     info!("Zero-Latency Web local hardware API is running in the tray.");
     let tray_result = tray::run_tray(shutdown_tx.clone(), tray_shutdown_rx);
     let _ = shutdown_tx.send(true);
+    window::shutdown_hidden_window_runtime();
     let closed_hidden_window_count = window::close_tracked_hidden_windows("host-shutdown");
 
     if closed_hidden_window_count > 0 {
@@ -134,7 +153,11 @@ fn run_host() -> Result<()> {
     tray_result
 }
 
-fn spawn_extension_heartbeat_shutdown_monitor(state: ApiState, shutdown_tx: watch::Sender<bool>) {
+fn spawn_extension_heartbeat_shutdown_monitor(
+    state: ApiState,
+    shutdown_tx: watch::Sender<bool>,
+    process_sampler: SystemProcessSampler,
+) {
     const NO_NORMAL_WINDOW_GRACE: Duration = Duration::from_secs(90);
     const HEARTBEAT_CHECK_INTERVAL: Duration = Duration::from_secs(5);
 
@@ -156,7 +179,7 @@ fn spawn_extension_heartbeat_shutdown_monitor(state: ApiState, shutdown_tx: watc
                 state.active_extension_normal_window_count(api::EXTENSION_HEARTBEAT_TTL);
             let window_report_count =
                 state.active_extension_window_report_count(api::EXTENSION_HEARTBEAT_TTL);
-            let visible_browser_window_count = count_visible_user_browser_windows();
+            let visible_browser_window_count = count_visible_user_browser_windows(&process_sampler);
             let active_normal_window_count = reported_normal_window_count;
 
             if active_normal_window_count > 0 {
@@ -215,8 +238,8 @@ fn spawn_extension_heartbeat_shutdown_monitor(state: ApiState, shutdown_tx: watc
     });
 }
 
-fn count_visible_user_browser_windows() -> usize {
-    crate::window::list_chrome_windows()
+fn count_visible_user_browser_windows(process_sampler: &SystemProcessSampler) -> usize {
+    crate::window::list_chrome_windows(process_sampler)
         .into_iter()
         .filter(|window| window.visible && !window.tool_window)
         .count()

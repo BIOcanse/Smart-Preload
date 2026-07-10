@@ -10,7 +10,7 @@ const defaultOutputPath = path.join(
   "extension",
   "background",
   "security",
-  "local-threat-library.js"
+  "local-threat-library.json"
 );
 const userAgent =
   "SmartPreloadThreatSnapshot/1.0 (+https://github.com/BIOcanse/Smart-Preload)";
@@ -199,43 +199,18 @@ function renderThreatLibrary(sourceResults) {
     0
   );
 
-  return `(function () {
-  globalThis.ZeroLatencyLocalThreatLibrary = {
+  return `${JSON.stringify({
     version: 1,
-    generatedAt: ${JSON.stringify(generatedAt)},
-    totalUrlFingerprints: ${totalUrlFingerprints},
-    totalHostFingerprints: ${totalHostFingerprints},
+    generatedAt,
+    totalUrlFingerprints,
+    totalHostFingerprints,
     urlFingerprintAlgorithm: "fnv1a64-url-v1",
     hostFingerprintAlgorithm: "fnv1a64-host-v1",
     normalization: "http-url-no-fragment-and-host-subtree-v2",
-    sources: ${JSON.stringify(sources, null, 6).replace(/^/gmu, "    ").trimStart()},
-    urlFingerprintsBySource: ${renderFingerprintMap(fingerprintsBySource)},
-    hostFingerprintsBySource: ${renderFingerprintMap(hostFingerprintsBySource)},
-  };
-})();
-`;
-}
-
-function renderFingerprintMap(fingerprintsBySource) {
-  const lines = ["{"];
-  const entries = Object.entries(fingerprintsBySource);
-
-  for (let entryIndex = 0; entryIndex < entries.length; entryIndex += 1) {
-    const [sourceId, fingerprints] = entries[entryIndex];
-    const sourceSuffix = entryIndex === entries.length - 1 ? "" : ",";
-    lines.push(`      ${JSON.stringify(sourceId)}: [`);
-
-    for (let index = 0; index < fingerprints.length; index += 8) {
-      const chunk = fingerprints.slice(index, index + 8);
-      const suffix = index + 8 >= fingerprints.length ? "" : ",";
-      lines.push(`        ${chunk.map((item) => JSON.stringify(item)).join(", ")}${suffix}`);
-    }
-
-    lines.push(`      ]${sourceSuffix}`);
-  }
-
-  lines.push("    }");
-  return lines.join("\n");
+    sources,
+    urlFingerprintsBySource: fingerprintsBySource,
+    hostFingerprintsBySource: hostFingerprintsBySource,
+  })}\n`;
 }
 
 function normalizeThreatUrl(rawUrl) {

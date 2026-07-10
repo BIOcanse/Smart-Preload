@@ -1,10 +1,13 @@
 use super::*;
 
-pub(crate) fn chrome_is_running() -> bool {
-    current_runtime_process_state()
+pub(crate) fn chrome_is_running(process_sampler: &SystemProcessSampler) -> bool {
+    current_runtime_process_state(process_sampler)
 }
 
-pub(crate) fn spawn_chrome_shutdown_monitor(shutdown_tx: watch::Sender<bool>) {
+pub(crate) fn spawn_chrome_shutdown_monitor(
+    shutdown_tx: watch::Sender<bool>,
+    process_sampler: SystemProcessSampler,
+) {
     thread::spawn(move || {
         let shutdown_rx = shutdown_tx.subscribe();
         let mut ticks_without_chrome = 0_u8;
@@ -14,7 +17,7 @@ pub(crate) fn spawn_chrome_shutdown_monitor(shutdown_tx: watch::Sender<bool>) {
                 break;
             }
 
-            if chrome_is_running() {
+            if chrome_is_running(&process_sampler) {
                 ticks_without_chrome = 0;
             } else {
                 ticks_without_chrome = ticks_without_chrome.saturating_add(1);
@@ -37,18 +40,13 @@ pub(crate) fn spawn_chrome_shutdown_monitor(shutdown_tx: watch::Sender<bool>) {
     });
 }
 
-pub(crate) fn current_runtime_process_state() -> bool {
-    let mut system = System::new_all();
-    system.refresh_all();
-
-    let mut chrome_running = false;
-
-    for process in system.processes().values() {
-        if is_google_chrome_browser_process(process) {
-            chrome_running = true;
-            break;
-        }
-    }
-
-    chrome_running
+pub(crate) fn current_runtime_process_state(process_sampler: &SystemProcessSampler) -> bool {
+    process_sampler
+        .with_system(PROCESS_SAMPLE_MAX_AGE, |system| {
+            system
+                .processes()
+                .values()
+                .any(is_google_chrome_browser_process)
+        })
+        .unwrap_or(true)
 }

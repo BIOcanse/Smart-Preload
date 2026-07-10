@@ -503,6 +503,10 @@
   "settingsWatchdogIntervalOption10": {
     "message": "10 segundos"
   },
+  "settingsWatchdogIntervalOption30": { "message": "30 segundos" },
+  "settingsWatchdogIntervalOption60": { "message": "1 minuto" },
+  "settingsWatchdogIntervalOption120": { "message": "2 minutos" },
+  "settingsWatchdogIntervalOption300": { "message": "5 minutos" },
   "settingsFullscreenPressurePolicy": {
     "message": "Pol?tica de abas em segundo plano para tela cheia/jogos"
   },
@@ -700,6 +704,9 @@
   },
   "settingsAiLoadingModelsGeneric": {
     "message": "Carregando modelos..."
+  },
+  "settingsAiModelListRequestTimedOut": {
+    "message": "A solicitação da lista de modelos foi interrompida após {0} segundos; as predefinições selecionadas são exibidas no lugar."
   },
   "settingsAiNoModelsFound": {
     "message": "Nenhum modelo encontrado"

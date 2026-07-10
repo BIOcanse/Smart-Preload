@@ -6,6 +6,7 @@ export const DEFAULT_EXTENSION_FIXTURE_ENTRIES = [
   "manifest.json",
   "service-worker.js",
   "service-worker-scripts.js",
+  "service-worker-runtime.js",
   "_locales",
   "images",
   "background",

@@ -32,6 +32,8 @@ const scriptPaths = [
   ["extension", "background", "preload", "runtime", "window-manager", "focus.js"],
   ["extension", "background", "preload", "runtime", "window-manager", "discovery.js"],
   ["extension", "background", "preload", "runtime", "window-manager", "reuse.js"],
+  ["extension", "background", "preload", "runtime", "window-manager", "creation", "guards.js"],
+  ["extension", "background", "preload", "runtime", "window-manager", "creation", "create.js"],
   ["extension", "background", "preload", "runtime", "window-manager", "creation.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
 

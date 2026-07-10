@@ -6,19 +6,50 @@ use super::registry::{
 };
 use super::*;
 use crate::window::actions::set_window_tool_window_mode;
-use std::sync::{Arc, OnceLock};
-use std::thread;
+use crate::window::enumerate::window_owner_matches;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex, OnceLock};
+use std::thread::{self, JoinHandle};
+use std::time::Duration;
 
-static HIDDEN_WINDOW_HOOK_STARTED: OnceLock<()> = OnceLock::new();
+static HIDDEN_WINDOW_HOOK_RUNTIME: OnceLock<HookThreadRuntime> = OnceLock::new();
+
+struct HookThreadRuntime {
+    stop_requested: Arc<AtomicBool>,
+    join_handle: Mutex<Option<JoinHandle<()>>>,
+}
 
 pub(super) fn ensure_hidden_window_event_hooks() {
     let hook_runtime = hidden_window_hook_runtime();
+    let thread_runtime = HIDDEN_WINDOW_HOOK_RUNTIME.get_or_init(|| HookThreadRuntime {
+        stop_requested: Arc::new(AtomicBool::new(false)),
+        join_handle: Mutex::new(None),
+    });
+    let Ok(mut join_handle) = thread_runtime.join_handle.lock() else {
+        return;
+    };
 
-    HIDDEN_WINDOW_HOOK_STARTED.get_or_init(|| {
-        record_app_runtime_event("hidden-window", "hook-thread-started", None);
-        let hook_runtime = Arc::clone(&hook_runtime);
+    if join_handle
+        .as_ref()
+        .is_some_and(|handle| !handle.is_finished())
+    {
+        return;
+    }
 
-        thread::spawn(move || {
+    if let Some(finished_handle) = join_handle.take() {
+        let _ = finished_handle.join();
+    }
+
+    thread_runtime
+        .stop_requested
+        .store(false, Ordering::Release);
+    record_app_runtime_event("hidden-window", "hook-thread-started", None);
+    let hook_runtime = Arc::clone(&hook_runtime);
+    let stop_requested = Arc::clone(&thread_runtime.stop_requested);
+
+    *join_handle = thread::Builder::new()
+        .name("zlw-hidden-window-hooks".to_string())
+        .spawn(move || {
             let hooks = match install_hidden_window_event_hooks() {
                 Ok(hooks) => {
                     record_app_runtime_event("hidden-window", "hook-install-succeeded", None);
@@ -45,33 +76,26 @@ pub(super) fn ensure_hidden_window_event_hooks() {
 
             let mut message = MSG::default();
 
-            loop {
-                let result = unsafe { GetMessageW(&mut message, HWND::default(), 0, 0) };
-                let status = result.0;
+            'message_loop: while !stop_requested.load(Ordering::Acquire) {
+                let mut dispatched_message = false;
 
-                if status == -1 {
-                    let error =
-                        "GetMessageW failed for hidden-window event hook thread".to_string();
-                    record_app_runtime_event(
-                        "hidden-window",
-                        "hook-thread-message-loop-failed",
-                        Some(error.clone()),
-                    );
-                    if let Ok(mut runtime) = hook_runtime.lock() {
-                        runtime.installed = false;
-                        runtime.last_error = Some(error.clone());
+                while unsafe {
+                    PeekMessageW(&mut message, HWND::default(), 0, 0, PM_REMOVE).as_bool()
+                } {
+                    dispatched_message = true;
+
+                    if message.message == WM_QUIT {
+                        break 'message_loop;
                     }
-                    tracing::error!(%error);
-                    break;
+
+                    unsafe {
+                        let _ = TranslateMessage(&message);
+                        DispatchMessageW(&message);
+                    }
                 }
 
-                if status == 0 {
-                    break;
-                }
-
-                unsafe {
-                    let _ = TranslateMessage(&message);
-                    DispatchMessageW(&message);
+                if !dispatched_message {
+                    thread::sleep(Duration::from_millis(20));
                 }
             }
 
@@ -86,8 +110,24 @@ pub(super) fn ensure_hidden_window_event_hooks() {
                     .get_or_insert_with(|| "hidden-window event hook thread exited".to_string());
             }
             record_app_runtime_event("hidden-window", "hook-thread-exited", None);
-        });
-    });
+        })
+        .ok();
+}
+
+pub(super) fn shutdown_hidden_window_event_hooks() {
+    let Some(runtime) = HIDDEN_WINDOW_HOOK_RUNTIME.get() else {
+        return;
+    };
+    runtime.stop_requested.store(true, Ordering::Release);
+    let join_handle = runtime
+        .join_handle
+        .lock()
+        .ok()
+        .and_then(|mut handle| handle.take());
+
+    if let Some(join_handle) = join_handle {
+        let _ = join_handle.join();
+    }
 }
 
 fn install_hidden_window_event_hooks() -> Result<Vec<HWINEVENTHOOK>> {
@@ -138,6 +178,31 @@ unsafe extern "system" fn hidden_window_event_proc(
     }
 
     let hwnd_value = hwnd.0 as usize as u64;
+    let owner_process_id = hidden_window_registry()
+        .lock()
+        .ok()
+        .and_then(|tracked_values| {
+            tracked_values
+                .get(&hwnd_value)
+                .map(|record| record.owner_process_id)
+        });
+
+    let Some(owner_process_id) = owner_process_id else {
+        return;
+    };
+
+    if !window_owner_matches(hwnd_value, owner_process_id) {
+        record_hidden_window_lifecycle_event(
+            hwnd_value,
+            "hook-drop-owner-mismatch",
+            Some(format!("expectedProcessId={owner_process_id}")),
+        );
+        if let Ok(mut tracked_values) = hidden_window_registry().lock() {
+            tracked_values.remove(&hwnd_value);
+        }
+        return;
+    }
+
     let now_ms = current_epoch_ms();
     let observation = observe_hidden_window(hwnd_value);
     let currently_visible = observation.map(|value| value.visible).unwrap_or(false);

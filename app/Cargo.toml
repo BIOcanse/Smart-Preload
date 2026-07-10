@@ -1,6 +1,6 @@
 [package]
 name = "zero-latency-web-app"
-version = "1.0.15"
+version = "1.0.16"
 edition = "2021"
 license = "Apache-2.0"
 
@@ -12,7 +12,7 @@ regex = "1"
 serde = { version = "1", features = ["derive"] }
 single-instance = "0.3"
 sysinfo = "0.37"
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "sync", "time"] }
+tokio = { version = "1", features = ["fs", "io-util", "macros", "rt-multi-thread", "net", "sync", "time"] }
 tower-http = { version = "0.6", features = ["cors"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
@@ -20,6 +20,9 @@ tray-icon = "0.21"
 winit = "0.30"
 wmi = "0.18"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+sha2 = { version = "0.10", features = ["oid"] }
+base64 = "0.22"
+rsa = "0.9"
 walkdir = "2"
 zip = { version = "2", default-features = false, features = ["deflate"] }
 

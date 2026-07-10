@@ -25,6 +25,13 @@ function createTransitionMessageRecord(
 
 function appendTransitionMessage(graph, transitionMessage) {
   graph.transitionMessages.push(transitionMessage);
+
+  if (graph.transitionMessages.length > MAX_HOT_TRANSITION_MESSAGES) {
+    graph.transitionMessages.splice(
+      0,
+      graph.transitionMessages.length - MAX_HOT_TRANSITION_MESSAGES
+    );
+  }
 }
 
 function replayTransitionMessageIntoEdgeCounts(graph, transitionMessage) {

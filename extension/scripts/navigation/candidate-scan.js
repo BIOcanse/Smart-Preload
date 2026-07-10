@@ -4,22 +4,24 @@
   const {
     constants,
     state,
-    sleep,
     hasActiveEditableFocus,
     isPassivePrerenderContext,
     filterWaterfallDynamicLinks,
     registerPreloadCandidates,
     syncContentScriptPreloadPolicy,
     applySpeculationRules,
-    collectPageTextDigest,
-    buildPageContentFingerprint,
+    collectPageContentSnapshot,
     collectCandidateLinks,
     buildCandidateLinksSignature,
+    capturePageGenerationToken,
+    isPageGenerationTokenCurrent,
   } = namespace;
 
   async function sendCandidateLinks(options = {}) {
     if (state.candidateScanInFlight) {
       state.candidateScanPending = true;
+      state.candidateScanPendingForce =
+        state.candidateScanPendingForce || options.force === true;
       return;
     }
 
@@ -31,9 +33,12 @@
       state.candidateScanInFlight = false;
 
       if (state.candidateScanPending) {
+        const shouldForce = state.candidateScanPendingForce;
         state.candidateScanPending = false;
+        state.candidateScanPendingForce = false;
         namespace.scheduleCandidateScan?.({
           delayMs: constants.EARLY_LINK_RESCAN_DELAY_MS,
+          force: shouldForce,
         });
       }
     }
@@ -49,81 +54,64 @@
       return;
     }
 
-    const candidateSnapshot = await collectStableCandidateLinkSnapshot();
-
-    if (!candidateSnapshot) {
+    if (namespace.synchronizeCurrentPageGeneration?.() === true) {
+      namespace.scheduleCandidateScan?.({
+        delayMs: constants.EARLY_LINK_RESCAN_DELAY_MS,
+        force: true,
+        includePageDigest: true,
+      });
       return;
     }
 
-    const { links, signature } = candidateSnapshot;
+    const pageToken = options.pageToken ?? capturePageGenerationToken();
+
+    if (!isPageGenerationTokenCurrent(pageToken)) {
+      return;
+    }
+
+    const links = filterWaterfallDynamicLinks(collectCandidateLinks());
+    const signature = buildCandidateLinksSignature(links);
 
     if (signature === state.lastSentCandidateSignature && options.force !== true) {
       return;
     }
 
+    const pageSnapshot =
+      options.pageSnapshot?.pageUrl === pageToken.pageUrl
+        ? options.pageSnapshot
+        : collectPageContentSnapshot();
+
     try {
       const response = await registerPreloadCandidates({
-        pageUrl: location.href,
-        pageTitle: document.title || "",
-        pageTextDigest: collectPageTextDigest(),
-        contentFingerprint: buildPageContentFingerprint(),
+        pageUrl: pageSnapshot.pageUrl,
+        pageTitle: pageSnapshot.title,
+        pageTextDigest: pageSnapshot.textDigest,
+        contentFingerprint: pageSnapshot.contentFingerprint,
         attentionActivity: namespace.buildAttentionActivitySnapshot?.() ?? null,
         links,
       });
+
+      if (!isPageGenerationTokenCurrent(pageToken)) {
+        return;
+      }
+
       syncContentScriptPreloadPolicy(response?.contentScriptPolicy);
       state.lastSentCandidateSignature = signature;
+      state.lastCandidateRegistrationGeneration = pageToken.pageGeneration;
+      state.lastCandidateRegistrationUrl = pageToken.pageUrl;
 
       applySpeculationRules({
         prerenderTargets: response?.prerenderTargets ?? [],
         prefetchTargets: response?.prefetchTargets ?? [],
       });
     } catch (error) {
-      applySpeculationRules({
-        prerenderTargets: [],
-        prefetchTargets: [],
-      });
+      if (isPageGenerationTokenCurrent(pageToken)) {
+        applySpeculationRules({
+          prerenderTargets: [],
+          prefetchTargets: [],
+        });
+      }
       console.debug("Failed to register preload candidates.", error);
-    }
-  }
-
-  async function collectStableCandidateLinkSnapshot() {
-    const startedAt = Date.now();
-    let previousSignature = null;
-    let latestLinks = [];
-    let latestSignature = "";
-
-    while (true) {
-      if (isPassivePrerenderContext() || hasActiveEditableFocus()) {
-        return null;
-      }
-
-      latestLinks = filterWaterfallDynamicLinks(collectCandidateLinks());
-      latestSignature = buildCandidateLinksSignature(latestLinks);
-
-      if (previousSignature === latestSignature) {
-        if (latestLinks.length > 0 || document.readyState !== "loading") {
-          return {
-            links: latestLinks,
-            signature: latestSignature,
-          };
-        }
-
-        return null;
-      }
-
-      if (Date.now() - startedAt >= constants.LINK_STABILITY_MAX_WAIT_MS) {
-        if (latestLinks.length === 0 && document.readyState === "loading") {
-          return null;
-        }
-
-        return {
-          links: latestLinks,
-          signature: latestSignature,
-        };
-      }
-
-      previousSignature = latestSignature;
-      await sleep(constants.LINK_STABILITY_POLL_MS);
     }
   }
 

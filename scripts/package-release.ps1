@@ -37,6 +37,8 @@ $ReviewZip = Join-Path $DistRoot "zero-latency-web-chrome-review-bundle-v$Versio
 $ReleaseZip = Join-Path $DistRoot "zero-latency-web-release-v$Version.zip"
 $TestZip = Join-Path $DistRoot "zero-latency-web-test-bundle-v$Version.zip"
 $ShaFile = Join-Path $DistRoot "SHA256SUMS-v$Version.txt"
+$AppUpdateManifest = "$AppZip.sha256.txt"
+$AppUpdateSignature = "$AppUpdateManifest.sig"
 
 function Assert-DistPath {
   param([string]$Path)
@@ -169,6 +171,11 @@ Copy-File (Join-Path $ExtensionRoot "scripts\navigation-interceptor.js") (Join-P
 Copy-Directory (Join-Path $ExtensionRoot "wasm\pkg") (Join-Path $ExtensionStage "wasm\pkg")
 if (Test-Path -LiteralPath (Join-Path $ExtensionRoot "images") -PathType Container) {
   Copy-Directory (Join-Path $ExtensionRoot "images") (Join-Path $ExtensionStage "images")
+}
+
+& node (Join-Path $ScriptRoot "build-service-worker-bundle.mjs") --extension-root $ExtensionStage
+if ($LASTEXITCODE -ne 0) {
+  throw "Service-worker bundle generation failed with exit code $LASTEXITCODE."
 }
 
 $manifestCheck = Get-Content -LiteralPath (Join-Path $ExtensionStage "manifest.json") -Raw | ConvertFrom-Json
@@ -636,8 +643,18 @@ foreach ($zip in $artifactZips) {
   Set-Content -LiteralPath "$zip.sha256.txt" -Value "$($hash.Hash.ToLowerInvariant())  $(Split-Path -Leaf $zip)" -Encoding ASCII
 }
 
+& (Join-Path $ScriptRoot "release\write-app-update-manifest.ps1") `
+  -AppZip $AppZip `
+  -ExpectedVersion $Version `
+  -OutputPath $AppUpdateManifest | Out-Null
+if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $AppUpdateSignature -PathType Leaf)) {
+  throw "Signed app update manifest generation failed."
+}
+
 Write-Host "[Smart Preload] Release packages generated for v$Version"
 foreach ($zip in $artifactZips) {
   Write-Host "  $zip"
 }
 Write-Host "  $ShaFile"
+Write-Host "  $AppUpdateManifest"
+Write-Host "  $AppUpdateSignature"

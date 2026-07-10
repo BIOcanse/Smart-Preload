@@ -7,27 +7,75 @@
     isExtensionOnlyMutation,
     resetWaterfallBaseline,
     scheduleCandidateScan,
-    schedulePageDigestReport,
+    enqueueCandidateMutations,
+    initializeCandidateAnchorIndex,
+    resetCandidateAnchorIndex,
+    advancePageGeneration,
+    markDocumentContentChanged,
+    applySpeculationRules,
   } = namespace;
 
   function createMutationObserver() {
     return new MutationObserver((mutations) => {
-      if (mutations.every(isExtensionOnlyMutation)) {
+      const relevantMutations = (mutations || []).filter(
+        (mutation) => !isExtensionOnlyMutation(mutation)
+      );
+
+      if (!relevantMutations.length) {
         return;
       }
 
-      if (location.href !== state.lastLocationHref) {
-        state.lastLocationHref = location.href;
-        state.lastSentCandidateSignature = null;
-        resetWaterfallBaseline();
-        schedulePageDigestReport();
+      const pageChanged = synchronizeCurrentPageGeneration();
+      markDocumentContentChanged();
+
+      if (!pageChanged) {
+        enqueueCandidateMutations(relevantMutations);
       }
 
       scheduleCandidateScan({
         delayMs: constants.EARLY_LINK_RESCAN_DELAY_MS,
+        force: pageChanged,
+        includePageDigest: true,
       });
-      schedulePageDigestReport();
     });
+  }
+
+  function synchronizeCurrentPageGeneration() {
+    if (!advancePageGeneration(location.href)) {
+      return false;
+    }
+
+    resetWaterfallBaseline();
+    resetCandidateAnchorIndex();
+    initializeCandidateAnchorIndex(document.documentElement);
+    applySpeculationRules({
+      prerenderTargets: [],
+      prefetchTargets: [],
+    });
+    return true;
+  }
+
+  function handlePageLocationChange() {
+    if (!synchronizeCurrentPageGeneration()) {
+      return;
+    }
+
+    scheduleCandidateScan({
+      delayMs: constants.EARLY_LINK_RESCAN_DELAY_MS,
+      force: true,
+      includePageDigest: true,
+    });
+  }
+
+  function bindPageLocationEvents() {
+    if (state.locationEventsBound) {
+      return;
+    }
+
+    state.locationEventsBound = true;
+    window.addEventListener("popstate", handlePageLocationChange);
+    window.addEventListener("hashchange", handlePageLocationChange);
+    globalThis.navigation?.addEventListener?.("currententrychange", handlePageLocationChange);
   }
 
   function startMutationObserverWhenReady(mutationObserver) {
@@ -44,9 +92,12 @@
         attributeFilter: ["href", "target", "title", "aria-label", "alt"],
       });
       state.observerStarted = true;
+      bindPageLocationEvents();
+      initializeCandidateAnchorIndex(document.documentElement);
       scheduleCandidateScan({
         delayMs: constants.EARLY_LINK_RESCAN_DELAY_MS,
         force: true,
+        includePageDigest: true,
       });
       return;
     }
@@ -63,6 +114,7 @@
 
   Object.assign(namespace, {
     createMutationObserver,
+    synchronizeCurrentPageGeneration,
     startMutationObserverWhenReady,
   });
 })();

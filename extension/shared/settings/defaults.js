@@ -89,7 +89,7 @@
     },
     preloadWindow: {
       watchdogEnabled: true,
-      watchdogIntervalSeconds: 1,
+      watchdogIntervalSeconds: 30,
       fullscreenPressurePolicy: "sleep",
       forceMinimize: true,
       systemLevelHiding: {
@@ -108,7 +108,7 @@
       authStateWarmup: false,
     },
     diagnostics: {
-      enabled: true,
+      enabled: false,
     },
     layout: {
       ruleCards: {

@@ -503,6 +503,10 @@
   "settingsWatchdogIntervalOption10": {
     "message": "10초"
   },
+  "settingsWatchdogIntervalOption30": { "message": "30초" },
+  "settingsWatchdogIntervalOption60": { "message": "1분" },
+  "settingsWatchdogIntervalOption120": { "message": "2분" },
+  "settingsWatchdogIntervalOption300": { "message": "5분" },
   "settingsFullscreenPressurePolicy": {
     "message": "전체 화면/게임 백그라운드 탭 정책"
   },
@@ -700,6 +704,9 @@
   },
   "settingsAiLoadingModelsGeneric": {
     "message": "모델을 불러오는 중..."
+  },
+  "settingsAiModelListRequestTimedOut": {
+    "message": "모델 목록 요청은 {0}초 후 중단되었으며 대신 선별된 사전 설정을 표시합니다."
   },
   "settingsAiNoModelsFound": {
     "message": "모델을 찾을 수 없음"

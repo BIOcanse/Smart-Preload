@@ -31,24 +31,25 @@
       graph: null,
     });
 
-    for (const scheduledSelection of scheduledSelections) {
-      nextPreloadState = await synchronizeScheduledPreloadSelection(
-        nextPreloadState,
-        scheduledSelection
-      );
-    }
+    const synchronization = await synchronizeChangedScheduledPreloadSelections(
+      nextPreloadState,
+      scheduledSelections
+    );
+    nextPreloadState = synchronization.preloadState;
 
     recordSchedulerEvent("scheduler.reschedule.stored.finish", {
       reason: typeof options?.reason === "string" ? options.reason : "attention-pool-commit",
       snapshotCount: snapshots.length,
-      scheduledSourceTabCount: scheduledSelections.length,
-      scheduledSourceTabIds: scheduledSelections.map((entry) => entry.sourceTabId),
+      scheduledSourceTabCount: synchronization.changedSelections.length,
+      scheduledSourceTabIds: synchronization.changedSelections.map(
+        (entry) => entry.sourceTabId
+      ),
       recomputedCandidateScores: false,
     });
 
     return {
       preloadState: nextPreloadState,
-      scheduledSelections,
+      scheduledSelections: synchronization.changedSelections,
     };
   }
 

@@ -12,7 +12,8 @@
     "openrouter",
     "lmstudio",
   ]);
-  const DEFAULT_AI_TIMEOUT_MS = 45_000;
+  const DEFAULT_AI_TIMEOUT_MS = 25_000;
+  const MAX_AI_TIMEOUT_MS = 25_000;
 
   function normalizeProviderId(value) {
     const settingsApi = globalThis.ZeroLatencySettings;
@@ -58,7 +59,11 @@
 
   async function fetchWithTimeout(url, options) {
     const controller = new AbortController();
-    const timeoutMs = Number(options?.timeoutMs) || DEFAULT_AI_TIMEOUT_MS;
+    const requestedTimeoutMs = Number(options?.timeoutMs) || DEFAULT_AI_TIMEOUT_MS;
+    const timeoutMs = Math.min(
+      MAX_AI_TIMEOUT_MS,
+      Math.max(1_000, requestedTimeoutMs)
+    );
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
@@ -76,6 +81,7 @@
   Object.assign(namespace, {
     OPENAI_COMPATIBLE_PROVIDERS,
     DEFAULT_AI_TIMEOUT_MS,
+    MAX_AI_TIMEOUT_MS,
     normalizeProviderId,
     isLmStudioProvider,
     shouldRequestJson,

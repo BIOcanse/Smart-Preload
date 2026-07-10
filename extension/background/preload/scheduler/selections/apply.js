@@ -55,16 +55,17 @@
         snapshots,
         preloadState,
         settings,
-        graph,
+        graph: null,
       });
 
-      for (const scheduledSelection of scheduledSelections) {
-        preloadState = await synchronizeScheduledPreloadSelection(
-          preloadState,
-          scheduledSelection
-        );
-        notifications.push(scheduledSelection);
+      const synchronization = await synchronizeChangedScheduledPreloadSelections(
+        preloadState,
+        scheduledSelections
+      );
+      preloadState = synchronization.preloadState;
+      notifications.push(...synchronization.changedSelections);
 
+      for (const scheduledSelection of scheduledSelections) {
         if (Number(scheduledSelection.sourceTabId) === Number(sourceSnapshot.sourceTabId)) {
           currentSourceSelection = scheduledSelection.selection;
         }

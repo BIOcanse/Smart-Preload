@@ -68,6 +68,7 @@ const context = {
   Math,
   Number,
   Date,
+  AbortController,
   setTimeout,
   clearTimeout,
 };
@@ -195,5 +196,25 @@ assert.equal(
   null
 );
 assert.equal(buildAiProviderRequest(makeSettings("openai"), "   "), null);
+
+let scheduledTimeoutMs = null;
+context.setTimeout = (_callback, timeoutMs) => {
+  scheduledTimeoutMs = timeoutMs;
+  return 1;
+};
+context.clearTimeout = () => {};
+context.fetch = async () => ({ ok: true });
+await context.ZeroLatencyAiProviderModules.fetchWithTimeout(
+  "https://api.example.test/inference",
+  {
+    method: "POST",
+    headers: {},
+    body: "{}",
+    timeoutMs: 45_000,
+  }
+);
+assert.equal(context.ZeroLatencyAiProviderModules.DEFAULT_AI_TIMEOUT_MS, 25_000);
+assert.equal(context.ZeroLatencyAiProviderModules.MAX_AI_TIMEOUT_MS, 25_000);
+assert.equal(scheduledTimeoutMs, 25_000);
 
 console.log("ai provider request tests passed");

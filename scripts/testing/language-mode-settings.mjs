@@ -174,6 +174,19 @@ vm.runInContext(readFileSync(settingsPath, "utf8"), context, { filename: setting
 
 const settingsApi = context.ZeroLatencySettings;
 assert.equal(settingsApi.DEFAULT_SETTINGS.appearance.languageMode, "auto");
+assert.equal(settingsApi.DEFAULT_SETTINGS.preloadWindow.watchdogIntervalSeconds, 30);
+assert.equal(
+  settingsApi.normalizeStoredSettings({
+    preloadWindow: { watchdogIntervalSeconds: 1 },
+  }).preloadWindow.watchdogIntervalSeconds,
+  30
+);
+assert.equal(
+  settingsApi.normalizeStoredSettings({
+    preloadWindow: { watchdogIntervalSeconds: 900 },
+  }).preloadWindow.watchdogIntervalSeconds,
+  300
+);
 assert.equal(
   settingsApi.normalizeStoredSettings({ appearance: { languageMode: "ru" } }).appearance
     .languageMode,

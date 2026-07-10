@@ -1,5 +1,5 @@
 import { mkdir, rm } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -48,12 +48,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const extensionDir = path.join(repoRoot, "extension");
+const extensionVersion = JSON.parse(
+  readFileSync(path.join(extensionDir, "manifest.json"), "utf8")
+).version;
 const appDir = path.join(
   repoRoot,
   "dist",
   "staging",
-  "release-v1.0.9",
-  "zero-latency-web-app-v1.0.9"
+  `release-v${extensionVersion}`,
+  `zero-latency-web-app-v${extensionVersion}`
 );
 const nativeAppFixture = createNativeAppFixture({ appDir });
 const runRoot = path.join(
@@ -77,7 +80,9 @@ async function main() {
 
   if (availableBrowsers.length < 2) {
     throw new Error(
-      `Chrome+Edge are required. Found: ${availableBrowsers.map((b) => b.name).join(", ")}`
+      `Chromium and Edge are required. Found: ${availableBrowsers
+        .map((browser) => browser.name)
+        .join(", ")}`
     );
   }
 
@@ -446,8 +451,34 @@ async function waitForPreloadState(session, source, webPort, timeoutMs = 16000) 
   }
 
   throw new Error(
-    `${session.name} preload state did not converge: ${JSON.stringify(lastState, null, 2)}`
+    `${session.name} preload state did not converge: ${JSON.stringify(
+      summarizePreloadState(lastState),
+      null,
+      2
+    )}`
   );
+}
+
+function summarizePreloadState(state) {
+  const relevantEvents = (Array.isArray(state?.events) ? state.events : [])
+    .filter((event) => {
+      const eventName = getEventName(event);
+      return (
+        eventName.startsWith("native-app.registration") ||
+        eventName.startsWith("native-app.windows") ||
+        eventName.startsWith("preload-window.hide")
+      );
+    })
+    .slice(-40);
+
+  return {
+    preloadWindow: state?.preloadWindow ?? null,
+    preloadWindowVisible: state?.preloadWindowVisible ?? null,
+    hiddenCount: state?.hiddenEntries?.length ?? 0,
+    prerenderCount: state?.prerenderEntries?.length ?? 0,
+    prefetchCount: state?.prefetchEntries?.length ?? 0,
+    relevantEvents,
+  };
 }
 
 async function waitForContextMenuFallbackActivation(

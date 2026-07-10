@@ -1,7 +1,7 @@
 use super::super::{current_executable, APP_REGISTRY_PATH, RUN_KEY_PATH, RUN_VALUE_NAME};
 use anyhow::{Context, Result};
 use chrono::Utc;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use winreg::enums::HKEY_CURRENT_USER;
 use winreg::RegKey;
 
@@ -35,7 +35,7 @@ pub(super) fn write_app_registration() -> Result<()> {
 
 pub(super) fn write_native_messaging_app_registration(
     extension_ids: &[String],
-    manifest_path: &PathBuf,
+    manifest_path: &Path,
 ) -> Result<()> {
     let primary_extension_id = extension_ids.first().cloned().unwrap_or_default();
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
@@ -107,7 +107,7 @@ pub(super) fn watcher_run_registered() -> Result<bool> {
     Ok(value.is_ok())
 }
 
-pub(super) fn paths_equal(left: &str, right: &PathBuf) -> bool {
+pub(super) fn paths_equal(left: &str, right: &Path) -> bool {
     let left_path = PathBuf::from(left);
     match (left_path.canonicalize(), right.canonicalize()) {
         (Ok(left), Ok(right)) => left == right,

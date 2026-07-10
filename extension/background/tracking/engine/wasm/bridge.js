@@ -146,16 +146,7 @@ function wrapVisitGraphEngine(exports) {
 }
 
 async function applyTrackingEvent(state, event) {
-  const engine = await getVisitGraphEngine();
-
-  if (!engine) {
-    return applyTrackingEventFallback(state, event);
-  }
-
-  try {
-    return engine.applyEvent(sanitizeTrackingStateForWasm(state), event);
-  } catch (error) {
-    console.error("Wasm visit graph engine failed, falling back to JS.", error);
-    return applyTrackingEventFallback(state, event);
-  }
+  const nextState = applyTrackingEventFallback(state, event);
+  globalThis.ZeroLatencyTrackingMutationJournal?.recordAppliedEvent?.(nextState, event);
+  return nextState;
 }

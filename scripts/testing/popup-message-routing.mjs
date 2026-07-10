@@ -53,7 +53,16 @@ assert.equal(
     },
     buildTabSender()
   ).queueMode,
-  "side-effect"
+  "candidate"
+);
+assert.equal(
+  createTask(
+    {
+      type: "preload:register-candidates",
+    },
+    buildTabSender()
+  ).queueKey,
+  "candidate:101"
 );
 assert.equal(
   createTask(
@@ -63,7 +72,7 @@ assert.equal(
     },
     buildTabSender()
   ).queueMode,
-  "side-effect"
+  "interaction"
 );
 assert.equal(
   createTask(
@@ -72,7 +81,26 @@ assert.equal(
     },
     buildTabSender()
   ).queueMode,
-  "side-effect"
+  "direct"
+);
+const aiDigestTask = createTask(
+  {
+    type: "ai:report-page-digest",
+    pageUrl: "https://source.example/page",
+  },
+  buildTabSender()
+);
+assert.equal(aiDigestTask.queueMode, "ai");
+assert.equal(aiDigestTask.queueKey, "ai:101:https://source.example/page");
+assert.equal(
+  createTask(
+    {
+      type: "navigation:resolve-click",
+      targetUrl: "https://target.example/page",
+    },
+    buildTabSender()
+  ).queueMode,
+  "interaction"
 );
 assert.deepEqual(
   JSON.parse(

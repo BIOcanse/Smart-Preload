@@ -5,8 +5,15 @@
       this.chromeStorage = chromeStorage;
       this.keys = createBackgroundStateKeys(settingsApi);
       this.constants = createBackgroundStateConstants();
-      this.mutationQueue = Promise.resolve();
-      this.sideEffectQueue = Promise.resolve();
+      this.taskQueues = globalThis.ZeroLatencyBackgroundTaskQueues.create();
+      this.initializationPromise = null;
+      this.resolveReady = null;
+      this.rejectReady = null;
+      this.readyPromise = new Promise((resolve, reject) => {
+        this.resolveReady = resolve;
+        this.rejectReady = reject;
+      });
+      this.readyPromise.catch(() => {});
       this.visitGraphEnginePromise = null;
       this.expectedPreloadTabRemovals = new Set();
       this.cachedUserSettings = settingsApi.cloneSettings(settingsApi.DEFAULT_SETTINGS);
@@ -17,23 +24,31 @@
     }
 
     queueMutation(task) {
-      const nextMutation = this.mutationQueue.then(task);
-
-      this.mutationQueue = nextMutation.catch((error) => {
-        console.error("Zero-Latency mutation failed.", error);
-      });
-
-      return nextMutation;
+      return this.taskQueues.mutation.enqueue(task);
     }
 
     queueSideEffect(task) {
-      const nextSideEffect = this.sideEffectQueue.then(task);
+      return this.taskQueues.sideEffect.enqueue(task);
+    }
 
-      this.sideEffectQueue = nextSideEffect.catch((error) => {
-        console.error("Zero-Latency side effect failed.", error);
-      });
+    queueInteraction(task) {
+      return this.taskQueues.mutation.enqueue(task, { priority: "high" });
+    }
 
-      return nextSideEffect;
+    queueLifecycle(key, task) {
+      return this.taskQueues.lifecycle.enqueue(key, task);
+    }
+
+    queueCandidate(key, task) {
+      return this.taskQueues.candidate.enqueue(key, task);
+    }
+
+    queueAttention(key, task) {
+      return this.taskQueues.attention.enqueue(key, task);
+    }
+
+    queueAi(key, task) {
+      return this.taskQueues.ai.enqueue(key, task);
     }
 
     setCachedSettings(value) {
@@ -112,7 +127,16 @@
     }
 
     async initializeExtensionState() {
-      await initializeExtensionStateForBackgroundState(this);
+      if (!this.initializationPromise) {
+        this.initializationPromise = initializeExtensionStateForBackgroundState(this);
+        this.initializationPromise.then(this.resolveReady, this.rejectReady);
+      }
+
+      return this.initializationPromise;
+    }
+
+    whenReady() {
+      return this.readyPromise;
     }
 
     async hydrateTabStateFromOpenTabs(preloadState) {
