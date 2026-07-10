@@ -503,6 +503,10 @@
   "settingsWatchdogIntervalOption10": {
     "message": "10 секунд"
   },
+  "settingsWatchdogIntervalOption30": { "message": "30 секунд" },
+  "settingsWatchdogIntervalOption60": { "message": "1 минута" },
+  "settingsWatchdogIntervalOption120": { "message": "2 минуты" },
+  "settingsWatchdogIntervalOption300": { "message": "5 минут" },
   "settingsFullscreenPressurePolicy": {
     "message": "Политика фоновых вкладок при полноэкранном режиме/игре"
   },
@@ -700,6 +704,9 @@
   },
   "settingsAiLoadingModelsGeneric": {
     "message": "Загрузка моделей..."
+  },
+  "settingsAiModelListRequestTimedOut": {
+    "message": "Запрос списка моделей остановлен через {0} секунд; вместо него показаны отобранные пресеты."
   },
   "settingsAiNoModelsFound": {
     "message": "Модели не найдены"

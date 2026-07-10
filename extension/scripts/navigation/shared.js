@@ -8,8 +8,10 @@
     MAX_CANDIDATE_TEXT_CHARS: 240,
     MAX_NEARBY_TEXT_CHARS: 320,
     EARLY_LINK_RESCAN_DELAY_MS: 120,
-    LINK_STABILITY_POLL_MS: 120,
-    LINK_STABILITY_MAX_WAIT_MS: 900,
+    CANDIDATE_SCAN_MAX_WAIT_MS: 1000,
+    CANDIDATE_IDLE_TIMEOUT_MS: 250,
+    CANDIDATE_MUTATION_NODE_BATCH_SIZE: 80,
+    CANDIDATE_DIRTY_ANCHOR_BATCH_SIZE: 32,
     BLANK_CLICK_RESOLUTION_TIMEOUT_MS: 500,
     CURRENT_TAB_CLICK_RESOLUTION_TIMEOUT_MS: 2500,
     HOVER_PRELOAD_DELAY_MS: 80,
@@ -22,18 +24,36 @@
   };
 
   const state = {
-    lastLocationHref: location.href,
+    currentPageUrl: location.href,
+    pageGeneration: 1,
+    documentContentRevision: 0,
+    cachedPageContentSnapshot: null,
     candidateScanTimerId: null,
     candidateScanDueAt: 0,
+    candidateScanMaxWaitTimerId: null,
+    candidateScanCycleStartedAt: null,
+    candidateScanIdleCallbackId: null,
+    candidateScanIdleCallbackKind: "",
+    candidateScanWorkInProgress: false,
     candidateScanForce: false,
+    candidateScanIncludePageDigest: false,
     candidateScanInFlight: false,
     candidateScanPending: false,
-    pageDigestTimerId: null,
+    candidateScanPendingForce: false,
+    candidateMutationWorkQueue: [],
+    candidateQueuedTraversalItems: new WeakMap(),
+    candidateDirtyAnchors: new Map(),
+    candidateAnchorEntries: new Map(),
+    candidateVisibilityCache: new WeakMap(),
+    candidateVisibilityObserver: null,
     observerStarted: false,
     observerReadinessListenerStarted: false,
+    locationEventsBound: false,
     deferredScanWhileEditing: false,
     deferredPageDigestWhileEditing: false,
     lastSentCandidateSignature: null,
+    lastCandidateRegistrationGeneration: 0,
+    lastCandidateRegistrationUrl: "",
     fixedCandidateUrlSet: null,
     waterfallBaselineStartedAt: 0,
     waterfallBaselineLocked: false,
@@ -53,15 +73,50 @@
     interactionPrefetchTargets: [],
   };
 
-  function sleep(ms) {
-    return new Promise((resolve) => {
-      window.setTimeout(resolve, Math.max(0, Number(ms) || 0));
-    });
+  function capturePageGenerationToken() {
+    return {
+      pageGeneration: state.pageGeneration,
+      pageUrl: state.currentPageUrl,
+    };
+  }
+
+  function isPageGenerationTokenCurrent(token) {
+    return (
+      Number(token?.pageGeneration) === state.pageGeneration &&
+      String(token?.pageUrl || "") === state.currentPageUrl &&
+      location.href === state.currentPageUrl
+    );
+  }
+
+  function advancePageGeneration(nextPageUrl = location.href) {
+    const normalizedPageUrl = String(nextPageUrl || location.href);
+
+    if (normalizedPageUrl === state.currentPageUrl) {
+      return false;
+    }
+
+    state.pageGeneration += 1;
+    state.currentPageUrl = normalizedPageUrl;
+    state.documentContentRevision += 1;
+    state.cachedPageContentSnapshot = null;
+    state.lastSentCandidateSignature = null;
+    state.lastReportedPageDigestFingerprint = null;
+    state.lastCandidateRegistrationGeneration = 0;
+    state.lastCandidateRegistrationUrl = "";
+    return true;
+  }
+
+  function markDocumentContentChanged() {
+    state.documentContentRevision += 1;
+    state.cachedPageContentSnapshot = null;
   }
 
   Object.assign(namespace, {
     constants,
     state,
-    sleep,
+    capturePageGenerationToken,
+    isPageGenerationTokenCurrent,
+    advancePageGeneration,
+    markDocumentContentChanged,
   });
 })();

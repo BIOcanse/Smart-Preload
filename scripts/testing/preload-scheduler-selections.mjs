@@ -948,7 +948,9 @@ assert.deepEqual(
 const rememberedState = context.createEmptyPreloadState();
 let savedRememberedState = null;
 let wideSelectionRequest = null;
+let wideSelectionCallCount = 0;
 context.selectPreloadTargetsFromScoredCandidatePool = async (request) => {
+  wideSelectionCallCount += 1;
   wideSelectionRequest = request;
   return context.ZeroLatencyPreloadSchedulerSelections.buildSelectionFromTargets([
     buildTarget(50, "hidden-tab", 100, 0),
@@ -1015,6 +1017,7 @@ const rememberedSnapshot =
 assert.equal(wideSelectionRequest.slotLimits.nativePageSlotLimit, 4);
 assert.equal(wideSelectionRequest.slotLimits.tabPageSlotLimit, 5);
 assert.equal(wideSelectionRequest.ignoreConfiguredSourceSlotCaps, true);
+assert.equal(wideSelectionCallCount, 1);
 assert.equal(rememberedSnapshot.selectedTargets.length, 3);
 assert.equal(rememberedSnapshot.scoreSignals.tab.scoreSum, buildExpectedSchedulerScoreSum([100]));
 assert.equal(

@@ -8,6 +8,7 @@ async function nativeAppHideWindow(windowBounds) {
           typeof windowBounds?.titleContains === "string" && windowBounds.titleContains
             ? windowBounds.titleContains
             : undefined,
+        browserFamily: getNativeAppBrowserFamily(),
         left: windowBounds.left,
         top: windowBounds.top,
         width: windowBounds.width,
@@ -27,6 +28,11 @@ async function nativeAppHideWindow(windowBounds) {
     });
     return { ok: false, error: String(error?.message || error) };
   }
+}
+
+function getNativeAppBrowserFamily() {
+  const userAgent = String(globalThis.navigator?.userAgent || "");
+  return /\bEdg\//u.test(userAgent) ? "edge" : "chromium";
 }
 
 async function nativeAppShowWindow(hwnd) {

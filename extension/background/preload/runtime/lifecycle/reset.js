@@ -1,4 +1,7 @@
 async function resetPreloads() {
+  globalThis.ZeroLatencyPreloadSchedulerAttention?.discardPendingAttention?.(
+    "preload-reset"
+  );
   const preloadState = await loadPreloadState();
   globalThis.clearKnownPreloadRuntime?.();
 

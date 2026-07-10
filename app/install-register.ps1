@@ -1,9 +1,22 @@
+[CmdletBinding()]
+param(
+  [switch]$Unattended
+)
+
 $ErrorActionPreference = "Stop"
 
 Set-Location -LiteralPath $PSScriptRoot
 
 $AppExe = Join-Path $PSScriptRoot "zero-latency-web-app.exe"
 $RegistryPath = "HKCU:\Software\ZeroLatencyWeb"
+
+function Wait-ForManualClose {
+  param([string]$Message = "Press Enter to close")
+
+  if (-not $Unattended) {
+    Read-Host $Message | Out-Null
+  }
+}
 
 function Get-FullPathOrNull {
   param([string]$Path)
@@ -152,7 +165,7 @@ function Stop-OldAppProcesses {
 if (-not (Test-Path -LiteralPath $AppExe -PathType Leaf)) {
   Write-Host "[Zero-Latency Web] zero-latency-web-app.exe was not found in this folder."
   Write-Host "[Zero-Latency Web] Please keep this script next to zero-latency-web-app.exe."
-  Read-Host "Press Enter to close"
+  Wait-ForManualClose
   exit 1
 }
 
@@ -179,8 +192,12 @@ if ($oldAppPath -and -not (Test-SamePath $oldAppPath $currentAppPath)) {
   $oldDirSafety = Test-SafeOldAppDirectory $oldAppPath $oldDir $currentDir
 
   if ($oldDirSafety.Safe) {
-    $answer = Read-Host "[Zero-Latency Web] Delete the old app folder after successful registration? This may stop the old tray app. [y/N]"
-    $deleteOldDir = $answer -match '^(y|yes)$'
+    if ($Unattended) {
+      Write-Host "[Zero-Latency Web] Unattended registration leaves the previous app folder in place."
+    } else {
+      $answer = Read-Host "[Zero-Latency Web] Delete the old app folder after successful registration? This may stop the old tray app. [y/N]"
+      $deleteOldDir = $answer -match '^(y|yes)$'
+    }
   } else {
     Write-Host "[Zero-Latency Web] Old app folder does not pass the safe auto-delete checks. Leaving it in place."
     if ($oldDirSafety.Missing.Count -gt 0) {
@@ -218,7 +235,7 @@ try {
 Write-Host ""
 if ($installExit -ne 0) {
   Write-Host "[Zero-Latency Web] Registration failed with exit code $installExit."
-  Read-Host "Press Enter to close"
+  Wait-ForManualClose
   exit $installExit
 }
 
@@ -236,4 +253,4 @@ if ($deleteOldDir -and $oldDir) {
 }
 
 Write-Host "[Zero-Latency Web] Registration updated. You can close this window."
-Read-Host "Press Enter to close"
+Wait-ForManualClose

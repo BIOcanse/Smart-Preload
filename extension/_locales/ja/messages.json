@@ -503,6 +503,10 @@
   "settingsWatchdogIntervalOption10": {
     "message": "10 秒"
   },
+  "settingsWatchdogIntervalOption30": { "message": "30秒" },
+  "settingsWatchdogIntervalOption60": { "message": "1分" },
+  "settingsWatchdogIntervalOption120": { "message": "2分" },
+  "settingsWatchdogIntervalOption300": { "message": "5分" },
   "settingsFullscreenPressurePolicy": {
     "message": "全画面/ゲーム時のバックグラウンドタブポリシー"
   },
@@ -700,6 +704,9 @@
   },
   "settingsAiLoadingModelsGeneric": {
     "message": "モデルを読み込み中..."
+  },
+  "settingsAiModelListRequestTimedOut": {
+    "message": "モデル一覧のリクエストは {0} 秒で停止しました。代わりに厳選されたプリセットを表示します。"
   },
   "settingsAiNoModelsFound": {
     "message": "モデルが見つかりません"

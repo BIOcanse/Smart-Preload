@@ -6,6 +6,7 @@
     fingerprintThreatHost,
   } = globalThis.ZeroLatencyThreatDatabaseFingerprint;
   const {
+    initializeLibrary,
     findThreatSourceMatch,
     getLibraryMetadata,
   } = globalThis.ZeroLatencyThreatDatabaseSources;
@@ -71,6 +72,7 @@
   }
 
   globalThis.ZeroLatencyLocalThreatDatabase = {
+    initialize: initializeLibrary,
     inspectUrl,
     getLibraryMetadata,
     normalizeThreatUrl,

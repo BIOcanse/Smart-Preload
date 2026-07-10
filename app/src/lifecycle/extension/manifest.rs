@@ -27,7 +27,7 @@ pub(super) fn is_target_extension_entry(entry: &Value) -> bool {
     entry
         .get("path")
         .and_then(Value::as_str)
-        .is_some_and(|extension_path| extension_manifest_at_path_matches(extension_path))
+        .is_some_and(extension_manifest_at_path_matches)
 }
 
 fn extension_manifest_at_path_matches(extension_path: &str) -> bool {

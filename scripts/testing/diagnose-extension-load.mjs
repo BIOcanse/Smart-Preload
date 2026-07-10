@@ -29,7 +29,9 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
-const extensionDir = path.join(repoRoot, "extension");
+const extensionDir = process.env.ZLW_EXTENSION_DIR
+  ? path.resolve(process.env.ZLW_EXTENSION_DIR)
+  : path.join(repoRoot, "extension");
 const runRoot = path.join(
   os.tmpdir(),
   `zlw-extension-load-diagnose-${process.pid}-${Date.now()}`
@@ -122,6 +124,7 @@ async function diagnoseBrowser(browser) {
 
     const targets = await waitForTargets(debugPort, {
       requireServiceWorker: true,
+      serviceWorkerPath: "/service-worker.js",
       timeoutMs: 20000,
     });
     const serviceWorkers = targets.filter(
@@ -176,7 +179,7 @@ async function diagnoseBrowser(browser) {
 
 async function waitForTargets(
   debugPort,
-  { requireServiceWorker = false, timeoutMs = 15000 } = {}
+  { requireServiceWorker = false, serviceWorkerPath = "", timeoutMs = 15000 } = {}
 ) {
   const startedAt = Date.now();
   let lastError = null;
@@ -189,7 +192,9 @@ async function waitForTargets(
         !requireServiceWorker ||
         lastTargets.some(
           (target) =>
-            target.type === "service_worker" && /^chrome-extension:\/\//.test(target.url)
+            target.type === "service_worker" &&
+            /^chrome-extension:\/\//.test(target.url) &&
+            (!serviceWorkerPath || new URL(target.url).pathname === serviceWorkerPath)
         )
       ) {
         return lastTargets;
@@ -231,6 +236,32 @@ async function diagnoseServiceWorker(target) {
     result.hasSettings = await runStep(result, "evaluate:hasSettings", () =>
       runtimeEval(client, "typeof globalThis.ZeroLatencySettings?.cloneSettings")
     );
+    result.zeroLatencyGlobals = await runStep(result, "evaluate:globalInventory", () =>
+      runtimeEval(
+        client,
+        "Object.keys(globalThis).filter((key) => key.startsWith('ZeroLatency')).sort()"
+      )
+    );
+    if (result.hasSettings === "undefined") {
+      result.manualRuntimeImport = await runStep(result, "evaluate:manualRuntimeImport", () =>
+        runtimeEval(
+          client,
+          `(() => {
+            try {
+              importScripts("service-worker-runtime.js");
+              return { ok: true, settingsType: typeof globalThis.ZeroLatencySettings };
+            } catch (error) {
+              return {
+                ok: false,
+                name: error?.name || "Error",
+                message: error?.message || String(error),
+                stack: error?.stack || "",
+              };
+            }
+          })()`
+        )
+      );
+    }
     if (isZeroLatencyManifest(result.manifest)) {
       result.setupProbe = await diagnoseSetupSteps(result, client);
     }

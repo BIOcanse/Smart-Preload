@@ -7,16 +7,16 @@
       namespace.scheduleCandidateScan({
         delayMs: namespace.constants.EARLY_LINK_RESCAN_DELAY_MS,
         force: true,
+        includePageDigest: true,
       });
-      namespace.schedulePageDigestReport();
     });
 
     window.addEventListener("load", () => {
       namespace.scheduleCandidateScan({
         delayMs: namespace.constants.RESCAN_DELAY_MS,
         force: true,
+        includePageDigest: true,
       });
-      namespace.schedulePageDigestReport();
     });
 
     document.addEventListener("prerenderingchange", () => {
@@ -26,8 +26,9 @@
       }
 
       void namespace.reportAttentionActivity({ force: true });
-      namespace.scheduleCandidateScan();
-      namespace.schedulePageDigestReport();
+      namespace.scheduleCandidateScan({
+        includePageDigest: true,
+      });
     });
 
     document.addEventListener("visibilitychange", () => {
@@ -53,26 +54,31 @@
   function bindNavigationEditableFocusEvents() {
     document.addEventListener("focusin", () => {
       if (namespace.hasActiveEditableFocus()) {
-        window.clearTimeout(namespace.state.candidateScanTimerId);
-        namespace.state.candidateScanTimerId = null;
-        namespace.state.candidateScanDueAt = 0;
-        namespace.state.candidateScanForce = false;
-        window.clearTimeout(namespace.state.pageDigestTimerId);
+        namespace.state.deferredScanWhileEditing = true;
+        namespace.state.deferredPageDigestWhileEditing =
+          namespace.state.deferredPageDigestWhileEditing ||
+          namespace.state.candidateScanIncludePageDigest;
+        namespace.cancelScheduledNavigationScan?.({
+          preserveRequestedWork: true,
+        });
       }
     });
 
     document.addEventListener("focusout", () => {
       window.setTimeout(() => {
-        if (namespace.state.deferredScanWhileEditing && !namespace.hasActiveEditableFocus()) {
-          namespace.state.deferredScanWhileEditing = false;
-          namespace.scheduleCandidateScan();
+        if (namespace.hasActiveEditableFocus()) {
+          return;
         }
-        if (
-          namespace.state.deferredPageDigestWhileEditing &&
-          !namespace.hasActiveEditableFocus()
-        ) {
-          namespace.state.deferredPageDigestWhileEditing = false;
-          namespace.schedulePageDigestReport();
+
+        const shouldResumeScan = namespace.state.deferredScanWhileEditing;
+        const includePageDigest = namespace.state.deferredPageDigestWhileEditing;
+        namespace.state.deferredScanWhileEditing = false;
+        namespace.state.deferredPageDigestWhileEditing = false;
+
+        if (shouldResumeScan || includePageDigest) {
+          namespace.scheduleCandidateScan({
+            includePageDigest,
+          });
         }
       }, 0);
     });

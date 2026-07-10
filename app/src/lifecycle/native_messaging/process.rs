@@ -60,8 +60,10 @@ fn spawn_host_process_windows() -> Result<()> {
         .as_ref()
         .map(|value| PCWSTR(value.as_ptr()))
         .unwrap_or_else(PCWSTR::null);
-    let mut startup_info = STARTUPINFOW::default();
-    startup_info.cb = size_of::<STARTUPINFOW>() as u32;
+    let startup_info = STARTUPINFOW {
+        cb: size_of::<STARTUPINFOW>() as u32,
+        ..Default::default()
+    };
     let mut process_info = PROCESS_INFORMATION::default();
     let creation_flags = PROCESS_CREATION_FLAGS(CREATE_NO_WINDOW_FLAG | DETACHED_PROCESS_FLAG);
 

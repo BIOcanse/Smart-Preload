@@ -5,6 +5,8 @@
         ? translate
         : (key, substitutions = [], fallback = "") => fallback || key;
     let acceptedForCurrentEnable = false;
+    let advancedAcknowledgedForCurrentEnable = false;
+    let pendingConfirmation = null;
 
     function isRealPreloadEnabled(settings) {
       if (typeof settingsApi?.isRealPreloadEnabled === "function") {
@@ -23,9 +25,32 @@
 
     async function confirmIfNeeded(savedSettings, draftSettings) {
       if (!requiresConfirmation(savedSettings, draftSettings)) {
+        if (
+          acceptedForCurrentEnable &&
+          advancedAcknowledgedForCurrentEnable &&
+          isRealPreloadEnabled(draftSettings)
+        ) {
+          markAdvancedAcknowledgement(draftSettings);
+        }
         return true;
       }
 
+      if (!pendingConfirmation) {
+        pendingConfirmation = runConfirmation(savedSettings, draftSettings).finally(() => {
+          pendingConfirmation = null;
+        });
+      }
+
+      const confirmed = await pendingConfirmation;
+
+      if (confirmed && advancedAcknowledgedForCurrentEnable) {
+        markAdvancedAcknowledgement(draftSettings);
+      }
+
+      return confirmed;
+    }
+
+    async function runConfirmation(savedSettings, draftSettings) {
       const riskConfirmed = await dialog.confirm({
         variant: "warning",
         title: t(
@@ -139,6 +164,9 @@
         }
 
         markAdvancedAcknowledgement(draftSettings);
+        advancedAcknowledgedForCurrentEnable = true;
+      } else if (hasAdvancedAcknowledgement(savedSettings, draftSettings)) {
+        advancedAcknowledgedForCurrentEnable = true;
       }
 
       acceptedForCurrentEnable = true;
@@ -147,6 +175,7 @@
 
     function resetAcceptance() {
       acceptedForCurrentEnable = false;
+      advancedAcknowledgedForCurrentEnable = false;
     }
 
     function hasAdvancedAcknowledgement(savedSettings, draftSettings) {

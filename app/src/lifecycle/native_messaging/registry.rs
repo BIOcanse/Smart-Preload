@@ -1,7 +1,7 @@
 use super::super::NATIVE_MESSAGING_HOST_NAME;
 use anyhow::{Context, Result};
 use std::collections::BTreeMap;
-use std::path::PathBuf;
+use std::path::Path;
 use winreg::enums::{HKEY_CURRENT_USER, KEY_WRITE};
 use winreg::RegKey;
 
@@ -10,7 +10,7 @@ const NATIVE_MESSAGING_REGISTRY_PATHS: [(&str, &str); 2] = [
     ("Edge", "Software\\Microsoft\\Edge\\NativeMessagingHosts"),
 ];
 
-pub(super) fn ensure_native_messaging_registry_entries(manifest_path: &PathBuf) -> Result<()> {
+pub(super) fn ensure_native_messaging_registry_entries(manifest_path: &Path) -> Result<()> {
     for (browser_name, registry_path) in NATIVE_MESSAGING_REGISTRY_PATHS {
         let hkcu = RegKey::predef(HKEY_CURRENT_USER);
         let (hosts_key, _) = hkcu.create_subkey(registry_path).with_context(|| {

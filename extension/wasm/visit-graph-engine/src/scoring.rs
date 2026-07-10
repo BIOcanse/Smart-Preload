@@ -84,3 +84,49 @@ fn sanitize_weight(value: f64, fallback: f64) -> f64 {
 
     value.max(0.0)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn scoring_sanitizes_invalid_and_negative_weights() {
+        let breakdown = build_scoring_breakdown(-5.0, &[2.0, -3.0, f64::NAN]);
+
+        assert_eq!(breakdown.base_score, 0.0);
+        assert_eq!(breakdown.multipliers, vec![2.0, 0.0]);
+        assert_eq!(breakdown.combined_score, 0.0);
+        assert_eq!(breakdown.normalized_score, 0.0);
+        assert_eq!(breakdown.effective_multiplier_count, 2);
+    }
+
+    #[test]
+    fn neutral_multipliers_do_not_change_the_base_score() {
+        let breakdown = build_scoring_breakdown(9.0, &[1.0, 1.0]);
+
+        assert_eq!(breakdown.combined_score, 9.0);
+        assert_eq!(breakdown.normalized_score, 9.0);
+        assert_eq!(breakdown.effective_multiplier_count, 0);
+    }
+
+    #[test]
+    fn batch_scoring_preserves_input_order() {
+        let results = score_weights_batch(ScoreWeightsBatchInput {
+            inputs: vec![
+                ScoreWeightsInput {
+                    base_score: 4.0,
+                    multipliers: vec![1.0],
+                },
+                ScoreWeightsInput {
+                    base_score: 8.0,
+                    multipliers: vec![0.5],
+                },
+            ],
+        });
+
+        assert_eq!(results.len(), 2);
+        assert_eq!(results[0].base_score, 4.0);
+        assert_eq!(results[1].base_score, 8.0);
+        assert_eq!(results[1].combined_score, 4.0);
+    }
+}

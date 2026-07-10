@@ -49,6 +49,13 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 chrome.runtime.onSuspend?.addListener?.(() => {
+  void globalThis.flushTrackingState?.();
+  void globalThis.ZeroLatencyBackgroundTaskPersistence?.persist?.(
+    globalThis.ZeroLatencyBackgroundTaskStore
+  );
+  void globalThis.ZeroLatencyPreloadSchedulerAttention?.flushPendingAttention?.(
+    "service-worker-suspend"
+  );
   void globalThis.ZeroLatencyDiagnostics?.flushNow?.({ finalFlush: true });
   void globalThis.ZeroLatencyAiProviders?.unloadConfiguredLmStudioModel?.(
     getEffectiveExtensionSettings(),
@@ -129,6 +136,16 @@ chrome.windows.onBoundsChanged.addListener((window) => {
 });
 
 chrome.alarms.onAlarm.addListener((alarm) => {
+  if (
+    globalThis.ZeroLatencyNativeAppHeartbeat?.isAlarm?.(alarm?.name) === true ||
+    globalThis.ZeroLatencyNativeAppHeartbeat?.isWakeRetryAlarm?.(alarm?.name) === true
+  ) {
+    void mainRouter.handleAlarm(alarm).catch((error) => {
+      console.error("Smart Preload native lifecycle alarm failed.", error);
+    });
+    return;
+  }
+
   queueMutation(async () => {
     await mainRouter.handleAlarm(alarm);
   });
@@ -152,24 +169,39 @@ function respondWithTask(sendResponse, task) {
     return true;
   }
 
-  const queue =
-    task?.queueMode === "side-effect" ? queueSideEffect : queueMutation;
+  const queueTask = () => executeMessageTaskResult(executeTask);
+  let queuedResult;
 
-  queue(async () => {
-    await executeMessageTask(sendResponse, executeTask);
-  });
+  if (task?.queueMode === "interaction") {
+    queuedResult = queueInteraction(queueTask);
+  } else if (task?.queueMode === "candidate") {
+    queuedResult = queueCandidate(task.queueKey, queueTask);
+  } else if (task?.queueMode === "attention") {
+    queuedResult = queueAttention(task.queueKey, queueTask);
+  } else if (task?.queueMode === "ai") {
+    queuedResult = queueAi(task.queueKey, queueTask);
+  } else {
+    const queue = task?.queueMode === "side-effect" ? queueSideEffect : queueMutation;
+    queuedResult = queue(queueTask);
+  }
+
+  void queuedResult.then(sendResponse);
 
   return true;
 }
 
 async function executeMessageTask(sendResponse, executeTask) {
+  sendResponse(await executeMessageTaskResult(executeTask));
+}
+
+async function executeMessageTaskResult(executeTask) {
   try {
-    sendResponse(await executeTask());
+    return await executeTask();
   } catch (error) {
     console.error("Zero-Latency message handler failed.", error);
-    sendResponse({
+    return {
       ok: false,
       error: error instanceof Error ? error.message : String(error),
-    });
+    };
   }
 }

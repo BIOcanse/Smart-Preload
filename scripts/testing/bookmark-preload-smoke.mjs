@@ -22,7 +22,7 @@ import {
   waitForSnapshotCondition,
   waitForTabComplete,
 } from "./lib/bookmark-preload-smoke-probes.mjs";
-import { getChromePathCandidates } from "./lib/browser-paths.mjs";
+import { getPlaywrightChromiumPathCandidates } from "./lib/browser-paths.mjs";
 import { getFreePort, sleep } from "./lib/test-utils.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -32,10 +32,10 @@ const extensionDir = path.join(repoRoot, "extension");
 const outputRoot = path.join(repoRoot, "output", "playwright");
 const runId = new Date().toISOString().replace(/[:.]/g, "-");
 const runDir = path.join(outputRoot, `bookmark-preload-smoke-${runId}`);
-const profileDir = path.join(runDir, "chrome-profile");
+const profileDir = path.join(runDir, "chromium-profile");
 const extensionUnderTestDir = path.join(os.tmpdir(), `zlw-ext-smoke-${process.pid}-${Date.now()}`);
 
-const chromePathCandidates = getChromePathCandidates();
+const chromiumPathCandidates = getPlaywrightChromiumPathCandidates();
 
 async function main() {
   await mkdir(runDir, { recursive: true });
@@ -47,7 +47,7 @@ async function main() {
   const debugPort = await getFreePort();
   const server = await startBookmarkSmokeServer(webPort);
   const chrome = launchBookmarkSmokeChrome({
-    chromePathCandidates,
+    browserPathCandidates: chromiumPathCandidates,
     debugPort,
     extensionUnderTestDir,
     profileDir,

@@ -6,6 +6,8 @@
       GRAPH_SUMMARY_KEY: "visitGraphSummaryV1",
       TAB_STATE_KEY: "tabVisitStateV1",
       PENDING_SOURCE_KEY: "pendingVisitSourcesV1",
+      TRACKING_HISTORY_MANIFEST_KEY: "trackingHistoryManifestV1",
+      TRACKING_EVENT_JOURNAL_KEY: "trackingEventJournalV1",
       PRELOAD_STATE_KEY: "preloadStateV1",
       SERVICE_STATE_KEY: "extensionServiceStateV1",
     };

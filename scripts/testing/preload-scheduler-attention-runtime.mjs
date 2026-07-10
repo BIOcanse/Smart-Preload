@@ -52,6 +52,8 @@ let savedPreloadState = {
   preloadTabIds: new Set([99]),
 };
 let queueRuns = 0;
+let attentionQueueRuns = 0;
+let saveRuns = 0;
 
 const tabs = new Map([
   [
@@ -125,11 +127,16 @@ const context = {
     return savedPreloadState;
   },
   async savePreloadState(preloadState) {
+    saveRuns += 1;
     savedPreloadState = preloadState;
   },
   async queueMutation(task) {
     queueRuns += 1;
     await task();
+  },
+  async queueAttention(_key, task) {
+    attentionQueueRuns += 1;
+    return task();
   },
   isPreloadTab(preloadState, tabId) {
     return preloadState.preloadTabIds?.has?.(tabId) === true;
@@ -138,6 +145,23 @@ const context = {
     return {
       tabId: Number.isInteger(Number(cursor?.tabId)) ? Number(cursor.tabId) : null,
       windowId: Number.isInteger(Number(cursor?.windowId)) ? Number(cursor.windowId) : null,
+    };
+  },
+  normalizePreloadSchedulerState(scheduler) {
+    return {
+      attentionPool: scheduler?.attentionPool ?? {
+        segments: [],
+        totalDurationMs: 0,
+        updatedAt: null,
+      },
+      attentionPendingByKey: scheduler?.attentionPendingByKey ?? {},
+      activeTabCursor: scheduler?.activeTabCursor ?? {
+        tabId: null,
+        windowId: null,
+      },
+      candidateSelectionSnapshotsByTabId:
+        scheduler?.candidateSelectionSnapshotsByTabId ?? {},
+      updatedAt: scheduler?.updatedAt ?? null,
     };
   },
   ZeroLatencyPreloadIncognitoPolicy: {
@@ -182,6 +206,7 @@ const context = {
           ...preloadState,
           lastObservation: observation,
         },
+        recordedDurationMs: observation.activityKind === "segment-commit" ? 60_000 : 0,
         rescheduled: observation.counting === true,
       };
     },
@@ -217,6 +242,35 @@ assert.equal(observations[0].counting, true);
 assert.equal(observations[0].activityKind, "input");
 assert.equal(notifications.length, 1);
 assert.equal(notifications[0].rescheduled, true);
+assert.equal(saveRuns, 1);
+
+await context.ZeroLatencyPreloadAttentionRuntime.recordActiveTabAttentionFromSender(
+  { tab: tabs.get(1) },
+  "content-attention-activity",
+  {
+    activity: {
+      kind: "input",
+      weight: 1,
+    },
+  }
+);
+
+assert.equal(attentionQueueRuns, 1);
+assert.equal(saveRuns, 1);
+
+await context.ZeroLatencyPreloadAttentionRuntime.recordActiveTabAttentionFromSender(
+  { tab: tabs.get(1) },
+  "content-attention-activity",
+  {
+    activity: {
+      kind: "segment-commit",
+      weight: 1,
+    },
+  }
+);
+
+assert.equal(attentionQueueRuns, 2);
+assert.equal(saveRuns, 2);
 
 await context.ZeroLatencyPreloadAttentionRuntime.recordActiveTabAttentionFromActiveInfo(
   { tabId: 99 },
@@ -224,9 +278,9 @@ await context.ZeroLatencyPreloadAttentionRuntime.recordActiveTabAttentionFromAct
   { queue: false }
 );
 
-assert.equal(observations.length, 1);
-assert.equal(notifications.length, 2);
-assert.equal(notifications[1], null);
+assert.equal(observations.length, 3);
+assert.equal(notifications.length, 4);
+assert.equal(notifications[3], null);
 
 await context.ZeroLatencyPreloadAttentionRuntime.pausePreloadAttentionCursorIfMatches(
   { tabId: 1 },
@@ -234,10 +288,11 @@ await context.ZeroLatencyPreloadAttentionRuntime.pausePreloadAttentionCursorIfMa
   { queue: false }
 );
 
-assert.equal(observations.length, 2);
-assert.equal(observations[1].counting, false);
-assert.equal(observations[1].reason, "tab-removed");
-assert.equal(notifications.length, 3);
-assert.equal(notifications[2].rescheduled, false);
+assert.equal(observations.length, 4);
+assert.equal(observations[3].counting, false);
+assert.equal(observations[3].reason, "tab-removed");
+assert.equal(notifications.length, 5);
+assert.equal(notifications[4].rescheduled, false);
+assert.equal(saveRuns, 3);
 
 console.log("preload scheduler attention runtime tests passed");

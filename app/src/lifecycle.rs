@@ -7,19 +7,20 @@ mod watcher;
 
 use std::env;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::thread;
 use std::time::{Duration, SystemTime};
 
 use anyhow::{Context, Result};
 use single_instance::SingleInstance;
-use sysinfo::System;
 use tokio::sync::watch;
 use tracing::info;
 use winreg::enums::HKEY_CURRENT_USER;
 use winreg::RegKey;
 
-use crate::telemetry::is_google_chrome_browser_process;
+use crate::telemetry::{
+    is_google_chrome_browser_process, SystemProcessSampler, PROCESS_SAMPLE_MAX_AGE,
+};
 
 const WATCHER_ARGUMENT: &str = "--watcher";
 const HOST_ARGUMENT: &str = "--host";
@@ -93,7 +94,7 @@ fn portable_path(file_name: &str) -> Result<PathBuf> {
     Ok(executable_dir.join("portable").join(file_name))
 }
 
-fn ensure_portable_parent_dir(path: &PathBuf) -> Result<()> {
+fn ensure_portable_parent_dir(path: &Path) -> Result<()> {
     if let Some(parent_dir) = path.parent() {
         fs::create_dir_all(parent_dir)?;
     }

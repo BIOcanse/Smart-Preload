@@ -7,49 +7,12 @@
       return nativeAppRegistrationPromise;
     }
 
-    nativeAppRegistrationPromise = fetchNativeAppRegistration().catch((error) => {
+    nativeAppRegistrationPromise = fetchNativeAppRegistrationOnce().catch((error) => {
       nativeAppRegistrationPromise = null;
       throw error;
     });
 
     return nativeAppRegistrationPromise;
-  }
-
-  async function fetchNativeAppRegistration() {
-    try {
-      return await fetchNativeAppRegistrationOnce();
-    } catch (firstError) {
-      globalThis.ZeroLatencyDebugEvents?.record?.("native-app.registration.wake-requested", {
-        error: firstError instanceof Error ? firstError.message : String(firstError),
-      });
-
-      let lastError = firstError;
-
-      try {
-        await wakeNativeAppHost({ reason: "registration" });
-      } catch (wakeError) {
-        lastError = wakeError;
-        globalThis.ZeroLatencyDebugEvents?.record?.("native-app.registration.wake-error", {
-          error: wakeError instanceof Error ? wakeError.message : String(wakeError),
-        });
-      }
-
-      for (const delayMs of NATIVE_APP_WAKE_RETRY_DELAYS_MS) {
-        await wait(delayMs);
-
-        try {
-          return await fetchNativeAppRegistrationOnce();
-        } catch (error) {
-          lastError = error;
-        }
-      }
-
-      globalThis.ZeroLatencyDebugEvents?.record?.("native-app.registration.offline", {
-        error: lastError instanceof Error ? lastError.message : String(lastError),
-      });
-      await globalThis.ZeroLatencyNativeAppHeartbeat?.ensureWakeRetryAlarm?.(true);
-      throw lastError;
-    }
   }
 
   async function fetchNativeAppRegistrationOnce() {

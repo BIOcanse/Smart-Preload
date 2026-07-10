@@ -1,9 +1,12 @@
 const MAX_RECENT_FOREGROUND_PAGES = 6;
 const MAX_HISTORY_PAGE_POOL_SIZE = 5;
+const MAX_HOT_TRANSITION_MESSAGES = 512;
+const MAX_TRANSITION_REFERENCES_PER_ROUTE = 64;
+const MAX_TRANSITION_REFERENCES_PER_DAY = 512;
 
 function createEmptyGraph() {
   return {
-    version: 13,
+    version: 14,
     nodes: {},
     edges: {},
     transitionBuckets: createEmptyTransitionBuckets(),

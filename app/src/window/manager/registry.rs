@@ -17,6 +17,8 @@ pub(super) const MAX_RECENT_LIFECYCLE_EVENTS: usize = 256;
 #[derive(Debug, Clone)]
 pub(super) struct HiddenWindowMonitorRecord {
     pub(super) hwnd: u64,
+    pub(super) owner_process_id: u32,
+    pub(super) owner_browser_kind: String,
     pub(super) tracked_since_ms: u64,
     pub(super) first_hide_requested_at_ms: Option<u64>,
     pub(super) last_hide_requested_at_ms: Option<u64>,
@@ -81,9 +83,10 @@ pub(super) fn hidden_window_hook_runtime() -> Arc<Mutex<HiddenWindowHookRuntime>
 }
 
 pub(super) fn track_hidden_window(
-    hwnd: u64,
+    window: &ChromeWindowInfo,
     hide_match_observation: HiddenWindowHideMatchObservation,
 ) {
+    let hwnd = window.hwnd;
     let mut inserted_new_record = false;
     let now_ms = current_epoch_ms();
 
@@ -91,6 +94,11 @@ pub(super) fn track_hidden_window(
         tracked_values
             .entry(hwnd)
             .and_modify(|record| {
+                record.owner_process_id = window.process_id;
+                record.owner_browser_kind = window
+                    .browser_kind
+                    .clone()
+                    .unwrap_or_else(|| "chromium-compatible".to_string());
                 if record.first_hide_requested_at_ms.is_none() {
                     record.first_hide_requested_at_ms = Some(now_ms);
                 }
@@ -102,6 +110,11 @@ pub(super) fn track_hidden_window(
                 inserted_new_record = true;
                 HiddenWindowMonitorRecord {
                     hwnd,
+                    owner_process_id: window.process_id,
+                    owner_browser_kind: window
+                        .browser_kind
+                        .clone()
+                        .unwrap_or_else(|| "chromium-compatible".to_string()),
                     tracked_since_ms: now_ms,
                     first_hide_requested_at_ms: Some(now_ms),
                     last_hide_requested_at_ms: Some(now_ms),
@@ -158,6 +171,17 @@ pub(super) fn is_tracked_hidden_window(hwnd: u64) -> bool {
         .lock()
         .map(|tracked_values| tracked_values.contains_key(&hwnd))
         .unwrap_or(false)
+}
+
+pub(super) fn tracked_hidden_window_owner_process_id(hwnd: u64) -> Option<u32> {
+    hidden_window_registry()
+        .lock()
+        .ok()
+        .and_then(|tracked_values| {
+            tracked_values
+                .get(&hwnd)
+                .map(|record| record.owner_process_id)
+        })
 }
 
 pub(super) fn update_hidden_window_record(

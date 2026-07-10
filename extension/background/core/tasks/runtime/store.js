@@ -52,6 +52,7 @@
     tasksById.set(task.taskId, task);
     appendTaskLog(task, "created", "info", "Task queued.");
     pruneTasks();
+    scheduleTaskPersistence({ immediate: true });
 
     return task;
   }
@@ -90,6 +91,8 @@
     if (patch.log) {
       appendTaskLog(task, "progress", "info", normalizeTaskStoreText(patch.log));
     }
+
+    scheduleTaskPersistence();
 
     return cloneBackgroundTaskRecord(task);
   }
@@ -138,6 +141,63 @@
     return `task_${Date.now().toString(36)}_${taskSequence.toString(36)}`;
   }
 
+  function markTaskRunningAndPersist(task) {
+    markTaskRunning(task);
+    scheduleTaskPersistence({ immediate: true });
+  }
+
+  function markTaskCompletedAndPersist(task, result) {
+    markTaskCompleted(task, result);
+    scheduleTaskPersistence({ immediate: true });
+  }
+
+  function markTaskFailedAndPersist(task, error) {
+    markTaskFailed(task, error);
+    scheduleTaskPersistence({ immediate: true });
+  }
+
+  function restoreTaskRecords(rawRecords) {
+    const restoredAt = new Date().toISOString();
+
+    for (const rawRecord of Array.isArray(rawRecords) ? rawRecords : []) {
+      const record = cloneBackgroundTaskRecord(rawRecord);
+
+      if (!record?.taskId) {
+        continue;
+      }
+
+      if (!isTerminalTaskStatus(record.status)) {
+        record.status = TASK_STATUSES.FAILED;
+        record.step = "interrupted";
+        record.message = "Task was interrupted when the background service restarted.";
+        record.error = record.message;
+        record.completedAt = restoredAt;
+        record.updatedAt = restoredAt;
+        record.logs.push({
+          event: "interrupted",
+          level: "error",
+          message: record.message,
+          recordedAt: restoredAt,
+        });
+      }
+
+      tasksById.set(record.taskId, record);
+    }
+
+    pruneTasks();
+  }
+
+  function getPersistableTaskRecords() {
+    return [...tasksById.values()].map(cloneBackgroundTaskRecord);
+  }
+
+  function scheduleTaskPersistence(options) {
+    globalThis.ZeroLatencyBackgroundTaskPersistence?.schedule?.(
+      globalThis.ZeroLatencyBackgroundTaskStore,
+      options
+    );
+  }
+
   globalThis.ZeroLatencyBackgroundTaskStore = {
     createTaskFromSubmission,
     getTask,
@@ -145,12 +205,14 @@
     updateTaskProgress,
     findActiveTaskByDedupeKey,
     findNextQueuedTask,
-    markTaskRunning,
-    markTaskCompleted,
-    markTaskFailed,
+    markTaskRunning: markTaskRunningAndPersist,
+    markTaskCompleted: markTaskCompletedAndPersist,
+    markTaskFailed: markTaskFailedAndPersist,
     appendTaskLog,
     pruneTasks,
     normalizeText: normalizeTaskStoreText,
     cloneBackgroundTaskRecord,
+    restoreTaskRecords,
+    getPersistableTaskRecords,
   };
 })();

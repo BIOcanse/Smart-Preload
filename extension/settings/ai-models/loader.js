@@ -1,6 +1,11 @@
 (() => {
   const providerTools = globalThis.ZeroLatencySettingsAiModelProvider;
   const modelFilters = globalThis.ZeroLatencySettingsAiModelFilters;
+  const MODEL_OPTIONS_REQUEST_TIMEOUT_MS = 20_000;
+  const MODEL_OPTIONS_CACHE_TTL_MS = 30_000;
+  const MODEL_OPTIONS_TRANSIENT_CACHE_TTL_MS = 5_000;
+  const MODEL_OPTIONS_CACHE_MAX_ENTRIES = 20;
+  const modelOptionsCache = new Map();
 
   async function loadProviderModelOptions({
     providerId,
@@ -8,11 +13,43 @@
     endpointUrl,
     apiKey,
     signal,
+    timeoutMs = MODEL_OPTIONS_REQUEST_TIMEOUT_MS,
+  }) {
+    throwIfAborted(signal);
+
+    const cacheKey = buildCacheKey(providerId, endpointUrl, apiKey);
+    const cached = readCachedResult(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    const result = await loadUncachedProviderModelOptions({
+      providerId,
+      provider,
+      endpointUrl,
+      apiKey,
+      signal,
+      timeoutMs: normalizeRequestTimeout(timeoutMs),
+    });
+
+    throwIfAborted(signal);
+    cacheResult(cacheKey, result, providerId);
+    return cloneResult(result);
+  }
+
+  async function loadUncachedProviderModelOptions({
+    providerId,
+    provider,
+    endpointUrl,
+    apiKey,
+    signal,
+    timeoutMs,
   }) {
     const catalogModels = modelFilters.getCatalogModels(providerId);
 
     if (providerTools.isLmStudioProvider(providerId)) {
-      return loadLmStudioModelOptions({ signal });
+      return await loadLmStudioModelOptions({ signal });
     }
 
     if (!apiKey && provider?.apiKeyOptional !== true) {
@@ -33,11 +70,13 @@
       };
     }
 
+    const requestLifetime = createRequestLifetime(signal, timeoutMs);
+
     try {
       const response = await fetch(request.url, {
         method: "GET",
         headers: request.headers,
-        signal,
+        signal: requestLifetime.signal,
       });
       const responseText = await response.text();
 
@@ -62,6 +101,29 @@
             : "No models were returned by this provider.",
       };
     } catch (error) {
+      if (signal?.aborted) {
+        throw createAbortError();
+      }
+
+      if (requestLifetime.didTimeout()) {
+        return {
+          status: "timeout",
+          timeoutMs,
+          models: modelFilters.filterAndSortProviderModels(
+            catalogModels,
+            providerId,
+            catalogModels
+          ),
+          message: `The model list request stopped after ${Math.ceil(
+            timeoutMs / 1000
+          )} seconds; curated presets are shown instead.`,
+        };
+      }
+
+      if (error?.name === "AbortError") {
+        throw error;
+      }
+
       return {
         status: "fallback",
         models: modelFilters.filterAndSortProviderModels(catalogModels, providerId, catalogModels),
@@ -69,6 +131,8 @@
           error instanceof Error ? error.message : String(error)
         }`,
       };
+    } finally {
+      requestLifetime.dispose();
     }
   }
 
@@ -146,6 +210,10 @@
             : "LM Studio is running, but no local LLM models were returned.",
       };
     } catch (error) {
+      if (signal?.aborted || error?.name === "AbortError") {
+        throw createAbortError();
+      }
+
       return {
         status: "offline",
         models: [],
@@ -156,7 +224,147 @@
     }
   }
 
+  function createRequestLifetime(externalSignal, timeoutMs) {
+    const controller = new AbortController();
+    let timedOut = false;
+    const abortFromExternalSignal = () => controller.abort();
+    const timeoutId = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, timeoutMs);
+
+    if (externalSignal?.aborted) {
+      controller.abort();
+    } else {
+      externalSignal?.addEventListener?.("abort", abortFromExternalSignal, { once: true });
+    }
+
+    return {
+      signal: controller.signal,
+      didTimeout: () => timedOut,
+      dispose() {
+        clearTimeout(timeoutId);
+        externalSignal?.removeEventListener?.("abort", abortFromExternalSignal);
+      },
+    };
+  }
+
+  function normalizeRequestTimeout(timeoutMs) {
+    const normalized = Number(timeoutMs);
+
+    if (!Number.isFinite(normalized) || normalized <= 0) {
+      return MODEL_OPTIONS_REQUEST_TIMEOUT_MS;
+    }
+
+    return Math.min(24_000, Math.max(1, Math.round(normalized)));
+  }
+
+  function buildCacheKey(providerId, endpointUrl, apiKey) {
+    return JSON.stringify([
+      String(providerId || ""),
+      String(endpointUrl || ""),
+      String(apiKey || ""),
+    ]);
+  }
+
+  function readCachedResult(cacheKey) {
+    const entry = modelOptionsCache.get(cacheKey);
+
+    if (!entry) {
+      return null;
+    }
+
+    if (entry.expiresAt <= Date.now()) {
+      clearTimeout(entry.expirationTimerId);
+      modelOptionsCache.delete(cacheKey);
+      return null;
+    }
+
+    return {
+      ...cloneResult(entry.result),
+      cacheHit: true,
+    };
+  }
+
+  function cacheResult(cacheKey, result, providerId) {
+    if (!result || result.status === "missing-key" || result.status === "cancelled") {
+      return;
+    }
+
+    const isTransient =
+      providerTools.isLmStudioProvider(providerId) ||
+      result.status === "fallback" ||
+      result.status === "offline" ||
+      result.status === "timeout";
+    const ttlMs = isTransient
+      ? MODEL_OPTIONS_TRANSIENT_CACHE_TTL_MS
+      : MODEL_OPTIONS_CACHE_TTL_MS;
+    const existing = modelOptionsCache.get(cacheKey);
+    if (existing) {
+      clearTimeout(existing.expirationTimerId);
+      modelOptionsCache.delete(cacheKey);
+    }
+    pruneModelOptionsCache();
+
+    while (modelOptionsCache.size >= MODEL_OPTIONS_CACHE_MAX_ENTRIES) {
+      const oldestKey = modelOptionsCache.keys().next().value;
+      const oldest = modelOptionsCache.get(oldestKey);
+      clearTimeout(oldest?.expirationTimerId);
+      modelOptionsCache.delete(oldestKey);
+    }
+
+    const expiresAt = Date.now() + ttlMs;
+    const expirationTimerId = setTimeout(() => {
+      const entry = modelOptionsCache.get(cacheKey);
+      if (entry?.expiresAt === expiresAt) {
+        modelOptionsCache.delete(cacheKey);
+      }
+    }, ttlMs);
+    expirationTimerId?.unref?.();
+
+    modelOptionsCache.set(cacheKey, {
+      expiresAt,
+      expirationTimerId,
+      result: cloneResult(result),
+    });
+  }
+
+  function pruneModelOptionsCache() {
+    const now = Date.now();
+
+    for (const [cacheKey, entry] of modelOptionsCache) {
+      if (entry.expiresAt <= now) {
+        clearTimeout(entry.expirationTimerId);
+        modelOptionsCache.delete(cacheKey);
+      }
+    }
+  }
+
+  function cloneResult(result) {
+    return {
+      ...result,
+      models: Array.isArray(result?.models)
+        ? result.models.map((model) => ({ ...model }))
+        : [],
+    };
+  }
+
+  function throwIfAborted(signal) {
+    if (signal?.aborted) {
+      throw createAbortError();
+    }
+  }
+
+  function createAbortError() {
+    const error = new Error("The model list request was cancelled.");
+    error.name = "AbortError";
+    return error;
+  }
+
   globalThis.ZeroLatencySettingsAiModels = {
+    MODEL_OPTIONS_REQUEST_TIMEOUT_MS,
+    MODEL_OPTIONS_CACHE_TTL_MS,
+    MODEL_OPTIONS_CACHE_MAX_ENTRIES,
     loadProviderModelOptions,
     filterAndSortProviderModels: modelFilters.filterAndSortProviderModels,
     isLmStudioProvider: providerTools.isLmStudioProvider,

@@ -32,5 +32,7 @@
       runtimeApi.recordActiveTabAttentionFromFocusedWindow,
     pausePreloadAttentionCursor: runtimeApi.pausePreloadAttentionCursor,
     pausePreloadAttentionCursorIfMatches: runtimeApi.pausePreloadAttentionCursorIfMatches,
+    flushPendingAttention: runtimeApi.flushPendingAttention,
+    discardPendingAttention: runtimeApi.discardPendingAttention,
   };
 })();

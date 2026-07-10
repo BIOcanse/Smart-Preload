@@ -1,16 +1,5 @@
 async function queryTrackingGraph(state, query) {
-  const engine = await getVisitGraphEngine();
-
-  if (!engine) {
-    return queryTrackingGraphFallback(state, query);
-  }
-
-  try {
-    return engine.queryState(sanitizeTrackingStateForWasm(state), query);
-  } catch (error) {
-    console.error("Wasm visit graph query failed, falling back to JS.", error);
-    return queryTrackingGraphFallback(state, query);
-  }
+  return queryTrackingGraphFallback(state, query);
 }
 
 async function queryTrackingGraphFromGraph(graph, query) {

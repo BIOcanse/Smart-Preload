@@ -33,26 +33,39 @@ pub(crate) fn ensure_native_messaging_registration(extension_ids: &[String]) -> 
 pub(crate) fn run_native_messaging_host() -> Result<()> {
     record_app_runtime_event("native-messaging", "wake-received", None);
 
-    let response = match process::spawn_host_process() {
-        Ok(()) => {
-            record_app_runtime_event("native-messaging", "host-spawn-requested", None);
-            json!({
-                "ok": true,
-                "host": NATIVE_MESSAGING_HOST_NAME,
-                "action": "wake-host"
-            })
-        }
-        Err(error) => {
-            record_app_runtime_event(
-                "native-messaging",
-                "host-spawn-failed",
-                Some(error.to_string()),
-            );
-            json!({
-                "ok": false,
-                "host": NATIVE_MESSAGING_HOST_NAME,
-                "error": error.to_string()
-            })
+    let response = if crate::update::update_in_progress() {
+        record_app_runtime_event(
+            "native-messaging",
+            "wake-suppressed-update-in-progress",
+            None,
+        );
+        json!({
+            "ok": true,
+            "host": NATIVE_MESSAGING_HOST_NAME,
+            "action": "update-in-progress"
+        })
+    } else {
+        match process::spawn_host_process() {
+            Ok(()) => {
+                record_app_runtime_event("native-messaging", "host-spawn-requested", None);
+                json!({
+                    "ok": true,
+                    "host": NATIVE_MESSAGING_HOST_NAME,
+                    "action": "wake-host"
+                })
+            }
+            Err(error) => {
+                record_app_runtime_event(
+                    "native-messaging",
+                    "host-spawn-failed",
+                    Some(error.to_string()),
+                );
+                json!({
+                    "ok": false,
+                    "host": NATIVE_MESSAGING_HOST_NAME,
+                    "error": error.to_string()
+                })
+            }
         }
     };
 

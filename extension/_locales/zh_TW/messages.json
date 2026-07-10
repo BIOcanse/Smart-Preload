@@ -503,6 +503,10 @@
   "settingsWatchdogIntervalOption10": {
     "message": "10 秒"
   },
+  "settingsWatchdogIntervalOption30": { "message": "30 秒" },
+  "settingsWatchdogIntervalOption60": { "message": "1 分鐘" },
+  "settingsWatchdogIntervalOption120": { "message": "2 分鐘" },
+  "settingsWatchdogIntervalOption300": { "message": "5 分鐘" },
   "settingsFullscreenPressurePolicy": {
     "message": "全屏/游戏时后台标签页策略"
   },
@@ -700,6 +704,9 @@
   },
   "settingsAiLoadingModelsGeneric": {
     "message": "正在載入模型..."
+  },
+  "settingsAiModelListRequestTimedOut": {
+    "message": "模型清單請求在 {0} 秒後停止，現改為顯示內建精選模型。"
   },
   "settingsAiNoModelsFound": {
     "message": "找不到模型"

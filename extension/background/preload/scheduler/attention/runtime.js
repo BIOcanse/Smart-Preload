@@ -29,6 +29,26 @@
     options = {}
   ) {
     const senderTabId = normalizePositiveInteger(sender?.tab?.id);
+
+    if (
+      options?.coalesce !== false &&
+      senderTabId !== null &&
+      typeof globalThis.queueAttention === "function"
+    ) {
+      return globalThis.queueAttention(`attention-runtime:${senderTabId}`, () =>
+        recordActiveTabAttentionFromSenderNow(sender, reason, options)
+      );
+    }
+
+    return recordActiveTabAttentionFromSenderNow(sender, reason, options);
+  }
+
+  async function recordActiveTabAttentionFromSenderNow(
+    sender,
+    reason,
+    options
+  ) {
+    const senderTabId = normalizePositiveInteger(sender?.tab?.id);
     const liveTab = senderTabId === null ? null : await getTabMaybe(senderTabId);
 
     await recordActiveTabAttentionFromTab(
@@ -125,5 +145,9 @@
     recordActiveTabAttentionFromFocusedWindow,
     pausePreloadAttentionCursor,
     pausePreloadAttentionCursorIfMatches,
+    flushPendingAttention:
+      globalThis.ZeroLatencyPreloadAttentionRuntimeMutation.flushPendingAttention,
+    discardPendingAttention:
+      globalThis.ZeroLatencyPreloadAttentionRuntimeMutation.discardPendingAttention,
   };
 })();

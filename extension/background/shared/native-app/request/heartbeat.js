@@ -37,55 +37,75 @@
       lastNativeAppHeartbeatStartedAt = Date.now();
     }
 
-    nativeAppHeartbeatPromise = sendNativeAppHeartbeatInternal(reason).finally(() => {
-      nativeAppHeartbeatPromise = null;
-    });
-
-    return nativeAppHeartbeatPromise;
-  }
-
-  async function sendNativeAppHeartbeatInternal(reason = "alarm") {
-    try {
-      const browserActivity = await modules.collectNativeAppHeartbeatBrowserActivity();
-
-      if (browserActivity.normalWindowCount === 0) {
-        globalThis.ZeroLatencyDebugEvents?.record?.("native-app.heartbeat.skip-no-normal-window", {
-          reason,
-          normalTabCount: browserActivity.normalTabCount ?? 0,
-        });
-        return {
-          ok: false,
-          skipped: true,
-          reason: "no-normal-window",
-          normalWindowCount: 0,
-        };
+    const runHeartbeat = () => {
+      if (nativeAppHeartbeatPromise) {
+        return nativeAppHeartbeatPromise;
       }
 
-      const response = await modules.fetchNativeApp(modules.NATIVE_APP_EXTENSION_HEARTBEAT_PATH, {
-        method: "POST",
-        body: {
-          reason,
-          sentAt: new Date().toISOString(),
-          ...browserActivity,
-        },
-        timeoutMs: 1_500,
+      nativeAppHeartbeatPromise = sendNativeAppHeartbeatInternal(reason).finally(() => {
+        nativeAppHeartbeatPromise = null;
       });
-      modules.markNativeAppSystemHidingAvailability(true);
-      await modules.ensureNativeAppWakeRetryAlarm(false);
-      globalThis.ZeroLatencyDebugEvents?.record?.("native-app.heartbeat.success", {
-        reason,
-        activeLeaseCount: response?.activeLeaseCount ?? null,
-        activeNormalWindowCount: response?.activeNormalWindowCount ?? null,
-        normalWindowCount: browserActivity.normalWindowCount ?? null,
-      });
-      return response;
+      return nativeAppHeartbeatPromise;
+    };
+
+    return typeof globalThis.queueLifecycle === "function"
+      ? globalThis.queueLifecycle("native-app-heartbeat", runHeartbeat)
+      : runHeartbeat();
+  }
+
+  async function sendNativeAppHeartbeatInternal(reason = "alarm", options = {}) {
+    const browserActivity = await modules.collectNativeAppHeartbeatBrowserActivity();
+
+    try {
+      return await postNativeAppHeartbeat(reason, browserActivity);
     } catch (error) {
       globalThis.ZeroLatencyDebugEvents?.record?.("native-app.heartbeat.error", {
         reason,
         error: error instanceof Error ? error.message : String(error),
       });
-      return modules.recoverNativeAppHeartbeat(reason, error);
+
+      if (browserActivity.normalWindowCount === 0) {
+        await modules.ensureNativeAppWakeRetryAlarm(false);
+        return {
+          ok: false,
+          skipped: true,
+          reason: "lease-release-offline",
+          normalWindowCount: 0,
+        };
+      }
+
+      if (options.allowRecovery === false) {
+        modules.markNativeAppSystemHidingAvailability(false);
+        await modules.ensureNativeAppWakeRetryAlarm(true);
+        return {
+          ok: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      }
+
+      return modules.recoverNativeAppHeartbeat(reason, error, browserActivity);
     }
+  }
+
+  async function postNativeAppHeartbeat(reason, browserActivity) {
+    const response = await modules.fetchNativeApp(modules.NATIVE_APP_EXTENSION_HEARTBEAT_PATH, {
+      method: "POST",
+      body: {
+        reason,
+        sentAt: new Date().toISOString(),
+        ...browserActivity,
+      },
+      timeoutMs: 1_500,
+    });
+    modules.markNativeAppSystemHidingAvailability(true);
+    await modules.ensureNativeAppWakeRetryAlarm(false);
+    globalThis.ZeroLatencyDebugEvents?.record?.("native-app.heartbeat.success", {
+      reason,
+      activeLeaseCount: response?.activeLeaseCount ?? null,
+      activeNormalWindowCount: response?.activeNormalWindowCount ?? null,
+      normalWindowCount: browserActivity.normalWindowCount ?? null,
+    });
+    return response;
   }
 
   async function runNativeAppWakeRetry(reason = "alarm") {
@@ -120,15 +140,26 @@
       lastNativeAppWakeRetryStartedAt = Date.now();
     }
 
-    nativeAppWakeRetryPromise = modules.runNativeAppWakeRetryInternal(reason).finally(() => {
-      nativeAppWakeRetryPromise = null;
-    });
+    const runWakeRetry = () => {
+      if (nativeAppWakeRetryPromise) {
+        return nativeAppWakeRetryPromise;
+      }
 
-    return nativeAppWakeRetryPromise;
+      nativeAppWakeRetryPromise = modules.runNativeAppWakeRetryInternal(reason).finally(() => {
+        nativeAppWakeRetryPromise = null;
+      });
+      return nativeAppWakeRetryPromise;
+    };
+
+    return typeof globalThis.queueLifecycle === "function"
+      ? globalThis.queueLifecycle("native-app-wake-retry", runWakeRetry)
+      : runWakeRetry();
   }
 
   Object.assign(modules, {
     sendNativeAppHeartbeat,
+    sendNativeAppHeartbeatNow: sendNativeAppHeartbeatInternal,
+    postNativeAppHeartbeat,
     runNativeAppWakeRetry,
   });
 })();

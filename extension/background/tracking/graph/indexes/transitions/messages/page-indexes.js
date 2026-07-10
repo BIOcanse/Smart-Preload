@@ -143,6 +143,7 @@ function registerPageTransitionMessageBuckets(graph, transitionMessage) {
 
   if (targetMessages[targetMessages.length - 1] !== transitionMessage.sequenceNumber) {
     targetMessages.push(transitionMessage.sequenceNumber);
+    trimTransitionReferences(targetMessages, MAX_TRANSITION_REFERENCES_PER_ROUTE);
   }
 }
 

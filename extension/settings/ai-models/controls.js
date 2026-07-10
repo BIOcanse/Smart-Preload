@@ -30,13 +30,6 @@
         String(providerId || "").toLowerCase() === "lmstudio"
       );
     }
-    const lmStudioModelLoader = globalThis.ZeroLatencySettingsLmStudioModelLoader?.create?.({
-      elements,
-      translate,
-      isProviderLmStudio,
-      refreshOptionsForCurrentProvider: () =>
-        modelOptionsRefresher?.refreshOptionsForCurrentProvider?.(),
-    });
     modelOptionsRefresher = globalThis.ZeroLatencySettingsAiModelOptionsRefresher?.create?.({
       elements,
       settingsApi,
@@ -48,8 +41,6 @@
       setDraftSettings,
       updateComputedState,
       syncMismatchWarning: () => warning?.syncMismatchWarning?.(),
-      ensureSelectedLmStudioModelLoaded: (settings) =>
-        lmStudioModelLoader?.ensureSelectedLmStudioModelLoaded?.(settings),
     });
 
     function populateProviderOptions() {
@@ -148,12 +139,7 @@
           : provider.apiKeyOptional === true
             ? t("settingsAiKeyOptionalPlaceholder", [], "Optional for local compatible endpoints")
             : t("settingsAiKeyRequiredPlaceholder", [], "Required");
-      void modelOptionsRefresher?.refreshModelOptions?.({
-        providerId,
-        selectedModelId: modelId,
-        apiKey,
-        endpointUrl,
-      });
+      void modelOptionsRefresher?.refreshOptionsForCurrentProvider?.();
     }
 
     return {
@@ -162,8 +148,6 @@
       syncProviderFieldsFromSettings,
       refreshOptionsForCurrentProvider:
         modelOptionsRefresher?.refreshOptionsForCurrentProvider ?? (async () => {}),
-      ensureSelectedLmStudioModelLoaded:
-        lmStudioModelLoader?.ensureSelectedLmStudioModelLoaded ?? (() => {}),
       syncMismatchWarning: warning?.syncMismatchWarning ?? (() => {}),
       isLmStudioProvider: isProviderLmStudio,
     };

@@ -80,8 +80,8 @@
     delete normalized.preloading.crossSiteCurrentTabSwap;
     normalized.preloadWindow.watchdogIntervalSeconds = clamp(
       normalized.preloadWindow.watchdogIntervalSeconds,
-      1,
-      10,
+      30,
+      300,
       DEFAULT_SETTINGS.preloadWindow.watchdogIntervalSeconds
     );
     normalized.preloadWindow.fullscreenPressurePolicy = normalizeFullscreenPressurePolicy(

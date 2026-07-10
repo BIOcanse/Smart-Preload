@@ -7,82 +7,150 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
-const heartbeatPath = path.join(
-  repoRoot,
-  "extension",
-  "background",
-  "shared",
-  "native-app",
-  "request",
-  "heartbeat.js"
-);
-const heartbeatSource = readFileSync(heartbeatPath, "utf8");
+const heartbeatDependencies = [
+  ["extension", "background", "shared", "native-app", "request", "common.js"],
+  [
+    "extension",
+    "background",
+    "shared",
+    "native-app",
+    "request",
+    "heartbeat",
+    "throttle.js",
+  ],
+  [
+    "extension",
+    "background",
+    "shared",
+    "native-app",
+    "request",
+    "heartbeat",
+    "alarms.js",
+  ],
+  [
+    "extension",
+    "background",
+    "shared",
+    "native-app",
+    "request",
+    "heartbeat",
+    "wake.js",
+  ],
+  [
+    "extension",
+    "background",
+    "shared",
+    "native-app",
+    "request",
+    "heartbeat",
+    "recovery.js",
+  ],
+  [
+    "extension",
+    "background",
+    "shared",
+    "native-app",
+    "request",
+    "heartbeat",
+    "wake-retry.js",
+  ],
+  ["extension", "background", "shared", "native-app", "request", "heartbeat.js"],
+].map((segments) => path.join(repoRoot, ...segments));
 
 function createHarness(overrides = {}) {
   const records = [];
-  const modules = {
-    NATIVE_APP_EXTENSION_HEARTBEAT_PATH: "/api/v1/extension/heartbeat",
-    NATIVE_APP_HEARTBEAT_ALARM: "native-app-heartbeat",
-    NATIVE_APP_HEARTBEAT_INTERVAL_SECONDS: 5,
-    NATIVE_APP_HEARTBEAT_RECOVERY_DELAYS_MS: [0],
-    NATIVE_APP_WAKE_RETRY_ALARM: "native-app-wake-retry",
-    NATIVE_APP_WAKE_RETRY_INTERVAL_SECONDS: 5,
-    collectNativeAppHeartbeatBrowserActivity: async () => ({
-      clientId: "zlw:test",
-      normalWindowCount: 1,
-      normalTabCount: 1,
-      preloadWindowHwnds: [],
-    }),
-    fetchNativeApp: async () => ({ activeLeaseCount: 1, activeNormalWindowCount: 1 }),
-    markNativeAppSystemHidingAvailability: () => {},
-    ensureNativeAppRegistration: async () => ({}),
-    resetNativeAppRegistration: () => {},
-  };
+  const alarmCreates = [];
+  const alarmClears = [];
+  const lifecycleKeys = [];
   const context = {
     console,
     setTimeout,
     clearTimeout,
+    AbortController,
     Date,
     Math,
     Number,
     String,
     Promise,
-    ZeroLatencyNativeAppRequestModules: modules,
+    chrome: {
+      alarms: {
+        clear: async (alarmName) => {
+          alarmClears.push(alarmName);
+          return true;
+        },
+        create: async (alarmName, options) => {
+          alarmCreates.push({ alarmName, options });
+        },
+      },
+    },
     ZeroLatencyDebugEvents: {
       record: (eventName, payload = {}) => {
         records.push({ eventName, payload });
       },
     },
     ZeroLatencySupport: {
-      hasChromeNamespaceMethod: () => false,
+      hasChromeNamespaceMethod: (namespaceName, methodName) =>
+        namespaceName === "alarms" && ["clear", "create"].includes(methodName),
+      supportsSystemLevelWindowHiding: () => true,
+      setSystemLevelWindowHidingUsable: () => {},
     },
     ZeroLatencyNativeAppWake: {
-      retryDelaysMs: [0],
       wake: async () => ({ ok: true }),
     },
     invalidateNativeAppHealthCache: () => {},
     nativeAppHealthCheck: async () => false,
-    wait: async () => {},
+    queueLifecycle: async (key, task) => {
+      lifecycleKeys.push(key);
+      return task();
+    },
     ...overrides,
   };
   context.globalThis = context;
-
   vm.createContext(context);
-  vm.runInContext(heartbeatSource, context, { filename: heartbeatPath });
+
+  vm.runInContext(readFileSync(heartbeatDependencies[0], "utf8"), context, {
+    filename: heartbeatDependencies[0],
+  });
+
+  const modules = context.ZeroLatencyNativeAppRequestModules;
+  Object.assign(modules, {
+    collectNativeAppHeartbeatBrowserActivity: async () => ({
+      clientId: "zlw:test",
+      normalWindowCount: 1,
+      normalTabCount: 1,
+      preloadWindowHwnds: [],
+    }),
+    fetchNativeApp: async () => ({
+      ok: true,
+      activeLeaseCount: 1,
+      activeNormalWindowCount: 1,
+    }),
+    ensureNativeAppRegistration: async () => ({}),
+    resetNativeAppRegistration: () => {},
+  });
+
+  for (const dependencyPath of heartbeatDependencies.slice(1)) {
+    vm.runInContext(readFileSync(dependencyPath, "utf8"), context, {
+      filename: dependencyPath,
+    });
+  }
 
   return {
     context,
     modules,
     records,
+    alarmCreates,
+    alarmClears,
+    lifecycleKeys,
   };
 }
 
 async function assertHeartbeatAlarmIsThrottled() {
-  const { modules, records } = createHarness();
+  const { modules, records, lifecycleKeys } = createHarness();
   let fetchCount = 0;
   modules.fetchNativeApp = async () => {
     fetchCount += 1;
-    return { activeLeaseCount: 1, activeNormalWindowCount: 1 };
+    return { ok: true, activeLeaseCount: 1, activeNormalWindowCount: 1 };
   };
 
   const first = await modules.sendNativeAppHeartbeat("alarm");
@@ -92,51 +160,105 @@ async function assertHeartbeatAlarmIsThrottled() {
   assert.equal(second.skipped, true);
   assert.equal(second.reason, "throttled");
   assert.equal(fetchCount, 1);
+  assert.deepEqual(lifecycleKeys, ["native-app-heartbeat"]);
   assert.ok(
     records.some((record) => record.eventName === "native-app.heartbeat.skip-throttled")
   );
 }
 
 async function assertHeartbeatRecoveryReasonIsNotThrottled() {
-  const { modules, records } = createHarness();
+  const { modules } = createHarness();
   let fetchCount = 0;
   modules.fetchNativeApp = async () => {
     fetchCount += 1;
-    return { activeLeaseCount: 1, activeNormalWindowCount: 1 };
+    return { ok: true, activeLeaseCount: 1, activeNormalWindowCount: 1 };
   };
 
-  const first = await modules.sendNativeAppHeartbeat("alarm");
-  const second = await modules.sendNativeAppHeartbeat("alarm:health-ok");
+  await modules.sendNativeAppHeartbeat("alarm");
+  const recovered = await modules.sendNativeAppHeartbeat("alarm:health-ok");
 
-  assert.equal(first.activeLeaseCount, 1);
-  assert.equal(second.activeLeaseCount, 1);
+  assert.equal(recovered.activeLeaseCount, 1);
   assert.equal(fetchCount, 2);
-  assert.equal(
-    records.some(
-      (record) =>
-        record.eventName === "native-app.heartbeat.skip-throttled" &&
-        record.payload?.reason === "alarm:health-ok"
-    ),
-    false
-  );
 }
 
-async function assertWakeRetryAlarmIsThrottled() {
-  let healthCheckCount = 0;
-  let registrationResetCount = 0;
-  const { modules, records } = createHarness({
+async function assertRecoveryHasOneWakeAndOneRetry() {
+  let wakeCount = 0;
+  let fetchCount = 0;
+  const { modules } = createHarness({
+    ZeroLatencyNativeAppWake: {
+      wake: async () => {
+        wakeCount += 1;
+        return { ok: true };
+      },
+    },
+  });
+  modules.fetchNativeApp = async () => {
+    fetchCount += 1;
+    if (fetchCount === 1) {
+      throw new Error("offline");
+    }
+    return { ok: true, activeLeaseCount: 1, activeNormalWindowCount: 1 };
+  };
+  const result = await modules.sendNativeAppHeartbeat("manual-recovery");
+
+  assert.equal(result.activeLeaseCount, 1);
+  assert.equal(fetchCount, 2);
+  assert.equal(wakeCount, 1);
+}
+
+async function assertZeroWindowSendsLeaseReleaseWithoutWake() {
+  let wakeCount = 0;
+  const requestBodies = [];
+  const { modules } = createHarness({
+    ZeroLatencyNativeAppWake: {
+      wake: async () => {
+        wakeCount += 1;
+        return { ok: true };
+      },
+    },
+  });
+  modules.collectNativeAppHeartbeatBrowserActivity = async () => ({
+    clientId: "zlw:test",
+    normalWindowCount: 0,
+    normalTabCount: 0,
+    preloadWindowHwnds: [],
+  });
+  modules.fetchNativeApp = async (_path, options) => {
+    requestBodies.push(options.body);
+    return { ok: true, activeLeaseCount: 0, activeNormalWindowCount: 0 };
+  };
+
+  const result = await modules.sendNativeAppHeartbeat("zero-window");
+
+  assert.equal(result.activeLeaseCount, 0);
+  assert.equal(requestBodies.length, 1);
+  assert.equal(requestBodies[0].normalWindowCount, 0);
+  assert.equal(wakeCount, 0);
+}
+
+async function assertPackedAlarmPeriodIsClamped() {
+  const { modules, alarmCreates } = createHarness();
+  modules.NATIVE_APP_HEARTBEAT_INTERVAL_SECONDS = 5;
+
+  await modules.ensureNativeAppHeartbeatAlarm(true);
+
+  assert.equal(alarmCreates.length, 1);
+  assert.equal(alarmCreates[0].options.delayInMinutes, 0.5);
+  assert.equal(alarmCreates[0].options.periodInMinutes, 0.5);
+}
+
+async function assertWakeRetryIsSingleAndThrottled() {
+  let healthChecks = 0;
+  let fetchCount = 0;
+  const { modules, lifecycleKeys, alarmClears } = createHarness({
     nativeAppHealthCheck: async () => {
-      healthCheckCount += 1;
+      healthChecks += 1;
       return true;
     },
   });
-  let fetchCount = 0;
-  modules.resetNativeAppRegistration = () => {
-    registrationResetCount += 1;
-  };
   modules.fetchNativeApp = async () => {
     fetchCount += 1;
-    return { activeLeaseCount: 1, activeNormalWindowCount: 1 };
+    return { ok: true, activeLeaseCount: 1, activeNormalWindowCount: 1 };
   };
 
   const first = await modules.runNativeAppWakeRetry("alarm");
@@ -145,41 +267,17 @@ async function assertWakeRetryAlarmIsThrottled() {
   assert.equal(first.activeLeaseCount, 1);
   assert.equal(second.skipped, true);
   assert.equal(second.reason, "throttled");
-  assert.equal(healthCheckCount, 1);
-  assert.equal(registrationResetCount, 1);
+  assert.equal(healthChecks, 1);
   assert.equal(fetchCount, 1);
-  assert.ok(
-    records.some((record) => record.eventName === "native-app.wake-retry.skip-throttled")
-  );
-}
-
-async function assertWakeRetryHealthOkClearsAlarm() {
-  const alarmClears = [];
-  const { modules } = createHarness({
-    chrome: {
-      alarms: {
-        clear: async (alarmName) => {
-          alarmClears.push(alarmName);
-        },
-        create: async () => {},
-      },
-    },
-    ZeroLatencySupport: {
-      hasChromeNamespaceMethod: (namespaceName, methodName) =>
-        namespaceName === "alarms" && ["clear", "create"].includes(methodName),
-    },
-    nativeAppHealthCheck: async () => true,
-  });
-
-  const result = await modules.runNativeAppWakeRetry("alarm:manual");
-
-  assert.equal(result.activeLeaseCount, 1);
+  assert.deepEqual(lifecycleKeys, ["native-app-wake-retry"]);
   assert.ok(alarmClears.includes(modules.NATIVE_APP_WAKE_RETRY_ALARM));
 }
 
 await assertHeartbeatAlarmIsThrottled();
 await assertHeartbeatRecoveryReasonIsNotThrottled();
-await assertWakeRetryAlarmIsThrottled();
-await assertWakeRetryHealthOkClearsAlarm();
+await assertRecoveryHasOneWakeAndOneRetry();
+await assertZeroWindowSendsLeaseReleaseWithoutWake();
+await assertPackedAlarmPeriodIsClamped();
+await assertWakeRetryIsSingleAndThrottled();
 
 console.log("native-app heartbeat throttle tests passed");

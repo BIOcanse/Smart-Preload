@@ -6,6 +6,16 @@
     recordPreloadAttentionObservationAndMaybeReschedule,
     notifyAttentionReschedule,
   } = globalThis.ZeroLatencyPreloadAttentionObservation;
+  const ATTENTION_LIFECYCLE_BOUNDARY_REASONS = new Set([
+    "committed",
+    "history-state-updated",
+    "tab-activated",
+    "tab-removed",
+    "window-focused",
+    "window-removed",
+  ]);
+  let volatileAttentionState = null;
+  let attentionStateEpoch = 0;
 
   async function commitPreloadAttentionRuntimeObservation({
     observation,
@@ -14,9 +24,14 @@
     skipPreloadTabId = null,
   }) {
     let result = null;
+    const requestEpoch = attentionStateEpoch;
     const normalizedSkipTabId = normalizePositiveInteger(skipPreloadTabId);
     const task = async () => {
-      const preloadState = await loadPreloadState();
+      if (requestEpoch !== attentionStateEpoch) {
+        return;
+      }
+
+      const preloadState = applyVolatileAttentionState(await loadPreloadState());
 
       if (normalizedSkipTabId !== null && isPreloadTab(preloadState, normalizedSkipTabId)) {
         return;
@@ -27,8 +42,15 @@
         observation,
         runtimeOptions
       );
+      volatileAttentionState = captureVolatileAttentionState(result.preloadState);
 
-      await savePreloadState(result.preloadState);
+      if (shouldPersistAttentionObservation(result, observation, options)) {
+        await savePreloadState(result.preloadState);
+        volatileAttentionState = null;
+        result.persisted = true;
+      } else {
+        result.persisted = false;
+      }
     };
 
     await runPreloadAttentionMutation(task, options, () => result);
@@ -37,7 +59,7 @@
   async function pausePreloadAttentionCursorMutation(reason = "pause", options = {}) {
     let result = null;
     const task = async () => {
-      const preloadState = await loadPreloadState();
+      const preloadState = applyVolatileAttentionState(await loadPreloadState());
       result = await recordPreloadAttentionObservationAndMaybeReschedule(
         preloadState,
         {
@@ -47,8 +69,10 @@
         },
         buildPreloadAttentionRuntimeOptions(options)
       );
-
+      volatileAttentionState = captureVolatileAttentionState(result.preloadState);
       await savePreloadState(result.preloadState);
+      volatileAttentionState = null;
+      result.persisted = true;
     };
 
     await runPreloadAttentionMutation(task, options, () => result);
@@ -68,7 +92,7 @@
 
     let result = null;
     const task = async () => {
-      const preloadState = await loadPreloadState();
+      const preloadState = applyVolatileAttentionState(await loadPreloadState());
       const cursor = normalizePreloadAttentionCursor(
         preloadState?.scheduler?.activeTabCursor
       );
@@ -88,11 +112,91 @@
         },
         buildPreloadAttentionRuntimeOptions(options)
       );
-
+      volatileAttentionState = captureVolatileAttentionState(result.preloadState);
       await savePreloadState(result.preloadState);
+      volatileAttentionState = null;
+      result.persisted = true;
     };
 
     await runPreloadAttentionMutation(task, options, () => result);
+  }
+
+  async function flushPendingAttention(reason = "lifecycle-boundary") {
+    if (typeof globalThis.queueAttention === "function") {
+      return globalThis.queueAttention("attention-runtime:flush", () =>
+        flushPendingAttentionNow(reason)
+      );
+    }
+
+    return flushPendingAttentionNow(reason);
+  }
+
+  async function flushPendingAttentionNow(reason) {
+    if (!volatileAttentionState) {
+      return { ok: true, flushed: false, reason };
+    }
+
+    const task = async () => {
+      const preloadState = applyVolatileAttentionState(await loadPreloadState());
+      await savePreloadState(preloadState);
+      volatileAttentionState = null;
+    };
+
+    if (typeof globalThis.queueMutation === "function") {
+      await globalThis.queueMutation(task);
+    } else {
+      await task();
+    }
+
+    return { ok: true, flushed: true, reason };
+  }
+
+  function discardPendingAttention(reason = "discarded") {
+    const discarded = volatileAttentionState !== null;
+    volatileAttentionState = null;
+    attentionStateEpoch += 1;
+    globalThis.ZeroLatencyDebugEvents?.record?.("scheduler.attention.pending-discarded", {
+      reason,
+      discarded,
+    });
+    return discarded;
+  }
+
+  function shouldPersistAttentionObservation(result, observation, options) {
+    return (
+      Number(result?.recordedDurationMs) > 0 ||
+      options?.persist === true ||
+      isAttentionLifecycleBoundaryReason(observation?.reason)
+    );
+  }
+
+  function isAttentionLifecycleBoundaryReason(reason) {
+    return ATTENTION_LIFECYCLE_BOUNDARY_REASONS.has(String(reason || ""));
+  }
+
+  function applyVolatileAttentionState(preloadState) {
+    if (!volatileAttentionState) {
+      return preloadState;
+    }
+
+    preloadState.scheduler = normalizePreloadSchedulerState(preloadState.scheduler);
+    preloadState.scheduler.attentionPool = volatileAttentionState.attentionPool;
+    preloadState.scheduler.attentionPendingByKey =
+      volatileAttentionState.attentionPendingByKey;
+    preloadState.scheduler.activeTabCursor = volatileAttentionState.activeTabCursor;
+    preloadState.scheduler.updatedAt = volatileAttentionState.updatedAt;
+    preloadState.updatedAt = volatileAttentionState.updatedAt;
+    return preloadState;
+  }
+
+  function captureVolatileAttentionState(preloadState) {
+    const scheduler = normalizePreloadSchedulerState(preloadState?.scheduler);
+    return {
+      attentionPool: scheduler.attentionPool,
+      attentionPendingByKey: scheduler.attentionPendingByKey,
+      activeTabCursor: scheduler.activeTabCursor,
+      updatedAt: scheduler.updatedAt,
+    };
   }
 
   async function runPreloadAttentionMutation(task, options, getResult) {
@@ -110,5 +214,7 @@
     commitPreloadAttentionRuntimeObservation,
     pausePreloadAttentionCursorMutation,
     pausePreloadAttentionCursorIfMatchesMutation,
+    flushPendingAttention,
+    discardPendingAttention,
   };
 })();

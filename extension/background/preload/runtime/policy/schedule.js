@@ -18,8 +18,13 @@ async function ensurePreloadWindowWatchdog() {
     return;
   }
 
-  const periodInMinutes = runtimeSettings.preloadWindow.watchdogIntervalSeconds / 60;
-  const cleanupPeriodInMinutes = 1 / 60;
+  const minimumRecurringAlarmSeconds = 30;
+  const periodInMinutes =
+    Math.max(
+      minimumRecurringAlarmSeconds,
+      Number(runtimeSettings.preloadWindow.watchdogIntervalSeconds) || 0
+    ) / 60;
+  const cleanupPeriodInMinutes = minimumRecurringAlarmSeconds / 60;
 
   await chrome.alarms.create(PRELOAD_WINDOW_WATCHDOG_ALARM, {
     delayInMinutes: periodInMinutes,

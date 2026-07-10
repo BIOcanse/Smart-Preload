@@ -13,15 +13,17 @@ const BOOKMARK_SMOKE_HOSTS = [
 ];
 
 export function launchBookmarkSmokeChrome({
-  chromePathCandidates,
+  browserPathCandidates,
   debugPort,
   extensionUnderTestDir,
   profileDir,
   webPort,
 }) {
-  const chromePath = chromePathCandidates.find((candidate) => candidate && existsSync(candidate));
-  if (!chromePath) {
-    throw new Error("Chrome executable was not found.");
+  const browserPath = browserPathCandidates.find(
+    (candidate) => candidate && existsSync(candidate)
+  );
+  if (!browserPath) {
+    throw new Error("Playwright Chromium executable was not found.");
   }
 
   const resolverRules = BOOKMARK_SMOKE_HOSTS
@@ -45,7 +47,7 @@ export function launchBookmarkSmokeChrome({
     `http://www.google.test:${webPort}/search?q=startup-smoke`,
   ];
 
-  const child = spawn(chromePath, args, {
+  const child = spawn(browserPath, args, {
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: false,
   });

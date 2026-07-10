@@ -11,6 +11,30 @@
     return requireBackgroundState().queueSideEffect(task);
   };
 
+  globalThis.queueInteraction = function queueInteraction(task) {
+    return requireBackgroundState().queueInteraction(task);
+  };
+
+  globalThis.queueLifecycle = function queueLifecycle(key, task) {
+    return requireBackgroundState().queueLifecycle(key, task);
+  };
+
+  globalThis.queueCandidate = function queueCandidate(key, task) {
+    return requireBackgroundState().queueCandidate(key, task);
+  };
+
+  globalThis.queueAttention = function queueAttention(key, task) {
+    return requireBackgroundState().queueAttention(key, task);
+  };
+
+  globalThis.queueAi = function queueAi(key, task) {
+    return requireBackgroundState().queueAi(key, task);
+  };
+
+  globalThis.whenBackgroundStateReady = function whenBackgroundStateReady() {
+    return requireBackgroundState().whenReady();
+  };
+
   globalThis.getEffectiveExtensionSettings = function getEffectiveExtensionSettings() {
     return requireBackgroundState().getEffectiveExtensionSettings();
   };

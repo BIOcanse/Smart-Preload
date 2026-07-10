@@ -52,6 +52,7 @@
   }
 
   async function resetDraftSettings(context) {
+    context.dialogs.resetRealPreloadRiskAcceptance();
     context.setDraftSettings(context.settingsApi.cloneSettings(context.settingsApi.DEFAULT_SETTINGS));
     await context.languageControls.applyLanguageModeToPage(
       context.getDraftSettings().appearance.languageMode
@@ -74,19 +75,23 @@
     const { formElements } = context;
     const aiControls = context.getAiControls();
 
+    context.ruleCardController.flushPendingChanges?.();
     context.baseForm.syncMutuallyExclusivePreloadModeControls(event?.target);
-
-    if (await shouldCancelRealPreloadEnable(context)) {
-      revertRealPreloadEnable(context);
-      return;
-    }
 
     if (event?.target === formElements.aiPredictionProvider) {
       aiControls?.syncProviderFieldsFromSettings?.(context.getDraftSettings());
     }
 
     context.setDraftSettings(context.baseForm.readFormSettings());
-    const draftSettings = context.getDraftSettings();
+    let draftSettings = context.getDraftSettings();
+
+    if (await shouldCancelRealPreloadEnable(context, event?.target, draftSettings)) {
+      revertRealPreloadEnable(context);
+      return;
+    }
+
+    context.setDraftSettings(context.baseForm.readFormSettings());
+    draftSettings = context.getDraftSettings();
 
     if (event?.target === formElements.languageMode) {
       await context.languageControls.applyLanguageModeToPage(
@@ -105,12 +110,6 @@
       event?.target === formElements.aiProviderEndpoint
     ) {
       void aiControls?.refreshOptionsForCurrentProvider?.();
-    }
-    if (
-      event?.target === formElements.aiPredictionModel ||
-      event?.target === formElements.aiPredictionEnabled
-    ) {
-      void aiControls?.ensureSelectedLmStudioModelLoaded?.(draftSettings);
     }
     if (event?.target !== formElements.languageMode) {
       context.ruleCardController.renderRuleCards(draftSettings);
@@ -156,7 +155,6 @@
       context.setSavedSettings(storedSettings);
       context.setDraftSettings(context.settingsApi.cloneSettings(storedSettings));
       renderSettingsPageForm(context, context.getDraftSettings());
-      void context.getAiControls()?.ensureSelectedLmStudioModelLoaded?.(context.getDraftSettings());
       context.statusBar.setStatus(
         context.t("commonSaved", [], "Saved"),
         context.t("settingsWrittenSuccessfully", [], "Settings written successfully.")
@@ -170,12 +168,18 @@
     }
   }
 
-  async function shouldCancelRealPreloadEnable(context) {
-    context.setDraftSettings(context.baseForm.readFormSettings());
-    const draftSettings = context.getDraftSettings();
+  async function shouldCancelRealPreloadEnable(context, target, draftSettings) {
+    const { formElements } = context;
 
     if (context.settingsApi.isRealPreloadEnabled?.(draftSettings) !== true) {
       context.dialogs.resetRealPreloadRiskAcceptance();
+      return false;
+    }
+
+    if (
+      target !== formElements.realPreloadEnabled &&
+      target !== formElements.crossSiteCurrentTabSwap
+    ) {
       return false;
     }
 

@@ -1,14 +1,16 @@
 mod activity;
 mod hardware;
 mod performance;
+mod sampler;
 mod types;
 mod utils;
 
-pub use activity::{collect_activity_snapshot, ActivitySnapshot};
+pub use activity::ActivitySnapshot;
 pub use performance::{
     is_google_chrome_browser_process, supported_browser_process_info, SupportedBrowserProcessInfo,
     SystemSnapshotter,
 };
+pub use sampler::{SystemProcessSampler, PROCESS_SAMPLE_MAX_AGE};
 pub use types::{
     ChromePerformanceSnapshot, CpuHardwareSnapshot, DiskHardwareSnapshot,
     GpuDedicatedMemoryPerformanceSnapshot, GpuHardwareSnapshot, HardwareSnapshot,

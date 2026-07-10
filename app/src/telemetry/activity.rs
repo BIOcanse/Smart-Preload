@@ -1,3 +1,4 @@
+use anyhow::Result;
 use serde::Serialize;
 use sysinfo::{Process, System};
 
@@ -9,7 +10,9 @@ use windows::Win32::UI::WindowsAndMessaging::{
     GetWindowThreadProcessId, IsWindowVisible, SYSTEM_METRICS_INDEX,
 };
 
-use super::{chrono_like_now, is_google_chrome_browser_process};
+use super::{
+    chrono_like_now, is_google_chrome_browser_process, SystemProcessSampler, PROCESS_SAMPLE_MAX_AGE,
+};
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -53,21 +56,28 @@ pub struct ProfessionalProcessSnapshot {
     pub reason: String,
 }
 
-pub fn collect_activity_snapshot() -> ActivitySnapshot {
-    let mut system = System::new_all();
-    system.refresh_all();
+pub(super) fn collect_activity_snapshot(
+    process_sampler: &SystemProcessSampler,
+) -> Result<ActivitySnapshot> {
+    process_sampler.with_system(
+        PROCESS_SAMPLE_MAX_AGE,
+        collect_activity_snapshot_from_system,
+    )
+}
+
+fn collect_activity_snapshot_from_system(system: &System) -> ActivitySnapshot {
     let chrome_running = system
         .processes()
         .values()
         .any(is_google_chrome_browser_process);
-    let foreground = collect_foreground_window_snapshot(&system);
+    let foreground = collect_foreground_window_snapshot(system);
     let non_chrome_fullscreen = foreground
         .as_ref()
         .map(|window| window.fullscreen_like && !window.is_chrome)
         .unwrap_or(false);
-    let game_process = collect_game_process_snapshot(&system);
+    let game_process = collect_game_process_snapshot(system);
     let game_process_running = game_process.is_some();
-    let professional_process = collect_professional_process_snapshot(&system);
+    let professional_process = collect_professional_process_snapshot(system);
     let professional_process_running = professional_process.is_some();
 
     ActivitySnapshot {
@@ -241,8 +251,7 @@ fn detect_professional_process_name_reason(process_name: &str) -> Option<&'stati
     ];
 
     PROFESSIONAL_PROCESS_NAMES
-        .iter()
-        .any(|name| process_name == *name)
+        .contains(&process_name)
         .then_some("professional-process-name")
 }
 

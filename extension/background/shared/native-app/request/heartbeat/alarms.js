@@ -12,7 +12,9 @@
       return;
     }
 
-    const periodInMinutes = modules.NATIVE_APP_HEARTBEAT_INTERVAL_SECONDS / 60;
+    const periodInMinutes = resolveNativeAppRecurringAlarmPeriodInMinutes(
+      modules.NATIVE_APP_HEARTBEAT_INTERVAL_SECONDS
+    );
     await chrome.alarms.create(modules.NATIVE_APP_HEARTBEAT_ALARM, {
       delayInMinutes: periodInMinutes,
       periodInMinutes,
@@ -33,7 +35,9 @@
       return;
     }
 
-    const periodInMinutes = modules.NATIVE_APP_WAKE_RETRY_INTERVAL_SECONDS / 60;
+    const periodInMinutes = resolveNativeAppRecurringAlarmPeriodInMinutes(
+      modules.NATIVE_APP_WAKE_RETRY_INTERVAL_SECONDS
+    );
     await chrome.alarms.create(modules.NATIVE_APP_WAKE_RETRY_ALARM, {
       delayInMinutes: periodInMinutes,
       periodInMinutes,
@@ -44,10 +48,19 @@
     return alarmName === modules.NATIVE_APP_WAKE_RETRY_ALARM;
   }
 
+  function resolveNativeAppRecurringAlarmPeriodInMinutes(intervalSeconds) {
+    const seconds = Math.max(
+      modules.MIN_PACKED_RECURRING_ALARM_SECONDS,
+      Number(intervalSeconds) || 0
+    );
+    return seconds / 60;
+  }
+
   Object.assign(modules, {
     ensureNativeAppHeartbeatAlarm,
     ensureNativeAppWakeRetryAlarm,
     isNativeAppHeartbeatAlarm,
     isNativeAppWakeRetryAlarm,
+    resolveNativeAppRecurringAlarmPeriodInMinutes,
   });
 })();

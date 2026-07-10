@@ -69,6 +69,7 @@
   }
 
   async function handlePopupDebugSnapshot(message) {
+    await globalThis.whenBackgroundStateReady?.();
     const snapshot = await loadTrackingSnapshotForPopup();
     const pageContext = buildPageContext(
       { tabState: snapshot.tabState },
