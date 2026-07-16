@@ -205,4 +205,70 @@ settingsApi.refreshLocalizedText();
 assert.equal(settingsApi.TRANSITION_WINDOW_OPTIONS[0].label, "Total");
 assert.equal(settingsApi.RULE_OPERATOR_OPTIONS[0].label, "Disabled");
 
+const historyTransferMessageKeys = [
+  "commonExporting",
+  "commonExported",
+  "commonImporting",
+  "commonImported",
+  "settingsHistoryTransferTitle",
+  "settingsHistoryTransferDesc",
+  "settingsHistoryImportButton",
+  "settingsHistoryExportButton",
+  "settingsHistoryExportWarningTitle",
+  "settingsHistoryExportWarningMessage",
+  "settingsHistoryExportWarningDetail",
+  "settingsHistoryExportContinue",
+  "settingsHistoryExportPreparing",
+  "settingsHistoryExportSucceeded",
+  "settingsHistorySavePickerUnavailable",
+  "settingsHistoryExportFailed",
+  "settingsHistoryImportValidating",
+  "settingsHistoryImportConfirmTitle",
+  "settingsHistoryImportConfirmMessage",
+  "settingsHistoryImportConfirm",
+  "settingsHistoryImportCancelled",
+  "settingsHistoryImportSummary",
+  "settingsHistoryImporting",
+  "settingsHistoryImportSucceeded",
+  "settingsHistoryImportFailed",
+];
+
+for (const localeId of ["en", "zh_CN", "zh_TW", "ja", "ko", "de", "fr", "es", "pt_BR", "ru"]) {
+  const messages = JSON.parse(
+    readFileSync(
+      path.join(repoRoot, "extension", "_locales", localeId, "messages.json"),
+      "utf8"
+    )
+  );
+
+  for (const messageKey of [
+    ...historyTransferMessageKeys,
+    "settingsMobileRealPreloadEasterEgg",
+  ]) {
+    assert.ok(
+      messages[messageKey]?.message?.trim(),
+      `${localeId} is missing history transfer message ${messageKey}`
+    );
+  }
+}
+
+const simplifiedChineseMessages = JSON.parse(
+  readFileSync(
+    path.join(repoRoot, "extension", "_locales", "zh_CN", "messages.json"),
+    "utf8"
+  )
+);
+assert.match(
+  simplifiedChineseMessages.settingsHistoryExportWarningDetail.message,
+  /请勿随意分享该文件/u
+);
+assert.match(
+  simplifiedChineseMessages.settingsHistoryExportWarningDetail.message,
+  /隐私泄露.*概不负责/u
+);
+assert.match(
+  simplifiedChineseMessages.settingsHistoryImportConfirmMessage.message,
+  /完整覆盖当前历史记录/u
+);
+
 console.log("language mode settings tests passed");

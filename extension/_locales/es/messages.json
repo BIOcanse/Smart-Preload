@@ -900,6 +900,9 @@
   "settingsRealPreloadSensitiveSceneWarning": {
     "message": "En exámenes en línea, banca y flujos sensibles similares, desactiva Real Preload o pausa la precarga para evitar acciones de página no deseadas."
   },
+  "settingsMobileRealPreloadEasterEgg": {
+    "message": "Huevo de Pascua: encontraste el interruptor de Real Preload exclusivo del escritorio. Los navegadores móviles no tienen un entorno de pestañas ocultas, así que activarlo no invocará otro mundo."
+  },
   "settingsRealPreloadRiskDialogTitle": {
     "message": "Real Preload todavía puede ser riesgoso"
   },
@@ -989,5 +992,30 @@
   },
   "realPreloadRecommendedWarning": {
     "message": "Real Preload está disponible y se recomienda en este equipo. Puede reducir la latencia percibida a cero, pero usa mucha memoria; evita límites demasiado agresivos."
-  }
+  },
+  "commonExporting": { "message": "Exportando" },
+  "commonExported": { "message": "Exportado" },
+  "commonImporting": { "message": "Importando" },
+  "commonImported": { "message": "Importado" },
+  "settingsHistoryTransferTitle": { "message": "Importar y exportar historial" },
+  "settingsHistoryTransferDesc": { "message": "Exporta todo el historial local del grafo de visitas a una copia JSON o sustitúyelo desde un archivo compatible. Los ajustes, las claves API y el estado de ejecución de las pestañas actuales no se transfieren." },
+  "settingsHistoryImportButton": { "message": "Importar historial" },
+  "settingsHistoryExportButton": { "message": "Exportar historial" },
+  "settingsHistoryExportWarningTitle": { "message": "Revisa la privacidad antes de exportar" },
+  "settingsHistoryExportWarningMessage": { "message": "La copia puede contener direcciones visitadas, títulos de páginas, palabras clave, transiciones y estadísticas de uso." },
+  "settingsHistoryExportWarningDetail": { "message": "No la compartas sin cuidado. Eres responsable de cualquier información personal expuesta al compartir el archivo." },
+  "settingsHistoryExportContinue": { "message": "Elegir ubicación" },
+  "settingsHistoryExportPreparing": { "message": "Preparando la copia del historial..." },
+  "settingsHistoryExportSucceeded": { "message": "El historial se exportó a {0}." },
+  "settingsHistorySavePickerUnavailable": { "message": "Este navegador no puede elegir una ubicación desde la página de ajustes." },
+  "settingsHistoryExportFailed": { "message": "No se pudo exportar el historial." },
+  "settingsHistoryImportValidating": { "message": "Validando la copia del historial..." },
+  "settingsHistoryImportConfirmTitle": { "message": "¿Sustituir el historial existente?" },
+  "settingsHistoryImportConfirmMessage": { "message": "Importar este archivo sustituirá por completo el historial actual. Esta acción no se puede deshacer." },
+  "settingsHistoryImportConfirm": { "message": "Sustituir e importar" },
+  "settingsHistoryImportCancelled": { "message": "Se canceló la importación. El historial existente no se modificó." },
+  "settingsHistoryImportSummary": { "message": "Fecha de la copia: {0}. {1} transiciones, {2} sitios y {3} registros de palabras clave." },
+  "settingsHistoryImporting": { "message": "Sustituyendo el historial..." },
+  "settingsHistoryImportSucceeded": { "message": "Se importaron {0} registros de transición." },
+  "settingsHistoryImportFailed": { "message": "El archivo seleccionado no es una copia válida del historial de Smart Preload o no se pudo importar." }
 }

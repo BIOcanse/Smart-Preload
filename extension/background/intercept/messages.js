@@ -5,6 +5,7 @@
     }
 
     const sourceTab = sender?.tab ?? null;
+    const fromExtensionUi = isExtensionUiSender(sender, sourceTab);
 
     return {
       kind: "runtime-message",
@@ -31,7 +32,7 @@
         modelId: typeof message.modelId === "string" ? message.modelId : null,
       },
       context: {
-        fromExtensionUi: !sourceTab?.id,
+        fromExtensionUi,
         hasSenderTab: Boolean(sourceTab?.id),
         fromPreloadRuntime:
           globalThis.isKnownPreloadContext?.(sourceTab?.id ?? null, sourceTab?.windowId ?? null) ===
@@ -45,7 +46,26 @@
     };
   }
 
+  function isExtensionUiSender(sender, sourceTab) {
+    const runtime = globalThis.chrome?.runtime;
+    const extensionRoot = runtime?.getURL?.("") || "";
+    const senderUrl =
+      typeof sender?.url === "string" && sender.url
+        ? sender.url
+        : typeof sourceTab?.url === "string"
+          ? sourceTab.url
+          : "";
+
+    if (extensionRoot && senderUrl.startsWith(extensionRoot)) {
+      return !sender?.id || !runtime?.id || sender.id === runtime.id;
+    }
+
+    // Popup and other extension views may not have an associated browser tab.
+    return !sourceTab?.id && (!sender?.id || !runtime?.id || sender.id === runtime.id);
+  }
+
   globalThis.ZeroLatencyMessageIntercept = {
     createMessageEnvelope,
+    isExtensionUiSender,
   };
 })();

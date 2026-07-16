@@ -134,6 +134,18 @@
   line-height: 1.45;
 }
 
+.history-transfer-item {
+  align-items: center;
+}
+
+.history-transfer-control {
+  flex-wrap: wrap;
+}
+
+.history-transfer-control > button {
+  min-width: 136px;
+}
+
 .history-delete-item {
   grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
 }

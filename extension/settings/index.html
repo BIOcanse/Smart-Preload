@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title data-i18n="settingsPageTitle">Smart Preload Settings</title>
+    <script src="platform-adaptation.js"></script>
     <link rel="stylesheet" href="settings.css" />
   </head>
   <body>
@@ -136,6 +137,35 @@
               </div>
             </article>
             <div class="rule-cards-board" id="tracking-rule-cards-list"></div>
+            <article class="settings-item is-wide history-transfer-item">
+              <div class="settings-item-info">
+                <p class="settings-item-label" data-i18n="settingsHistoryTransferTitle">
+                  History import and export
+                </p>
+                <p class="settings-item-desc" data-i18n="settingsHistoryTransferDesc">
+                  Export the complete local history to a JSON backup, or replace it from a compatible backup file.
+                </p>
+                <p class="settings-item-warning is-info is-hidden" id="history-transfer-status"></p>
+              </div>
+              <div class="settings-item-control history-transfer-control">
+                <button
+                  id="history-import-button"
+                  class="ghost-button"
+                  type="button"
+                  data-i18n="settingsHistoryImportButton"
+                >
+                  Import History
+                </button>
+                <button
+                  id="history-export-button"
+                  class="primary-button"
+                  type="button"
+                  data-i18n="settingsHistoryExportButton"
+                >
+                  Export History
+                </button>
+              </div>
+            </article>
             <article class="settings-item is-wide history-delete-item">
               <div class="settings-item-info">
                 <p class="settings-item-label" data-i18n="settingsHistoryDeletionTitle">
@@ -295,7 +325,7 @@
                 </label>
               </div>
             </article>
-            <article class="settings-item">
+            <article class="settings-item" data-desktop-real-preload-only>
               <div class="settings-item-info">
                 <label class="settings-item-label" for="real-preload-enabled" data-i18n="settingsRealPreload">
                   Real Preload
@@ -305,6 +335,9 @@
                 </p>
                 <p class="settings-item-warning" data-i18n="settingsRealPreloadSensitiveSceneWarning">
                   In online exams, banking, and similar sensitive workflows, turn off Real Preload or pause preloading to avoid unintended page actions.
+                </p>
+                <p class="settings-item-warning is-info mobile-platform-easter-egg" data-i18n="settingsMobileRealPreloadEasterEgg">
+                  Easter egg: you found a desktop-only switch. Mobile browsers have no hidden-tab runtime, so flipping it cannot summon another world.
                 </p>
               </div>
               <div class="settings-item-control">
@@ -330,7 +363,7 @@
                 </label>
               </div>
             </article>
-            <article class="settings-item is-locked is-wide">
+            <article class="settings-item is-locked is-wide" data-desktop-real-preload-only>
               <div class="settings-item-info">
                 <label class="settings-item-label" for="side-effect-link-safety-guard" data-i18n="settingsSideEffectLinkSafetyGuard">
                   Side-effect link safety guard
@@ -352,7 +385,7 @@
                 </label>
               </div>
             </article>
-            <article class="settings-item is-locked is-wide">
+            <article class="settings-item is-locked is-wide" data-desktop-real-preload-only>
               <div class="settings-item-info">
                 <label class="settings-item-label" for="dangerous-site-safety-guard" data-i18n="settingsDangerousSiteSafetyGuard">
                   Dangerous site safety guard
@@ -377,7 +410,7 @@
                 </label>
               </div>
             </article>
-            <article class="settings-item is-wide native-app-download-item">
+            <article class="settings-item is-wide native-app-download-item" data-desktop-real-preload-only>
               <div class="settings-item-info">
                 <p class="settings-item-label" data-i18n="settingsNativeAppDownloadTitle">
                   Native app download
@@ -401,7 +434,7 @@
                 </a>
               </div>
             </article>
-            <article class="settings-item is-wide native-app-update-item">
+            <article class="settings-item is-wide native-app-update-item" data-desktop-real-preload-only>
               <div class="settings-item-info">
                 <p class="settings-item-label" data-i18n="settingsNativeAppUpdateTitle">
                   Native app update
@@ -434,7 +467,7 @@
                 </button>
               </div>
             </article>
-            <p class="settings-item-warning settings-runtime-warning is-hidden" id="settings-performance-warning" data-i18n="performanceInsufficientReducePreloadCaps">
+            <p class="settings-item-warning settings-runtime-warning is-hidden" id="settings-performance-warning" data-i18n="performanceInsufficientReducePreloadCaps" data-desktop-real-preload-only>
               Performance pressure detected. Lower the preload limits.
             </p>
             <article class="settings-item">
@@ -527,7 +560,7 @@
                 </p>
               </div>
               <div class="settings-item-control scheduler-grid">
-                <fieldset class="scheduler-group" id="scheduler-hidden-tabs-group">
+                <fieldset class="scheduler-group" id="scheduler-hidden-tabs-group" data-desktop-real-preload-only>
                   <legend data-i18n="settingsSchedulerHiddenTabs">Real Preload</legend>
                   <label class="scheduler-field" for="scheduler-tab-total-min">
                     <span data-i18n="settingsSchedulerMin">Min</span>
@@ -673,7 +706,7 @@
             </article>
             <div class="rule-cards-board" id="preload-rule-cards-list"></div>
 
-            <article class="settings-item">
+            <article class="settings-item" data-desktop-real-preload-only>
               <div class="settings-item-info">
                 <label class="settings-item-label" for="watchdog-enabled" data-i18n="settingsWindowWatchdog">
                   Window watchdog
@@ -690,7 +723,7 @@
               </div>
             </article>
 
-            <article class="settings-item" id="watchdog-interval-row">
+            <article class="settings-item" id="watchdog-interval-row" data-desktop-real-preload-only>
               <div class="settings-item-info">
                 <label class="settings-item-label" for="watchdog-interval-seconds" data-i18n="settingsWatchdogInterval">
                   Watchdog interval
@@ -709,7 +742,7 @@
               </div>
             </article>
 
-            <article class="settings-item">
+            <article class="settings-item" data-desktop-real-preload-only>
               <div class="settings-item-info">
                 <label class="settings-item-label" for="fullscreen-pressure-policy" data-i18n="settingsFullscreenPressurePolicy">
                   Fullscreen/game background tab policy
@@ -727,7 +760,7 @@
               </div>
             </article>
 
-            <article class="settings-item">
+            <article class="settings-item" data-desktop-real-preload-only>
               <div class="settings-item-info">
                 <label class="settings-item-label" for="force-minimize" data-i18n="settingsForceMinimize">
                   Force minimize preload window
@@ -752,7 +785,7 @@
           </header>
 
           <div class="settings-list">
-            <article class="settings-item" id="cross-site-current-tab-swap-row">
+            <article class="settings-item" id="cross-site-current-tab-swap-row" data-desktop-real-preload-only>
               <div class="settings-item-info">
                 <label class="settings-item-label" for="cross-site-current-tab-swap" data-i18n="settingsCrossSiteCurrentTabSwap">
                   Cross-site current-tab hard swap
@@ -821,7 +854,7 @@
               </div>
             </article>
 
-            <article class="settings-item">
+            <article class="settings-item" data-desktop-real-preload-only>
               <div class="settings-item-info">
                 <label class="settings-item-label" for="diagnostics-logging-enabled" data-i18n="settingsDiagnosticsLogging">
                   Log mode
@@ -914,6 +947,10 @@
     <script src="dialogs/modal.js"></script>
     <script src="dialogs/real-preload-risk.js"></script>
     <script src="dialogs.js"></script>
+    <script src="history-transfer/file-picker.js"></script>
+    <script src="history-transfer/service.js"></script>
+    <script src="history-transfer/controller.js"></script>
+    <script src="history-transfer.js"></script>
     <script src="scheduler-form.js"></script>
     <script src="base-form/read.js"></script>
     <script src="base-form/sync.js"></script>

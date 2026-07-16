@@ -43,6 +43,12 @@
         return globalThis.ZeroLatencyCoreMessages.handleReset();
       case "delete-history-range":
         return globalThis.ZeroLatencyCoreMessages.handleDeleteHistoryRange(message);
+      case "export-history":
+        return globalThis.ZeroLatencyCoreMessages.handleExportHistory();
+      case "validate-history-import":
+        return globalThis.ZeroLatencyCoreMessages.handleValidateHistoryImport(message);
+      case "import-history":
+        return globalThis.ZeroLatencyCoreMessages.handleImportHistory(message);
       case "register-preload-candidates":
         attention.recordCandidateScanAttention(message, sender);
         return globalThis.ZeroLatencyPreloadRuntimeManager.registerCandidates(message, sender);

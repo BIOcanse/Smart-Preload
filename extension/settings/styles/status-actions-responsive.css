@@ -68,6 +68,24 @@
   display: none !important;
 }
 
+.mobile-platform-easter-egg {
+  display: none;
+}
+
+html[data-mobile-platform="true"] [data-desktop-real-preload-only],
+html[data-mobile-platform="true"] .rule-card[data-card-id="perPagePreloadLimit"],
+html[data-mobile-platform="true"] .rule-card[data-card-id="highWeightRankTab"] {
+  display: none !important;
+}
+
+html[data-mobile-platform="true"] .mobile-platform-easter-egg {
+  display: block;
+}
+
+html[data-mobile-platform="true"] .scheduler-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
 .settings-footer {
   position: sticky;
   bottom: 18px;
@@ -185,21 +203,77 @@
     width: 100%;
   }
 
+  .settings-item-control {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
   .scheduler-grid {
     grid-template-columns: 1fr;
   }
 
   .compound-setting-control {
-    justify-content: space-between;
+    justify-content: flex-start;
   }
 
   .compound-setting-control .select-input,
   .compound-setting-control .text-input {
+    flex: 1 1 100%;
+    min-width: 0;
     width: 100%;
+  }
+
+  .settings-item-control .switch {
+    flex: 0 0 58px;
+  }
+
+  .rule-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    max-width: none;
+  }
+
+  .rule-slot {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .rule-slot.is-toggle {
+    width: 58px;
+  }
+
+  .rule-controls .rule-input,
+  .rule-controls .rule-select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .settings-help-tooltip {
+    position: fixed;
+    inset: auto 18px 18px;
+    width: auto;
+    max-width: none;
+    transform: translateY(8px);
+  }
+
+  .settings-help:hover .settings-help-tooltip,
+  .settings-help:focus .settings-help-tooltip,
+  .settings-help:focus-visible .settings-help-tooltip {
+    transform: translateY(0);
   }
 
   .proxy-skip-control {
     grid-template-columns: 1fr;
+  }
+
+  .history-transfer-control {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .history-transfer-control > button {
+    flex: 1 1 160px;
   }
 
   .history-delete-control {

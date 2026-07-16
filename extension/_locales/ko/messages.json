@@ -900,6 +900,9 @@
   "settingsRealPreloadSensitiveSceneWarning": {
     "message": "온라인 시험, 은행 업무 같은 민감한 상황에서는 의도치 않은 페이지 동작을 피하기 위해 실제 프리로드를 끄거나 프리로드를 일시 중지하세요."
   },
+  "settingsMobileRealPreloadEasterEgg": {
+    "message": "이스터 에그: 데스크톱 전용 Real Preload 스위치를 찾았습니다. 모바일에는 숨겨진 탭 런타임이 없어서 켜도 다른 세계를 불러낼 수 없습니다."
+  },
   "settingsRealPreloadRiskDialogTitle": {
     "message": "Real Preload에는 여전히 위험이 있을 수 있습니다"
   },
@@ -989,5 +992,30 @@
   },
   "realPreloadRecommendedWarning": {
     "message": "Real Preload를 사용할 수 있으며 이 컴퓨터에서는 켜는 것을 권장할 수 있습니다. 체감 지연을 0에 가깝게 줄일 수 있지만 메모리를 많이 쓰므로 지나치게 공격적인 제한은 피하세요."
-  }
+  },
+  "commonExporting": { "message": "내보내는 중" },
+  "commonExported": { "message": "내보냄 완료" },
+  "commonImporting": { "message": "가져오는 중" },
+  "commonImported": { "message": "가져옴 완료" },
+  "settingsHistoryTransferTitle": { "message": "기록 가져오기 및 내보내기" },
+  "settingsHistoryTransferDesc": { "message": "전체 로컬 방문 그래프 기록을 JSON 백업으로 내보내거나 호환되는 백업 파일로 교체합니다. 설정, API 키 및 현재 탭 실행 상태는 이전되지 않습니다." },
+  "settingsHistoryImportButton": { "message": "기록 가져오기" },
+  "settingsHistoryExportButton": { "message": "기록 내보내기" },
+  "settingsHistoryExportWarningTitle": { "message": "내보내기 전에 개인정보 위험을 확인하세요" },
+  "settingsHistoryExportWarningMessage": { "message": "백업에는 방문 주소, 페이지 제목, 키워드, 이동 관계 및 사용 통계가 포함될 수 있습니다." },
+  "settingsHistoryExportWarningDetail": { "message": "함부로 공유하지 마세요. 파일 공유로 인해 개인정보가 노출되는 경우 그 책임은 사용자에게 있습니다." },
+  "settingsHistoryExportContinue": { "message": "저장 위치 선택" },
+  "settingsHistoryExportPreparing": { "message": "기록 백업을 준비하는 중..." },
+  "settingsHistoryExportSucceeded": { "message": "기록을 {0}(으)로 내보냈습니다." },
+  "settingsHistorySavePickerUnavailable": { "message": "이 브라우저에서는 설정 페이지에서 저장 위치를 선택할 수 없습니다." },
+  "settingsHistoryExportFailed": { "message": "기록을 내보낼 수 없습니다." },
+  "settingsHistoryImportValidating": { "message": "기록 백업을 검증하는 중..." },
+  "settingsHistoryImportConfirmTitle": { "message": "기존 기록을 교체할까요?" },
+  "settingsHistoryImportConfirmMessage": { "message": "이 파일을 가져오면 현재 기록 전체가 교체됩니다. 이 작업은 되돌릴 수 없습니다." },
+  "settingsHistoryImportConfirm": { "message": "교체하고 가져오기" },
+  "settingsHistoryImportCancelled": { "message": "가져오기를 취소했습니다. 기존 기록은 변경되지 않았습니다." },
+  "settingsHistoryImportSummary": { "message": "백업 시간: {0}. 이동 {1}개, 사이트 {2}개, 키워드 기록 {3}개." },
+  "settingsHistoryImporting": { "message": "기록을 교체하는 중..." },
+  "settingsHistoryImportSucceeded": { "message": "이동 기록 {0}개를 가져왔습니다." },
+  "settingsHistoryImportFailed": { "message": "선택한 파일이 유효한 Smart Preload 기록 백업이 아니거나 가져올 수 없습니다." }
 }

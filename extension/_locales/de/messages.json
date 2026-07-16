@@ -900,6 +900,9 @@
   "settingsRealPreloadSensitiveSceneWarning": {
     "message": "Bei Online-Prüfungen, Banking und ähnlichen sensiblen Abläufen sollten Sie Real Preload ausschalten oder das Vorladen pausieren, um unbeabsichtigte Seitenaktionen zu vermeiden."
   },
+  "settingsMobileRealPreloadEasterEgg": {
+    "message": "Easter Egg: Sie haben den Desktop-Schalter für Real Preload gefunden. Mobilbrowser besitzen keine Laufzeit für versteckte Tabs, daher öffnet dieser Schalter auch keine andere Welt."
+  },
   "settingsRealPreloadRiskDialogTitle": {
     "message": "Real Preload kann weiterhin riskant sein"
   },
@@ -989,5 +992,30 @@
   },
   "realPreloadRecommendedWarning": {
     "message": "Real Preload ist verfügbar und für diesen Computer empfohlen. Es kann die wahrgenommene Verzögerung auf null senken, belegt aber viel Arbeitsspeicher; vermeiden Sie zu aggressive Limits."
-  }
+  },
+  "commonExporting": { "message": "Export wird ausgeführt" },
+  "commonExported": { "message": "Exportiert" },
+  "commonImporting": { "message": "Import wird ausgeführt" },
+  "commonImported": { "message": "Importiert" },
+  "settingsHistoryTransferTitle": { "message": "Verlauf importieren und exportieren" },
+  "settingsHistoryTransferDesc": { "message": "Exportiert den vollständigen lokalen Besuchsgraph-Verlauf als JSON-Sicherung oder ersetzt ihn durch eine kompatible Sicherungsdatei. Einstellungen, API-Schlüssel und der Laufzeitstatus aktueller Tabs werden nicht übertragen." },
+  "settingsHistoryImportButton": { "message": "Verlauf importieren" },
+  "settingsHistoryExportButton": { "message": "Verlauf exportieren" },
+  "settingsHistoryExportWarningTitle": { "message": "Datenschutz vor dem Export prüfen" },
+  "settingsHistoryExportWarningMessage": { "message": "Die Sicherung kann besuchte Adressen, Seitentitel, Schlüsselwörter, Übergänge und Nutzungsstatistiken enthalten." },
+  "settingsHistoryExportWarningDetail": { "message": "Teilen Sie sie nicht unbedacht. Für personenbezogene Daten, die durch das Teilen der Datei offengelegt werden, sind Sie selbst verantwortlich." },
+  "settingsHistoryExportContinue": { "message": "Speicherort auswählen" },
+  "settingsHistoryExportPreparing": { "message": "Verlaufssicherung wird vorbereitet..." },
+  "settingsHistoryExportSucceeded": { "message": "Der Verlauf wurde nach {0} exportiert." },
+  "settingsHistorySavePickerUnavailable": { "message": "Dieser Browser kann auf der Einstellungsseite keinen Speicherort auswählen." },
+  "settingsHistoryExportFailed": { "message": "Der Verlauf konnte nicht exportiert werden." },
+  "settingsHistoryImportValidating": { "message": "Verlaufssicherung wird geprüft..." },
+  "settingsHistoryImportConfirmTitle": { "message": "Vorhandenen Verlauf ersetzen?" },
+  "settingsHistoryImportConfirmMessage": { "message": "Beim Import dieser Datei wird der aktuelle Verlauf vollständig ersetzt. Dies kann nicht rückgängig gemacht werden." },
+  "settingsHistoryImportConfirm": { "message": "Ersetzen und importieren" },
+  "settingsHistoryImportCancelled": { "message": "Der Import wurde abgebrochen. Der vorhandene Verlauf wurde nicht geändert." },
+  "settingsHistoryImportSummary": { "message": "Sicherungszeit: {0}. {1} Übergänge, {2} Websites, {3} Schlüsselworteinträge." },
+  "settingsHistoryImporting": { "message": "Verlaufseinträge werden ersetzt..." },
+  "settingsHistoryImportSucceeded": { "message": "{0} Übergangseinträge wurden importiert." },
+  "settingsHistoryImportFailed": { "message": "Die ausgewählte Datei ist keine gültige Smart-Preload-Verlaufssicherung oder konnte nicht importiert werden." }
 }

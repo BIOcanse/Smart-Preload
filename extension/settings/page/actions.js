@@ -13,6 +13,11 @@
       setStatus: context.statusBar.setStatus,
       translate: context.t,
     });
+    context.settingsHistoryTransfer?.initialize?.({
+      dialogs: context.dialogs,
+      setStatus: context.statusBar.setStatus,
+      translate: context.t,
+    });
     context.settingsNavigation?.initialize?.();
     context.statusBar.setStatus(
       context.t("commonLoading", [], "Loading"),
@@ -25,11 +30,13 @@
       context.setDraftSettings(context.settingsApi.cloneSettings(savedSettings));
       renderSettingsPageForm(context, context.getDraftSettings());
       context.settingsNavigation?.queueSync?.();
-      context.settingsAppUpdates?.initialize?.({ setStatus: context.statusBar.setStatus });
-      context.settingsPerformanceWarning?.initialize?.({
-        translate: context.t,
-        isRealPreloadEnabled: () => context.formElements.realPreloadEnabled.checked === true,
-      });
+      if (context.settingsPlatformAdaptation?.isMobilePlatform !== true) {
+        context.settingsAppUpdates?.initialize?.({ setStatus: context.statusBar.setStatus });
+        context.settingsPerformanceWarning?.initialize?.({
+          translate: context.t,
+          isRealPreloadEnabled: () => context.formElements.realPreloadEnabled.checked === true,
+        });
+      }
       context.statusBar.setStatus(
         context.t("commonReady", [], "Ready"),
         context.t("settingsNoUnsavedChanges", [], "No unsaved changes.")
