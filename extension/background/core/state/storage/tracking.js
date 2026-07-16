@@ -132,17 +132,18 @@
     const state = await loadTrackingStateForBackgroundState(backgroundState);
     const runtime = runtimeByBackgroundState.get(backgroundState);
     await runtime.persistenceQueue;
+    const snapshot = cloneTrackingState(state);
     const archived =
       await globalThis.ZeroLatencyTrackingHistoryArchive.loadAllTransitionMessages({
         chromeStorage: backgroundState.chromeStorage,
         manifest: runtime.manifest,
       });
-    state.graph.transitionMessages =
+    snapshot.graph.transitionMessages =
       globalThis.ZeroLatencyTrackingHistoryArchive.mergeArchivedAndHotMessages(
         archived,
-        state.graph.transitionMessages
+        snapshot.graph.transitionMessages
       );
-    return state;
+    return snapshot;
   }
 
   async function replaceTrackingHistoryArchiveForBackgroundState(backgroundState, state) {

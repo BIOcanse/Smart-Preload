@@ -900,6 +900,9 @@
   "settingsRealPreloadSensitiveSceneWarning": {
     "message": "Pour les examens en ligne, la banque et les workflows sensibles similaires, désactivez Real Preload ou mettez le préchargement en pause afin d’éviter des actions de page non souhaitées."
   },
+  "settingsMobileRealPreloadEasterEgg": {
+    "message": "Œuf de Pâques : vous avez trouvé l’interrupteur Real Preload réservé au bureau. Les navigateurs mobiles n’ont pas d’environnement d’onglets masqués ; l’activer n’invoquera donc pas un autre monde."
+  },
   "settingsRealPreloadRiskDialogTitle": {
     "message": "Real Preload peut encore présenter des risques"
   },
@@ -989,5 +992,30 @@
   },
   "realPreloadRecommendedWarning": {
     "message": "Real Preload est disponible et recommandé sur cette machine. Il peut réduire la latence perçue à zéro, mais consomme beaucoup de mémoire ; évitez des limites trop agressives."
-  }
+  },
+  "commonExporting": { "message": "Exportation en cours" },
+  "commonExported": { "message": "Exporté" },
+  "commonImporting": { "message": "Importation en cours" },
+  "commonImported": { "message": "Importé" },
+  "settingsHistoryTransferTitle": { "message": "Importation et exportation de l’historique" },
+  "settingsHistoryTransferDesc": { "message": "Exportez l’intégralité de l’historique local du graphe de visites dans une sauvegarde JSON, ou remplacez-le à partir d’un fichier compatible. Les paramètres, clés API et états d’exécution des onglets actuels ne sont pas transférés." },
+  "settingsHistoryImportButton": { "message": "Importer l’historique" },
+  "settingsHistoryExportButton": { "message": "Exporter l’historique" },
+  "settingsHistoryExportWarningTitle": { "message": "Vérifiez la confidentialité avant l’exportation" },
+  "settingsHistoryExportWarningMessage": { "message": "La sauvegarde peut contenir des adresses visitées, des titres de pages, des mots-clés, des transitions et des statistiques d’utilisation." },
+  "settingsHistoryExportWarningDetail": { "message": "Ne la partagez pas à la légère. Vous êtes responsable de toute information personnelle révélée par le partage du fichier." },
+  "settingsHistoryExportContinue": { "message": "Choisir l’emplacement" },
+  "settingsHistoryExportPreparing": { "message": "Préparation de la sauvegarde de l’historique..." },
+  "settingsHistoryExportSucceeded": { "message": "L’historique a été exporté vers {0}." },
+  "settingsHistorySavePickerUnavailable": { "message": "Ce navigateur ne peut pas choisir un emplacement depuis la page des paramètres." },
+  "settingsHistoryExportFailed": { "message": "Impossible d’exporter l’historique." },
+  "settingsHistoryImportValidating": { "message": "Validation de la sauvegarde de l’historique..." },
+  "settingsHistoryImportConfirmTitle": { "message": "Remplacer l’historique existant ?" },
+  "settingsHistoryImportConfirmMessage": { "message": "L’importation de ce fichier remplacera entièrement l’historique actuel. Cette action est irréversible." },
+  "settingsHistoryImportConfirm": { "message": "Remplacer et importer" },
+  "settingsHistoryImportCancelled": { "message": "L’importation a été annulée. L’historique existant n’a pas été modifié." },
+  "settingsHistoryImportSummary": { "message": "Date de la sauvegarde : {0}. {1} transitions, {2} sites, {3} entrées de mots-clés." },
+  "settingsHistoryImporting": { "message": "Remplacement de l’historique..." },
+  "settingsHistoryImportSucceeded": { "message": "{0} transitions ont été importées." },
+  "settingsHistoryImportFailed": { "message": "Le fichier sélectionné n’est pas une sauvegarde valide de l’historique Smart Preload ou n’a pas pu être importé." }
 }

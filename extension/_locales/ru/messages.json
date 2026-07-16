@@ -900,6 +900,9 @@
   "settingsRealPreloadSensitiveSceneWarning": {
     "message": "Для онлайн-экзаменов, банковских операций и похожих чувствительных сценариев отключайте Real Preload или ставьте предзагрузку на паузу, чтобы избежать нежелательных действий страницы."
   },
+  "settingsMobileRealPreloadEasterEgg": {
+    "message": "Пасхалка: вы нашли переключатель Real Preload только для компьютеров. В мобильных браузерах нет среды скрытых вкладок, поэтому он не призовёт другой мир."
+  },
   "settingsRealPreloadRiskDialogTitle": {
     "message": "Real Preload всё ещё может быть рискованным"
   },
@@ -989,5 +992,30 @@
   },
   "realPreloadRecommendedWarning": {
     "message": "Real Preload доступен и рекомендован для этой машины. Он может снизить воспринимаемую задержку до нуля, но требует много памяти; не используйте слишком агрессивные лимиты."
-  }
+  },
+  "commonExporting": { "message": "Экспорт" },
+  "commonExported": { "message": "Экспортировано" },
+  "commonImporting": { "message": "Импорт" },
+  "commonImported": { "message": "Импортировано" },
+  "settingsHistoryTransferTitle": { "message": "Импорт и экспорт истории" },
+  "settingsHistoryTransferDesc": { "message": "Экспортируйте полную локальную историю графа посещений в резервную копию JSON или замените её из совместимого файла. Настройки, ключи API и текущее состояние вкладок не переносятся." },
+  "settingsHistoryImportButton": { "message": "Импортировать историю" },
+  "settingsHistoryExportButton": { "message": "Экспортировать историю" },
+  "settingsHistoryExportWarningTitle": { "message": "Проверьте конфиденциальность перед экспортом" },
+  "settingsHistoryExportWarningMessage": { "message": "Резервная копия может содержать посещённые адреса, заголовки страниц, ключевые слова, переходы и статистику использования." },
+  "settingsHistoryExportWarningDetail": { "message": "Не передавайте файл без необходимости. Вы несёте ответственность за раскрытие личной информации при его передаче." },
+  "settingsHistoryExportContinue": { "message": "Выбрать место сохранения" },
+  "settingsHistoryExportPreparing": { "message": "Подготовка резервной копии истории..." },
+  "settingsHistoryExportSucceeded": { "message": "История экспортирована в {0}." },
+  "settingsHistorySavePickerUnavailable": { "message": "Этот браузер не позволяет выбрать место сохранения со страницы настроек." },
+  "settingsHistoryExportFailed": { "message": "Не удалось экспортировать историю." },
+  "settingsHistoryImportValidating": { "message": "Проверка резервной копии истории..." },
+  "settingsHistoryImportConfirmTitle": { "message": "Заменить существующую историю?" },
+  "settingsHistoryImportConfirmMessage": { "message": "Импорт этого файла полностью заменит текущую историю. Это действие нельзя отменить." },
+  "settingsHistoryImportConfirm": { "message": "Заменить и импортировать" },
+  "settingsHistoryImportCancelled": { "message": "Импорт отменён. Существующая история не была изменена." },
+  "settingsHistoryImportSummary": { "message": "Время резервной копии: {0}. Переходов: {1}, сайтов: {2}, записей ключевых слов: {3}." },
+  "settingsHistoryImporting": { "message": "Замена записей истории..." },
+  "settingsHistoryImportSucceeded": { "message": "Импортировано записей переходов: {0}." },
+  "settingsHistoryImportFailed": { "message": "Выбранный файл не является допустимой резервной копией истории Smart Preload или его не удалось импортировать." }
 }

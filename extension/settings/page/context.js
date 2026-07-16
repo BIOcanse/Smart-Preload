@@ -8,7 +8,9 @@
     const settingsRuleCards = globalThis.ZeroLatencySettingsRuleCards;
     const settingsRuleCardController = globalThis.ZeroLatencySettingsRuleCardController;
     const settingsHistoryDeletion = globalThis.ZeroLatencySettingsHistoryDeletion;
+    const settingsHistoryTransfer = globalThis.ZeroLatencySettingsHistoryTransfer;
     const settingsPerformanceWarning = globalThis.ZeroLatencySettingsPerformanceWarning;
+    const settingsPlatformAdaptation = globalThis.ZeroLatencySettingsPlatformAdaptation;
     const settingsNavigation = globalThis.ZeroLatencySettingsNavigation;
     const settingsDialogs = globalThis.ZeroLatencySettingsDialogs;
     const settingsSchedulerForm = globalThis.ZeroLatencySettingsSchedulerForm;
@@ -84,7 +86,9 @@
       settingsAiModelControls,
       settingsAppUpdates,
       settingsHistoryDeletion,
+      settingsHistoryTransfer,
       settingsPerformanceWarning,
+      settingsPlatformAdaptation,
       settingsNavigation,
       dialogs,
       i18n,

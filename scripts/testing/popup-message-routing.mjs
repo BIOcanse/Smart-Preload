@@ -17,6 +17,13 @@ const scriptPaths = [
 
 const context = {
   console,
+  chrome: {
+    runtime: {
+      id: "smart-preload-test-id",
+      getURL: (relativePath = "") =>
+        `chrome-extension://smart-preload-test-id/${relativePath}`,
+    },
+  },
 };
 context.globalThis = context;
 context.isKnownPreloadContext = () => false;
@@ -46,6 +53,33 @@ assert.equal(createTask({ type: "native-app:update-to-version" }).queueMode, "mu
 assert.equal(createTask({ type: "extension:set-service-paused" }).queueMode, "mutation");
 assert.equal(createTask({ type: "visit-graph:reset" }).queueMode, "mutation");
 assert.equal(createTask({ type: "visit-graph:delete-history-range" }).queueMode, "mutation");
+assert.equal(createTask({ type: "visit-graph:export-history" }).queueMode, "mutation");
+assert.equal(
+  createTask({ type: "visit-graph:validate-history-import", backup: "{}" }).queueMode,
+  "mutation"
+);
+assert.equal(
+  createTask({ type: "visit-graph:import-history", backup: "{}" }).queueMode,
+  "mutation"
+);
+const settingsTabEnvelope = context.ZeroLatencyMessageIntercept.createMessageEnvelope(
+  { type: "visit-graph:export-history" },
+  buildSettingsTabSender()
+);
+assert.equal(settingsTabEnvelope.context.fromExtensionUi, true);
+assert.equal(
+  context.ZeroLatencyMessageJudge.judgeMessageEnvelope(settingsTabEnvelope).actionKey,
+  "export-history"
+);
+const contentTabEnvelope = context.ZeroLatencyMessageIntercept.createMessageEnvelope(
+  { type: "visit-graph:export-history" },
+  buildTabSender()
+);
+assert.equal(contentTabEnvelope.context.fromExtensionUi, false);
+assert.equal(
+  context.ZeroLatencyMessageJudge.judgeMessageEnvelope(contentTabEnvelope).disposition,
+  "ignore"
+);
 assert.equal(
   createTask(
     {
@@ -129,6 +163,18 @@ function buildTabSender() {
       id: 101,
       windowId: 10,
       url: "https://source.example/page",
+    },
+  };
+}
+
+function buildSettingsTabSender() {
+  return {
+    id: "smart-preload-test-id",
+    url: "chrome-extension://smart-preload-test-id/settings/index.html",
+    tab: {
+      id: 202,
+      windowId: 20,
+      url: "chrome-extension://smart-preload-test-id/settings/index.html",
     },
   };
 }

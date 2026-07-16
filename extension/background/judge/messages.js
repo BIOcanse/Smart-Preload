@@ -15,6 +15,9 @@
         "background-task:get",
         "visit-graph:reset",
         "visit-graph:delete-history-range",
+        "visit-graph:export-history",
+        "visit-graph:validate-history-import",
+        "visit-graph:import-history",
       ].includes(envelope.messageType)
     ) {
       return ignoreDecision(envelope.messageType, { ok: true, skipped: true });
@@ -50,6 +53,18 @@
       case "visit-graph:delete-history-range":
         return envelope.context?.fromExtensionUi === true
           ? allowDecision("delete-history-range")
+          : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
+      case "visit-graph:export-history":
+        return envelope.context?.fromExtensionUi === true
+          ? allowDecision("export-history")
+          : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
+      case "visit-graph:validate-history-import":
+        return envelope.context?.fromExtensionUi === true
+          ? allowDecision("validate-history-import")
+          : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
+      case "visit-graph:import-history":
+        return envelope.context?.fromExtensionUi === true
+          ? allowDecision("import-history")
           : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
       case "preload:register-candidates":
         return envelope.source.tabId

@@ -900,6 +900,9 @@
   "settingsRealPreloadSensitiveSceneWarning": {
     "message": "オンライン試験、銀行などの重要な操作では、予期しないページ操作を避けるため Real Preload をオフにするか、プリロードを一時停止してください。"
   },
+  "settingsMobileRealPreloadEasterEgg": {
+    "message": "イースターエッグ：デスクトップ専用の Real Preload スイッチを見つけました。モバイルには非表示タブの実行環境がないため、切り替えても別世界は呼び出せません。"
+  },
   "settingsRealPreloadRiskDialogTitle": {
     "message": "Real Preload にはまだリスクがあります"
   },
@@ -989,5 +992,30 @@
   },
   "realPreloadRecommendedWarning": {
     "message": "Real Preload は利用でき、この PC では有効化を推奨できます。体感遅延をゼロに近づけられますが、メモリを大量に使うため、過度に強い設定は避けてください。"
-  }
+  },
+  "commonExporting": { "message": "エクスポート中" },
+  "commonExported": { "message": "エクスポート完了" },
+  "commonImporting": { "message": "インポート中" },
+  "commonImported": { "message": "インポート完了" },
+  "settingsHistoryTransferTitle": { "message": "履歴のインポートとエクスポート" },
+  "settingsHistoryTransferDesc": { "message": "ローカルの訪問グラフ履歴全体を JSON バックアップに書き出すか、互換性のあるバックアップで置き換えます。設定、API キー、現在のタブの実行状態は移行されません。" },
+  "settingsHistoryImportButton": { "message": "履歴をインポート" },
+  "settingsHistoryExportButton": { "message": "履歴をエクスポート" },
+  "settingsHistoryExportWarningTitle": { "message": "エクスポート前にプライバシーをご確認ください" },
+  "settingsHistoryExportWarningMessage": { "message": "バックアップには、訪問先のアドレス、ページタイトル、キーワード、遷移関係、利用統計が含まれる場合があります。" },
+  "settingsHistoryExportWarningDetail": { "message": "安易に共有しないでください。ファイルの共有によって個人情報が漏えいした場合、その責任は利用者が負います。" },
+  "settingsHistoryExportContinue": { "message": "保存先を選択" },
+  "settingsHistoryExportPreparing": { "message": "履歴バックアップを準備しています..." },
+  "settingsHistoryExportSucceeded": { "message": "履歴を {0} にエクスポートしました。" },
+  "settingsHistorySavePickerUnavailable": { "message": "このブラウザーでは、設定ページから保存先を選択できません。" },
+  "settingsHistoryExportFailed": { "message": "履歴をエクスポートできませんでした。" },
+  "settingsHistoryImportValidating": { "message": "履歴バックアップを検証しています..." },
+  "settingsHistoryImportConfirmTitle": { "message": "既存の履歴を置き換えますか？" },
+  "settingsHistoryImportConfirmMessage": { "message": "このファイルをインポートすると、現在の履歴記録がすべて置き換えられます。この操作は元に戻せません。" },
+  "settingsHistoryImportConfirm": { "message": "置き換えてインポート" },
+  "settingsHistoryImportCancelled": { "message": "インポートをキャンセルしました。既存の履歴は変更されていません。" },
+  "settingsHistoryImportSummary": { "message": "バックアップ日時：{0}。遷移 {1} 件、サイト {2} 件、キーワード記録 {3} 件。" },
+  "settingsHistoryImporting": { "message": "履歴記録を置き換えています..." },
+  "settingsHistoryImportSucceeded": { "message": "遷移記録 {0} 件をインポートしました。" },
+  "settingsHistoryImportFailed": { "message": "選択したファイルは有効な Smart Preload 履歴バックアップではないか、インポートできませんでした。" }
 }

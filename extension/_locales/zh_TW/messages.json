@@ -900,6 +900,9 @@
   "settingsRealPreloadSensitiveSceneWarning": {
     "message": "線上考試、銀行等敏感場景中，請關閉真實預載或暫停預載，以免觸發非預期頁面操作。"
   },
+  "settingsMobileRealPreloadEasterEgg": {
+    "message": "彩蛋：你找到了桌面端專屬的真實預載開關。手機端沒有隱藏分頁執行環境，撥動它也不會召喚出另一個世界。"
+  },
   "settingsRealPreloadRiskDialogTitle": {
     "message": "真實預載依舊可能存在風險"
   },
@@ -989,5 +992,30 @@
   },
   "realPreloadRecommendedWarning": {
     "message": "真實預載可用，而且這台機器適合開啟。它能把體感延遲降為 0，但非常占用記憶體，請不要使用過於激進的配置。"
-  }
+  },
+  "commonExporting": { "message": "正在匯出" },
+  "commonExported": { "message": "已匯出" },
+  "commonImporting": { "message": "正在匯入" },
+  "commonImported": { "message": "已匯入" },
+  "settingsHistoryTransferTitle": { "message": "歷史記錄匯入與匯出" },
+  "settingsHistoryTransferDesc": { "message": "將完整的本機造訪圖歷史匯出為 JSON 備份，或使用相容的備份檔案取代歷史。設定、API 金鑰和目前分頁的執行狀態不會移轉。" },
+  "settingsHistoryImportButton": { "message": "匯入歷史" },
+  "settingsHistoryExportButton": { "message": "匯出歷史" },
+  "settingsHistoryExportWarningTitle": { "message": "匯出前請確認隱私風險" },
+  "settingsHistoryExportWarningMessage": { "message": "備份可能包含造訪網址、頁面標題、關鍵字、跳轉關係和使用統計。" },
+  "settingsHistoryExportWarningDetail": { "message": "請勿隨意分享該檔案；如因分享導致個人資訊或隱私洩露，本擴充功能概不負責。" },
+  "settingsHistoryExportContinue": { "message": "選擇儲存位置" },
+  "settingsHistoryExportPreparing": { "message": "正在準備歷史備份..." },
+  "settingsHistoryExportSucceeded": { "message": "歷史記錄已匯出至 {0}。" },
+  "settingsHistorySavePickerUnavailable": { "message": "目前的瀏覽器無法從設定頁選擇儲存位置。" },
+  "settingsHistoryExportFailed": { "message": "無法匯出歷史記錄。" },
+  "settingsHistoryImportValidating": { "message": "正在驗證歷史備份..." },
+  "settingsHistoryImportConfirmTitle": { "message": "取代現有歷史記錄？" },
+  "settingsHistoryImportConfirmMessage": { "message": "匯入此檔案會完整覆寫目前的歷史記錄，且無法復原。" },
+  "settingsHistoryImportConfirm": { "message": "覆寫並匯入" },
+  "settingsHistoryImportCancelled": { "message": "已取消匯入，現有歷史記錄未發生變更。" },
+  "settingsHistoryImportSummary": { "message": "備份時間：{0}。包含 {1} 筆跳轉、{2} 個網站、{3} 筆關鍵字記錄。" },
+  "settingsHistoryImporting": { "message": "正在取代歷史記錄..." },
+  "settingsHistoryImportSucceeded": { "message": "已匯入 {0} 筆跳轉記錄。" },
+  "settingsHistoryImportFailed": { "message": "所選檔案不是有效的 Smart Preload 歷史備份，或無法完成匯入。" }
 }
