@@ -1,6 +1,6 @@
 # Politique de confidentialité de Smart Preload
 
-Dernière mise à jour : 23 juin 2026
+Dernière mise à jour : 31 juillet 2026
 
 [English](PRIVACY.md) | [简体中文](PRIVACY.zh-CN.md) | [繁體中文](PRIVACY.zh-TW.md) | [日本語](PRIVACY.ja.md) | [한국어](PRIVACY.ko.md) | [Deutsch](PRIVACY.de.md) | Français | [Español](PRIVACY.es.md) | [Português (Brasil)](PRIVACY.pt-BR.md) | [Русский](PRIVACY.ru.md)
 
@@ -17,6 +17,7 @@ Smart Preload peut traiter et stocker localement les données suivantes :
 - État des onglets, fenêtres, préchargements et prélectures nécessaires à la gestion des pages préparées.
 - Signaux d'interaction tels que survol de lien, intention de préchargement via menu contextuel, activité de l'onglet au premier plan, temps d'activité récent et état média/activité utilisé par la planification.
 - Titres et URL de favoris lorsque les fonctions de préchargement basées sur les favoris sont activées.
+- Lorsque la prédiction AI est activée, un court extrait du texte des pages que vous consultez (jusqu'à 2 200 caractères). Il sert à la notation par mots-clés et pertinence et est conservé jusqu'à 180 jours. Ces extraits sont également inclus dans les sauvegardes d'historique que vous exportez depuis la page des paramètres.
 - Paramètres de l'extension, limites de préchargement, paramètres de sécurité, statistiques d'historique local, paramètres de fournisseur AI et journaux de diagnostic lorsque les diagnostics sont activés.
 
 Ces données locales sont utilisées uniquement pour fournir les fonctions de Smart Preload : prédiction, classement, planification du préchargement, filtrage de sécurité, suppression d'historique local, diagnostics et notation assistée par AI optionnelle.
@@ -27,9 +28,13 @@ Smart Preload n'envoie pas l'historique de navigation ni l'historique de précha
 
 Les données peuvent quitter votre appareil uniquement dans les cas suivants :
 
-- Si vous activez un fournisseur AI externe et saisissez une API key ou un endpoint, l'extension peut envoyer à ce fournisseur le contexte de page/lien sélectionné nécessaire à la notation par mots-clés ou pertinence. La politique de confidentialité de ce fournisseur s'applique à ces requêtes.
-- Si vous utilisez un endpoint AI local tel que LM Studio, les requêtes sont envoyées à l'endpoint que vous avez configuré.
-- Si vous vérifiez ou téléchargez des mises à jour de l'application native, l'extension ou l'application Windows compagnon peut contacter les pages de publication GitHub ou des fichiers hébergés par GitHub.
+- Si vous activez un fournisseur AI externe et saisissez une API key ou un endpoint, l'extension envoie à ce fournisseur le contexte de la page pour la notation par mots-clés et pertinence. Ce contexte comprend :
+  - l'URL complète, le titre et jusqu'aux 2 200 premiers caractères du texte visible de la page que vous consultez ;
+  - pour la notation de pertinence, l'URL, le titre et un extrait de texte des autres onglets ouverts dans la même fenêtre (jusqu'à 8), ainsi que des pages récemment consultées et des pages d'historique enregistrées (jusqu'à 5 de chaque).
+
+  La prédiction AI est désactivée par défaut et ne s'exécute qu'après avoir sélectionné un fournisseur et saisi une API key. La politique de confidentialité de ce fournisseur s'applique à ces requêtes. **Si vous ne souhaitez pas que le contenu des pages soit envoyé à une entreprise externe, utilisez un endpoint AI local (voir ci-dessous) ou laissez la prédiction AI désactivée.**
+- Si vous utilisez un endpoint AI local tel que LM Studio, le même contexte est envoyé uniquement à l'endpoint que vous avez configuré sur votre propre machine et n'atteint aucune entreprise tierce.
+- Si l'application Windows compagnon est en cours d'exécution, l'extension contacte l'API GitHub Releases chaque fois que vous ouvrez la page des paramètres, afin d'indiquer si une mise à jour de l'application compagnon est disponible. Elle contacte également les pages de publication GitHub ou des fichiers hébergés par GitHub lorsque vous téléchargez une mise à jour.
 - Lorsque vous visitez réellement une page, ou lorsqu'une fonction de préchargement charge une page dans le navigateur, le réseau normal du navigateur est utilisé. Le site de destination peut recevoir des requêtes, cookies et informations de session ordinaires, comme lors d'un chargement normal.
 
 ## Application Windows compagnon optionnelle

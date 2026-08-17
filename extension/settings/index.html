@@ -29,7 +29,8 @@
 
         <div class="settings-nav-footer">
           <p data-i18n="settingsStorageFooter">Stored in local extension storage.</p>
-          <p id="nav-status-text" data-i18n="settingsLoadingSettings">Loading settings...</p>
+          <!-- 侧栏的状态摘要与页脚是同一份信息，标记为 live region 但不重复播报整体。 -->
+          <p id="nav-status-text" data-i18n="settingsLoadingSettings" role="status" aria-live="polite">Loading settings...</p>
         </div>
       </aside>
 
@@ -65,7 +66,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="track-google-search-pages" type="checkbox" />
+                  <input id="track-google-search-pages" type="checkbox" data-i18n-aria-label="settingsSeparateGoogleSearchPages" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -83,7 +84,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="exclude-google-internal-pages" type="checkbox" />
+                  <input id="exclude-google-internal-pages" type="checkbox" data-i18n-aria-label="settingsSkipGoogleInternalPages" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -99,7 +100,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="exclude-http-pages" type="checkbox" />
+                  <input id="exclude-http-pages" type="checkbox" data-i18n-aria-label="settingsSkipHttpPages" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -115,7 +116,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="exclude-local-pages" type="checkbox" />
+                  <input id="exclude-local-pages" type="checkbox" data-i18n-aria-label="settingsSkipLocalPages" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -131,7 +132,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="exclude-private-network-pages" type="checkbox" />
+                  <input id="exclude-private-network-pages" type="checkbox" data-i18n-aria-label="settingsSkipPrivateNetworkPages" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -304,7 +305,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="preloading-enabled" type="checkbox" />
+                  <input id="preloading-enabled" type="checkbox" data-i18n-aria-label="settingsEnablePreloading" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -320,7 +321,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="interaction-preload-enabled" type="checkbox" />
+                  <input id="interaction-preload-enabled" type="checkbox" data-i18n-aria-label="settingsInteractionPreload" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -342,7 +343,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="real-preload-enabled" type="checkbox" />
+                  <input id="real-preload-enabled" type="checkbox" data-i18n-aria-label="settingsRealPreload" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -358,7 +359,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="skip-sensitive-pages" type="checkbox" />
+                  <input id="skip-sensitive-pages" type="checkbox" data-i18n-aria-label="settingsSkipSensitivePages" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -445,7 +446,7 @@
                 <p class="settings-item-warning is-info is-hidden" id="native-app-update-status"></p>
               </div>
               <div class="settings-item-control native-app-update-control">
-                <select id="native-app-version-select" class="select-input" disabled>
+                <select id="native-app-version-select" class="select-input" disabled data-i18n-aria-label="settingsNativeAppVersion">
                   <option value="" data-i18n="settingsNativeAppVersionsLoading">Loading versions...</option>
                 </select>
                 <button
@@ -482,7 +483,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="ignore-waterfall-dynamic-links" type="checkbox" />
+                  <input id="ignore-waterfall-dynamic-links" type="checkbox" data-i18n-aria-label="settingsIgnoreWaterfallDynamicLinks" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -498,7 +499,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="exclude-incognito-windows" type="checkbox" />
+                  <input id="exclude-incognito-windows" type="checkbox" data-i18n-aria-label="settingsExcludeIncognitoWindows" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -513,7 +514,7 @@
                 </p>
               </div>
               <div class="settings-item-control proxy-skip-control">
-                <select id="proxy-skip-mode" class="select-input">
+                <select id="proxy-skip-mode" class="select-input" data-i18n-aria-label="settingsProxySkipMode">
                   <option value="blacklist" data-i18n="settingsProxySkipModeBlacklist">Blacklist</option>
                   <option value="whitelist" data-i18n="settingsProxySkipModeWhitelist">Whitelist</option>
                 </select>
@@ -527,7 +528,7 @@
                   placeholder="example.com&#10;*.example.org&#10;https://example.net/docs/*"
                 ></textarea>
                 <label class="switch">
-                  <input id="proxy-skip-enabled" type="checkbox" />
+                  <input id="proxy-skip-enabled" type="checkbox" data-i18n-aria-label="settingsProxySkipRules" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -545,7 +546,7 @@
               <div class="settings-item-control compound-setting-control">
                 <select id="transition-window-scope" class="select-input"></select>
                 <label class="switch">
-                  <input id="transition-window-scope-enabled" type="checkbox" />
+                  <input id="transition-window-scope-enabled" type="checkbox" data-i18n-aria-label="settingsTransitionFrequencyWindow" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -663,17 +664,23 @@
                   Choose a fast, inexpensive text or chat model when possible. Advanced models are
                   not hidden, so slower or more expensive choices may increase latency and cost.
                 </p>
+                <p class="settings-item-warning is-info" data-i18n="settingsAiPredictionPrivacyNotice">
+                  When an external provider is selected, the extension sends that provider the page
+                  URL, title, and up to the first 2,200 characters of page text, plus context from
+                  other tabs open in the same window. If you do not want page content sent to an
+                  external company, use a local endpoint such as LM Studio, or leave this off.
+                </p>
                 <p class="settings-item-warning is-hidden" id="ai-prediction-mismatch-warning"></p>
               </div>
               <div class="settings-item-control compound-setting-control">
                 <select id="ai-prediction-provider" class="select-input"></select>
-                <select id="ai-model-list-mode" class="select-input">
+                <select id="ai-model-list-mode" class="select-input" data-i18n-aria-label="settingsAiModelListMode">
                   <option value="recommended" data-i18n="settingsAiModelListModeRecommended">Latest recommended models</option>
                   <option value="all" data-i18n="settingsAiModelListModeAll">All models</option>
                 </select>
-                <select id="ai-prediction-model" class="select-input" disabled></select>
+                <select id="ai-prediction-model" class="select-input" disabled data-i18n-aria-label="settingsAiPredictionModel"></select>
                 <label class="switch">
-                  <input id="ai-prediction-enabled" type="checkbox" />
+                  <input id="ai-prediction-enabled" type="checkbox" data-i18n-aria-label="settingsAiPredictionAssistant" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -717,7 +724,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="watchdog-enabled" type="checkbox" />
+                  <input id="watchdog-enabled" type="checkbox" data-i18n-aria-label="settingsWindowWatchdog" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -771,7 +778,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="force-minimize" type="checkbox" />
+                  <input id="force-minimize" type="checkbox" data-i18n-aria-label="settingsForceMinimize" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -798,7 +805,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="cross-site-current-tab-swap" type="checkbox" />
+                  <input id="cross-site-current-tab-swap" type="checkbox" data-i18n-aria-label="settingsCrossSiteCurrentTabSwap" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -814,7 +821,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="idle-wake-aggressive" type="checkbox" />
+                  <input id="idle-wake-aggressive" type="checkbox" data-i18n-aria-label="settingsIdleWakeStrongDevices" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -831,7 +838,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="pointer-proximity-prediction" type="checkbox" />
+                  <input id="pointer-proximity-prediction" type="checkbox" data-i18n-aria-label="settingsPointerProximityPrediction" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -848,7 +855,7 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="auth-state-warmup" type="checkbox" />
+                  <input id="auth-state-warmup" type="checkbox" data-i18n-aria-label="settingsAuthStateWarmup" />
                   <span class="switch-track"></span>
                 </label>
               </div>
@@ -865,16 +872,51 @@
               </div>
               <div class="settings-item-control">
                 <label class="switch">
-                  <input id="diagnostics-logging-enabled" type="checkbox" />
+                  <input id="diagnostics-logging-enabled" type="checkbox" data-i18n-aria-label="settingsDiagnosticsLogging" />
                   <span class="switch-track"></span>
                 </label>
+              </div>
+            </article>
+
+            <!--
+              本地威胁库的快照日期与加载状态。这是一份**只在打包时更新**的安全数据，
+              用户此前完全看不到它有多旧、也不知道加载是否失败。
+              role="status" 让状态变化对读屏用户可感知（与页脚状态栏同口径）。
+            -->
+            <article class="settings-item">
+              <div class="settings-item-info">
+                <span class="settings-item-label" data-i18n="settingsThreatLibrary">
+                  Local threat library
+                </span>
+                <p class="settings-item-desc" data-i18n="settingsThreatLibraryDesc">
+                  A packaged snapshot of known-malicious sites. Preloading is blocked while it is
+                  unavailable.
+                </p>
+              </div>
+              <div class="settings-item-control">
+                <p
+                  id="threat-library-status"
+                  class="settings-item-desc"
+                  role="status"
+                  aria-live="polite"
+                  data-i18n="settingsThreatLibraryLoading"
+                >
+                  Checking...
+                </p>
               </div>
             </article>
           </div>
         </section>
 
         <footer class="settings-footer">
-          <div class="settings-footer-copy">
+          <!--
+            role="status" + aria-live="polite"：保存结果只通过改写这两个节点的文字来表达，
+            此前全页零个 live region —— 保存失败时页面显示「Failed」，读屏用户什么都听不到，
+            会以为保存成功就把页面关了。
+            用 polite 而非 assertive：它不该打断用户正在听的内容。
+            aria-atomic 让标题和正文作为一条整体播报，而不是两条互相打断的碎片。
+          -->
+          <div class="settings-footer-copy" role="status" aria-live="polite" aria-atomic="true">
             <strong id="footer-status-title" data-i18n="commonReady">Ready</strong>
             <p id="footer-status-text" data-i18n="settingsNoUnsavedChanges">No unsaved changes.</p>
           </div>
@@ -943,6 +985,7 @@
     <script src="history-deletion/clock.js"></script>
     <script src="history-deletion.js"></script>
     <script src="performance-warning.js"></script>
+    <script src="threat-library-status.js"></script>
     <script src="navigation.js"></script>
     <script src="dialogs/modal.js"></script>
     <script src="dialogs/real-preload-risk.js"></script>

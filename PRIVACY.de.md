@@ -1,6 +1,6 @@
 # Smart Preload Datenschutzrichtlinie
 
-Zuletzt aktualisiert: 23. Juni 2026
+Zuletzt aktualisiert: 31. Juli 2026
 
 [English](PRIVACY.md) | [简体中文](PRIVACY.zh-CN.md) | [繁體中文](PRIVACY.zh-TW.md) | [日本語](PRIVACY.ja.md) | [한국어](PRIVACY.ko.md) | Deutsch | [Français](PRIVACY.fr.md) | [Español](PRIVACY.es.md) | [Português (Brasil)](PRIVACY.pt-BR.md) | [Русский](PRIVACY.ru.md)
 
@@ -17,6 +17,7 @@ Smart Preload kann die folgenden Daten lokal verarbeiten und speichern:
 - Tab-, Fenster-, Preload- und Prefetch-Status, der zum Verwalten vorbereiteter Seiten benötigt wird.
 - Interaktionssignale wie Link-Hover, Kontextmenü-Preload-Absicht, Aktivität des Vordergrund-Tabs, kürzliche Aktivzeit und Medien-/Aktivitätsstatus für die Planung.
 - Lesezeichentitel und URLs, wenn lesezeichenbasierte Preload-Funktionen aktiviert sind.
+- Wenn AI-Vorhersage aktiviert ist, ein kurzer Textauszug der von dir besuchten Seiten (bis zu 2.200 Zeichen). Er wird für Keyword- und Relevanzbewertung verwendet und bis zu 180 Tage gespeichert. Diese Auszüge sind auch in Verlaufs-Backups enthalten, die du auf der Einstellungsseite exportierst.
 - Erweiterungseinstellungen, Preload-Limits, Sicherheitseinstellungen, lokale Verlaufsstatistiken, AI-Anbietereinstellungen und Diagnoseprotokolle, wenn Diagnosen aktiviert sind.
 
 Diese lokalen Daten werden nur verwendet, um Smart-Preload-Funktionen bereitzustellen: Vorhersage, Ranking, Preload-Planung, Sicherheitsfilterung, lokale Verlaufslöschung, Diagnosen und optionales AI-gestütztes Scoring.
@@ -27,9 +28,13 @@ Smart Preload sendet keinen Browserverlauf und keinen Preload-Verlauf an den Ent
 
 Daten können dein Gerät nur in diesen Fällen verlassen:
 
-- Wenn du einen externen AI-Anbieter aktivierst und einen API key oder Endpunkt eingibst, kann die Erweiterung den ausgewählten Seiten-/Link-Kontext, der für Keyword- oder Relevanzbewertung benötigt wird, an diesen Anbieter senden. Für diese Anfragen gilt die Datenschutzrichtlinie des jeweiligen Anbieters.
-- Wenn du einen lokalen AI-Endpunkt wie LM Studio verwendest, werden Anfragen an den von dir konfigurierten Endpunkt gesendet.
-- Wenn du Updates der nativen App prüfst oder herunterlädst, können die Erweiterung oder die Windows-Begleit-App GitHub-Release-Seiten oder von GitHub gehostete Dateien abrufen.
+- Wenn du einen externen AI-Anbieter aktivierst und einen API key oder Endpunkt eingibst, sendet die Erweiterung Seitenkontext zur Keyword- und Relevanzbewertung an diesen Anbieter. Dieser Kontext umfasst:
+  - die vollständige URL, den Titel und bis zu die ersten 2.200 Zeichen des sichtbaren Textes der Seite, die du gerade ansiehst;
+  - für die Relevanzbewertung zusätzlich URL, Titel und Textauszug weiterer im selben Fenster geöffneter Tabs (bis zu 8) sowie kürzlich angesehener und gespeicherter Verlaufsseiten (jeweils bis zu 5).
+
+  AI-Vorhersage ist standardmäßig deaktiviert und läuft erst, nachdem du einen Anbieter ausgewählt und einen API key eingegeben hast. Für diese Anfragen gilt die Datenschutzrichtlinie des jeweiligen Anbieters. **Wenn du nicht möchtest, dass Seiteninhalte an ein externes Unternehmen gesendet werden, verwende einen lokalen AI-Endpunkt (siehe unten) oder lasse AI-Vorhersage deaktiviert.**
+- Wenn du einen lokalen AI-Endpunkt wie LM Studio verwendest, wird derselbe Kontext nur an den von dir auf deinem eigenen Rechner konfigurierten Endpunkt gesendet und erreicht kein drittes Unternehmen.
+- Wenn die Windows-Begleit-App läuft, ruft die Erweiterung bei jedem Öffnen der Einstellungsseite die GitHub-Releases-API ab, um anzuzeigen, ob ein Update der Begleit-App verfügbar ist. Beim Herunterladen eines Updates werden ebenfalls GitHub-Release-Seiten oder von GitHub gehostete Dateien abgerufen.
 - Wenn du eine Seite tatsächlich besuchst oder eine Preload-Funktion eine Seite im Browser lädt, findet normale Browser-Netzwerkkommunikation statt. Die Zielwebsite kann gewöhnliche Anfragen, Cookies und Sitzungsinformationen erhalten, wie bei einem normalen Seitenaufruf.
 
 ## Optionale Windows-Begleit-App

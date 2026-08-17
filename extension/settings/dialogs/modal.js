@@ -113,10 +113,61 @@
       dialog.append(footer);
       backdrop.append(dialog);
 
+      // Tab 焦点陷阱。
+      //
+      // aria-modal 只是给辅助技术的提示，**不影响 Tab 顺序** —— 此前 Real Preload 的
+      // 输入确认框开着时，可以直接 Tab 到背景里去改设置，而那正是这个确认框要拦的操作。
+      // 背景没有 inert 也没有 aria-hidden。
+      //
+      // 这里用 Tab 环绕而不是给背景加 inert：inert 会连同滚动与选中状态一起改变，
+      // 而这个对话框是临时性的，环绕足以阻止焦点逃逸且副作用最小。
+      const FOCUSABLE_SELECTOR =
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), ' +
+        'textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+      const trapTabFocus = (event) => {
+        const focusable = [...dialog.querySelectorAll(FOCUSABLE_SELECTOR)].filter(
+          (element) => element.offsetParent !== null || element === document.activeElement
+        );
+
+        if (focusable.length === 0) {
+          event.preventDefault();
+          dialog.focus({ preventScroll: true });
+          return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const activeElement = document.activeElement;
+
+        // 焦点已经跑到对话框外（例如上一次 Tab 逃出去了），拉回来。
+        if (!dialog.contains(activeElement)) {
+          event.preventDefault();
+          (event.shiftKey ? last : first).focus({ preventScroll: true });
+          return;
+        }
+
+        if (event.shiftKey && activeElement === first) {
+          event.preventDefault();
+          last.focus({ preventScroll: true });
+          return;
+        }
+
+        if (!event.shiftKey && activeElement === last) {
+          event.preventDefault();
+          first.focus({ preventScroll: true });
+        }
+      };
+
       const onKeyDown = (event) => {
         if (event.key === "Escape") {
           event.preventDefault();
           close("cancel");
+          return;
+        }
+
+        if (event.key === "Tab") {
+          trapTabFocus(event);
         }
       };
       const onBackdropClick = (event) => {

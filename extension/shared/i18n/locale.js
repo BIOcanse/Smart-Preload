@@ -37,7 +37,10 @@
     if (normalized.startsWith("zh")) {
       return "zh_CN";
     }
-    if (normalized.startsWith("pt-br")) {
+    // pt-BR 之外的葡语（pt、pt-PT、pt-AO…）此前会掉到下面的 primaryLanguage 分支，
+    // 而 SUPPORTED_LOCALE_IDS 里只有 "pt_BR" 没有 "pt"，于是整个语种回落到英文。
+    // 与上面 zh 的处理方式对齐：给葡语用户巴西葡语，远好过英文。
+    if (normalized.startsWith("pt")) {
       return "pt_BR";
     }
 

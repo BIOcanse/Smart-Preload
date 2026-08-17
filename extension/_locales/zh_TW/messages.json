@@ -23,41 +23,14 @@
   "commonUnsaved": {
     "message": "未保存"
   },
-  "commonDownloading": {
-    "message": "下载中"
-  },
-  "commonDownloaded": {
-    "message": "已下载"
-  },
   "commonRemoving": {
     "message": "移除中"
   },
   "commonRemoved": {
     "message": "已移除"
   },
-  "commonOn": {
-    "message": "开启"
-  },
-  "commonOff": {
-    "message": "关闭"
-  },
   "commonUnknown": {
     "message": "未知"
-  },
-  "commonThisPlatform": {
-    "message": "当前平台"
-  },
-  "commonModel": {
-    "message": "模型"
-  },
-  "commonDone": {
-    "message": "已完成。"
-  },
-  "commonWorking": {
-    "message": "处理中..."
-  },
-  "commonDismiss": {
-    "message": "关闭"
   },
   "commonHelp": {
     "message": "帮助"
@@ -161,89 +134,20 @@
   "settingsNavAriaLabel": {
     "message": "设置分区"
   },
-  "settingsOverview": {
-    "message": "概览"
-  },
   "settingsTracking": {
     "message": "追踪"
   },
   "settingsPreload": {
     "message": "预加载"
   },
-  "settingsOrdering": {
-    "message": "排序"
-  },
   "settingsExperiments": {
     "message": "实验项"
-  },
-  "settingsOverviewSub": {
-    "message": "运行配置与自动调优"
-  },
-  "settingsOrderingSub": {
-    "message": "简化排名筛选"
   },
   "settingsStorageFooter": {
     "message": "保存于插件本地存储。"
   },
   "settingsLoadingSettings": {
     "message": "正在加载设置..."
-  },
-  "settingsHeroKicker": {
-    "message": "智能預載控制"
-  },
-  "settingsHeroTitle": {
-    "message": "更智能、更積極的預載"
-  },
-  "settingsHeroCopy": {
-    "message": "智能預載會結合頁面訊號、近期停留和裝置壓力，在多個活躍分頁之間分配預載資源，同時仍允許你手動設定上限。"
-  },
-  "settingsDeviceProfile": {
-    "message": "设备档位"
-  },
-  "settingsDetectingHardware": {
-    "message": "正在检测硬件..."
-  },
-  "settingsEffectiveGroupCaps": {
-    "message": "有效分组上限"
-  },
-  "settingsWaitingForSettings": {
-    "message": "等待设置..."
-  },
-  "settingsWatchdog": {
-    "message": "看门狗"
-  },
-  "settingsNativeApp": {
-    "message": "本地 App"
-  },
-  "settingsCheckingConnection": {
-    "message": "正在检查连接..."
-  },
-  "settingsOverviewMeta": {
-    "message": "影响插件如何根据当前机器激进程度进行自适应的高层控制。"
-  },
-  "settingsAutomaticDeviceTuning": {
-    "message": "自动设备调优"
-  },
-  "settingsAutomaticDeviceTuningDesc": {
-    "message": "为未来硬件感知调度预留的开关。现在会保存，但暂不改变运行行为。"
-  },
-  "settingsPreloadMode": {
-    "message": "预加载模式"
-  },
-  "settingsPreloadModeDesc": {
-    "message": "为未来策略档位预留的选择器。现在会保存，但暂不改变运行行为。"
-  },
-  "settingsModeConservative": {
-    "message": "保守"
-  },
-  "settingsModeBalanced": {
-    "message": "均衡"
-  },
-  "settingsModeAggressive": {
-    "message": "激进"
-  },
-  "settingsTrackingMeta": {
-    "message": "控制导航节点如何归一化并加入有向图。"
   },
   "settingsSeparateGoogleSearchPages": {
     "message": "区分 Google 搜索页"
@@ -274,9 +178,6 @@
   },
   "settingsSkipPrivateNetworkPagesDesc": {
     "message": "不要追蹤或預載 10.0.0.0/8、172.16.0.0/12、192.168.0.0/16、169.254.0.0/16、fc00::/7 或 fe80::/10 等內網頁面。"
-  },
-  "settingsPreloadMeta": {
-    "message": "控制标签页预热、看门狗修复和预加载窗口行为。"
   },
   "settingsEnablePreloading": {
     "message": "启用预加载"
@@ -434,9 +335,6 @@
   "settingsSchedulerHalfLifeTabsDesc": {
     "message": "分頁數量每增加這麼多，動態總上限會向最大值再靠近一半。數值越小，分頁變多時上限增長越快。"
   },
-  "settingsSchedulerPoolHours": {
-    "message": "时间池小时数"
-  },
   "settingsSchedulerSegmentSeconds": {
     "message": "片段秒数"
   },
@@ -458,12 +356,21 @@
   "settingsAiPredictionAssistantDesc": {
     "message": "选择用于关键词评分的外部 AI 服务和模型。插件直接使用你的 API key，不下载或管理本地模型。"
   },
+  "settingsAiPredictionPrivacyNotice": {
+    "message": "選擇外部服務商時，擴充功能會把頁面 URL、標題和內文前 2200 個字元傳送給該服務商，還包括同一視窗中其他分頁的上下文。如果你不希望頁面內容被傳送給外部公司，請使用 LM Studio 等本機端點，或保持此項關閉。"
+  },
   "settingsAiModelSelectionAdvice": {
     "message": "預設顯示最新推薦模型套裝。需要指定模型時可切換到全部模型；盡可能選擇速度快、價格低的文字或聊天模型。"
   },
-  "settingsAiModelListModeRecommended": { "message": "最新推薦模型" },
-  "settingsAiModelListModeAll": { "message": "全部模型" },
-  "settingsAiModelListRecommendedTitle": { "message": "已從 {1} 個已載入模型中顯示 {0} 個最新推薦模型。切換到全部模型可查看所有選項。" },
+  "settingsAiModelListModeRecommended": {
+    "message": "最新推薦模型"
+  },
+  "settingsAiModelListModeAll": {
+    "message": "全部模型"
+  },
+  "settingsAiModelListRecommendedTitle": {
+    "message": "已從 {1} 個已載入模型中顯示 {0} 個最新推薦模型。切換到全部模型可查看所有選項。"
+  },
   "settingsAiProviderApiKey": {
     "message": "服务 API key"
   },
@@ -488,25 +395,18 @@
   "settingsWatchdogIntervalDesc": {
     "message": "插件检查预加载窗口是否仍然存在的频率。"
   },
-  "settingsWatchdogIntervalOption1": {
-    "message": "1 秒"
+  "settingsWatchdogIntervalOption30": {
+    "message": "30 秒"
   },
-  "settingsWatchdogIntervalOption2": {
-    "message": "2 秒"
+  "settingsWatchdogIntervalOption60": {
+    "message": "1 分鐘"
   },
-  "settingsWatchdogIntervalOption3": {
-    "message": "3 秒"
+  "settingsWatchdogIntervalOption120": {
+    "message": "2 分鐘"
   },
-  "settingsWatchdogIntervalOption5": {
-    "message": "5 秒"
+  "settingsWatchdogIntervalOption300": {
+    "message": "5 分鐘"
   },
-  "settingsWatchdogIntervalOption10": {
-    "message": "10 秒"
-  },
-  "settingsWatchdogIntervalOption30": { "message": "30 秒" },
-  "settingsWatchdogIntervalOption60": { "message": "1 分鐘" },
-  "settingsWatchdogIntervalOption120": { "message": "2 分鐘" },
-  "settingsWatchdogIntervalOption300": { "message": "5 分鐘" },
   "settingsFullscreenPressurePolicy": {
     "message": "全屏/游戏时后台标签页策略"
   },
@@ -522,23 +422,11 @@
   "settingsFullscreenPressurePolicyIgnore": {
     "message": "无操作"
   },
-  "settingsSecond": {
-    "message": "{0} 秒"
-  },
-  "settingsSeconds": {
-    "message": "{0} 秒"
-  },
   "settingsForceMinimize": {
     "message": "强制最小化预加载窗口"
   },
   "settingsForceMinimizeDesc": {
     "message": "如果预加载窗口被恢复或调整大小，立即再次最小化。"
-  },
-  "settingsOrderingMeta": {
-    "message": "固定排名筛选让初版行为更可控。后续可以在不改变存储结构的前提下加入编程式过滤规则链。"
-  },
-  "settingsExperimentsMeta": {
-    "message": "高风险实时开关放在这里。预留开关也保存在这里，但在真正接入运行行为前只会保存，不会生效。"
   },
   "settingsCrossSiteCurrentTabSwap": {
     "message": "跨站当前标签页硬替换"
@@ -573,17 +461,11 @@
   "settingsSaveSettings": {
     "message": "保存设置"
   },
-  "settingsAiModelTask": {
-    "message": "AI 模型任务"
-  },
   "settingsReadingLocalSettings": {
     "message": "正在读取插件本地设置。"
   },
   "settingsCouldNotLoad": {
     "message": "无法从存储中加载设置。"
-  },
-  "settingsCouldNotLoadAiStatus": {
-    "message": "无法加载 AI 模型状态。"
   },
   "settingsDefaultsRestored": {
     "message": "表单已恢复默认值。保存后生效。"
@@ -600,81 +482,6 @@
   "settingsCouldNotSave": {
     "message": "无法保存设置。"
   },
-  "settingsPreparingRuntime": {
-    "message": "正在准备需要的便携运行环境。"
-  },
-  "settingsRemovingSelectedModel": {
-    "message": "正在移除所选模型。"
-  },
-  "settingsInstallingModel": {
-    "message": "正在安装运行环境并下载所选模型。"
-  },
-  "settingsRemovingModelAndRuntime": {
-    "message": "正在移除所选模型，并在无模型需要时清理便携运行环境。"
-  },
-  "settingsAiModelActionFailed": {
-    "message": "AI 模型操作失败。"
-  },
-  "settingsModelStateUpdatedDirty": {
-    "message": "模型状态已更新。其他未保存更改仍待应用。"
-  },
-  "settingsPortableModelUpdated": {
-    "message": "便携运行环境和模型状态已更新。"
-  },
-  "settingsModelDownloaded": {
-    "message": "模型已下载。"
-  },
-  "settingsModelRemoved": {
-    "message": "模型已移除。"
-  },
-  "settingsCouldNotUpdateModel": {
-    "message": "无法更新所选模型。"
-  },
-  "settingsHardwareMeta": {
-    "message": "{0} 核 | {1} GB 内存提示"
-  },
-  "settingsEffectivePreloadMeta": {
-    "message": "原生 / 标签页槽位上限。规则使用 {0}。"
-  },
-  "settingsWatchdogChecksEvery": {
-    "message": "每 {0} 秒检查一次。"
-  },
-  "settingsWindowRepairDisabled": {
-    "message": "窗口修复已禁用。"
-  },
-  "settingsSystemHidingUnsupported": {
-    "message": "{0} 不支持系统级隐藏。"
-  },
-  "settingsSystemHidingActive": {
-    "message": "系统级窗口隐藏已启用。"
-  },
-  "settingsNativeAppOffline": {
-    "message": "未检测到本地 App。使用最小化兜底。"
-  },
-  "settingsConnected": {
-    "message": "已连接"
-  },
-  "settingsOffline": {
-    "message": "离线"
-  },
-  "settingsInstallingModelLabel": {
-    "message": "正在安装 {0}"
-  },
-  "settingsRemovingModelLabel": {
-    "message": "正在移除 {0}"
-  },
-  "settingsModelReady": {
-    "message": "模型就绪"
-  },
-  "settingsUninstallFailed": {
-    "message": "卸载失败"
-  },
-  "settingsInstallFailed": {
-    "message": "安装失败"
-  },
-  "settingsTaskDidNotFinish": {
-    "message": "任务未完成。"
-  },
   "settingsAiProviderMissingWarning": {
     "message": "{0} 缺少模型、endpoint 或 API key，AI 评分会保持关闭。"
   },
@@ -684,23 +491,14 @@
   "settingsAiLmStudioKeyIgnoredPlaceholder": {
     "message": "LM Studio 会忽略"
   },
-  "settingsAiLmStudioLoadingModel": {
-    "message": "正在加载 LM Studio 模型：{0}"
-  },
   "settingsAiKeyRequiredPlaceholder": {
     "message": "必填"
   },
   "settingsAiEnterKeyToLoadModels": {
     "message": "输入 API key 以加载模型"
   },
-  "settingsAiLoadingModels": {
-    "message": "正在載入模型..."
-  },
   "settingsAiSelectProviderFirst": {
     "message": "请先选择服务"
-  },
-  "settingsAiNoSupportedModels": {
-    "message": "找不到模型"
   },
   "settingsAiLoadingModelsGeneric": {
     "message": "正在載入模型..."
@@ -830,18 +628,6 @@
   },
   "ruleGoogleBookmarkRankDesc": {
     "message": "仅在 Google 搜索页生效。开启后，Chrome 书签会作为独立长期预加载目标，并按这条排名规则保留。"
-  },
-  "deviceProfileBalanced": {
-    "message": "均衡"
-  },
-  "deviceProfileHighEnd": {
-    "message": "高端"
-  },
-  "deviceProfileStrong": {
-    "message": "强设备"
-  },
-  "deviceProfileConstrained": {
-    "message": "受限"
   },
   "settingsDiagnosticsLogging": {
     "message": "日志模式"
@@ -993,29 +779,115 @@
   "realPreloadRecommendedWarning": {
     "message": "真實預載可用，而且這台機器適合開啟。它能把體感延遲降為 0，但非常占用記憶體，請不要使用過於激進的配置。"
   },
-  "commonExporting": { "message": "正在匯出" },
-  "commonExported": { "message": "已匯出" },
-  "commonImporting": { "message": "正在匯入" },
-  "commonImported": { "message": "已匯入" },
-  "settingsHistoryTransferTitle": { "message": "歷史記錄匯入與匯出" },
-  "settingsHistoryTransferDesc": { "message": "將完整的本機造訪圖歷史匯出為 JSON 備份，或使用相容的備份檔案取代歷史。設定、API 金鑰和目前分頁的執行狀態不會移轉。" },
-  "settingsHistoryImportButton": { "message": "匯入歷史" },
-  "settingsHistoryExportButton": { "message": "匯出歷史" },
-  "settingsHistoryExportWarningTitle": { "message": "匯出前請確認隱私風險" },
-  "settingsHistoryExportWarningMessage": { "message": "備份可能包含造訪網址、頁面標題、關鍵字、跳轉關係和使用統計。" },
-  "settingsHistoryExportWarningDetail": { "message": "請勿隨意分享該檔案；如因分享導致個人資訊或隱私洩露，本擴充功能概不負責。" },
-  "settingsHistoryExportContinue": { "message": "選擇儲存位置" },
-  "settingsHistoryExportPreparing": { "message": "正在準備歷史備份..." },
-  "settingsHistoryExportSucceeded": { "message": "歷史記錄已匯出至 {0}。" },
-  "settingsHistorySavePickerUnavailable": { "message": "目前的瀏覽器無法從設定頁選擇儲存位置。" },
-  "settingsHistoryExportFailed": { "message": "無法匯出歷史記錄。" },
-  "settingsHistoryImportValidating": { "message": "正在驗證歷史備份..." },
-  "settingsHistoryImportConfirmTitle": { "message": "取代現有歷史記錄？" },
-  "settingsHistoryImportConfirmMessage": { "message": "匯入此檔案會完整覆寫目前的歷史記錄，且無法復原。" },
-  "settingsHistoryImportConfirm": { "message": "覆寫並匯入" },
-  "settingsHistoryImportCancelled": { "message": "已取消匯入，現有歷史記錄未發生變更。" },
-  "settingsHistoryImportSummary": { "message": "備份時間：{0}。包含 {1} 筆跳轉、{2} 個網站、{3} 筆關鍵字記錄。" },
-  "settingsHistoryImporting": { "message": "正在取代歷史記錄..." },
-  "settingsHistoryImportSucceeded": { "message": "已匯入 {0} 筆跳轉記錄。" },
-  "settingsHistoryImportFailed": { "message": "所選檔案不是有效的 Smart Preload 歷史備份，或無法完成匯入。" }
+  "commonExporting": {
+    "message": "正在匯出"
+  },
+  "commonExported": {
+    "message": "已匯出"
+  },
+  "commonImporting": {
+    "message": "正在匯入"
+  },
+  "commonImported": {
+    "message": "已匯入"
+  },
+  "settingsHistoryTransferTitle": {
+    "message": "歷史記錄匯入與匯出"
+  },
+  "settingsHistoryTransferDesc": {
+    "message": "將完整的本機造訪圖歷史匯出為 JSON 備份，或使用相容的備份檔案取代歷史。設定、API 金鑰和目前分頁的執行狀態不會移轉。"
+  },
+  "settingsHistoryImportButton": {
+    "message": "匯入歷史"
+  },
+  "settingsHistoryExportButton": {
+    "message": "匯出歷史"
+  },
+  "settingsHistoryExportWarningTitle": {
+    "message": "匯出前請確認隱私風險"
+  },
+  "settingsHistoryExportWarningMessage": {
+    "message": "備份可能包含造訪網址、頁面標題、關鍵字、跳轉關係和使用統計。"
+  },
+  "settingsHistoryExportWarningDetail": {
+    "message": "請勿隨意分享該檔案；如因分享導致個人資訊或隱私洩露，本擴充功能概不負責。"
+  },
+  "settingsHistoryExportContinue": {
+    "message": "選擇儲存位置"
+  },
+  "settingsHistoryExportPreparing": {
+    "message": "正在準備歷史備份..."
+  },
+  "settingsHistoryExportSucceeded": {
+    "message": "歷史記錄已匯出至 {0}。"
+  },
+  "settingsHistorySavePickerUnavailable": {
+    "message": "目前的瀏覽器無法從設定頁選擇儲存位置。"
+  },
+  "settingsHistoryExportFailed": {
+    "message": "無法匯出歷史記錄。"
+  },
+  "settingsHistoryImportValidating": {
+    "message": "正在驗證歷史備份..."
+  },
+  "settingsHistoryImportConfirmTitle": {
+    "message": "取代現有歷史記錄？"
+  },
+  "settingsHistoryImportConfirmMessage": {
+    "message": "匯入此檔案會完整覆寫目前的歷史記錄，且無法復原。"
+  },
+  "settingsHistoryImportConfirm": {
+    "message": "覆寫並匯入"
+  },
+  "settingsHistoryImportCancelled": {
+    "message": "已取消匯入，現有歷史記錄未發生變更。"
+  },
+  "settingsHistoryImportSummary": {
+    "message": "備份時間：{0}。包含 {1} 筆跳轉、{2} 個網站、{3} 筆關鍵字記錄。"
+  },
+  "settingsHistoryImporting": {
+    "message": "正在取代歷史記錄..."
+  },
+  "settingsHistoryImportSucceeded": {
+    "message": "已匯入 {0} 筆跳轉記錄。"
+  },
+  "settingsHistoryImportFailed": {
+    "message": "所選檔案不是有效的 Smart Preload 歷史備份，或無法完成匯入。"
+  },
+  "settingsNativeAppVersion": {
+    "message": "本機應用程式版本"
+  },
+  "settingsProxySkipMode": {
+    "message": "代理略過清單模式"
+  },
+  "settingsAiModelListMode": {
+    "message": "AI 模型清單模式"
+  },
+  "settingsAiPredictionModel": {
+    "message": "AI 預測模型"
+  },
+  "settingsChangedElsewhere": {
+    "message": "設定已在他處被修改。儲存會覆蓋那些變更。"
+  },
+  "settingsReloadedFromStorage": {
+    "message": "已重新載入在他處修改的設定。"
+  },
+  "settingsThreatLibrary": {
+    "message": "本機威脅資料庫"
+  },
+  "settingsThreatLibraryDesc": {
+    "message": "隨擴充功能打包的惡意網站快照。載入不可用期間，預載會被全部攔下。"
+  },
+  "settingsThreatLibraryLoading": {
+    "message": "檢查中…"
+  },
+  "settingsThreatLibraryReady": {
+    "message": "快照 {0} · {1}"
+  },
+  "settingsThreatLibraryStale": {
+    "message": "已過去 {0} 天"
+  },
+  "settingsThreatLibraryFailed": {
+    "message": "載入失敗。在載入成功前，預載保持攔截。"
+  }
 }

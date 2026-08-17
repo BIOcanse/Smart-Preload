@@ -40,8 +40,10 @@
     elements.aiPredictionEnabled.checked = settings.preloading.aiPrediction.enabled;
     elements.aiPredictionProvider.value = settings.preloading.aiPrediction.providerId;
     aiControls?.syncProviderFieldsFromSettings?.(settings);
+    // 显示用户存的值本身，不与 realPreloadEnabled 联动。关掉 Real Preload 时该行由
+    // computed.js 置灰并 disabled——「记住了但当前不生效」比「显示成未勾选」更诚实，
+    // 后者会让用户以为自己的选择丢了（此前它确实会丢，见 normalize.js 的说明）。
     elements.crossSiteCurrentTabSwap.checked =
-      settingsApi.isRealPreloadEnabled?.(settings) === true &&
       settings.experiments.crossSiteCurrentTabSwap === true;
     elements.watchdogEnabled.checked = settings.preloadWindow.watchdogEnabled;
     elements.watchdogIntervalSeconds.value = String(

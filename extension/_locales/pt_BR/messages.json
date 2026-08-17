@@ -23,41 +23,14 @@
   "commonUnsaved": {
     "message": "N?o salvo"
   },
-  "commonDownloading": {
-    "message": "Baixando"
-  },
-  "commonDownloaded": {
-    "message": "Baixado"
-  },
   "commonRemoving": {
     "message": "Removendo"
   },
   "commonRemoved": {
     "message": "Removido"
   },
-  "commonOn": {
-    "message": "Ativado"
-  },
-  "commonOff": {
-    "message": "Desativado"
-  },
   "commonUnknown": {
     "message": "Desconhecido"
-  },
-  "commonThisPlatform": {
-    "message": "esta plataforma"
-  },
-  "commonModel": {
-    "message": "modelo"
-  },
-  "commonDone": {
-    "message": "Conclu?do."
-  },
-  "commonWorking": {
-    "message": "Trabalhando..."
-  },
-  "commonDismiss": {
-    "message": "Fechar"
   },
   "commonHelp": {
     "message": "Ajuda"
@@ -161,89 +134,20 @@
   "settingsNavAriaLabel": {
     "message": "Seções de configurações"
   },
-  "settingsOverview": {
-    "message": "Visão geral"
-  },
   "settingsTracking": {
     "message": "Rastreamento"
   },
   "settingsPreload": {
     "message": "Pré-carregamento"
   },
-  "settingsOrdering": {
-    "message": "Ordenação"
-  },
   "settingsExperiments": {
     "message": "Experimentos"
-  },
-  "settingsOverviewSub": {
-    "message": "Perfil de execução e ajuste automático"
-  },
-  "settingsOrderingSub": {
-    "message": "Filtros simples de classificação"
   },
   "settingsStorageFooter": {
     "message": "Armazenado no armazenamento local da extensão."
   },
   "settingsLoadingSettings": {
     "message": "Carregando configurações..."
-  },
-  "settingsHeroKicker": {
-    "message": "Controle de pré-carregamento inteligente"
-  },
-  "settingsHeroTitle": {
-    "message": "Pré-carregamento mais inteligente e mais ativo"
-  },
-  "settingsHeroCopy": {
-    "message": "O Pré-carregamento inteligente distribui slots entre abas ativas usando sinais da página, atenção recente e pressão do dispositivo, mantendo a opção de definir limites manualmente."
-  },
-  "settingsDeviceProfile": {
-    "message": "Perfil do dispositivo"
-  },
-  "settingsDetectingHardware": {
-    "message": "Detectando hardware..."
-  },
-  "settingsEffectiveGroupCaps": {
-    "message": "Limites efetivos de grupo"
-  },
-  "settingsWaitingForSettings": {
-    "message": "Aguardando configurações..."
-  },
-  "settingsWatchdog": {
-    "message": "Vigilância"
-  },
-  "settingsNativeApp": {
-    "message": "Aplicativo local"
-  },
-  "settingsCheckingConnection": {
-    "message": "Verificando conexão..."
-  },
-  "settingsOverviewMeta": {
-    "message": "Controles gerais que influenciam quão agressivamente a extensão se adapta à máquina atual."
-  },
-  "settingsAutomaticDeviceTuning": {
-    "message": "Ajuste automático do dispositivo"
-  },
-  "settingsAutomaticDeviceTuningDesc": {
-    "message": "Interruptor reservado para agendamento futuro sensível ao hardware. Ele é salvo agora, mas ainda não muda o comportamento em execução."
-  },
-  "settingsPreloadMode": {
-    "message": "Modo de pré-carregamento"
-  },
-  "settingsPreloadModeDesc": {
-    "message": "Seletor reservado para níveis futuros de estratégia. Ele é salvo agora, mas ainda não muda o comportamento em execução."
-  },
-  "settingsModeConservative": {
-    "message": "Conservador"
-  },
-  "settingsModeBalanced": {
-    "message": "Equilibrado"
-  },
-  "settingsModeAggressive": {
-    "message": "Agressivo"
-  },
-  "settingsTrackingMeta": {
-    "message": "Controles de como os nós de navegação são normalizados e adicionados ao grafo direcional."
   },
   "settingsSeparateGoogleSearchPages": {
     "message": "Separar páginas de busca do Google"
@@ -274,9 +178,6 @@
   },
   "settingsSkipPrivateNetworkPagesDesc": {
     "message": "Não rastrear nem pré-carregar páginas de rede privada como 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, fc00::/7 ou fe80::/10."
-  },
-  "settingsPreloadMeta": {
-    "message": "Controles para preparar abas, reparar com vigilância e definir o comportamento da janela de pré-carregamento."
   },
   "settingsEnablePreloading": {
     "message": "Ativar pré-carregamento"
@@ -434,9 +335,6 @@
   "settingsSchedulerHalfLifeTabsDesc": {
     "message": "Sempre que o número de abas aumenta por este valor, o limite total dinâmico avança metade do caminho até o máximo. Valores menores fazem o limite crescer mais rápido."
   },
-  "settingsSchedulerPoolHours": {
-    "message": "Horas do pool"
-  },
   "settingsSchedulerSegmentSeconds": {
     "message": "Segundos por segmento"
   },
@@ -458,12 +356,21 @@
   "settingsAiPredictionAssistantDesc": {
     "message": "Escolha um provedor externo de IA e um modelo para pontuação de palavras-chave. A extensão usa sua chave de API diretamente; ela não baixa nem gerencia modelos locais."
   },
+  "settingsAiPredictionPrivacyNotice": {
+    "message": "Quando um provedor externo está selecionado, a extensão envia a esse provedor a URL da página, o título e até os primeiros 2.200 caracteres do texto da página, além do contexto de outras abas abertas na mesma janela. Se você não quiser que o conteúdo das páginas seja enviado a uma empresa externa, use um endpoint local como LM Studio ou mantenha isto desativado."
+  },
   "settingsAiModelSelectionAdvice": {
     "message": "Por padrão, a lista mostra o conjunto mais recente de modelos recomendados. Mude para Todos os modelos se precisar de um modelo específico e prefira modelos de texto ou chat rápidos e baratos."
   },
-  "settingsAiModelListModeRecommended": { "message": "Modelos recomendados recentes" },
-  "settingsAiModelListModeAll": { "message": "Todos os modelos" },
-  "settingsAiModelListRecommendedTitle": { "message": "Mostrando {0} modelos recomendados recentes de {1} modelos carregados. Mude para Todos os modelos para ver todas as opções." },
+  "settingsAiModelListModeRecommended": {
+    "message": "Modelos recomendados recentes"
+  },
+  "settingsAiModelListModeAll": {
+    "message": "Todos os modelos"
+  },
+  "settingsAiModelListRecommendedTitle": {
+    "message": "Mostrando {0} modelos recomendados recentes de {1} modelos carregados. Mude para Todos os modelos para ver todas as opções."
+  },
   "settingsAiProviderApiKey": {
     "message": "Chave de API do provedor"
   },
@@ -488,25 +395,18 @@
   "settingsWatchdogIntervalDesc": {
     "message": "Com que frequência a extensão verifica se a janela de pré-carregamento ainda está presente."
   },
-  "settingsWatchdogIntervalOption1": {
-    "message": "1 segundo"
+  "settingsWatchdogIntervalOption30": {
+    "message": "30 segundos"
   },
-  "settingsWatchdogIntervalOption2": {
-    "message": "2 segundos"
+  "settingsWatchdogIntervalOption60": {
+    "message": "1 minuto"
   },
-  "settingsWatchdogIntervalOption3": {
-    "message": "3 segundos"
+  "settingsWatchdogIntervalOption120": {
+    "message": "2 minutos"
   },
-  "settingsWatchdogIntervalOption5": {
-    "message": "5 segundos"
+  "settingsWatchdogIntervalOption300": {
+    "message": "5 minutos"
   },
-  "settingsWatchdogIntervalOption10": {
-    "message": "10 segundos"
-  },
-  "settingsWatchdogIntervalOption30": { "message": "30 segundos" },
-  "settingsWatchdogIntervalOption60": { "message": "1 minuto" },
-  "settingsWatchdogIntervalOption120": { "message": "2 minutos" },
-  "settingsWatchdogIntervalOption300": { "message": "5 minutos" },
   "settingsFullscreenPressurePolicy": {
     "message": "Pol?tica de abas em segundo plano para tela cheia/jogos"
   },
@@ -522,23 +422,11 @@
   "settingsFullscreenPressurePolicyIgnore": {
     "message": "Nenhuma ação"
   },
-  "settingsSecond": {
-    "message": "{0} segundo"
-  },
-  "settingsSeconds": {
-    "message": "{0} segundos"
-  },
   "settingsForceMinimize": {
     "message": "For?ar minimizar janela de pr?-carregamento"
   },
   "settingsForceMinimizeDesc": {
     "message": "Minimizar imediatamente de novo a janela de pré-carregamento se ela for restaurada ou redimensionada."
-  },
-  "settingsOrderingMeta": {
-    "message": "Filtros fixos de classificação mantêm a primeira versão previsível. Cadeias avançadas de filtros programáveis podem ser adicionadas depois sem mudar o formato salvo da regra."
-  },
-  "settingsExperimentsMeta": {
-    "message": "Interruptores ativos de risco ficam aqui. Interruptores placeholder também ficam aqui, mas permanecem apenas salvos até serem conectados ao comportamento em execução."
   },
   "settingsCrossSiteCurrentTabSwap": {
     "message": "Troca forçada entre sites na aba atual"
@@ -573,17 +461,11 @@
   "settingsSaveSettings": {
     "message": "Salvar configurações"
   },
-  "settingsAiModelTask": {
-    "message": "Tarefa do modelo de IA"
-  },
   "settingsReadingLocalSettings": {
     "message": "Lendo configurações locais da extensão."
   },
   "settingsCouldNotLoad": {
     "message": "Não foi possível carregar as configurações do armazenamento."
-  },
-  "settingsCouldNotLoadAiStatus": {
-    "message": "Não foi possível carregar o estado do modelo de IA."
   },
   "settingsDefaultsRestored": {
     "message": "Padrões restaurados no formulário. Salve para aplicar."
@@ -600,81 +482,6 @@
   "settingsCouldNotSave": {
     "message": "Não foi possível salvar as configurações."
   },
-  "settingsPreparingRuntime": {
-    "message": "Preparando o runtime portátil se necessário."
-  },
-  "settingsRemovingSelectedModel": {
-    "message": "Removendo o modelo selecionado."
-  },
-  "settingsInstallingModel": {
-    "message": "Instalando o runtime se necessário e baixando o modelo selecionado."
-  },
-  "settingsRemovingModelAndRuntime": {
-    "message": "Removendo o modelo selecionado e limpando o runtime portátil se não estiver em uso."
-  },
-  "settingsAiModelActionFailed": {
-    "message": "Falha na ação do modelo de IA."
-  },
-  "settingsModelStateUpdatedDirty": {
-    "message": "Estado do modelo atualizado. Outras alterações não salvas ainda estão pendentes."
-  },
-  "settingsPortableModelUpdated": {
-    "message": "Runtime portátil e estado do modelo atualizados."
-  },
-  "settingsModelDownloaded": {
-    "message": "Modelo baixado."
-  },
-  "settingsModelRemoved": {
-    "message": "Modelo removido."
-  },
-  "settingsCouldNotUpdateModel": {
-    "message": "Não foi possível atualizar o modelo selecionado."
-  },
-  "settingsHardwareMeta": {
-    "message": "{0} núcleos | dica de memória {1} GB"
-  },
-  "settingsEffectivePreloadMeta": {
-    "message": "Limites de slots nativos / de abas. As regras usam {0}."
-  },
-  "settingsWatchdogChecksEvery": {
-    "message": "Verifica a cada {0} segundo(s)."
-  },
-  "settingsWindowRepairDisabled": {
-    "message": "O reparo de janela está desativado."
-  },
-  "settingsSystemHidingUnsupported": {
-    "message": "Ocultação em nível de sistema não é compatível com {0}."
-  },
-  "settingsSystemHidingActive": {
-    "message": "A ocultação de janela em nível de sistema está ativa."
-  },
-  "settingsNativeAppOffline": {
-    "message": "Aplicativo local não detectado. Usando alternativa de minimizar."
-  },
-  "settingsConnected": {
-    "message": "Conectado"
-  },
-  "settingsOffline": {
-    "message": "Offline"
-  },
-  "settingsInstallingModelLabel": {
-    "message": "Instalando {0}"
-  },
-  "settingsRemovingModelLabel": {
-    "message": "Removendo {0}"
-  },
-  "settingsModelReady": {
-    "message": "Modelo pronto"
-  },
-  "settingsUninstallFailed": {
-    "message": "Falha ao desinstalar"
-  },
-  "settingsInstallFailed": {
-    "message": "Falha ao instalar"
-  },
-  "settingsTaskDidNotFinish": {
-    "message": "A tarefa não foi concluída."
-  },
   "settingsAiProviderMissingWarning": {
     "message": "A pontuação por IA ficará desativada até que {0} tenha modelo, endpoint e chave de API."
   },
@@ -684,23 +491,14 @@
   "settingsAiLmStudioKeyIgnoredPlaceholder": {
     "message": "Ignorado pelo LM Studio"
   },
-  "settingsAiLmStudioLoadingModel": {
-    "message": "Carregando modelo do LM Studio: {0}"
-  },
   "settingsAiKeyRequiredPlaceholder": {
     "message": "Obrigatório"
   },
   "settingsAiEnterKeyToLoadModels": {
     "message": "Insira uma chave de API para carregar modelos"
   },
-  "settingsAiLoadingModels": {
-    "message": "Carregando modelos..."
-  },
   "settingsAiSelectProviderFirst": {
     "message": "Selecione um provedor primeiro"
-  },
-  "settingsAiNoSupportedModels": {
-    "message": "Nenhum modelo encontrado"
   },
   "settingsAiLoadingModelsGeneric": {
     "message": "Carregando modelos..."
@@ -830,18 +628,6 @@
   },
   "ruleGoogleBookmarkRankDesc": {
     "message": "Aplica-se apenas em páginas de busca do Google. Quando ativado, favoritos do Chrome são mantidos por esta regra de posição como alvos independentes de pré-carregamento persistente."
-  },
-  "deviceProfileBalanced": {
-    "message": "Equilibrado"
-  },
-  "deviceProfileHighEnd": {
-    "message": "Topo de linha"
-  },
-  "deviceProfileStrong": {
-    "message": "Forte"
-  },
-  "deviceProfileConstrained": {
-    "message": "Limitado"
   },
   "settingsDiagnosticsLogging": {
     "message": "Modo de log"
@@ -993,29 +779,115 @@
   "realPreloadRecommendedWarning": {
     "message": "O Real Preload está disponível e é recomendado nesta máquina. Ele pode reduzir a latência percebida a zero, mas consome muita memória; evite limites agressivos demais."
   },
-  "commonExporting": { "message": "Exportando" },
-  "commonExported": { "message": "Exportado" },
-  "commonImporting": { "message": "Importando" },
-  "commonImported": { "message": "Importado" },
-  "settingsHistoryTransferTitle": { "message": "Importar e exportar histórico" },
-  "settingsHistoryTransferDesc": { "message": "Exporte todo o histórico local do grafo de visitas para um backup JSON ou substitua-o usando um arquivo compatível. Configurações, chaves de API e o estado de execução das abas atuais não são transferidos." },
-  "settingsHistoryImportButton": { "message": "Importar histórico" },
-  "settingsHistoryExportButton": { "message": "Exportar histórico" },
-  "settingsHistoryExportWarningTitle": { "message": "Revise a privacidade antes de exportar" },
-  "settingsHistoryExportWarningMessage": { "message": "O backup pode conter endereços visitados, títulos de páginas, palavras-chave, transições e estatísticas de uso." },
-  "settingsHistoryExportWarningDetail": { "message": "Não compartilhe o arquivo sem cuidado. Você é responsável por qualquer informação pessoal exposta ao compartilhá-lo." },
-  "settingsHistoryExportContinue": { "message": "Escolher local para salvar" },
-  "settingsHistoryExportPreparing": { "message": "Preparando o backup do histórico..." },
-  "settingsHistoryExportSucceeded": { "message": "O histórico foi exportado para {0}." },
-  "settingsHistorySavePickerUnavailable": { "message": "Este navegador não permite escolher um local para salvar pela página de configurações." },
-  "settingsHistoryExportFailed": { "message": "Não foi possível exportar o histórico." },
-  "settingsHistoryImportValidating": { "message": "Validando o backup do histórico..." },
-  "settingsHistoryImportConfirmTitle": { "message": "Substituir o histórico existente?" },
-  "settingsHistoryImportConfirmMessage": { "message": "A importação deste arquivo substituirá todo o histórico atual. Esta ação não pode ser desfeita." },
-  "settingsHistoryImportConfirm": { "message": "Substituir e importar" },
-  "settingsHistoryImportCancelled": { "message": "A importação foi cancelada. O histórico existente não foi alterado." },
-  "settingsHistoryImportSummary": { "message": "Data do backup: {0}. {1} transições, {2} sites e {3} registros de palavras-chave." },
-  "settingsHistoryImporting": { "message": "Substituindo os registros do histórico..." },
-  "settingsHistoryImportSucceeded": { "message": "Foram importados {0} registros de transição." },
-  "settingsHistoryImportFailed": { "message": "O arquivo selecionado não é um backup válido do histórico do Smart Preload ou não pôde ser importado." }
+  "commonExporting": {
+    "message": "Exportando"
+  },
+  "commonExported": {
+    "message": "Exportado"
+  },
+  "commonImporting": {
+    "message": "Importando"
+  },
+  "commonImported": {
+    "message": "Importado"
+  },
+  "settingsHistoryTransferTitle": {
+    "message": "Importar e exportar histórico"
+  },
+  "settingsHistoryTransferDesc": {
+    "message": "Exporte todo o histórico local do grafo de visitas para um backup JSON ou substitua-o usando um arquivo compatível. Configurações, chaves de API e o estado de execução das abas atuais não são transferidos."
+  },
+  "settingsHistoryImportButton": {
+    "message": "Importar histórico"
+  },
+  "settingsHistoryExportButton": {
+    "message": "Exportar histórico"
+  },
+  "settingsHistoryExportWarningTitle": {
+    "message": "Revise a privacidade antes de exportar"
+  },
+  "settingsHistoryExportWarningMessage": {
+    "message": "O backup pode conter endereços visitados, títulos de páginas, palavras-chave, transições e estatísticas de uso."
+  },
+  "settingsHistoryExportWarningDetail": {
+    "message": "Não compartilhe o arquivo sem cuidado. Você é responsável por qualquer informação pessoal exposta ao compartilhá-lo."
+  },
+  "settingsHistoryExportContinue": {
+    "message": "Escolher local para salvar"
+  },
+  "settingsHistoryExportPreparing": {
+    "message": "Preparando o backup do histórico..."
+  },
+  "settingsHistoryExportSucceeded": {
+    "message": "O histórico foi exportado para {0}."
+  },
+  "settingsHistorySavePickerUnavailable": {
+    "message": "Este navegador não permite escolher um local para salvar pela página de configurações."
+  },
+  "settingsHistoryExportFailed": {
+    "message": "Não foi possível exportar o histórico."
+  },
+  "settingsHistoryImportValidating": {
+    "message": "Validando o backup do histórico..."
+  },
+  "settingsHistoryImportConfirmTitle": {
+    "message": "Substituir o histórico existente?"
+  },
+  "settingsHistoryImportConfirmMessage": {
+    "message": "A importação deste arquivo substituirá todo o histórico atual. Esta ação não pode ser desfeita."
+  },
+  "settingsHistoryImportConfirm": {
+    "message": "Substituir e importar"
+  },
+  "settingsHistoryImportCancelled": {
+    "message": "A importação foi cancelada. O histórico existente não foi alterado."
+  },
+  "settingsHistoryImportSummary": {
+    "message": "Data do backup: {0}. {1} transições, {2} sites e {3} registros de palavras-chave."
+  },
+  "settingsHistoryImporting": {
+    "message": "Substituindo os registros do histórico..."
+  },
+  "settingsHistoryImportSucceeded": {
+    "message": "Foram importados {0} registros de transição."
+  },
+  "settingsHistoryImportFailed": {
+    "message": "O arquivo selecionado não é um backup válido do histórico do Smart Preload ou não pôde ser importado."
+  },
+  "settingsNativeAppVersion": {
+    "message": "Versão do aplicativo nativo"
+  },
+  "settingsProxySkipMode": {
+    "message": "Modo da lista de exceções do proxy"
+  },
+  "settingsAiModelListMode": {
+    "message": "Modo da lista de modelos de IA"
+  },
+  "settingsAiPredictionModel": {
+    "message": "Modelo de previsão de IA"
+  },
+  "settingsChangedElsewhere": {
+    "message": "As configurações foram alteradas em outro lugar. Salvar substituirá essas alterações."
+  },
+  "settingsReloadedFromStorage": {
+    "message": "Configurações alteradas em outro lugar recarregadas."
+  },
+  "settingsThreatLibrary": {
+    "message": "Base de ameaças local"
+  },
+  "settingsThreatLibraryDesc": {
+    "message": "Um instantâneo empacotado de sites maliciosos conhecidos. A pré-carga fica bloqueada enquanto ele estiver indisponível."
+  },
+  "settingsThreatLibraryLoading": {
+    "message": "Verificando..."
+  },
+  "settingsThreatLibraryReady": {
+    "message": "Instantâneo {0} · {1}"
+  },
+  "settingsThreatLibraryStale": {
+    "message": "{0} dias de idade"
+  },
+  "settingsThreatLibraryFailed": {
+    "message": "Falha ao carregar. A pré-carga permanece bloqueada até carregar."
+  }
 }

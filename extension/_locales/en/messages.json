@@ -1,363 +1,893 @@
 {
-  "appName": { "message": "Smart Preload" },
-  "appDescription": { "message": "Smarter, more proactive preloading for pages you are likely to open next." },
-  "commonReady": { "message": "Ready" },
-  "commonLoading": { "message": "Loading" },
-  "commonFailed": { "message": "Failed" },
-  "commonSaving": { "message": "Saving" },
-  "commonSaved": { "message": "Saved" },
-  "commonUnsaved": { "message": "Unsaved" },
-  "commonDownloading": { "message": "Downloading" },
-  "commonDownloaded": { "message": "Downloaded" },
-  "commonRemoving": { "message": "Removing" },
-  "commonRemoved": { "message": "Removed" },
-  "commonOn": { "message": "On" },
-  "commonOff": { "message": "Off" },
-  "commonUnknown": { "message": "Unknown" },
-  "commonThisPlatform": { "message": "this platform" },
-  "commonModel": { "message": "model" },
-  "commonDone": { "message": "Done." },
-  "commonWorking": { "message": "Working..." },
-  "commonDismiss": { "message": "Dismiss" },
-  "commonHelp": { "message": "Help" },
-  "settingsDialogCancel": { "message": "Cancel" },
-  "settingsDialogConfirm": { "message": "Confirm" },
-  "popupCurrentPage": { "message": "Current page" },
-  "popupNodes": { "message": "Nodes" },
-  "popupEdges": { "message": "Edges" },
-  "popupUpdated": { "message": "Updated" },
-  "popupTop": { "message": "Top" },
-  "popupNoPreloadQualifiedLinks": { "message": "No preload-qualified links on this page yet." },
-  "popupRefresh": { "message": "Refresh" },
-  "popupStop": { "message": "Stop" },
-  "popupStart": { "message": "Start" },
-  "popupSettings": { "message": "Settings" },
-  "popupWaitingForData": { "message": "Waiting for data." },
-  "popupOpenSettingsFailed": { "message": "Failed to open settings page." },
-  "popupLoadingVisitGraph": { "message": "Loading visit graph..." },
-  "popupPausedMessage": { "message": "Plugin stopped: prediction and preloading are disabled." },
-  "popupVisitGraphLoaded": { "message": "Visit graph loaded." },
-  "popupLoadVisitGraphFailed": { "message": "Failed to load visit graph." },
-  "performanceInsufficientReducePreloadCaps": { "message": "Performance pressure detected. Lower the preload limits." },
-  "popupCurrentPageNotTracked": { "message": "Current page is not tracked" },
-  "popupCurrentPageNotTrackable": { "message": "Current page is not trackable." },
-  "popupStoppingService": { "message": "Stopping prediction and preloading..." },
-  "popupStartingService": { "message": "Starting prediction and preloading..." },
-  "popupUpdateStateFailed": { "message": "Failed to update plugin state." },
-  "popupRestoreServiceTitle": { "message": "Resume prediction and preloading" },
-  "popupStopServiceTitle": { "message": "Stop prediction and preloading, and close the background preload window" },
-  "popupWeightLabel": { "message": "Weight: {0}" },
-  "popupSiteMeta": { "message": "Site: {0} (#{1}, {2}/{3})" },
-  "popupFreqMeta": { "message": "Freq: site {0}, out {1}, in {2}" },
-  "popupBookmarkMeta": { "message": "Bookmark: {0}, rank {1}" },
-  "settingsPageTitle": { "message": "Smart Preload Settings" },
-  "settingsTitle": { "message": "Settings" },
-  "settingsNavAriaLabel": { "message": "Settings sections" },
-  "settingsOverview": { "message": "Overview" },
-  "settingsTracking": { "message": "Tracking" },
-  "settingsPreload": { "message": "Preload" },
-  "settingsOrdering": { "message": "Ordering" },
-  "settingsExperiments": { "message": "Experiments" },
-  "settingsOverviewSub": { "message": "Runtime profile and auto-tuning" },
-  "settingsOrderingSub": { "message": "Simple ranking filters" },
-  "settingsStorageFooter": { "message": "Stored in local extension storage." },
-  "settingsLoadingSettings": { "message": "Loading settings..." },
-  "settingsHeroKicker": { "message": "Intelligent preload control" },
-  "settingsHeroTitle": { "message": "Smarter, more proactive preloading" },
-  "settingsHeroCopy": { "message": "Smart Preload allocates preload slots across active tabs using page signals, recent attention, and device pressure, while still letting you set limits manually." },
-  "settingsDeviceProfile": { "message": "Device Profile" },
-  "settingsDetectingHardware": { "message": "Detecting hardware..." },
-  "settingsEffectiveGroupCaps": { "message": "Effective Group Caps" },
-  "settingsWaitingForSettings": { "message": "Waiting for settings..." },
-  "settingsWatchdog": { "message": "Watchdog" },
-  "settingsNativeApp": { "message": "Native App" },
-  "settingsCheckingConnection": { "message": "Checking connection..." },
-  "settingsOverviewMeta": { "message": "High-level controls that influence how aggressively the extension adapts to the current machine." },
-  "settingsAutomaticDeviceTuning": { "message": "Automatic device tuning" },
-  "settingsAutomaticDeviceTuningDesc": { "message": "Reserved toggle for future hardware-aware scheduling. It is saved now, but it does not change runtime behavior yet." },
-  "settingsPreloadMode": { "message": "Preload mode" },
-  "settingsPreloadModeDesc": { "message": "Reserved selector for future strategy tiers. It is saved now, but it does not change runtime behavior yet." },
-  "settingsModeConservative": { "message": "Conservative" },
-  "settingsModeBalanced": { "message": "Balanced" },
-  "settingsModeAggressive": { "message": "Aggressive" },
-  "settingsTrackingMeta": { "message": "Controls for how navigation nodes are normalized and added into the directional graph." },
-  "settingsSeparateGoogleSearchPages": { "message": "Separate Google search pages" },
-  "settingsSeparateGoogleSearchPagesDesc": { "message": "Track `google/search` result pages as their own node so the graph can learn search-page to destination transitions." },
-  "settingsSkipGoogleInternalPages": { "message": "Skip Google internal pages" },
-  "settingsSkipGoogleInternalPagesDesc": { "message": "Do not track or preload on the Chrome Web Store, Google account and password manager, Chrome sync, chromestatus, and similar Google administrative pages. Gemini and regular Google products stay tracked." },
-  "settingsSkipHttpPages": { "message": "Skip HTTP pages" },
-  "settingsSkipHttpPagesDesc": { "message": "Do not track or preload plain HTTP pages and links. HTTPS pages stay available." },
-  "settingsSkipLocalPages": { "message": "Skip local pages" },
-  "settingsSkipLocalPagesDesc": { "message": "Do not track or preload localhost, 127.0.0.0/8, 0.0.0.0, [::1], or *.localhost pages." },
-  "settingsSkipPrivateNetworkPages": { "message": "Skip private network pages" },
-  "settingsSkipPrivateNetworkPagesDesc": { "message": "Do not track or preload private network pages such as 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, fc00::/7, or fe80::/10." },
-  "settingsPreloadMeta": { "message": "Controls for tab priming, watchdog repair, and preload window behavior." },
-  "settingsEnablePreloading": { "message": "Enable preloading" },
-  "settingsEnablePreloadingDesc": { "message": "Master switch for candidate registration, background tabs, and tab swapping." },
-  "settingsInteractionPreload": { "message": "Hover and context-menu preload" },
-  "settingsInteractionPreloadDesc": { "message": "Starts an interaction preload after hovering a link for 80 ms, and prepares a new-tab preload when opening a link context menu." },
-  "settingsNativeAppDownloadTitle": { "message": "Native app download" },
-  "settingsNativeAppDownloadDesc": { "message": "Download the Windows-only native app package from GitHub when system-level hidden real tabs are needed." },
-  "settingsNativeAppBindingOrder": { "message": "To bind the extension and Windows native app, install or enable the extension first, then run the native app installer or start the native app. After binding succeeds, the extension can wake the native app automatically." },
-  "settingsNativeAppDownloadLink": { "message": "GitHub releases" },
-  "settingsNativeAppUpdateTitle": { "message": "Native app update" },
-  "settingsNativeAppUpdateDesc": { "message": "Select an available local app version. Only upgrades from the running app version are allowed." },
-  "settingsNativeAppVersionsLoading": { "message": "Loading versions..." },
-  "settingsNativeAppRefreshVersions": { "message": "Refresh" },
-  "settingsNativeAppUpdateButton": { "message": "Upgrade App" },
-  "settingsNativeAppVersionUnknown": { "message": "Native app version is unavailable." },
-  "settingsNativeAppVersionsReady": { "message": "Native app {0}. Select a newer version to upgrade." },
-  "settingsNativeAppNoUpgrade": { "message": "Native app {0} is already on the latest listed version." },
-  "settingsNativeAppVersionsFailed": { "message": "Could not load app versions. Start the native app or use GitHub releases." },
-  "settingsNativeAppNoVersions": { "message": "No app versions available" },
-  "settingsNativeAppCurrentVersionOption": { "message": "v{0} (current)" },
-  "settingsNativeAppUpdateConfirm": { "message": "Upgrade the native app to v{0}? The app will restart after the update starts." },
-  "settingsNativeAppUpdateStarting": { "message": "Starting native app update to v{0}..." },
-  "settingsNativeAppUpdateAccepted": { "message": "Native app update to v{0} has started." },
-  "settingsNativeAppUpdateFailed": { "message": "Could not start native app update to v{0}." },
-  "settingsIgnoreWaterfallDynamicLinks": { "message": "Ignore waterfall dynamic links" },
-  "settingsIgnoreWaterfallDynamicLinksDesc": { "message": "On infinite-scroll or waterfall pages, keep prediction on the first stable link set and ignore links appended later by stream loading." },
-  "settingsExcludeIncognitoWindows": { "message": "Exclude incognito windows from preloading" },
-  "settingsExcludeIncognitoWindowsDesc": { "message": "When enabled, incognito windows stay outside learning, scoring, slot allocation, and interaction preloads. When disabled, incognito and normal source pages share the same account-level caps, while incognito sources only use incognito preload windows." },
-  "settingsProxySkipRules": { "message": "Proxy skip rules" },
-  "settingsProxySkipRulesDesc": { "message": "Manually skip proxy-related tabs. Use one domain or URL pattern per line; blacklist skips matches, whitelist keeps only matches." },
-  "settingsProxySkipModeBlacklist": { "message": "Blacklist" },
-  "settingsProxySkipModeWhitelist": { "message": "Whitelist" },
-  "settingsProxySkipRulesPlaceholder": { "message": "example.com\n*.example.org\nhttps://example.net/docs/*" },
-  "settingsTransitionFrequencyWindow": { "message": "Transition frequency window" },
-  "settingsTransitionFrequencyWindowDesc": { "message": "When enabled, transition frequency weighting uses the selected time window instead of the all-time total." },
-  "settingsGlobalPreloadScheduler": { "message": "Global preload scheduler" },
-  "settingsGlobalPreloadSchedulerDesc": { "message": "Account-level limits for distributing preload slots across all source tabs with candidates." },
-  "settingsSchedulerHiddenTabs": { "message": "Real Preload" },
-  "settingsSchedulerNativePreload": { "message": "Browser-native preload" },
-  "settingsSchedulerAttentionPool": { "message": "Attention pool" },
-  "settingsSchedulerAttentionPoolEnabled": { "message": "Use attention pool" },
-  "settingsSchedulerAttentionPoolEnabledDesc": { "message": "When off, attention time is not recorded and stored attention history is ignored during slot allocation." },
-  "settingsSchedulerPoolMinutes": { "message": "Pool minutes" },
-  "settingsSchedulerLinkSoftSeconds": { "message": "Link soft seconds" },
-  "settingsSchedulerLinkSoftWeight": { "message": "Link soft weight" },
-  "settingsSchedulerLinkHardSeconds": { "message": "Link hard seconds" },
-  "settingsSchedulerLinkHardWeight": { "message": "Link hard weight" },
-  "settingsSchedulerLinkZeroSeconds": { "message": "Link zero seconds" },
-  "settingsSchedulerSiteShareRatio": { "message": "Site share ratio" },
-  "settingsSchedulerMin": { "message": "Min" },
-  "settingsSchedulerMax": { "message": "Max" },
-  "settingsSchedulerHalfLifeTabs": { "message": "Cap growth half-life tabs" },
-  "settingsSchedulerHalfLifeTabsDesc": { "message": "For each additional this many tabs, the dynamic total cap moves halfway toward the max. Lower values grow the cap faster as tab count rises." },
-  "settingsSchedulerPoolHours": { "message": "Pool hours" },
-  "settingsSchedulerSegmentSeconds": { "message": "Segment seconds" },
-  "settingsSchedulerMaxGapSeconds": { "message": "Max gap seconds" },
-  "settingsSchedulerInputWindowSeconds": { "message": "Input window seconds" },
-  "settingsSchedulerMediaWeight": { "message": "Video weight" },
-  "settingsSchedulerAudioWeight": { "message": "Audio weight" },
-  "settingsAiPredictionAssistant": { "message": "AI prediction assistant" },
-  "settingsAiPredictionAssistantDesc": { "message": "Choose an external AI provider and model for keyword scoring. The extension uses your API key directly; it does not download or manage local models." },
-  "settingsAiModelSelectionAdvice": { "message": "By default, the list shows the latest recommended model set. Switch to All models if you need a specific model, and prefer fast, inexpensive text or chat models when possible." },
-  "settingsAiModelListModeRecommended": { "message": "Latest recommended models" },
-  "settingsAiModelListModeAll": { "message": "All models" },
-  "settingsAiModelListRecommendedTitle": { "message": "Showing {0} latest recommended models from {1} loaded models. Switch to All models to see every option." },
-  "settingsAiProviderApiKey": { "message": "Provider API key" },
-  "settingsAiProviderApiKeyDesc": { "message": "Stored in local extension storage and used only by the service worker when AI prediction is enabled. LM Studio ignores this field." },
-  "settingsAiProviderEndpoint": { "message": "Provider endpoint" },
-  "settingsAiProviderEndpointDesc": { "message": "Leave the default unless you use an OpenAI-compatible local service such as LM Studio." },
-  "settingsWindowWatchdog": { "message": "Window watchdog" },
-  "settingsWindowWatchdogDesc": { "message": "Rebuild the preload window and repair missing tabs when the container is lost." },
-  "settingsWatchdogInterval": { "message": "Watchdog interval" },
-  "settingsWatchdogIntervalDesc": { "message": "How often the extension checks whether the preload window is still present." },
-  "settingsWatchdogIntervalOption1": { "message": "1 second" },
-  "settingsWatchdogIntervalOption2": { "message": "2 seconds" },
-  "settingsWatchdogIntervalOption3": { "message": "3 seconds" },
-  "settingsWatchdogIntervalOption5": { "message": "5 seconds" },
-  "settingsWatchdogIntervalOption10": { "message": "10 seconds" },
-  "settingsWatchdogIntervalOption30": { "message": "30 seconds" },
-  "settingsWatchdogIntervalOption60": { "message": "1 minute" },
-  "settingsWatchdogIntervalOption120": { "message": "2 minutes" },
-  "settingsWatchdogIntervalOption300": { "message": "5 minutes" },
-  "settingsFullscreenPressurePolicy": { "message": "Fullscreen/game background tab policy" },
-  "settingsFullscreenPressurePolicyDesc": { "message": "When another app is fullscreen or a game process is running, choose how hidden real-page preload tabs are handled." },
-  "settingsFullscreenPressurePolicyClose": { "message": "Close completely" },
-  "settingsFullscreenPressurePolicySleep": { "message": "Sleep tabs" },
-  "settingsFullscreenPressurePolicyIgnore": { "message": "No operation" },
-  "settingsSecond": { "message": "{0} second" },
-  "settingsSeconds": { "message": "{0} seconds" },
-  "settingsForceMinimize": { "message": "Force minimize preload window" },
-  "settingsForceMinimizeDesc": { "message": "Immediately minimize the preload window again if it is restored or resized." },
-  "settingsOrderingMeta": { "message": "Fixed ranking filters keep the first version predictable. Advanced programmable filter chains can be added later without changing the stored rule shape." },
-  "settingsExperimentsMeta": { "message": "Risky live switches belong here. Placeholder switches stay here too, but they remain stored-only until they are actually wired into runtime behavior." },
-  "settingsCrossSiteCurrentTabSwap": { "message": "Cross-site current-tab hard swap" },
-  "settingsCrossSiteCurrentTabSwapDesc": { "message": "Use the hidden real-page swap path for cross-site navigations that stay in the current tab. Faster when it works, but it can still damage history and back-button behavior. Enable only if you accept those side effects." },
-  "settingsIdleWakeStrongDevices": { "message": "Idle wake on strong devices" },
-  "settingsIdleWakeStrongDevicesDesc": { "message": "Saved only for future use. It does not currently wake extra candidate tabs." },
-  "settingsPointerProximityPrediction": { "message": "Pointer proximity prediction" },
-  "settingsPointerProximityPredictionDesc": { "message": "Saved only for future use. It does not currently add pointer-based prediction." },
-  "settingsAuthStateWarmup": { "message": "Auth state warmup" },
-  "settingsAuthStateWarmupDesc": { "message": "Saved only for future use. It does not currently change auth or warmup behavior." },
-  "settingsNoUnsavedChanges": { "message": "No unsaved changes." },
-  "settingsResetDefaults": { "message": "Reset Defaults" },
-  "settingsSaveSettings": { "message": "Save Settings" },
-  "settingsAiModelTask": { "message": "AI model task" },
-  "settingsReadingLocalSettings": { "message": "Reading local extension settings." },
-  "settingsCouldNotLoad": { "message": "Could not load settings from storage." },
-  "settingsCouldNotLoadAiStatus": { "message": "Could not load AI model status." },
-  "settingsDefaultsRestored": { "message": "Defaults restored in the form. Save to apply." },
-  "settingsUnsavedReady": { "message": "Unsaved changes are ready to be applied." },
-  "settingsWritingLocalSettings": { "message": "Writing settings to local extension storage." },
-  "settingsWrittenSuccessfully": { "message": "Settings written successfully." },
-  "settingsCouldNotSave": { "message": "Could not save settings." },
-  "settingsPreparingRuntime": { "message": "Preparing portable runtime if needed." },
-  "settingsRemovingSelectedModel": { "message": "Removing the selected model." },
-  "settingsInstallingModel": { "message": "Installing runtime if needed, then downloading the selected model." },
-  "settingsRemovingModelAndRuntime": { "message": "Removing the selected model and pruning the portable runtime if unused." },
-  "settingsAiModelActionFailed": { "message": "AI model action failed." },
-  "settingsModelStateUpdatedDirty": { "message": "Model state updated. Other unsaved changes are still pending." },
-  "settingsPortableModelUpdated": { "message": "Portable runtime and model state updated." },
-  "settingsModelDownloaded": { "message": "Model downloaded." },
-  "settingsModelRemoved": { "message": "Model removed." },
-  "settingsCouldNotUpdateModel": { "message": "Could not update the selected model." },
-  "settingsHardwareMeta": { "message": "{0} cores | {1} GB memory hint" },
-  "settingsEffectivePreloadMeta": { "message": "Native / tab slot caps. Rules use {0}." },
-  "settingsWatchdogChecksEvery": { "message": "Checks every {0} second(s)." },
-  "settingsWindowRepairDisabled": { "message": "Window repair is disabled." },
-  "settingsSystemHidingUnsupported": { "message": "System-level hiding not supported on {0}." },
-  "settingsSystemHidingActive": { "message": "System-level window hiding is active." },
-  "settingsNativeAppOffline": { "message": "Native app not detected. Using minimize fallback." },
-  "settingsConnected": { "message": "Connected" },
-  "settingsOffline": { "message": "Offline" },
-  "settingsInstallingModelLabel": { "message": "Installing {0}" },
-  "settingsRemovingModelLabel": { "message": "Removing {0}" },
-  "settingsModelReady": { "message": "Model ready" },
-  "settingsUninstallFailed": { "message": "Uninstall failed" },
-  "settingsInstallFailed": { "message": "Install failed" },
-  "settingsTaskDidNotFinish": { "message": "The task did not finish." },
-  "settingsAiProviderMissingWarning": { "message": "AI scoring will stay disabled until {0} has a model, endpoint, and API key." },
-  "settingsAiKeyOptionalPlaceholder": { "message": "Optional for local compatible endpoints" },
-  "settingsAiLmStudioKeyIgnoredPlaceholder": { "message": "Ignored for LM Studio" },
-  "settingsAiLmStudioLoadingModel": { "message": "Loading LM Studio model: {0}" },
-  "settingsAiKeyRequiredPlaceholder": { "message": "Required" },
-  "settingsAiEnterKeyToLoadModels": { "message": "Enter an API key to load models" },
-  "settingsAiLoadingModels": { "message": "Loading models..." },
-  "settingsAiLoadingModelsGeneric": { "message": "Loading models..." },
-  "settingsAiModelListRequestTimedOut": { "message": "The model list request stopped after {0} seconds; curated presets are shown instead." },
-  "settingsAiSelectProviderFirst": { "message": "Select a provider first" },
-  "settingsAiNoSupportedModels": { "message": "No models found" },
-  "settingsAiNoModelsFound": { "message": "No models found" },
-  "settingsHistoryDeletionTitle": { "message": "History record deletion" },
-  "settingsHistoryDeletionDesc": { "message": "Delete local visit graph records in a UTC date range. The start date is included and the end date is excluded." },
-  "settingsHistoryDeletionCurrentUtc": { "message": "Current UTC" },
-  "settingsHistoryDeletionStartDate": { "message": "Start UTC date" },
-  "settingsHistoryDeletionEndDate": { "message": "End UTC date" },
-  "settingsHistoryDeletionYear": { "message": "Year" },
-  "settingsHistoryDeletionMonth": { "message": "Month" },
-  "settingsHistoryDeletionDay": { "message": "Day" },
-  "settingsHistoryDeletionDelete": { "message": "Delete History" },
-  "settingsHistoryDeletionConfirm": { "message": "Delete local history records for UTC range {0}? This cannot be undone." },
-  "settingsHistoryDeletionDeleting": { "message": "Deleting selected history records..." },
-  "settingsHistoryDeletionDeletedSummary": { "message": "Deleted {0} history record(s): {1} transitions, {2} foreground pages, {3} keyword records, {4} link behavior records." },
-  "settingsHistoryDeletionFailed": { "message": "Could not delete the selected history records." },
-  "settingsHistoryDeletionNeedRange": { "message": "Select both UTC start date and UTC end date." },
-  "settingsHistoryDeletionInvalidRange": { "message": "UTC start date must be earlier than UTC end date." },
-  "settingsHistoryDeletionInvalidTime": { "message": "One of the selected UTC dates is invalid." },
-  "settingsHistoryDeletionRangeLabel": { "message": "[{0}, {1})" },
-  "commonProvider": { "message": "provider" },
-  "transitionWindowTotal": { "message": "Total" },
-  "transitionWindow365d": { "message": "Last year" },
-  "transitionWindow30d": { "message": "Last month" },
-  "transitionWindow7d": { "message": "Last 7 days" },
-  "transitionWindow1d": { "message": "Last day" },
-  "ruleOperatorDisabled": { "message": "Disabled" },
-  "ruleFieldValueA": { "message": "Value A" },
-  "ruleFieldCompareA": { "message": "Compare A" },
-  "ruleFieldCompareB": { "message": "Compare B" },
-  "ruleFieldValueC": { "message": "Value C" },
-  "ruleFieldStatus": { "message": "Status" },
-  "ruleTokenFixed": { "message": "fixed token {0}" },
-  "ruleNativePerPageTitle": { "message": "Browser-native preload group page slot cap a" },
-  "ruleNativePerPageDesc": { "message": "Applies to browser-native `prefetch` / `prerender` candidates. It decides how many page candidates this group can keep for final execution." },
-  "ruleTabPerPageTitle": { "message": "Real Preload group page slot cap a" },
-  "ruleTabPerPageDesc": { "message": "Applies to candidates that need hidden real background tabs. It decides how many page candidates this group can keep for final execution." },
-  "ruleNativeSiteTitle": { "message": "Browser-native preload group high-weight site count x" },
-  "ruleNativeSiteDesc": { "message": "Applies to browser-native `prefetch` / `prerender` candidates. It decides how many high-weight sites enter the site slot allocation stage." },
-  "ruleTabSiteTitle": { "message": "Real Preload group high-weight site count x" },
-  "ruleTabSiteDesc": { "message": "Applies to candidates that need hidden real background tabs, including cross-site new-tab preload and current-tab hard-swap cross-site candidates routed to hidden-tab." },
-  "ruleGoogleBookmarkRankTitle": { "message": "Google search bookmark preload rank x" },
-  "ruleGoogleBookmarkRankDesc": { "message": "Only applies on Google search pages. When enabled, Chrome bookmarks are kept as independent persistent preload targets by this rank rule." },
-  "deviceProfileBalanced": { "message": "Balanced" },
-  "deviceProfileHighEnd": { "message": "High-end" },
-  "deviceProfileStrong": { "message": "Strong" },
-  "deviceProfileConstrained": { "message": "Constrained" },
-  "settingsDiagnosticsLogging": { "message": "Log mode" },
-  "settingsDiagnosticsLoggingDesc": { "message": "When enabled, runtime diagnostics are written to the local app portable logs folder as JSONL files." },
-  "settingsInterfaceLanguage": { "message": "Interface language" },
-  "settingsInterfaceLanguageDesc": { "message": "Choose the extension UI language, or follow the browser language automatically." },
-  "languageAuto": { "message": "Automatic" },
-  "languageEnglish": { "message": "English" },
-  "languageChineseSimplified": { "message": "Simplified Chinese" },
-  "languageChineseTraditional": { "message": "Traditional Chinese" },
-  "languageJapanese": { "message": "Japanese" },
-  "languageKorean": { "message": "Korean" },
-  "languageGerman": { "message": "German" },
-  "languageFrench": { "message": "French" },
-  "languageSpanish": { "message": "Spanish" },
-  "languagePortugueseBrazil": { "message": "Portuguese (Brazil)" },
-  "languageRussian": { "message": "Russian" },
-  "nativeAppMissingDownloadOrDisableRealPreload": { "message": "Real Preload needs the Windows app. It has not been detected for 1 minute; install the app or turn off Real Preload." },
-  "settingsRealPreload": { "message": "Real Preload" },
-  "settingsRealPreloadDesc": { "message": "Use hidden real background tabs for near-zero perceived latency. Off by default because it uses a large amount of memory." },
-  "settingsRealPreloadSensitiveSceneWarning": { "message": "In online exams, banking, and similar sensitive workflows, turn off Real Preload or pause preloading to avoid unintended page actions." },
-  "settingsMobileRealPreloadEasterEgg": { "message": "Easter egg: you found a desktop-only Real Preload switch. Mobile browsers have no hidden-tab runtime, so flipping it cannot summon another world." },
-  "settingsRealPreloadRiskDialogTitle": { "message": "Real Preload can still be risky" },
-  "settingsRealPreloadRiskDialogBody": { "message": "Even with multiple safety protections, Real Preload still opens real background pages and may trigger unexpected behavior on some sites." },
-  "settingsRealPreloadRiskDialogAdvice": { "message": "Turn it off or pause preloading for online exams, banking, trading, admin panels, unsafe sites, and other sensitive workflows." },
-  "settingsRealPreloadRiskCancel": { "message": "Keep it off" },
-  "settingsRealPreloadRiskConfirm": { "message": "Enable anyway" },
-  "settingsRealPreloadRiskRejected": { "message": "Real Preload remains off." },
-  "settingsDialogTypedConfirmationInputLabel": { "message": "Type the confirmation text" },
-  "settingsDialogTypedConfirmationMismatch": { "message": "The text must match exactly before you can continue." },
-  "settingsRealPreloadTypedConfirmTitle": { "message": "Type the confirmation sentence" },
-  "settingsRealPreloadTypedConfirmBody": { "message": "To prevent accidental enablement, copy the sentence below into the input field." },
-  "settingsRealPreloadTypedConfirmInstruction": { "message": "The text must match the displayed sentence before Real Preload can be enabled for the first time." },
-  "settingsRealPreloadTypedConfirmSentence": { "message": "I understand that Real Preload opens real background pages. I will enable it and accept the risks." },
-  "settingsRealPreloadTypedConfirmInputLabel": { "message": "Confirmation sentence" },
-  "settingsRealPreloadTypedConfirmMismatch": { "message": "The confirmation sentence does not match." },
-  "settingsRealPreloadTypedConfirmContinue": { "message": "Continue" },
-  "settingsRealPreloadDisclaimerTitle": { "message": "Real Preload disclaimer" },
-  "settingsRealPreloadDisclaimerBody": { "message": "Real Preload is an advanced local feature. Safety guards reduce known risks, but they cannot guarantee that every site will remain side-effect free." },
-  "settingsRealPreloadDisclaimerItemPages": { "message": "Hidden real background pages may still affect sessions, counters, server state, downloads, or site-specific workflows." },
-  "settingsRealPreloadDisclaimerItemSensitive": { "message": "Turn it off or pause preloading for online exams, banking, trading, admin panels, unsafe sites, and other sensitive workflows." },
-  "settingsRealPreloadDisclaimerItemResponsibility": { "message": "You are responsible for deciding where to use this feature and for keeping preload limits appropriate for your device." },
-  "settingsRealPreloadDisclaimerAgree": { "message": "I agree" },
-  "settingsSkipSensitivePages": { "message": "Skip exam and banking pages" },
-  "settingsSkipSensitivePagesDesc": { "message": "Do not preload source pages or links that match local exam, proctoring, and banking rules. This uses a separate sensitive-scene library, not the dangerous-site list." },
-  "settingsSideEffectLinkSafetyGuard": { "message": "Side-effect link safety guard" },
-  "settingsSideEffectLinkSafetyGuardDesc": { "message": "Always blocks preloading for download, export, attachment, and other side-effect-prone links. This safety baseline cannot be turned off." },
-  "settingsDangerousSiteSafetyGuard": { "message": "Dangerous site safety guard" },
-  "settingsDangerousSiteSafetyGuardDesc": { "message": "Preloading stays blocked for links that the extension or native app marks as dangerous. Browser built-in warnings still apply during real navigation." },
-  "settingsDangerousSitePausePreloadingWarning": { "message": "When entering risky or untrusted sites, pause preloading completely. Automatic rules cannot guarantee safety on every dangerous page." },
-  "realPreloadAvailableLowMemoryWarning": { "message": "Real Preload is available and can reduce perceived latency to zero, but this computer has less than 24 GB of memory; it is not recommended for most users." },
-  "realPreloadRecommendedWarning": { "message": "Real Preload is available and recommended on this machine. It can reduce perceived latency to zero, but uses a lot of memory; avoid overly aggressive limits." },
-  "commonExporting": { "message": "Exporting" },
-  "commonExported": { "message": "Exported" },
-  "commonImporting": { "message": "Importing" },
-  "commonImported": { "message": "Imported" },
-  "settingsHistoryTransferTitle": { "message": "History import and export" },
-  "settingsHistoryTransferDesc": { "message": "Export the complete local visit graph history to a JSON backup, or replace it from a compatible backup file. Settings, API keys, and current tab runtime state are not transferred." },
-  "settingsHistoryImportButton": { "message": "Import History" },
-  "settingsHistoryExportButton": { "message": "Export History" },
-  "settingsHistoryExportWarningTitle": { "message": "Review privacy before exporting" },
-  "settingsHistoryExportWarningMessage": { "message": "The backup can contain visited addresses, page titles, keywords, transitions, and usage statistics." },
-  "settingsHistoryExportWarningDetail": { "message": "Do not share it casually. You are responsible for any personal information exposed by sharing the file." },
-  "settingsHistoryExportContinue": { "message": "Choose save location" },
-  "settingsHistoryExportPreparing": { "message": "Preparing history backup..." },
-  "settingsHistoryExportSucceeded": { "message": "History was exported to {0}." },
-  "settingsHistorySavePickerUnavailable": { "message": "This browser cannot choose a save location from the settings page." },
-  "settingsHistoryExportFailed": { "message": "Could not export history." },
-  "settingsHistoryImportValidating": { "message": "Validating history backup..." },
-  "settingsHistoryImportConfirmTitle": { "message": "Replace existing history?" },
-  "settingsHistoryImportConfirmMessage": { "message": "Importing this file will completely replace the current historical records. This cannot be undone." },
-  "settingsHistoryImportConfirm": { "message": "Replace and import" },
-  "settingsHistoryImportCancelled": { "message": "Import was cancelled. Existing history was not changed." },
-  "settingsHistoryImportSummary": { "message": "Backup time: {0}. {1} transitions, {2} sites, {3} keyword records." },
-  "settingsHistoryImporting": { "message": "Replacing history records..." },
-  "settingsHistoryImportSucceeded": { "message": "Imported {0} transition records." },
-  "settingsHistoryImportFailed": { "message": "The selected file is not a valid Smart Preload history backup or could not be imported." }
+  "appName": {
+    "message": "Smart Preload"
+  },
+  "appDescription": {
+    "message": "Smarter, more proactive preloading for pages you are likely to open next."
+  },
+  "commonReady": {
+    "message": "Ready"
+  },
+  "commonLoading": {
+    "message": "Loading"
+  },
+  "commonFailed": {
+    "message": "Failed"
+  },
+  "commonSaving": {
+    "message": "Saving"
+  },
+  "commonSaved": {
+    "message": "Saved"
+  },
+  "commonUnsaved": {
+    "message": "Unsaved"
+  },
+  "commonRemoving": {
+    "message": "Removing"
+  },
+  "commonRemoved": {
+    "message": "Removed"
+  },
+  "commonUnknown": {
+    "message": "Unknown"
+  },
+  "commonHelp": {
+    "message": "Help"
+  },
+  "settingsDialogCancel": {
+    "message": "Cancel"
+  },
+  "settingsDialogConfirm": {
+    "message": "Confirm"
+  },
+  "popupCurrentPage": {
+    "message": "Current page"
+  },
+  "popupNodes": {
+    "message": "Nodes"
+  },
+  "popupEdges": {
+    "message": "Edges"
+  },
+  "popupUpdated": {
+    "message": "Updated"
+  },
+  "popupTop": {
+    "message": "Top"
+  },
+  "popupNoPreloadQualifiedLinks": {
+    "message": "No preload-qualified links on this page yet."
+  },
+  "popupRefresh": {
+    "message": "Refresh"
+  },
+  "popupStop": {
+    "message": "Stop"
+  },
+  "popupStart": {
+    "message": "Start"
+  },
+  "popupSettings": {
+    "message": "Settings"
+  },
+  "popupWaitingForData": {
+    "message": "Waiting for data."
+  },
+  "popupOpenSettingsFailed": {
+    "message": "Failed to open settings page."
+  },
+  "popupLoadingVisitGraph": {
+    "message": "Loading visit graph..."
+  },
+  "popupPausedMessage": {
+    "message": "Plugin stopped: prediction and preloading are disabled."
+  },
+  "popupVisitGraphLoaded": {
+    "message": "Visit graph loaded."
+  },
+  "popupLoadVisitGraphFailed": {
+    "message": "Failed to load visit graph."
+  },
+  "performanceInsufficientReducePreloadCaps": {
+    "message": "Performance pressure detected. Lower the preload limits."
+  },
+  "popupCurrentPageNotTracked": {
+    "message": "Current page is not tracked"
+  },
+  "popupCurrentPageNotTrackable": {
+    "message": "Current page is not trackable."
+  },
+  "popupStoppingService": {
+    "message": "Stopping prediction and preloading..."
+  },
+  "popupStartingService": {
+    "message": "Starting prediction and preloading..."
+  },
+  "popupUpdateStateFailed": {
+    "message": "Failed to update plugin state."
+  },
+  "popupRestoreServiceTitle": {
+    "message": "Resume prediction and preloading"
+  },
+  "popupStopServiceTitle": {
+    "message": "Stop prediction and preloading, and close the background preload window"
+  },
+  "popupWeightLabel": {
+    "message": "Weight: {0}"
+  },
+  "popupSiteMeta": {
+    "message": "Site: {0} (#{1}, {2}/{3})"
+  },
+  "popupFreqMeta": {
+    "message": "Freq: site {0}, out {1}, in {2}"
+  },
+  "popupBookmarkMeta": {
+    "message": "Bookmark: {0}, rank {1}"
+  },
+  "settingsPageTitle": {
+    "message": "Smart Preload Settings"
+  },
+  "settingsTitle": {
+    "message": "Settings"
+  },
+  "settingsNavAriaLabel": {
+    "message": "Settings sections"
+  },
+  "settingsTracking": {
+    "message": "Tracking"
+  },
+  "settingsPreload": {
+    "message": "Preload"
+  },
+  "settingsExperiments": {
+    "message": "Experiments"
+  },
+  "settingsStorageFooter": {
+    "message": "Stored in local extension storage."
+  },
+  "settingsLoadingSettings": {
+    "message": "Loading settings..."
+  },
+  "settingsSeparateGoogleSearchPages": {
+    "message": "Separate Google search pages"
+  },
+  "settingsSeparateGoogleSearchPagesDesc": {
+    "message": "Track `google/search` result pages as their own node so the graph can learn search-page to destination transitions."
+  },
+  "settingsSkipGoogleInternalPages": {
+    "message": "Skip Google internal pages"
+  },
+  "settingsSkipGoogleInternalPagesDesc": {
+    "message": "Do not track or preload on the Chrome Web Store, Google account and password manager, Chrome sync, chromestatus, and similar Google administrative pages. Gemini and regular Google products stay tracked."
+  },
+  "settingsSkipHttpPages": {
+    "message": "Skip HTTP pages"
+  },
+  "settingsSkipHttpPagesDesc": {
+    "message": "Do not track or preload plain HTTP pages and links. HTTPS pages stay available."
+  },
+  "settingsSkipLocalPages": {
+    "message": "Skip local pages"
+  },
+  "settingsSkipLocalPagesDesc": {
+    "message": "Do not track or preload localhost, 127.0.0.0/8, 0.0.0.0, [::1], or *.localhost pages."
+  },
+  "settingsSkipPrivateNetworkPages": {
+    "message": "Skip private network pages"
+  },
+  "settingsSkipPrivateNetworkPagesDesc": {
+    "message": "Do not track or preload private network pages such as 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, fc00::/7, or fe80::/10."
+  },
+  "settingsEnablePreloading": {
+    "message": "Enable preloading"
+  },
+  "settingsEnablePreloadingDesc": {
+    "message": "Master switch for candidate registration, background tabs, and tab swapping."
+  },
+  "settingsInteractionPreload": {
+    "message": "Hover and context-menu preload"
+  },
+  "settingsInteractionPreloadDesc": {
+    "message": "Starts an interaction preload after hovering a link for 80 ms, and prepares a new-tab preload when opening a link context menu."
+  },
+  "settingsNativeAppDownloadTitle": {
+    "message": "Native app download"
+  },
+  "settingsNativeAppDownloadDesc": {
+    "message": "Download the Windows-only native app package from GitHub when system-level hidden real tabs are needed."
+  },
+  "settingsNativeAppBindingOrder": {
+    "message": "To bind the extension and Windows native app, install or enable the extension first, then run the native app installer or start the native app. After binding succeeds, the extension can wake the native app automatically."
+  },
+  "settingsNativeAppDownloadLink": {
+    "message": "GitHub releases"
+  },
+  "settingsNativeAppUpdateTitle": {
+    "message": "Native app update"
+  },
+  "settingsNativeAppUpdateDesc": {
+    "message": "Select an available local app version. Only upgrades from the running app version are allowed."
+  },
+  "settingsNativeAppVersionsLoading": {
+    "message": "Loading versions..."
+  },
+  "settingsNativeAppRefreshVersions": {
+    "message": "Refresh"
+  },
+  "settingsNativeAppUpdateButton": {
+    "message": "Upgrade App"
+  },
+  "settingsNativeAppVersionUnknown": {
+    "message": "Native app version is unavailable."
+  },
+  "settingsNativeAppVersionsReady": {
+    "message": "Native app {0}. Select a newer version to upgrade."
+  },
+  "settingsNativeAppNoUpgrade": {
+    "message": "Native app {0} is already on the latest listed version."
+  },
+  "settingsNativeAppVersionsFailed": {
+    "message": "Could not load app versions. Start the native app or use GitHub releases."
+  },
+  "settingsNativeAppNoVersions": {
+    "message": "No app versions available"
+  },
+  "settingsNativeAppCurrentVersionOption": {
+    "message": "v{0} (current)"
+  },
+  "settingsNativeAppUpdateConfirm": {
+    "message": "Upgrade the native app to v{0}? The app will restart after the update starts."
+  },
+  "settingsNativeAppUpdateStarting": {
+    "message": "Starting native app update to v{0}..."
+  },
+  "settingsNativeAppUpdateAccepted": {
+    "message": "Native app update to v{0} has started."
+  },
+  "settingsNativeAppUpdateFailed": {
+    "message": "Could not start native app update to v{0}."
+  },
+  "settingsIgnoreWaterfallDynamicLinks": {
+    "message": "Ignore waterfall dynamic links"
+  },
+  "settingsIgnoreWaterfallDynamicLinksDesc": {
+    "message": "On infinite-scroll or waterfall pages, keep prediction on the first stable link set and ignore links appended later by stream loading."
+  },
+  "settingsExcludeIncognitoWindows": {
+    "message": "Exclude incognito windows from preloading"
+  },
+  "settingsExcludeIncognitoWindowsDesc": {
+    "message": "When enabled, incognito windows stay outside learning, scoring, slot allocation, and interaction preloads. When disabled, incognito and normal source pages share the same account-level caps, while incognito sources only use incognito preload windows."
+  },
+  "settingsProxySkipRules": {
+    "message": "Proxy skip rules"
+  },
+  "settingsProxySkipRulesDesc": {
+    "message": "Manually skip proxy-related tabs. Use one domain or URL pattern per line; blacklist skips matches, whitelist keeps only matches."
+  },
+  "settingsProxySkipModeBlacklist": {
+    "message": "Blacklist"
+  },
+  "settingsProxySkipModeWhitelist": {
+    "message": "Whitelist"
+  },
+  "settingsProxySkipRulesPlaceholder": {
+    "message": "example.com\n*.example.org\nhttps://example.net/docs/*"
+  },
+  "settingsTransitionFrequencyWindow": {
+    "message": "Transition frequency window"
+  },
+  "settingsTransitionFrequencyWindowDesc": {
+    "message": "When enabled, transition frequency weighting uses the selected time window instead of the all-time total."
+  },
+  "settingsGlobalPreloadScheduler": {
+    "message": "Global preload scheduler"
+  },
+  "settingsGlobalPreloadSchedulerDesc": {
+    "message": "Account-level limits for distributing preload slots across all source tabs with candidates."
+  },
+  "settingsSchedulerHiddenTabs": {
+    "message": "Real Preload"
+  },
+  "settingsSchedulerNativePreload": {
+    "message": "Browser-native preload"
+  },
+  "settingsSchedulerAttentionPool": {
+    "message": "Attention pool"
+  },
+  "settingsSchedulerAttentionPoolEnabled": {
+    "message": "Use attention pool"
+  },
+  "settingsSchedulerAttentionPoolEnabledDesc": {
+    "message": "When off, attention time is not recorded and stored attention history is ignored during slot allocation."
+  },
+  "settingsSchedulerPoolMinutes": {
+    "message": "Pool minutes"
+  },
+  "settingsSchedulerLinkSoftSeconds": {
+    "message": "Link soft seconds"
+  },
+  "settingsSchedulerLinkSoftWeight": {
+    "message": "Link soft weight"
+  },
+  "settingsSchedulerLinkHardSeconds": {
+    "message": "Link hard seconds"
+  },
+  "settingsSchedulerLinkHardWeight": {
+    "message": "Link hard weight"
+  },
+  "settingsSchedulerLinkZeroSeconds": {
+    "message": "Link zero seconds"
+  },
+  "settingsSchedulerSiteShareRatio": {
+    "message": "Site share ratio"
+  },
+  "settingsSchedulerMin": {
+    "message": "Min"
+  },
+  "settingsSchedulerMax": {
+    "message": "Max"
+  },
+  "settingsSchedulerHalfLifeTabs": {
+    "message": "Cap growth half-life tabs"
+  },
+  "settingsSchedulerHalfLifeTabsDesc": {
+    "message": "For each additional this many tabs, the dynamic total cap moves halfway toward the max. Lower values grow the cap faster as tab count rises."
+  },
+  "settingsSchedulerSegmentSeconds": {
+    "message": "Segment seconds"
+  },
+  "settingsSchedulerMaxGapSeconds": {
+    "message": "Max gap seconds"
+  },
+  "settingsSchedulerInputWindowSeconds": {
+    "message": "Input window seconds"
+  },
+  "settingsSchedulerMediaWeight": {
+    "message": "Video weight"
+  },
+  "settingsSchedulerAudioWeight": {
+    "message": "Audio weight"
+  },
+  "settingsAiPredictionAssistant": {
+    "message": "AI prediction assistant"
+  },
+  "settingsAiPredictionAssistantDesc": {
+    "message": "Choose an external AI provider and model for keyword scoring. The extension uses your API key directly; it does not download or manage local models."
+  },
+  "settingsAiPredictionPrivacyNotice": {
+    "message": "When an external provider is selected, the extension sends that provider the page URL, title, and up to the first 2,200 characters of page text, plus context from other tabs open in the same window. If you do not want page content sent to an external company, use a local endpoint such as LM Studio, or leave this off."
+  },
+  "settingsAiModelSelectionAdvice": {
+    "message": "By default, the list shows the latest recommended model set. Switch to All models if you need a specific model, and prefer fast, inexpensive text or chat models when possible."
+  },
+  "settingsAiModelListModeRecommended": {
+    "message": "Latest recommended models"
+  },
+  "settingsAiModelListModeAll": {
+    "message": "All models"
+  },
+  "settingsAiModelListRecommendedTitle": {
+    "message": "Showing {0} latest recommended models from {1} loaded models. Switch to All models to see every option."
+  },
+  "settingsAiProviderApiKey": {
+    "message": "Provider API key"
+  },
+  "settingsAiProviderApiKeyDesc": {
+    "message": "Stored in local extension storage and used only by the service worker when AI prediction is enabled. LM Studio ignores this field."
+  },
+  "settingsAiProviderEndpoint": {
+    "message": "Provider endpoint"
+  },
+  "settingsAiProviderEndpointDesc": {
+    "message": "Leave the default unless you use an OpenAI-compatible local service such as LM Studio."
+  },
+  "settingsWindowWatchdog": {
+    "message": "Window watchdog"
+  },
+  "settingsWindowWatchdogDesc": {
+    "message": "Rebuild the preload window and repair missing tabs when the container is lost."
+  },
+  "settingsWatchdogInterval": {
+    "message": "Watchdog interval"
+  },
+  "settingsWatchdogIntervalDesc": {
+    "message": "How often the extension checks whether the preload window is still present."
+  },
+  "settingsWatchdogIntervalOption30": {
+    "message": "30 seconds"
+  },
+  "settingsWatchdogIntervalOption60": {
+    "message": "1 minute"
+  },
+  "settingsWatchdogIntervalOption120": {
+    "message": "2 minutes"
+  },
+  "settingsWatchdogIntervalOption300": {
+    "message": "5 minutes"
+  },
+  "settingsFullscreenPressurePolicy": {
+    "message": "Fullscreen/game background tab policy"
+  },
+  "settingsFullscreenPressurePolicyDesc": {
+    "message": "When another app is fullscreen or a game process is running, choose how hidden real-page preload tabs are handled."
+  },
+  "settingsFullscreenPressurePolicyClose": {
+    "message": "Close completely"
+  },
+  "settingsFullscreenPressurePolicySleep": {
+    "message": "Sleep tabs"
+  },
+  "settingsFullscreenPressurePolicyIgnore": {
+    "message": "No operation"
+  },
+  "settingsForceMinimize": {
+    "message": "Force minimize preload window"
+  },
+  "settingsForceMinimizeDesc": {
+    "message": "Immediately minimize the preload window again if it is restored or resized."
+  },
+  "settingsCrossSiteCurrentTabSwap": {
+    "message": "Cross-site current-tab hard swap"
+  },
+  "settingsCrossSiteCurrentTabSwapDesc": {
+    "message": "Use the hidden real-page swap path for cross-site navigations that stay in the current tab. Faster when it works, but it can still damage history and back-button behavior. Enable only if you accept those side effects."
+  },
+  "settingsIdleWakeStrongDevices": {
+    "message": "Idle wake on strong devices"
+  },
+  "settingsIdleWakeStrongDevicesDesc": {
+    "message": "Saved only for future use. It does not currently wake extra candidate tabs."
+  },
+  "settingsPointerProximityPrediction": {
+    "message": "Pointer proximity prediction"
+  },
+  "settingsPointerProximityPredictionDesc": {
+    "message": "Saved only for future use. It does not currently add pointer-based prediction."
+  },
+  "settingsAuthStateWarmup": {
+    "message": "Auth state warmup"
+  },
+  "settingsAuthStateWarmupDesc": {
+    "message": "Saved only for future use. It does not currently change auth or warmup behavior."
+  },
+  "settingsNoUnsavedChanges": {
+    "message": "No unsaved changes."
+  },
+  "settingsResetDefaults": {
+    "message": "Reset Defaults"
+  },
+  "settingsSaveSettings": {
+    "message": "Save Settings"
+  },
+  "settingsReadingLocalSettings": {
+    "message": "Reading local extension settings."
+  },
+  "settingsCouldNotLoad": {
+    "message": "Could not load settings from storage."
+  },
+  "settingsDefaultsRestored": {
+    "message": "Defaults restored in the form. Save to apply."
+  },
+  "settingsUnsavedReady": {
+    "message": "Unsaved changes are ready to be applied."
+  },
+  "settingsWritingLocalSettings": {
+    "message": "Writing settings to local extension storage."
+  },
+  "settingsWrittenSuccessfully": {
+    "message": "Settings written successfully."
+  },
+  "settingsCouldNotSave": {
+    "message": "Could not save settings."
+  },
+  "settingsAiProviderMissingWarning": {
+    "message": "AI scoring will stay disabled until {0} has a model, endpoint, and API key."
+  },
+  "settingsAiKeyOptionalPlaceholder": {
+    "message": "Optional for local compatible endpoints"
+  },
+  "settingsAiLmStudioKeyIgnoredPlaceholder": {
+    "message": "Ignored for LM Studio"
+  },
+  "settingsAiKeyRequiredPlaceholder": {
+    "message": "Required"
+  },
+  "settingsAiEnterKeyToLoadModels": {
+    "message": "Enter an API key to load models"
+  },
+  "settingsAiLoadingModelsGeneric": {
+    "message": "Loading models..."
+  },
+  "settingsAiModelListRequestTimedOut": {
+    "message": "The model list request stopped after {0} seconds; curated presets are shown instead."
+  },
+  "settingsAiSelectProviderFirst": {
+    "message": "Select a provider first"
+  },
+  "settingsAiNoModelsFound": {
+    "message": "No models found"
+  },
+  "settingsHistoryDeletionTitle": {
+    "message": "History record deletion"
+  },
+  "settingsHistoryDeletionDesc": {
+    "message": "Delete local visit graph records in a UTC date range. The start date is included and the end date is excluded."
+  },
+  "settingsHistoryDeletionCurrentUtc": {
+    "message": "Current UTC"
+  },
+  "settingsHistoryDeletionStartDate": {
+    "message": "Start UTC date"
+  },
+  "settingsHistoryDeletionEndDate": {
+    "message": "End UTC date"
+  },
+  "settingsHistoryDeletionYear": {
+    "message": "Year"
+  },
+  "settingsHistoryDeletionMonth": {
+    "message": "Month"
+  },
+  "settingsHistoryDeletionDay": {
+    "message": "Day"
+  },
+  "settingsHistoryDeletionDelete": {
+    "message": "Delete History"
+  },
+  "settingsHistoryDeletionConfirm": {
+    "message": "Delete local history records for UTC range {0}? This cannot be undone."
+  },
+  "settingsHistoryDeletionDeleting": {
+    "message": "Deleting selected history records..."
+  },
+  "settingsHistoryDeletionDeletedSummary": {
+    "message": "Deleted {0} history record(s): {1} transitions, {2} foreground pages, {3} keyword records, {4} link behavior records."
+  },
+  "settingsHistoryDeletionFailed": {
+    "message": "Could not delete the selected history records."
+  },
+  "settingsHistoryDeletionNeedRange": {
+    "message": "Select both UTC start date and UTC end date."
+  },
+  "settingsHistoryDeletionInvalidRange": {
+    "message": "UTC start date must be earlier than UTC end date."
+  },
+  "settingsHistoryDeletionInvalidTime": {
+    "message": "One of the selected UTC dates is invalid."
+  },
+  "settingsHistoryDeletionRangeLabel": {
+    "message": "[{0}, {1})"
+  },
+  "commonProvider": {
+    "message": "provider"
+  },
+  "transitionWindowTotal": {
+    "message": "Total"
+  },
+  "transitionWindow365d": {
+    "message": "Last year"
+  },
+  "transitionWindow30d": {
+    "message": "Last month"
+  },
+  "transitionWindow7d": {
+    "message": "Last 7 days"
+  },
+  "transitionWindow1d": {
+    "message": "Last day"
+  },
+  "ruleOperatorDisabled": {
+    "message": "Disabled"
+  },
+  "ruleFieldValueA": {
+    "message": "Value A"
+  },
+  "ruleFieldCompareA": {
+    "message": "Compare A"
+  },
+  "ruleFieldCompareB": {
+    "message": "Compare B"
+  },
+  "ruleFieldValueC": {
+    "message": "Value C"
+  },
+  "ruleFieldStatus": {
+    "message": "Status"
+  },
+  "ruleTokenFixed": {
+    "message": "fixed token {0}"
+  },
+  "ruleNativePerPageTitle": {
+    "message": "Browser-native preload group page slot cap a"
+  },
+  "ruleNativePerPageDesc": {
+    "message": "Applies to browser-native `prefetch` / `prerender` candidates. It decides how many page candidates this group can keep for final execution."
+  },
+  "ruleTabPerPageTitle": {
+    "message": "Real Preload group page slot cap a"
+  },
+  "ruleTabPerPageDesc": {
+    "message": "Applies to candidates that need hidden real background tabs. It decides how many page candidates this group can keep for final execution."
+  },
+  "ruleNativeSiteTitle": {
+    "message": "Browser-native preload group high-weight site count x"
+  },
+  "ruleNativeSiteDesc": {
+    "message": "Applies to browser-native `prefetch` / `prerender` candidates. It decides how many high-weight sites enter the site slot allocation stage."
+  },
+  "ruleTabSiteTitle": {
+    "message": "Real Preload group high-weight site count x"
+  },
+  "ruleTabSiteDesc": {
+    "message": "Applies to candidates that need hidden real background tabs, including cross-site new-tab preload and current-tab hard-swap cross-site candidates routed to hidden-tab."
+  },
+  "ruleGoogleBookmarkRankTitle": {
+    "message": "Google search bookmark preload rank x"
+  },
+  "ruleGoogleBookmarkRankDesc": {
+    "message": "Only applies on Google search pages. When enabled, Chrome bookmarks are kept as independent persistent preload targets by this rank rule."
+  },
+  "settingsDiagnosticsLogging": {
+    "message": "Log mode"
+  },
+  "settingsDiagnosticsLoggingDesc": {
+    "message": "When enabled, runtime diagnostics are written to the local app portable logs folder as JSONL files."
+  },
+  "settingsInterfaceLanguage": {
+    "message": "Interface language"
+  },
+  "settingsInterfaceLanguageDesc": {
+    "message": "Choose the extension UI language, or follow the browser language automatically."
+  },
+  "languageAuto": {
+    "message": "Automatic"
+  },
+  "languageEnglish": {
+    "message": "English"
+  },
+  "languageChineseSimplified": {
+    "message": "Simplified Chinese"
+  },
+  "languageChineseTraditional": {
+    "message": "Traditional Chinese"
+  },
+  "languageJapanese": {
+    "message": "Japanese"
+  },
+  "languageKorean": {
+    "message": "Korean"
+  },
+  "languageGerman": {
+    "message": "German"
+  },
+  "languageFrench": {
+    "message": "French"
+  },
+  "languageSpanish": {
+    "message": "Spanish"
+  },
+  "languagePortugueseBrazil": {
+    "message": "Portuguese (Brazil)"
+  },
+  "languageRussian": {
+    "message": "Russian"
+  },
+  "nativeAppMissingDownloadOrDisableRealPreload": {
+    "message": "Real Preload needs the Windows app. It has not been detected for 1 minute; install the app or turn off Real Preload."
+  },
+  "settingsRealPreload": {
+    "message": "Real Preload"
+  },
+  "settingsRealPreloadDesc": {
+    "message": "Use hidden real background tabs for near-zero perceived latency. Off by default because it uses a large amount of memory."
+  },
+  "settingsRealPreloadSensitiveSceneWarning": {
+    "message": "In online exams, banking, and similar sensitive workflows, turn off Real Preload or pause preloading to avoid unintended page actions."
+  },
+  "settingsMobileRealPreloadEasterEgg": {
+    "message": "Easter egg: you found a desktop-only Real Preload switch. Mobile browsers have no hidden-tab runtime, so flipping it cannot summon another world."
+  },
+  "settingsRealPreloadRiskDialogTitle": {
+    "message": "Real Preload can still be risky"
+  },
+  "settingsRealPreloadRiskDialogBody": {
+    "message": "Even with multiple safety protections, Real Preload still opens real background pages and may trigger unexpected behavior on some sites."
+  },
+  "settingsRealPreloadRiskDialogAdvice": {
+    "message": "Turn it off or pause preloading for online exams, banking, trading, admin panels, unsafe sites, and other sensitive workflows."
+  },
+  "settingsRealPreloadRiskCancel": {
+    "message": "Keep it off"
+  },
+  "settingsRealPreloadRiskConfirm": {
+    "message": "Enable anyway"
+  },
+  "settingsRealPreloadRiskRejected": {
+    "message": "Real Preload remains off."
+  },
+  "settingsDialogTypedConfirmationInputLabel": {
+    "message": "Type the confirmation text"
+  },
+  "settingsDialogTypedConfirmationMismatch": {
+    "message": "The text must match exactly before you can continue."
+  },
+  "settingsRealPreloadTypedConfirmTitle": {
+    "message": "Type the confirmation sentence"
+  },
+  "settingsRealPreloadTypedConfirmBody": {
+    "message": "To prevent accidental enablement, copy the sentence below into the input field."
+  },
+  "settingsRealPreloadTypedConfirmInstruction": {
+    "message": "The text must match the displayed sentence before Real Preload can be enabled for the first time."
+  },
+  "settingsRealPreloadTypedConfirmSentence": {
+    "message": "I understand that Real Preload opens real background pages. I will enable it and accept the risks."
+  },
+  "settingsRealPreloadTypedConfirmInputLabel": {
+    "message": "Confirmation sentence"
+  },
+  "settingsRealPreloadTypedConfirmMismatch": {
+    "message": "The confirmation sentence does not match."
+  },
+  "settingsRealPreloadTypedConfirmContinue": {
+    "message": "Continue"
+  },
+  "settingsRealPreloadDisclaimerTitle": {
+    "message": "Real Preload disclaimer"
+  },
+  "settingsRealPreloadDisclaimerBody": {
+    "message": "Real Preload is an advanced local feature. Safety guards reduce known risks, but they cannot guarantee that every site will remain side-effect free."
+  },
+  "settingsRealPreloadDisclaimerItemPages": {
+    "message": "Hidden real background pages may still affect sessions, counters, server state, downloads, or site-specific workflows."
+  },
+  "settingsRealPreloadDisclaimerItemSensitive": {
+    "message": "Turn it off or pause preloading for online exams, banking, trading, admin panels, unsafe sites, and other sensitive workflows."
+  },
+  "settingsRealPreloadDisclaimerItemResponsibility": {
+    "message": "You are responsible for deciding where to use this feature and for keeping preload limits appropriate for your device."
+  },
+  "settingsRealPreloadDisclaimerAgree": {
+    "message": "I agree"
+  },
+  "settingsSkipSensitivePages": {
+    "message": "Skip exam and banking pages"
+  },
+  "settingsSkipSensitivePagesDesc": {
+    "message": "Do not preload source pages or links that match local exam, proctoring, and banking rules. This uses a separate sensitive-scene library, not the dangerous-site list."
+  },
+  "settingsSideEffectLinkSafetyGuard": {
+    "message": "Side-effect link safety guard"
+  },
+  "settingsSideEffectLinkSafetyGuardDesc": {
+    "message": "Always blocks preloading for download, export, attachment, and other side-effect-prone links. This safety baseline cannot be turned off."
+  },
+  "settingsDangerousSiteSafetyGuard": {
+    "message": "Dangerous site safety guard"
+  },
+  "settingsDangerousSiteSafetyGuardDesc": {
+    "message": "Preloading stays blocked for links that the extension or native app marks as dangerous. Browser built-in warnings still apply during real navigation."
+  },
+  "settingsDangerousSitePausePreloadingWarning": {
+    "message": "When entering risky or untrusted sites, pause preloading completely. Automatic rules cannot guarantee safety on every dangerous page."
+  },
+  "realPreloadAvailableLowMemoryWarning": {
+    "message": "Real Preload is available and can reduce perceived latency to zero, but this computer has less than 24 GB of memory; it is not recommended for most users."
+  },
+  "realPreloadRecommendedWarning": {
+    "message": "Real Preload is available and recommended on this machine. It can reduce perceived latency to zero, but uses a lot of memory; avoid overly aggressive limits."
+  },
+  "commonExporting": {
+    "message": "Exporting"
+  },
+  "commonExported": {
+    "message": "Exported"
+  },
+  "commonImporting": {
+    "message": "Importing"
+  },
+  "commonImported": {
+    "message": "Imported"
+  },
+  "settingsHistoryTransferTitle": {
+    "message": "History import and export"
+  },
+  "settingsHistoryTransferDesc": {
+    "message": "Export the complete local visit graph history to a JSON backup, or replace it from a compatible backup file. Settings, API keys, and current tab runtime state are not transferred."
+  },
+  "settingsHistoryImportButton": {
+    "message": "Import History"
+  },
+  "settingsHistoryExportButton": {
+    "message": "Export History"
+  },
+  "settingsHistoryExportWarningTitle": {
+    "message": "Review privacy before exporting"
+  },
+  "settingsHistoryExportWarningMessage": {
+    "message": "The backup can contain visited addresses, page titles, keywords, transitions, and usage statistics."
+  },
+  "settingsHistoryExportWarningDetail": {
+    "message": "Do not share it casually. You are responsible for any personal information exposed by sharing the file."
+  },
+  "settingsHistoryExportContinue": {
+    "message": "Choose save location"
+  },
+  "settingsHistoryExportPreparing": {
+    "message": "Preparing history backup..."
+  },
+  "settingsHistoryExportSucceeded": {
+    "message": "History was exported to {0}."
+  },
+  "settingsHistorySavePickerUnavailable": {
+    "message": "This browser cannot choose a save location from the settings page."
+  },
+  "settingsHistoryExportFailed": {
+    "message": "Could not export history."
+  },
+  "settingsHistoryImportValidating": {
+    "message": "Validating history backup..."
+  },
+  "settingsHistoryImportConfirmTitle": {
+    "message": "Replace existing history?"
+  },
+  "settingsHistoryImportConfirmMessage": {
+    "message": "Importing this file will completely replace the current historical records. This cannot be undone."
+  },
+  "settingsHistoryImportConfirm": {
+    "message": "Replace and import"
+  },
+  "settingsHistoryImportCancelled": {
+    "message": "Import was cancelled. Existing history was not changed."
+  },
+  "settingsHistoryImportSummary": {
+    "message": "Backup time: {0}. {1} transitions, {2} sites, {3} keyword records."
+  },
+  "settingsHistoryImporting": {
+    "message": "Replacing history records..."
+  },
+  "settingsHistoryImportSucceeded": {
+    "message": "Imported {0} transition records."
+  },
+  "settingsHistoryImportFailed": {
+    "message": "The selected file is not a valid Smart Preload history backup or could not be imported."
+  },
+  "settingsNativeAppVersion": {
+    "message": "Native app version"
+  },
+  "settingsProxySkipMode": {
+    "message": "Proxy skip list mode"
+  },
+  "settingsAiModelListMode": {
+    "message": "AI model list mode"
+  },
+  "settingsAiPredictionModel": {
+    "message": "AI prediction model"
+  },
+  "settingsChangedElsewhere": {
+    "message": "Settings were changed elsewhere. Saving will overwrite those changes."
+  },
+  "settingsReloadedFromStorage": {
+    "message": "Reloaded settings changed elsewhere."
+  },
+  "settingsThreatLibrary": {
+    "message": "Local threat library"
+  },
+  "settingsThreatLibraryDesc": {
+    "message": "A packaged snapshot of known-malicious sites. Preloading is blocked while it is unavailable."
+  },
+  "settingsThreatLibraryLoading": {
+    "message": "Checking..."
+  },
+  "settingsThreatLibraryReady": {
+    "message": "Snapshot {0} · {1}"
+  },
+  "settingsThreatLibraryStale": {
+    "message": "{0} days old"
+  },
+  "settingsThreatLibraryFailed": {
+    "message": "Failed to load. Preloading stays blocked until it loads."
+  }
 }

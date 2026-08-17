@@ -23,41 +23,14 @@
   "commonUnsaved": {
     "message": "Ungespeichert"
   },
-  "commonDownloading": {
-    "message": "Wird heruntergeladen"
-  },
-  "commonDownloaded": {
-    "message": "Heruntergeladen"
-  },
   "commonRemoving": {
     "message": "Wird entfernt"
   },
   "commonRemoved": {
     "message": "Entfernt"
   },
-  "commonOn": {
-    "message": "Ein"
-  },
-  "commonOff": {
-    "message": "Aus"
-  },
   "commonUnknown": {
     "message": "Unbekannt"
-  },
-  "commonThisPlatform": {
-    "message": "diese Plattform"
-  },
-  "commonModel": {
-    "message": "Modell"
-  },
-  "commonDone": {
-    "message": "Fertig."
-  },
-  "commonWorking": {
-    "message": "In Arbeit..."
-  },
-  "commonDismiss": {
-    "message": "Schlie?en"
   },
   "commonHelp": {
     "message": "Hilfe"
@@ -161,89 +134,20 @@
   "settingsNavAriaLabel": {
     "message": "Einstellungsbereiche"
   },
-  "settingsOverview": {
-    "message": "?bersicht"
-  },
   "settingsTracking": {
     "message": "Verfolgung"
   },
   "settingsPreload": {
     "message": "Vorladen"
   },
-  "settingsOrdering": {
-    "message": "Sortierung"
-  },
   "settingsExperiments": {
     "message": "Experimente"
-  },
-  "settingsOverviewSub": {
-    "message": "Laufzeitprofil und automatische Anpassung"
-  },
-  "settingsOrderingSub": {
-    "message": "Einfache Sortierfilter"
   },
   "settingsStorageFooter": {
     "message": "In lokalem Erweiterungsspeicher gespeichert."
   },
   "settingsLoadingSettings": {
     "message": "Einstellungen werden geladen..."
-  },
-  "settingsHeroKicker": {
-    "message": "Intelligente Vorlade-Steuerung"
-  },
-  "settingsHeroTitle": {
-    "message": "Intelligenteres, aktiveres Vorladen"
-  },
-  "settingsHeroCopy": {
-    "message": "Intelligentes Vorladen verteilt Preload-Slots über aktive Tabs anhand von Seitensignalen, aktueller Aufmerksamkeit und Gerätebelastung, während du die Limits weiterhin manuell festlegen kannst."
-  },
-  "settingsDeviceProfile": {
-    "message": "Ger?teprofil"
-  },
-  "settingsDetectingHardware": {
-    "message": "Hardware wird erkannt..."
-  },
-  "settingsEffectiveGroupCaps": {
-    "message": "Wirksame Gruppenlimits"
-  },
-  "settingsWaitingForSettings": {
-    "message": "Warte auf Einstellungen..."
-  },
-  "settingsWatchdog": {
-    "message": "Überwachung"
-  },
-  "settingsNativeApp": {
-    "message": "Lokale App"
-  },
-  "settingsCheckingConnection": {
-    "message": "Verbindung wird gepr?ft..."
-  },
-  "settingsOverviewMeta": {
-    "message": "?bergeordnete Schalter, die steuern, wie aggressiv sich die Erweiterung an dieses Ger?t anpasst."
-  },
-  "settingsAutomaticDeviceTuning": {
-    "message": "Automatische Ger?teanpassung"
-  },
-  "settingsAutomaticDeviceTuningDesc": {
-    "message": "Reservierter Schalter f?r zuk?nftige hardwarebewusste Planung. Er wird bereits gespeichert, ?ndert aber noch kein Laufzeitverhalten."
-  },
-  "settingsPreloadMode": {
-    "message": "Preload-Modus"
-  },
-  "settingsPreloadModeDesc": {
-    "message": "Reservierte Auswahl f?r zuk?nftige Strategiestufen. Sie wird bereits gespeichert, ?ndert aber noch kein Laufzeitverhalten."
-  },
-  "settingsModeConservative": {
-    "message": "Konservativ"
-  },
-  "settingsModeBalanced": {
-    "message": "Ausgewogen"
-  },
-  "settingsModeAggressive": {
-    "message": "Aggressiv"
-  },
-  "settingsTrackingMeta": {
-    "message": "Steuert, wie Navigationsknoten normalisiert und in den gerichteten Graphen aufgenommen werden."
   },
   "settingsSeparateGoogleSearchPages": {
     "message": "Google-Suchseiten getrennt erfassen"
@@ -274,9 +178,6 @@
   },
   "settingsSkipPrivateNetworkPagesDesc": {
     "message": "Private Netzwerkseiten wie 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, fc00::/7 oder fe80::/10 weder verfolgen noch vorladen."
-  },
-  "settingsPreloadMeta": {
-    "message": "Steuert Tab-Vorbereitung, Watchdog-Reparatur und Verhalten des Vorladefensters."
   },
   "settingsEnablePreloading": {
     "message": "Vorladen aktivieren"
@@ -434,9 +335,6 @@
   "settingsSchedulerHalfLifeTabsDesc": {
     "message": "Wenn die Tab-Anzahl um diesen Wert steigt, bewegt sich das dynamische Gesamtlimit halb weiter zum Maximum. Kleinere Werte lassen das Limit schneller wachsen."
   },
-  "settingsSchedulerPoolHours": {
-    "message": "Poolstunden"
-  },
   "settingsSchedulerSegmentSeconds": {
     "message": "Segmentsekunden"
   },
@@ -458,12 +356,21 @@
   "settingsAiPredictionAssistantDesc": {
     "message": "Wähle einen externen KI-Anbieter und ein Modell für Keyword-Scoring. Die Erweiterung verwendet deinen API-Schlüssel direkt; lokale Modelle werden nicht heruntergeladen oder verwaltet."
   },
+  "settingsAiPredictionPrivacyNotice": {
+    "message": "Wenn ein externer Anbieter ausgewählt ist, sendet die Erweiterung diesem Anbieter die Seiten-URL, den Titel und bis zu die ersten 2.200 Zeichen des Seitentextes sowie Kontext aus anderen im selben Fenster geöffneten Tabs. Wenn du nicht möchtest, dass Seiteninhalte an ein externes Unternehmen gesendet werden, verwende einen lokalen Endpunkt wie LM Studio oder lasse dies deaktiviert."
+  },
   "settingsAiModelSelectionAdvice": {
     "message": "Standardmäßig zeigt die Liste die neuesten empfohlenen Modelle. Wechseln Sie zu Alle Modelle, wenn Sie ein bestimmtes Modell benötigen, und wählen Sie möglichst schnelle, günstige Text- oder Chatmodelle."
   },
-  "settingsAiModelListModeRecommended": { "message": "Neueste empfohlene Modelle" },
-  "settingsAiModelListModeAll": { "message": "Alle Modelle" },
-  "settingsAiModelListRecommendedTitle": { "message": "{0} neueste empfohlene Modelle aus {1} geladenen Modellen werden angezeigt. Wechseln Sie zu Alle Modelle, um jede Option zu sehen." },
+  "settingsAiModelListModeRecommended": {
+    "message": "Neueste empfohlene Modelle"
+  },
+  "settingsAiModelListModeAll": {
+    "message": "Alle Modelle"
+  },
+  "settingsAiModelListRecommendedTitle": {
+    "message": "{0} neueste empfohlene Modelle aus {1} geladenen Modellen werden angezeigt. Wechseln Sie zu Alle Modelle, um jede Option zu sehen."
+  },
   "settingsAiProviderApiKey": {
     "message": "Anbieter-API-Schlüssel"
   },
@@ -488,25 +395,18 @@
   "settingsWatchdogIntervalDesc": {
     "message": "Wie oft die Erweiterung pr?ft, ob das Preload-Fenster noch vorhanden ist."
   },
-  "settingsWatchdogIntervalOption1": {
-    "message": "1 Sekunde"
+  "settingsWatchdogIntervalOption30": {
+    "message": "30 Sekunden"
   },
-  "settingsWatchdogIntervalOption2": {
-    "message": "2 Sekunden"
+  "settingsWatchdogIntervalOption60": {
+    "message": "1 Minute"
   },
-  "settingsWatchdogIntervalOption3": {
-    "message": "3 Sekunden"
+  "settingsWatchdogIntervalOption120": {
+    "message": "2 Minuten"
   },
-  "settingsWatchdogIntervalOption5": {
-    "message": "5 Sekunden"
+  "settingsWatchdogIntervalOption300": {
+    "message": "5 Minuten"
   },
-  "settingsWatchdogIntervalOption10": {
-    "message": "10 Sekunden"
-  },
-  "settingsWatchdogIntervalOption30": { "message": "30 Sekunden" },
-  "settingsWatchdogIntervalOption60": { "message": "1 Minute" },
-  "settingsWatchdogIntervalOption120": { "message": "2 Minuten" },
-  "settingsWatchdogIntervalOption300": { "message": "5 Minuten" },
   "settingsFullscreenPressurePolicy": {
     "message": "Hintergrund-Tab-Richtlinie bei Vollbild/Spiel"
   },
@@ -522,23 +422,11 @@
   "settingsFullscreenPressurePolicyIgnore": {
     "message": "Keine Aktion"
   },
-  "settingsSecond": {
-    "message": "{0} Sekunde"
-  },
-  "settingsSeconds": {
-    "message": "{0} Sekunden"
-  },
   "settingsForceMinimize": {
     "message": "Vorladefenster erzwingen minimieren"
   },
   "settingsForceMinimizeDesc": {
     "message": "Das Preload-Fenster sofort wieder minimieren, wenn es wiederhergestellt oder vergrößert wird."
-  },
-  "settingsOrderingMeta": {
-    "message": "Feste Sortierfilter halten die erste Version vorhersehbar. Erweiterte programmierbare Filterketten k?nnen sp?ter erg?nzt werden, ohne die gespeicherte Regelform zu ?ndern."
-  },
-  "settingsExperimentsMeta": {
-    "message": "Riskante Live-Schalter geh?ren hierher. Platzhalter-Schalter bleiben ebenfalls hier, werden aber nur gespeichert, bis sie wirklich an die Laufzeit angebunden sind."
   },
   "settingsCrossSiteCurrentTabSwap": {
     "message": "Harter Wechsel im aktuellen Tab ?ber Websites hinweg"
@@ -573,17 +461,11 @@
   "settingsSaveSettings": {
     "message": "Einstellungen speichern"
   },
-  "settingsAiModelTask": {
-    "message": "KI-Modellaufgabe"
-  },
   "settingsReadingLocalSettings": {
     "message": "Lokale Erweiterungseinstellungen werden gelesen."
   },
   "settingsCouldNotLoad": {
     "message": "Einstellungen konnten nicht aus dem Speicher geladen werden."
-  },
-  "settingsCouldNotLoadAiStatus": {
-    "message": "KI-Modellstatus konnte nicht geladen werden."
   },
   "settingsDefaultsRestored": {
     "message": "Standards im Formular wiederhergestellt. Speichern, um sie anzuwenden."
@@ -600,81 +482,6 @@
   "settingsCouldNotSave": {
     "message": "Einstellungen konnten nicht gespeichert werden."
   },
-  "settingsPreparingRuntime": {
-    "message": "Portable Laufzeit wird bei Bedarf vorbereitet."
-  },
-  "settingsRemovingSelectedModel": {
-    "message": "Ausgew?hltes Modell wird entfernt."
-  },
-  "settingsInstallingModel": {
-    "message": "Laufzeit wird bei Bedarf installiert, dann wird das ausgew?hlte Modell heruntergeladen."
-  },
-  "settingsRemovingModelAndRuntime": {
-    "message": "Ausgew?hltes Modell wird entfernt und die portable Laufzeit bereinigt, falls ungenutzt."
-  },
-  "settingsAiModelActionFailed": {
-    "message": "KI-Modellaktion fehlgeschlagen."
-  },
-  "settingsModelStateUpdatedDirty": {
-    "message": "Modellstatus aktualisiert. Andere ungespeicherte ?nderungen stehen noch aus."
-  },
-  "settingsPortableModelUpdated": {
-    "message": "Portable Laufzeit und Modellstatus aktualisiert."
-  },
-  "settingsModelDownloaded": {
-    "message": "Modell heruntergeladen."
-  },
-  "settingsModelRemoved": {
-    "message": "Modell entfernt."
-  },
-  "settingsCouldNotUpdateModel": {
-    "message": "Ausgew?hltes Modell konnte nicht aktualisiert werden."
-  },
-  "settingsHardwareMeta": {
-    "message": "{0} Kerne | {1} GB Speicherhinweis"
-  },
-  "settingsEffectivePreloadMeta": {
-    "message": "Native / Tab-Slot-Limits. Regeln verwenden {0}."
-  },
-  "settingsWatchdogChecksEvery": {
-    "message": "Pr?ft alle {0} Sekunde(n)."
-  },
-  "settingsWindowRepairDisabled": {
-    "message": "Fensterreparatur ist deaktiviert."
-  },
-  "settingsSystemHidingUnsupported": {
-    "message": "Systemweites Verstecken wird auf {0} nicht unterst?tzt."
-  },
-  "settingsSystemHidingActive": {
-    "message": "Systemweites Verstecken ist aktiv."
-  },
-  "settingsNativeAppOffline": {
-    "message": "Lokale App nicht erkannt. Minimierungsfallback wird verwendet."
-  },
-  "settingsConnected": {
-    "message": "Verbunden"
-  },
-  "settingsOffline": {
-    "message": "Offline"
-  },
-  "settingsInstallingModelLabel": {
-    "message": "{0} wird installiert"
-  },
-  "settingsRemovingModelLabel": {
-    "message": "{0} wird entfernt"
-  },
-  "settingsModelReady": {
-    "message": "Modell bereit"
-  },
-  "settingsUninstallFailed": {
-    "message": "Deinstallation fehlgeschlagen"
-  },
-  "settingsInstallFailed": {
-    "message": "Installation fehlgeschlagen"
-  },
-  "settingsTaskDidNotFinish": {
-    "message": "Die Aufgabe wurde nicht abgeschlossen."
-  },
   "settingsAiProviderMissingWarning": {
     "message": "KI-Scoring bleibt deaktiviert, bis {0} ein Modell, einen Endpunkt und einen API-Schlüssel hat."
   },
@@ -684,23 +491,14 @@
   "settingsAiLmStudioKeyIgnoredPlaceholder": {
     "message": "Für LM Studio ignoriert"
   },
-  "settingsAiLmStudioLoadingModel": {
-    "message": "LM-Studio-Modell wird geladen: {0}"
-  },
   "settingsAiKeyRequiredPlaceholder": {
     "message": "Erforderlich"
   },
   "settingsAiEnterKeyToLoadModels": {
     "message": "API-Schlüssel eingeben, um Modelle zu laden"
   },
-  "settingsAiLoadingModels": {
-    "message": "Modelle werden geladen..."
-  },
   "settingsAiSelectProviderFirst": {
     "message": "Zuerst Anbieter auswählen"
-  },
-  "settingsAiNoSupportedModels": {
-    "message": "Keine Modelle gefunden"
   },
   "settingsAiLoadingModelsGeneric": {
     "message": "Modelle werden geladen..."
@@ -830,18 +628,6 @@
   },
   "ruleGoogleBookmarkRankDesc": {
     "message": "Gilt nur auf Google-Suchseiten. Wenn aktiviert, werden Chrome-Lesezeichen durch diese Rangregel als unabh?ngige dauerhaft vorgeladene Ziele behalten."
-  },
-  "deviceProfileBalanced": {
-    "message": "Ausgewogen"
-  },
-  "deviceProfileHighEnd": {
-    "message": "High-End"
-  },
-  "deviceProfileStrong": {
-    "message": "Stark"
-  },
-  "deviceProfileConstrained": {
-    "message": "Eingeschr?nkt"
   },
   "settingsDiagnosticsLogging": {
     "message": "Protokollmodus"
@@ -993,29 +779,115 @@
   "realPreloadRecommendedWarning": {
     "message": "Real Preload ist verfügbar und für diesen Computer empfohlen. Es kann die wahrgenommene Verzögerung auf null senken, belegt aber viel Arbeitsspeicher; vermeiden Sie zu aggressive Limits."
   },
-  "commonExporting": { "message": "Export wird ausgeführt" },
-  "commonExported": { "message": "Exportiert" },
-  "commonImporting": { "message": "Import wird ausgeführt" },
-  "commonImported": { "message": "Importiert" },
-  "settingsHistoryTransferTitle": { "message": "Verlauf importieren und exportieren" },
-  "settingsHistoryTransferDesc": { "message": "Exportiert den vollständigen lokalen Besuchsgraph-Verlauf als JSON-Sicherung oder ersetzt ihn durch eine kompatible Sicherungsdatei. Einstellungen, API-Schlüssel und der Laufzeitstatus aktueller Tabs werden nicht übertragen." },
-  "settingsHistoryImportButton": { "message": "Verlauf importieren" },
-  "settingsHistoryExportButton": { "message": "Verlauf exportieren" },
-  "settingsHistoryExportWarningTitle": { "message": "Datenschutz vor dem Export prüfen" },
-  "settingsHistoryExportWarningMessage": { "message": "Die Sicherung kann besuchte Adressen, Seitentitel, Schlüsselwörter, Übergänge und Nutzungsstatistiken enthalten." },
-  "settingsHistoryExportWarningDetail": { "message": "Teilen Sie sie nicht unbedacht. Für personenbezogene Daten, die durch das Teilen der Datei offengelegt werden, sind Sie selbst verantwortlich." },
-  "settingsHistoryExportContinue": { "message": "Speicherort auswählen" },
-  "settingsHistoryExportPreparing": { "message": "Verlaufssicherung wird vorbereitet..." },
-  "settingsHistoryExportSucceeded": { "message": "Der Verlauf wurde nach {0} exportiert." },
-  "settingsHistorySavePickerUnavailable": { "message": "Dieser Browser kann auf der Einstellungsseite keinen Speicherort auswählen." },
-  "settingsHistoryExportFailed": { "message": "Der Verlauf konnte nicht exportiert werden." },
-  "settingsHistoryImportValidating": { "message": "Verlaufssicherung wird geprüft..." },
-  "settingsHistoryImportConfirmTitle": { "message": "Vorhandenen Verlauf ersetzen?" },
-  "settingsHistoryImportConfirmMessage": { "message": "Beim Import dieser Datei wird der aktuelle Verlauf vollständig ersetzt. Dies kann nicht rückgängig gemacht werden." },
-  "settingsHistoryImportConfirm": { "message": "Ersetzen und importieren" },
-  "settingsHistoryImportCancelled": { "message": "Der Import wurde abgebrochen. Der vorhandene Verlauf wurde nicht geändert." },
-  "settingsHistoryImportSummary": { "message": "Sicherungszeit: {0}. {1} Übergänge, {2} Websites, {3} Schlüsselworteinträge." },
-  "settingsHistoryImporting": { "message": "Verlaufseinträge werden ersetzt..." },
-  "settingsHistoryImportSucceeded": { "message": "{0} Übergangseinträge wurden importiert." },
-  "settingsHistoryImportFailed": { "message": "Die ausgewählte Datei ist keine gültige Smart-Preload-Verlaufssicherung oder konnte nicht importiert werden." }
+  "commonExporting": {
+    "message": "Export wird ausgeführt"
+  },
+  "commonExported": {
+    "message": "Exportiert"
+  },
+  "commonImporting": {
+    "message": "Import wird ausgeführt"
+  },
+  "commonImported": {
+    "message": "Importiert"
+  },
+  "settingsHistoryTransferTitle": {
+    "message": "Verlauf importieren und exportieren"
+  },
+  "settingsHistoryTransferDesc": {
+    "message": "Exportiert den vollständigen lokalen Besuchsgraph-Verlauf als JSON-Sicherung oder ersetzt ihn durch eine kompatible Sicherungsdatei. Einstellungen, API-Schlüssel und der Laufzeitstatus aktueller Tabs werden nicht übertragen."
+  },
+  "settingsHistoryImportButton": {
+    "message": "Verlauf importieren"
+  },
+  "settingsHistoryExportButton": {
+    "message": "Verlauf exportieren"
+  },
+  "settingsHistoryExportWarningTitle": {
+    "message": "Datenschutz vor dem Export prüfen"
+  },
+  "settingsHistoryExportWarningMessage": {
+    "message": "Die Sicherung kann besuchte Adressen, Seitentitel, Schlüsselwörter, Übergänge und Nutzungsstatistiken enthalten."
+  },
+  "settingsHistoryExportWarningDetail": {
+    "message": "Teilen Sie sie nicht unbedacht. Für personenbezogene Daten, die durch das Teilen der Datei offengelegt werden, sind Sie selbst verantwortlich."
+  },
+  "settingsHistoryExportContinue": {
+    "message": "Speicherort auswählen"
+  },
+  "settingsHistoryExportPreparing": {
+    "message": "Verlaufssicherung wird vorbereitet..."
+  },
+  "settingsHistoryExportSucceeded": {
+    "message": "Der Verlauf wurde nach {0} exportiert."
+  },
+  "settingsHistorySavePickerUnavailable": {
+    "message": "Dieser Browser kann auf der Einstellungsseite keinen Speicherort auswählen."
+  },
+  "settingsHistoryExportFailed": {
+    "message": "Der Verlauf konnte nicht exportiert werden."
+  },
+  "settingsHistoryImportValidating": {
+    "message": "Verlaufssicherung wird geprüft..."
+  },
+  "settingsHistoryImportConfirmTitle": {
+    "message": "Vorhandenen Verlauf ersetzen?"
+  },
+  "settingsHistoryImportConfirmMessage": {
+    "message": "Beim Import dieser Datei wird der aktuelle Verlauf vollständig ersetzt. Dies kann nicht rückgängig gemacht werden."
+  },
+  "settingsHistoryImportConfirm": {
+    "message": "Ersetzen und importieren"
+  },
+  "settingsHistoryImportCancelled": {
+    "message": "Der Import wurde abgebrochen. Der vorhandene Verlauf wurde nicht geändert."
+  },
+  "settingsHistoryImportSummary": {
+    "message": "Sicherungszeit: {0}. {1} Übergänge, {2} Websites, {3} Schlüsselworteinträge."
+  },
+  "settingsHistoryImporting": {
+    "message": "Verlaufseinträge werden ersetzt..."
+  },
+  "settingsHistoryImportSucceeded": {
+    "message": "{0} Übergangseinträge wurden importiert."
+  },
+  "settingsHistoryImportFailed": {
+    "message": "Die ausgewählte Datei ist keine gültige Smart-Preload-Verlaufssicherung oder konnte nicht importiert werden."
+  },
+  "settingsNativeAppVersion": {
+    "message": "Version der nativen App"
+  },
+  "settingsProxySkipMode": {
+    "message": "Modus der Proxy-Ausnahmeliste"
+  },
+  "settingsAiModelListMode": {
+    "message": "Modus der KI-Modellliste"
+  },
+  "settingsAiPredictionModel": {
+    "message": "KI-Vorhersagemodell"
+  },
+  "settingsChangedElsewhere": {
+    "message": "Die Einstellungen wurden anderswo geändert. Beim Speichern werden diese Änderungen überschrieben."
+  },
+  "settingsReloadedFromStorage": {
+    "message": "Anderswo geänderte Einstellungen neu geladen."
+  },
+  "settingsThreatLibrary": {
+    "message": "Lokale Bedrohungsdatenbank"
+  },
+  "settingsThreatLibraryDesc": {
+    "message": "Ein mitgeliefertes Abbild bekannter schädlicher Websites. Solange es nicht verfügbar ist, wird das Vorladen blockiert."
+  },
+  "settingsThreatLibraryLoading": {
+    "message": "Wird geprüft ..."
+  },
+  "settingsThreatLibraryReady": {
+    "message": "Abbild {0} · {1}"
+  },
+  "settingsThreatLibraryStale": {
+    "message": "{0} Tage alt"
+  },
+  "settingsThreatLibraryFailed": {
+    "message": "Laden fehlgeschlagen. Das Vorladen bleibt blockiert, bis es geladen ist."
+  }
 }

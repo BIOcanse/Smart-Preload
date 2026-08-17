@@ -12,7 +12,6 @@
       settingsApi.DEFAULT_SETTINGS.preloading.aiPrediction;
 
     return settingsApi.normalizeStoredSettings({
-      automaticDeviceTuning: draftSettings.automaticDeviceTuning,
       appearance: {
         languageMode: elements.languageMode.value,
       },
@@ -25,7 +24,6 @@
       },
       preloading: {
         enabled: elements.preloadingEnabled.checked,
-        mode: draftSettings.preloading.mode,
         nativeMaxPreloadsPerSource: draftSettings.preloading.nativeMaxPreloadsPerSource,
         maxTabsPerSource: draftSettings.preloading.maxTabsPerSource,
         siteSelectionLimit: draftSettings.preloading.siteSelectionLimit,
@@ -56,9 +54,10 @@
         forceMinimize: elements.forceMinimize.checked,
       },
       experiments: {
-        crossSiteCurrentTabSwap:
-          elements.realPreloadEnabled.checked === true &&
-          elements.crossSiteCurrentTabSwap.checked === true,
+        // 不与 realPreloadEnabled 联动：保存用户实际选的值。关掉 Real Preload 时该复选框
+        // 由 computed.js 置为 disabled，但 disabled 的复选框仍然保留并回报 checked，
+        // 所以用户的选择能原样存回去。实际是否生效由 strategy/flags.js 在使用点决定。
+        crossSiteCurrentTabSwap: elements.crossSiteCurrentTabSwap.checked === true,
         idleWakeAggressive: elements.idleWakeAggressive.checked,
         pointerProximityPrediction: elements.pointerProximityPrediction.checked,
         authStateWarmup: elements.authStateWarmup.checked,

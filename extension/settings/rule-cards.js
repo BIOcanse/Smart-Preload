@@ -82,6 +82,10 @@
         select.className = "select-input rule-select";
         select.dataset.cardId = cardId;
         select.dataset.fieldKey = field.key;
+        // 与同文件里 status-toggle 的做法一致。规则卡的 select 此前完全没有可访问名称：
+        // 外层 <label class="rule-slot"> 只有 title 属性、没有文本内容，读屏用户听到的
+        // 是一串无名组合框。
+        select.setAttribute("aria-label", `${cardSchema.title} ${field.label}`);
 
         for (const optionSpec of field.options) {
           const option = document.createElement("option");

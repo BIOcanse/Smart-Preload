@@ -23,41 +23,14 @@
   "commonUnsaved": {
     "message": "Не сохранено"
   },
-  "commonDownloading": {
-    "message": "Загрузка"
-  },
-  "commonDownloaded": {
-    "message": "Загружено"
-  },
   "commonRemoving": {
     "message": "Удаление"
   },
   "commonRemoved": {
     "message": "Удалено"
   },
-  "commonOn": {
-    "message": "Вкл."
-  },
-  "commonOff": {
-    "message": "Выкл."
-  },
   "commonUnknown": {
     "message": "Неизвестно"
-  },
-  "commonThisPlatform": {
-    "message": "эта платформа"
-  },
-  "commonModel": {
-    "message": "модель"
-  },
-  "commonDone": {
-    "message": "Готово."
-  },
-  "commonWorking": {
-    "message": "Выполняется..."
-  },
-  "commonDismiss": {
-    "message": "Закрыть"
   },
   "commonHelp": {
     "message": "Справка"
@@ -161,89 +134,20 @@
   "settingsNavAriaLabel": {
     "message": "Разделы настроек"
   },
-  "settingsOverview": {
-    "message": "Обзор"
-  },
   "settingsTracking": {
     "message": "Отслеживание"
   },
   "settingsPreload": {
     "message": "Предзагрузка"
   },
-  "settingsOrdering": {
-    "message": "Сортировка"
-  },
   "settingsExperiments": {
     "message": "Эксперименты"
-  },
-  "settingsOverviewSub": {
-    "message": "Профиль выполнения и автонастройка"
-  },
-  "settingsOrderingSub": {
-    "message": "Простые фильтры ранжирования"
   },
   "settingsStorageFooter": {
     "message": "Сохраняется в локальном хранилище расширения."
   },
   "settingsLoadingSettings": {
     "message": "Загрузка настроек..."
-  },
-  "settingsHeroKicker": {
-    "message": "Управление умной предзагрузкой"
-  },
-  "settingsHeroTitle": {
-    "message": "Более умная и более активная предзагрузка"
-  },
-  "settingsHeroCopy": {
-    "message": "Умная предзагрузка распределяет слоты между активными вкладками по сигналам страницы, недавнему вниманию и нагрузке устройства, при этом лимиты можно задавать вручную."
-  },
-  "settingsDeviceProfile": {
-    "message": "Профиль устройства"
-  },
-  "settingsDetectingHardware": {
-    "message": "Определение оборудования..."
-  },
-  "settingsEffectiveGroupCaps": {
-    "message": "Действующие лимиты групп"
-  },
-  "settingsWaitingForSettings": {
-    "message": "Ожидание настроек..."
-  },
-  "settingsWatchdog": {
-    "message": "Сторожевой контроль"
-  },
-  "settingsNativeApp": {
-    "message": "Локальное приложение"
-  },
-  "settingsCheckingConnection": {
-    "message": "Проверка соединения..."
-  },
-  "settingsOverviewMeta": {
-    "message": "Общие элементы управления, влияющие на то, насколько активно расширение адаптируется к текущей машине."
-  },
-  "settingsAutomaticDeviceTuning": {
-    "message": "Автоматическая настройка устройства"
-  },
-  "settingsAutomaticDeviceTuningDesc": {
-    "message": "Переключатель зарезервирован для будущего планирования с учетом оборудования. Сейчас он сохраняется, но пока не меняет поведение во время работы."
-  },
-  "settingsPreloadMode": {
-    "message": "Режим предзагрузки"
-  },
-  "settingsPreloadModeDesc": {
-    "message": "Выбор зарезервирован для будущих уровней стратегии. Сейчас он сохраняется, но пока не меняет поведение во время работы."
-  },
-  "settingsModeConservative": {
-    "message": "Консервативный"
-  },
-  "settingsModeBalanced": {
-    "message": "Сбалансированный"
-  },
-  "settingsModeAggressive": {
-    "message": "Агрессивный"
-  },
-  "settingsTrackingMeta": {
-    "message": "Настройки нормализации навигационных узлов и добавления их в направленный граф."
   },
   "settingsSeparateGoogleSearchPages": {
     "message": "Разделять страницы поиска Google"
@@ -274,9 +178,6 @@
   },
   "settingsSkipPrivateNetworkPagesDesc": {
     "message": "Не отслеживать и не предзагружать страницы частной сети, например 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, fc00::/7 или fe80::/10."
-  },
-  "settingsPreloadMeta": {
-    "message": "Настройки подготовки вкладок, ремонта через сторожевой контроль и поведения окна предзагрузки."
   },
   "settingsEnablePreloading": {
     "message": "Включить предзагрузку"
@@ -434,9 +335,6 @@
   "settingsSchedulerHalfLifeTabsDesc": {
     "message": "Когда число вкладок увеличивается на это значение, динамический общий лимит проходит половину оставшегося пути к максимуму. Чем меньше значение, тем быстрее растет лимит."
   },
-  "settingsSchedulerPoolHours": {
-    "message": "Часы пула"
-  },
   "settingsSchedulerSegmentSeconds": {
     "message": "Секунды сегмента"
   },
@@ -458,12 +356,21 @@
   "settingsAiPredictionAssistantDesc": {
     "message": "Выберите внешнего поставщика ИИ и модель для оценки ключевых слов. Расширение напрямую использует ваш API-ключ; оно не скачивает и не управляет локальными моделями."
   },
+  "settingsAiPredictionPrivacyNotice": {
+    "message": "Когда выбран внешний провайдер, расширение отправляет ему URL страницы, заголовок и до первых 2200 символов текста страницы, а также контекст других вкладок, открытых в том же окне. Если вы не хотите, чтобы содержимое страниц отправлялось внешней компании, используйте локальный endpoint, например LM Studio, или оставьте эту настройку выключенной."
+  },
   "settingsAiModelSelectionAdvice": {
     "message": "По умолчанию список показывает последний набор рекомендуемых моделей. Переключитесь на Все модели, если нужна конкретная модель, и по возможности выбирайте быстрые и недорогие текстовые или чат-модели."
   },
-  "settingsAiModelListModeRecommended": { "message": "Последние рекомендуемые модели" },
-  "settingsAiModelListModeAll": { "message": "Все модели" },
-  "settingsAiModelListRecommendedTitle": { "message": "Показано {0} последних рекомендуемых моделей из {1} загруженных. Переключитесь на Все модели, чтобы увидеть все варианты." },
+  "settingsAiModelListModeRecommended": {
+    "message": "Последние рекомендуемые модели"
+  },
+  "settingsAiModelListModeAll": {
+    "message": "Все модели"
+  },
+  "settingsAiModelListRecommendedTitle": {
+    "message": "Показано {0} последних рекомендуемых моделей из {1} загруженных. Переключитесь на Все модели, чтобы увидеть все варианты."
+  },
   "settingsAiProviderApiKey": {
     "message": "API-ключ провайдера"
   },
@@ -488,25 +395,18 @@
   "settingsWatchdogIntervalDesc": {
     "message": "Как часто расширение проверяет, что окно предзагрузки все еще существует."
   },
-  "settingsWatchdogIntervalOption1": {
-    "message": "1 секунда"
+  "settingsWatchdogIntervalOption30": {
+    "message": "30 секунд"
   },
-  "settingsWatchdogIntervalOption2": {
-    "message": "2 секунды"
+  "settingsWatchdogIntervalOption60": {
+    "message": "1 минута"
   },
-  "settingsWatchdogIntervalOption3": {
-    "message": "3 секунды"
+  "settingsWatchdogIntervalOption120": {
+    "message": "2 минуты"
   },
-  "settingsWatchdogIntervalOption5": {
-    "message": "5 секунд"
+  "settingsWatchdogIntervalOption300": {
+    "message": "5 минут"
   },
-  "settingsWatchdogIntervalOption10": {
-    "message": "10 секунд"
-  },
-  "settingsWatchdogIntervalOption30": { "message": "30 секунд" },
-  "settingsWatchdogIntervalOption60": { "message": "1 минута" },
-  "settingsWatchdogIntervalOption120": { "message": "2 минуты" },
-  "settingsWatchdogIntervalOption300": { "message": "5 минут" },
   "settingsFullscreenPressurePolicy": {
     "message": "Политика фоновых вкладок при полноэкранном режиме/игре"
   },
@@ -522,23 +422,11 @@
   "settingsFullscreenPressurePolicyIgnore": {
     "message": "Ничего не делать"
   },
-  "settingsSecond": {
-    "message": "{0} секунда"
-  },
-  "settingsSeconds": {
-    "message": "{0} секунд"
-  },
   "settingsForceMinimize": {
     "message": "Принудительно сворачивать окно предзагрузки"
   },
   "settingsForceMinimizeDesc": {
     "message": "Сразу снова сворачивать окно предзагрузки, если оно восстановлено или изменило размер."
-  },
-  "settingsOrderingMeta": {
-    "message": "Фиксированные фильтры ранжирования делают первую версию предсказуемой. Более сложные программируемые цепочки фильтров можно добавить позже без изменения сохраненной формы правила."
-  },
-  "settingsExperimentsMeta": {
-    "message": "Рискованные живые переключатели находятся здесь. Переключатели-заготовки тоже остаются здесь, но только сохраняются, пока не будут реально подключены к поведению во время работы."
   },
   "settingsCrossSiteCurrentTabSwap": {
     "message": "Жесткая замена текущей вкладки между сайтами"
@@ -573,17 +461,11 @@
   "settingsSaveSettings": {
     "message": "Сохранить настройки"
   },
-  "settingsAiModelTask": {
-    "message": "Задача модели ИИ"
-  },
   "settingsReadingLocalSettings": {
     "message": "Чтение локальных настроек расширения."
   },
   "settingsCouldNotLoad": {
     "message": "Не удалось загрузить настройки из хранилища."
-  },
-  "settingsCouldNotLoadAiStatus": {
-    "message": "Не удалось загрузить состояние модели ИИ."
   },
   "settingsDefaultsRestored": {
     "message": "Значения по умолчанию восстановлены в форме. Сохраните, чтобы применить."
@@ -600,81 +482,6 @@
   "settingsCouldNotSave": {
     "message": "Не удалось сохранить настройки."
   },
-  "settingsPreparingRuntime": {
-    "message": "Подготовка переносимого runtime при необходимости."
-  },
-  "settingsRemovingSelectedModel": {
-    "message": "Удаление выбранной модели."
-  },
-  "settingsInstallingModel": {
-    "message": "Установка runtime при необходимости, затем скачивание выбранной модели."
-  },
-  "settingsRemovingModelAndRuntime": {
-    "message": "Удаление выбранной модели и очистка переносимого runtime, если он не используется."
-  },
-  "settingsAiModelActionFailed": {
-    "message": "Действие модели ИИ завершилось ошибкой."
-  },
-  "settingsModelStateUpdatedDirty": {
-    "message": "Состояние модели обновлено. Другие несохраненные изменения все еще ожидают."
-  },
-  "settingsPortableModelUpdated": {
-    "message": "Переносимый runtime и состояние модели обновлены."
-  },
-  "settingsModelDownloaded": {
-    "message": "Модель скачана."
-  },
-  "settingsModelRemoved": {
-    "message": "Модель удалена."
-  },
-  "settingsCouldNotUpdateModel": {
-    "message": "Не удалось обновить выбранную модель."
-  },
-  "settingsHardwareMeta": {
-    "message": "{0} ядер | подсказка памяти {1} ГБ"
-  },
-  "settingsEffectivePreloadMeta": {
-    "message": "Лимиты нативных / вкладочных слотов. Правила используют {0}."
-  },
-  "settingsWatchdogChecksEvery": {
-    "message": "Проверка каждые {0} сек."
-  },
-  "settingsWindowRepairDisabled": {
-    "message": "Восстановление окна отключено."
-  },
-  "settingsSystemHidingUnsupported": {
-    "message": "Скрытие на уровне системы не поддерживается на {0}."
-  },
-  "settingsSystemHidingActive": {
-    "message": "Скрытие окна на уровне системы активно."
-  },
-  "settingsNativeAppOffline": {
-    "message": "Локальное приложение не обнаружено. Используется резервное сворачивание."
-  },
-  "settingsConnected": {
-    "message": "Подключено"
-  },
-  "settingsOffline": {
-    "message": "Не в сети"
-  },
-  "settingsInstallingModelLabel": {
-    "message": "Установка {0}"
-  },
-  "settingsRemovingModelLabel": {
-    "message": "Удаление {0}"
-  },
-  "settingsModelReady": {
-    "message": "Модель готова"
-  },
-  "settingsUninstallFailed": {
-    "message": "Удаление не удалось"
-  },
-  "settingsInstallFailed": {
-    "message": "Установка не удалась"
-  },
-  "settingsTaskDidNotFinish": {
-    "message": "Задача не завершилась."
-  },
   "settingsAiProviderMissingWarning": {
     "message": "Оценка ИИ останется отключенной, пока у {0} нет модели, endpoint и API-ключа."
   },
@@ -684,23 +491,14 @@
   "settingsAiLmStudioKeyIgnoredPlaceholder": {
     "message": "Игнорируется для LM Studio"
   },
-  "settingsAiLmStudioLoadingModel": {
-    "message": "Загрузка модели LM Studio: {0}"
-  },
   "settingsAiKeyRequiredPlaceholder": {
     "message": "Обязательно"
   },
   "settingsAiEnterKeyToLoadModels": {
     "message": "Введите API-ключ для загрузки моделей"
   },
-  "settingsAiLoadingModels": {
-    "message": "Загрузка моделей..."
-  },
   "settingsAiSelectProviderFirst": {
     "message": "Сначала выберите провайдера"
-  },
-  "settingsAiNoSupportedModels": {
-    "message": "Модели не найдены"
   },
   "settingsAiLoadingModelsGeneric": {
     "message": "Загрузка моделей..."
@@ -830,18 +628,6 @@
   },
   "ruleGoogleBookmarkRankDesc": {
     "message": "Применяется только на страницах поиска Google. Если включено, закладки Chrome сохраняются этим правилом ранга как независимые постоянные цели предзагрузки."
-  },
-  "deviceProfileBalanced": {
-    "message": "Сбалансированный"
-  },
-  "deviceProfileHighEnd": {
-    "message": "Высокий класс"
-  },
-  "deviceProfileStrong": {
-    "message": "Мощный"
-  },
-  "deviceProfileConstrained": {
-    "message": "Ограниченный"
   },
   "settingsDiagnosticsLogging": {
     "message": "Режим логирования"
@@ -993,29 +779,115 @@
   "realPreloadRecommendedWarning": {
     "message": "Real Preload доступен и рекомендован для этой машины. Он может снизить воспринимаемую задержку до нуля, но требует много памяти; не используйте слишком агрессивные лимиты."
   },
-  "commonExporting": { "message": "Экспорт" },
-  "commonExported": { "message": "Экспортировано" },
-  "commonImporting": { "message": "Импорт" },
-  "commonImported": { "message": "Импортировано" },
-  "settingsHistoryTransferTitle": { "message": "Импорт и экспорт истории" },
-  "settingsHistoryTransferDesc": { "message": "Экспортируйте полную локальную историю графа посещений в резервную копию JSON или замените её из совместимого файла. Настройки, ключи API и текущее состояние вкладок не переносятся." },
-  "settingsHistoryImportButton": { "message": "Импортировать историю" },
-  "settingsHistoryExportButton": { "message": "Экспортировать историю" },
-  "settingsHistoryExportWarningTitle": { "message": "Проверьте конфиденциальность перед экспортом" },
-  "settingsHistoryExportWarningMessage": { "message": "Резервная копия может содержать посещённые адреса, заголовки страниц, ключевые слова, переходы и статистику использования." },
-  "settingsHistoryExportWarningDetail": { "message": "Не передавайте файл без необходимости. Вы несёте ответственность за раскрытие личной информации при его передаче." },
-  "settingsHistoryExportContinue": { "message": "Выбрать место сохранения" },
-  "settingsHistoryExportPreparing": { "message": "Подготовка резервной копии истории..." },
-  "settingsHistoryExportSucceeded": { "message": "История экспортирована в {0}." },
-  "settingsHistorySavePickerUnavailable": { "message": "Этот браузер не позволяет выбрать место сохранения со страницы настроек." },
-  "settingsHistoryExportFailed": { "message": "Не удалось экспортировать историю." },
-  "settingsHistoryImportValidating": { "message": "Проверка резервной копии истории..." },
-  "settingsHistoryImportConfirmTitle": { "message": "Заменить существующую историю?" },
-  "settingsHistoryImportConfirmMessage": { "message": "Импорт этого файла полностью заменит текущую историю. Это действие нельзя отменить." },
-  "settingsHistoryImportConfirm": { "message": "Заменить и импортировать" },
-  "settingsHistoryImportCancelled": { "message": "Импорт отменён. Существующая история не была изменена." },
-  "settingsHistoryImportSummary": { "message": "Время резервной копии: {0}. Переходов: {1}, сайтов: {2}, записей ключевых слов: {3}." },
-  "settingsHistoryImporting": { "message": "Замена записей истории..." },
-  "settingsHistoryImportSucceeded": { "message": "Импортировано записей переходов: {0}." },
-  "settingsHistoryImportFailed": { "message": "Выбранный файл не является допустимой резервной копией истории Smart Preload или его не удалось импортировать." }
+  "commonExporting": {
+    "message": "Экспорт"
+  },
+  "commonExported": {
+    "message": "Экспортировано"
+  },
+  "commonImporting": {
+    "message": "Импорт"
+  },
+  "commonImported": {
+    "message": "Импортировано"
+  },
+  "settingsHistoryTransferTitle": {
+    "message": "Импорт и экспорт истории"
+  },
+  "settingsHistoryTransferDesc": {
+    "message": "Экспортируйте полную локальную историю графа посещений в резервную копию JSON или замените её из совместимого файла. Настройки, ключи API и текущее состояние вкладок не переносятся."
+  },
+  "settingsHistoryImportButton": {
+    "message": "Импортировать историю"
+  },
+  "settingsHistoryExportButton": {
+    "message": "Экспортировать историю"
+  },
+  "settingsHistoryExportWarningTitle": {
+    "message": "Проверьте конфиденциальность перед экспортом"
+  },
+  "settingsHistoryExportWarningMessage": {
+    "message": "Резервная копия может содержать посещённые адреса, заголовки страниц, ключевые слова, переходы и статистику использования."
+  },
+  "settingsHistoryExportWarningDetail": {
+    "message": "Не передавайте файл без необходимости. Вы несёте ответственность за раскрытие личной информации при его передаче."
+  },
+  "settingsHistoryExportContinue": {
+    "message": "Выбрать место сохранения"
+  },
+  "settingsHistoryExportPreparing": {
+    "message": "Подготовка резервной копии истории..."
+  },
+  "settingsHistoryExportSucceeded": {
+    "message": "История экспортирована в {0}."
+  },
+  "settingsHistorySavePickerUnavailable": {
+    "message": "Этот браузер не позволяет выбрать место сохранения со страницы настроек."
+  },
+  "settingsHistoryExportFailed": {
+    "message": "Не удалось экспортировать историю."
+  },
+  "settingsHistoryImportValidating": {
+    "message": "Проверка резервной копии истории..."
+  },
+  "settingsHistoryImportConfirmTitle": {
+    "message": "Заменить существующую историю?"
+  },
+  "settingsHistoryImportConfirmMessage": {
+    "message": "Импорт этого файла полностью заменит текущую историю. Это действие нельзя отменить."
+  },
+  "settingsHistoryImportConfirm": {
+    "message": "Заменить и импортировать"
+  },
+  "settingsHistoryImportCancelled": {
+    "message": "Импорт отменён. Существующая история не была изменена."
+  },
+  "settingsHistoryImportSummary": {
+    "message": "Время резервной копии: {0}. Переходов: {1}, сайтов: {2}, записей ключевых слов: {3}."
+  },
+  "settingsHistoryImporting": {
+    "message": "Замена записей истории..."
+  },
+  "settingsHistoryImportSucceeded": {
+    "message": "Импортировано записей переходов: {0}."
+  },
+  "settingsHistoryImportFailed": {
+    "message": "Выбранный файл не является допустимой резервной копией истории Smart Preload или его не удалось импортировать."
+  },
+  "settingsNativeAppVersion": {
+    "message": "Версия нативного приложения"
+  },
+  "settingsProxySkipMode": {
+    "message": "Режим списка исключений прокси"
+  },
+  "settingsAiModelListMode": {
+    "message": "Режим списка моделей ИИ"
+  },
+  "settingsAiPredictionModel": {
+    "message": "Модель прогнозирования ИИ"
+  },
+  "settingsChangedElsewhere": {
+    "message": "Настройки были изменены в другом месте. Сохранение перезапишет эти изменения."
+  },
+  "settingsReloadedFromStorage": {
+    "message": "Настройки, изменённые в другом месте, перезагружены."
+  },
+  "settingsThreatLibrary": {
+    "message": "Локальная база угроз"
+  },
+  "settingsThreatLibraryDesc": {
+    "message": "Поставляемый снимок известных вредоносных сайтов. Пока он недоступен, предзагрузка блокируется."
+  },
+  "settingsThreatLibraryLoading": {
+    "message": "Проверка..."
+  },
+  "settingsThreatLibraryReady": {
+    "message": "Снимок {0} · {1}"
+  },
+  "settingsThreatLibraryStale": {
+    "message": "давность {0} дн."
+  },
+  "settingsThreatLibraryFailed": {
+    "message": "Не удалось загрузить. Предзагрузка остаётся заблокированной."
+  }
 }
