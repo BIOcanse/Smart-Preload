@@ -47,10 +47,6 @@
     isAiPredictionConfigured,
   } = globalThis.ZeroLatencySettingsAi;
   const {
-    detectDeviceProfile,
-    getNavigatorSnapshot,
-  } = globalThis.ZeroLatencySettingsEffective;
-  const {
     normalizeStoredSettings,
     normalizeAppearanceSettings,
     normalizeLanguageMode,
@@ -120,9 +116,7 @@
     getAiProviderModels,
     getAiRequestParams,
     isAiPredictionConfigured,
-    detectDeviceProfile,
     resolveEffectiveSettings,
-    getNavigatorSnapshot,
     refreshLocalizedText,
     loadSettings,
     saveSettings,

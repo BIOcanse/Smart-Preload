@@ -18,3 +18,8 @@ extension/shared/local-ai-test-config.js
 # OS/editor noise
 .DS_Store
 Thumbs.db
+
+# 恰好落在本仓库目录里的另一个独立项目（自带 README/PROGRESS/.gitignore，
+# 含 Blender 源文件与导出资产，约 64 MB / 161 个文件）。它和智能预加载没有任何关系，
+# 不应进入本仓库的历史。文件仍留在磁盘上，建议按 D:\Code\<project-name> 的约定移出去。
+/技术演示，逻辑帧和渲染帧分离/

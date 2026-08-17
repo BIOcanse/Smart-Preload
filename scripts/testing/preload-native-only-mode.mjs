@@ -124,7 +124,11 @@ const realPreloadSettings = settingsApi.resolveEffectiveSettings({
 context.currentSettings = browserNativeOnlySettings;
 
 assert.equal(browserNativeOnlySettings.preloading.realPreloadEnabled, false);
-assert.equal(browserNativeOnlySettings.experiments.crossSiteCurrentTabSwap, false);
+// 关掉 Real Preload **不再**销毁用户的实验选择：normalize 只规范化类型，是否生效由
+// strategy/flags.js 在使用点判定（下面那几条 determinePreloadStrategy 断言就是证据 ——
+// 存的值是 true，实际策略仍然退回 prefetch / prerender）。
+// 此前这里断言 false，那个耦合会让「关一次 Real Preload」把实验设置永久写死成 false。
+assert.equal(browserNativeOnlySettings.experiments.crossSiteCurrentTabSwap, true);
 assert.equal(realPreloadSettings.preloading.realPreloadEnabled, true);
 assert.equal(realPreloadSettings.experiments.crossSiteCurrentTabSwap, true);
 assert.equal(

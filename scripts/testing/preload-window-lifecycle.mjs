@@ -12,7 +12,6 @@ const scriptPaths = [
   ["extension", "background", "preload", "runtime", "lifecycle", "windows", "warmup.js"],
   ["extension", "background", "preload", "runtime", "lifecycle", "windows", "removed.js"],
   ["extension", "background", "preload", "runtime", "lifecycle", "windows", "bounds.js"],
-  ["extension", "background", "preload", "runtime", "lifecycle", "windows.js"],
 ].map((segments) => path.join(repoRoot, ...segments));
 
 const removedWindowIds = [];

@@ -125,12 +125,37 @@ assert.ok(bankingDecision.reasons.includes("sensitive-site-banking"));
 assert.ok(bankingDecision.sensitiveSiteReasons.includes("sensitive-site-banking"));
 assert.equal(bankingDecision.sensitiveSiteEvidence.matches[0].category, "banking");
 
+// 敏感站点规则 v2 只按主机名后缀判定。
 const examDecision = policy.inspectPreloadCandidate({
-  url: "https://school.example/courses/intro/quizzes/final",
+  url: "https://exam.pearsonvue.com/schedule",
 });
 assert.equal(examDecision.skipPreload, true);
 assert.equal(examDecision.sensitiveSiteBlocked, true);
 assert.ok(examDecision.reasons.includes("sensitive-site-exam"));
+
+// 路径段启发式（`/quizzes/`、`/banking/` 等）已随 v2 删除：误判率过高且误判是静默的
+// ——用户只会觉得「这些链接怎么不预加载」。这条断言防止有人把它悄悄加回来。
+const pathHeuristicDecision = policy.inspectPreloadCandidate({
+  url: "https://school.example/courses/intro/quizzes/final",
+});
+assert.equal(
+  pathHeuristicDecision.sensitiveSiteBlocked,
+  false,
+  "路径段启发式又回来了 —— v2 的判据只有主机名后缀白名单"
+);
+
+// 主机名子串启发式同样已删除：`bank` 曾把 fairbanksalaska.gov / burbankca.gov 误判成银行，
+// 而这个没法用前后缀边界修好（burbank 也以 bank 结尾）。
+for (const url of [
+  "https://fairbanksalaska.gov/parks",
+  "https://burbankca.gov/library",
+]) {
+  assert.equal(
+    policy.inspectPreloadCandidate({ url }).sensitiveSiteBlocked,
+    false,
+    `${url} 又被误判成敏感站点 —— 主机名子串启发式回来了`
+  );
+}
 
 const sensitiveDisabledDecision = policy.inspectPreloadCandidate(
   {

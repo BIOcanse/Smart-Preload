@@ -189,6 +189,48 @@ async function smokeBrowser(browser, { preferPackaged = true } = {}) {
     assert.ok(historyExportDialogProbe.message.length > 20);
     assert.match(historyExportDialogProbe.message, /请勿随意分享该文件/u);
     assert.match(historyExportDialogProbe.message, /隐私泄露.*概不负责/u);
+    // H12：规则卡 select 的 change 会触发整块重渲染（renderRuleCardList 以
+    // container.textContent = "" 开头），此前会把刚触发事件的那个 select 自己销毁，
+    // 焦点掉回 <body>。Windows 上原生 select 每按一次方向键就触发一次 change，
+    // 于是键盘用户在第一次按键就被打断，靠后的选项根本够不到。
+    const ruleCardFocusProbe = await probeRuleCardSelectFocusRetention(pageClient);
+    const ruleCardFocusContext = JSON.stringify(ruleCardFocusProbe);
+    assert.equal(ruleCardFocusProbe.foundSelect, true, ruleCardFocusContext);
+    assert.equal(ruleCardFocusProbe.rerendered, true, ruleCardFocusContext);
+    assert.equal(
+      ruleCardFocusProbe.focusStayedOnSameControl,
+      true,
+      `规则卡 select 变更后焦点没有回到同一个控件：${ruleCardFocusContext}`
+    );
+    // H18：设置页此前没有 storage.onChanged 监听，而保存是整对象盲写 ——
+    // 开着两个设置页时，先打开的那个会把后打开那个的改动整体覆盖掉。
+    const externalChangeProbe = await probeExternalSettingsChange(pageClient);
+    const externalChangeContext = JSON.stringify(externalChangeProbe);
+    assert.equal(
+      externalChangeProbe.pickedUpExternalChange,
+      true,
+      `外部修改存储后设置页没有跟随更新：${externalChangeContext}`
+    );
+    assert.equal(
+      externalChangeProbe.keptDraftWhileDirty,
+      true,
+      `有未保存改动时外部变更覆盖了用户草稿：${externalChangeContext}`
+    );
+    // 威胁库快照日期与加载状态必须真的渲染出来 —— 这份安全数据只在打包时更新，
+    // 而 inspectUrl 是 fail-closed 的（库不可用时全部预加载被拦），用户有权看到它。
+    const threatLibraryProbe = await probeThreatLibraryStatus(pageClient);
+    const threatLibraryContext = JSON.stringify(threatLibraryProbe);
+    assert.equal(threatLibraryProbe.found, true, `找不到威胁库状态节点：${threatLibraryContext}`);
+    assert.equal(
+      threatLibraryProbe.isPlaceholder,
+      false,
+      `威胁库状态停在占位文案上，说明后台查询没返回：${threatLibraryContext}`
+    );
+    assert.match(
+      threatLibraryProbe.text,
+      /\d{4}-\d{2}-\d{2}/u,
+      `威胁库状态里没有快照日期：${threatLibraryContext}`
+    );
     const dialogProbe = await probeRealPreloadRiskDialog(pageClient);
     assert.equal(dialogProbe.opened, true);
     assert.equal(dialogProbe.confirmed, false);
@@ -644,6 +686,143 @@ async function waitForSettingsPageSnapshot(pageClient) {
       2
     )}; last error: ${lastError?.stack || lastError?.message || ""}`
   );
+}
+
+async function probeThreatLibraryStatus(pageClient) {
+  const resultJson = await runtimeEval(
+    pageClient,
+    `(async () => JSON.stringify(await (async () => {
+      const element = document.getElementById("threat-library-status");
+
+      if (!element) {
+        return { found: false };
+      }
+
+      // 初始化是异步的（要向后台要 debug snapshot），给它一点时间。
+      for (let waited = 0; waited < 4000; waited += 100) {
+        if (!element.hasAttribute("data-i18n")) {
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+
+      return {
+        found: true,
+        // data-i18n 还在 => applyStatus 没跑过，文字仍是 HTML 里的占位。
+        isPlaceholder: element.hasAttribute("data-i18n"),
+        text: element.textContent.trim(),
+        className: element.className,
+      };
+    })()))()`,
+    { timeoutMs: 15000 }
+  );
+  return JSON.parse(resultJson || "{}");
+}
+
+async function probeExternalSettingsChange(pageClient) {
+  const resultJson = await runtimeEval(
+    pageClient,
+    `(async () => JSON.stringify(await (async () => {
+      const KEY = globalThis.ZeroLatencySettings.SETTINGS_STORAGE_KEY;
+      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      const readToggle = () => document.getElementById("exclude-http-pages").checked;
+
+      // 先清掉未保存状态：本探针之前的探针会改表单，而下面第一段要测的正是
+      // 「无未保存改动」那一支。
+      const saveButton = document.getElementById("save-button");
+      if (!saveButton.disabled) {
+        saveButton.click();
+        for (let waited = 0; waited < 4000 && !saveButton.disabled; waited += 100) {
+          await sleep(100);
+        }
+      }
+      if (!saveButton.disabled) {
+        return { cleanupFailed: true };
+      }
+
+      // --- 无未保存改动：应当跟随外部变更 ---
+      const before = readToggle();
+      const stored = (await chrome.storage.local.get({ [KEY]: null }))[KEY];
+      const mutated = JSON.parse(JSON.stringify(stored));
+      mutated.tracking.excludeHttpPages = !before;
+      await chrome.storage.local.set({ [KEY]: mutated });
+      await sleep(300);
+      const pickedUpExternalChange = readToggle() === !before;
+
+      // --- 有未保存改动：绝不能动用户的草稿 ---
+      const toggle = document.getElementById("exclude-local-pages");
+      const dirtyValue = !toggle.checked;
+      toggle.checked = dirtyValue;
+      toggle.dispatchEvent(new Event("change", { bubbles: true }));
+      await sleep(400);
+
+      const stored2 = (await chrome.storage.local.get({ [KEY]: null }))[KEY];
+      const mutated2 = JSON.parse(JSON.stringify(stored2));
+      mutated2.tracking.excludeHttpPages = before;
+      await chrome.storage.local.set({ [KEY]: mutated2 });
+      await sleep(300);
+
+      const keptDraftWhileDirty = document.getElementById("exclude-local-pages").checked === dirtyValue;
+
+      return {
+        pickedUpExternalChange,
+        keptDraftWhileDirty,
+        statusText: document.getElementById("footer-status-text")?.textContent || "",
+      };
+    })()))()`,
+    { timeoutMs: 15000 }
+  );
+  return JSON.parse(resultJson || "{}");
+}
+
+async function probeRuleCardSelectFocusRetention(pageClient) {
+  const resultJson = await runtimeEval(
+    pageClient,
+    `(async () => JSON.stringify(await (async () => {
+      const select = document.querySelector("select.rule-select[data-card-id][data-field-key]");
+
+      if (!select) {
+        return { foundSelect: false };
+      }
+
+      const cardId = select.dataset.cardId;
+      const fieldKey = select.dataset.fieldKey;
+      const originalValue = select.value;
+      const nextOption = [...select.options].find((option) => option.value !== originalValue);
+
+      if (!nextOption) {
+        return { foundSelect: true, rerendered: false, reason: "single-option" };
+      }
+
+      select.focus();
+      const focusedBefore = document.activeElement === select;
+      select.value = nextOption.value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+
+      await new Promise((resolve) => setTimeout(resolve, 60));
+
+      const active = document.activeElement;
+      const replacement = document.querySelector(
+        \`select.rule-select[data-card-id="\${cardId}"][data-field-key="\${fieldKey}"]\`
+      );
+
+      return {
+        foundSelect: true,
+        focusedBefore,
+        // 元素被换成了新节点即证明确实重渲染过。
+        rerendered: Boolean(replacement) && replacement !== select,
+        focusStayedOnSameControl:
+          Boolean(replacement) &&
+          active === replacement &&
+          active?.dataset?.cardId === cardId &&
+          active?.dataset?.fieldKey === fieldKey,
+        activeTag: active?.tagName || "",
+        activeCardId: active?.dataset?.cardId || "",
+      };
+    })()))()`,
+    { timeoutMs: 15000 }
+  );
+  return JSON.parse(resultJson || "{}");
 }
 
 async function probeHistoryTransferRuntime(pageClient) {

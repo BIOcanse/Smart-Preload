@@ -106,11 +106,22 @@ export async function startClickInterceptServer(port, scenarios) {
     scenarios.map((scenario) => [`${scenario.targetHost}/target/${scenario.id}`, scenario])
   );
 
+  const pageClickObservations = new Set();
+
   const server = createServer((request, response) => {
     const requestUrl = new URL(request.url || "/", `http://${request.headers.host}`);
     const host = (request.headers.host || "").split(":")[0];
     const key = `${host}${requestUrl.pathname}`;
     response.setHeader("Cache-Control", "no-store");
+
+    const observedClick = requestUrl.pathname.match(/^\/click-observed\/(\d+)$/u);
+
+    if (observedClick) {
+      pageClickObservations.add(Number(observedClick[1]));
+      response.writeHead(204);
+      response.end();
+      return;
+    }
 
     if (scenarioBySourcePath.has(key)) {
       respondHtml(response, renderSourcePage(scenarioBySourcePath.get(key)));
@@ -127,6 +138,7 @@ export async function startClickInterceptServer(port, scenarios) {
   });
 
   await new Promise((resolve) => server.listen(port, "127.0.0.1", resolve));
+  server.pageClickObservations = pageClickObservations;
   return server;
 }
 
@@ -158,6 +170,15 @@ function renderSourcePage(scenario) {
       <h1>Source ${scenario.id}</h1>
       <a id="target-link" href="${escapeHtml(scenario.targetUrl)}"${targetAttr}>Open target ${scenario.id}</a>
     </main>
+    <script>
+      // 页面自己的点击处理器。扩展的监听器注册在 document 捕获阶段，如果它调用
+      // stopPropagation()，下面这个 anchor 上的监听器就永远收不到点击 —— 这正是
+      // 会打断 React/Vue 路由和点击统计的那种破坏。用 beacon 上报，因为导航之后
+      // 页面就没了，任何页内标记都读不到。
+      document.getElementById("target-link").addEventListener("click", () => {
+        navigator.sendBeacon("/click-observed/${scenario.id}");
+      });
+    </script>
   </body>
 </html>`;
 }

@@ -225,6 +225,70 @@ assert.ok(deletedGraph.linkBehaviorStore["https://a.example/one"]["https://b.exa
 assert.deepEqual(Array.from(deletedGraph.historyPageUrls), ["https://b.example/keep"]);
 assert.equal(deletedGraph.transitionSequence, 3);
 
+// --- 节点清理（graph.nodes）---
+//
+// 此前删除流程完全不触及 graph.nodes：只在被删窗口内访问过的站点会留下一条节点，
+// 里面带着 sampleUrl（**完整页面 URL**）和 firstSeenAt / lastSeenAt，等于用户要求
+// 忘掉的页面还在、连访问时间都在。下面把新行为固定下来。
+
+// c.example 只出现在被删的那条 transition（a→b 保留，b→c 被删），
+// 因此幸存数据里再也没有任何东西引用它 —— 整条节点必须消失。
+assert.equal(
+  deletedGraph.nodes["https://c.example"],
+  undefined,
+  "只在被删窗口内出现过的节点没有被删除 —— 完整页面 URL 与访问时间戳仍然留存"
+);
+assert.equal(deletion.result.deleted.nodes, 1, "删除结果没有报告被清理的节点数");
+
+// a / b 在幸存的 transition 里仍被引用，必须保留。
+assert.ok(deletedGraph.nodes["https://a.example"], "仍被引用的节点被误删");
+assert.ok(deletedGraph.nodes["https://b.example"], "仍被引用的节点被误删");
+
+// 幸存节点的**内容**必须重算自幸存数据：页面 URL 和时间戳都不能来自被删窗口。
+{
+  // 幸存的观测来源有两处，两处都要算进来：transitionMessages（两端各带 nodeId 与
+  // pageUrl）和 recentForegroundPages（带 nodeId、pageUrl、activatedAt）。
+  // 只算前者会误报——夹具里 b.example 的最早观测正是来自后者。
+  const survivingPageUrls = new Set();
+  const survivingTimestamps = [];
+
+  for (const message of deletedGraph.transitionMessages) {
+    survivingPageUrls.add(message.fromPageUrl);
+    survivingPageUrls.add(message.toPageUrl);
+    survivingTimestamps.push(message.occurredAt);
+  }
+
+  for (const page of deletedGraph.recentForegroundPages) {
+    survivingPageUrls.add(page.pageUrl);
+    survivingTimestamps.push(page.activatedAt);
+  }
+
+  for (const nodeId of Object.keys(deletedGraph.nodes)) {
+    const node = deletedGraph.nodes[nodeId];
+    assert.ok(
+      survivingPageUrls.has(node.sampleUrl),
+      `节点 ${nodeId} 的 sampleUrl 不在幸存数据里: ${node.sampleUrl}`
+    );
+    assert.ok(
+      survivingTimestamps.includes(node.firstSeenAt),
+      `节点 ${nodeId} 的 firstSeenAt 不在幸存数据里: ${node.firstSeenAt}`
+    );
+    assert.ok(
+      survivingTimestamps.includes(node.lastSeenAt),
+      `节点 ${nodeId} 的 lastSeenAt 不在幸存数据里: ${node.lastSeenAt}`
+    );
+  }
+}
+
+// 已知未处理项，写成断言以免以后误以为它也被清理了：
+// visitCount 是量级不是内容，只用于 buildTrackingGraphSummary 的 topNodes 展示排序，
+// 不参与预加载排名。保留原值意味着它仍包含被删窗口内的访问次数。
+// 若将来决定一并重算，这条断言会失败，届时连同 rebuild.js 的注释一起更新。
+assert.ok(
+  deletedGraph.nodes["https://a.example"].visitCount > 0,
+  "visitCount 语义已改变 —— 请同步更新 rebuild.js 的说明与本断言"
+);
+
 assert.throws(
   () => deleteTrackingHistoryRange({ graph: deletedGraph }, {}),
   /Select both UTC/
