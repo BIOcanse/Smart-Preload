@@ -26,12 +26,24 @@
     switch (envelope.messageType) {
       case "visit-graph:get-debug-snapshot":
         return allowDecision("debug-snapshot");
+      // 以下四个此前是无条件 allowDecision，而同一个 switch 里所有同级特权消息
+      // （native-app:*、background-task:*、visit-graph:delete-history-range /
+      // export-history / import-history）都要求 fromExtensionUi。属纵深防御缺口：
+      // 当前网页触达不到（无 externally_connectable、无 postMessage 中继，已验证），
+      // 但 visit-graph:reset 会**清空整张学习图**——按 invariants 第 7 条，那正是产品
+      // 价值本体，不该只靠「网页目前够不着」来保护。
       case "extension:open-settings":
-        return allowDecision("open-settings");
+        return envelope.context?.fromExtensionUi === true
+          ? allowDecision("open-settings")
+          : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
       case "extension:get-service-state":
-        return allowDecision("get-service-state");
+        return envelope.context?.fromExtensionUi === true
+          ? allowDecision("get-service-state")
+          : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
       case "extension:set-service-paused":
-        return allowDecision("set-service-paused");
+        return envelope.context?.fromExtensionUi === true
+          ? allowDecision("set-service-paused")
+          : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
       case "native-app:update-status":
         return envelope.context?.fromExtensionUi === true
           ? allowDecision("native-app-update-status")
@@ -49,7 +61,9 @@
           ? allowDecision("background-task-get")
           : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
       case "visit-graph:reset":
-        return allowDecision("reset-graph");
+        return envelope.context?.fromExtensionUi === true
+          ? allowDecision("reset-graph")
+          : ignoreDecision(envelope.messageType, { ok: false, skipped: true });
       case "visit-graph:delete-history-range":
         return envelope.context?.fromExtensionUi === true
           ? allowDecision("delete-history-range")

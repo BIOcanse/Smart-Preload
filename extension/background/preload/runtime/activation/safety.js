@@ -1,6 +1,4 @@
 async function blockUnsafePreloadedActivationIfNeeded({
-  preloadState,
-  sourceRuntimeEntry,
   sourceTab,
   sourceTabId,
   targetUrl,
@@ -20,11 +18,34 @@ async function blockUnsafePreloadedActivationIfNeeded({
     return null;
   }
 
+  // 关标签是 Chrome 操作，必须留在临界区外面——否则 mutation 队列会被它阻塞。
   await closeTabIfExists(preloadedTab.id);
-  deleteSourceTabPreloadEntry(sourceRuntimeEntry.sourceTabRuntime, "hiddenTab", targetUrl);
-  markSourceRuntimeUpdated(preloadState, sourceRuntimeEntry, new Date().toISOString());
-  pruneSourceTabRuntime(preloadState, sourceTab.windowId, sourceTabId);
-  await savePreloadState(preloadState);
+
+  // 传进来的 preloadState / sourceRuntimeEntry 都是激活流程早期的陈旧快照，直接保存会
+  // 覆盖 mutation lane 的并发写入。重读后重新施加同一个语义动作，
+  // 见 docs/internal/invariants.md 第 1 条。
+  await applySourceTabPreloadMutation({
+    normalWindowId: sourceTab.windowId,
+    sourceTabId,
+    apply(latestPreloadState, latestSourceRuntimeEntry) {
+      if (!latestSourceRuntimeEntry) {
+        return latestPreloadState;
+      }
+
+      deleteSourceTabPreloadEntry(
+        latestSourceRuntimeEntry.sourceTabRuntime,
+        "hiddenTab",
+        targetUrl
+      );
+      markSourceRuntimeUpdated(
+        latestPreloadState,
+        latestSourceRuntimeEntry,
+        new Date().toISOString()
+      );
+      pruneSourceTabRuntime(latestPreloadState, sourceTab.windowId, sourceTabId);
+      return latestPreloadState;
+    },
+  });
   globalThis.ZeroLatencyDebugEvents?.record?.("preload-activation.safety-blocked", {
     sourceTabId: sourceTab.id,
     sourceWindowId: sourceTab.windowId,

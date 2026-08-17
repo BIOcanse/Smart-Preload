@@ -1,6 +1,28 @@
 (function () {
   const APP_UPDATE_STATUS_PATH = "/api/v1/app/update/status";
   const APP_UPDATE_REQUEST_PATH = "/api/v1/app/update";
+  // 与 Rust 侧 app/src/update/model.rs:7-8 的两个常量保持一致。
+  // 那边有前缀校验兜底，但扩展侧必须**独立**校验：这条消息把调用方给的 assetUrl 原样
+  // 交给本地更新器去下载并执行，不能把「对方会检查」当成自己的控制措施。
+  const RELEASE_ASSET_URL_PREFIX =
+    "https://github.com/BIOcanse/Smart-Preload/releases/download/";
+  const RELEASE_TAG_URL_PREFIX = "https://github.com/BIOcanse/Smart-Preload/releases/tag/";
+
+  // 前缀比较之前先按 URL 解析并规范化，避免 `https://github.com@evil.test/…`、
+  // 反斜杠、百分号编码这类靠字符串前缀匹配骗过去的写法。
+  function hasReleaseUrlPrefix(rawUrl, expectedPrefix) {
+    try {
+      const url = new URL(String(rawUrl || ""));
+
+      if (url.protocol !== "https:" || url.username || url.password) {
+        return false;
+      }
+
+      return url.href.startsWith(expectedPrefix);
+    } catch (_error) {
+      return false;
+    }
+  }
 
   async function handleNativeAppUpdateStatus() {
     const response = await fetchNativeApp(APP_UPDATE_STATUS_PATH, {
@@ -24,6 +46,14 @@
 
     if (!targetVersion || !assetName || !assetUrl) {
       throw new Error("Native app update request is incomplete.");
+    }
+
+    if (!hasReleaseUrlPrefix(assetUrl, RELEASE_ASSET_URL_PREFIX)) {
+      throw new Error("Native app update asset URL is not an official release asset.");
+    }
+
+    if (releaseUrl && !hasReleaseUrlPrefix(releaseUrl, RELEASE_TAG_URL_PREFIX)) {
+      throw new Error("Native app update release URL is not an official release page.");
     }
 
     const task = globalThis.ZeroLatencyBackgroundTasks.submitTask({

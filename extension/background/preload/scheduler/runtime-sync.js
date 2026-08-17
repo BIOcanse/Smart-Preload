@@ -1,3 +1,9 @@
+// stableStringifyPreloadSelectionValue 的硬上限。当前输入是调度器自建的固定形状对象，
+// 深度个位数；这两个值留了充足余量。触顶或遇到环会记
+// preload-selection.fingerprint.truncated，不静默产出错误指纹。
+const MAX_PRELOAD_SELECTION_STRINGIFY_DEPTH = 32;
+const MAX_PRELOAD_SELECTION_STRINGIFY_CONTAINERS = 10_000;
+
 async function synchronizeScheduledPreloadSelection(preloadState, scheduledSelection) {
   recordSchedulerRuntimeSyncEvent("scheduler.sync.source", {
     sourceTabId: scheduledSelection.sourceTabId,
@@ -176,22 +182,95 @@ function buildPreloadSelectionFingerprint(targets) {
   return JSON.stringify(sortedTargets);
 }
 
-function stableStringifyPreloadSelectionValue(value) {
-  if (Array.isArray(value)) {
-    return `[${value.map(stableStringifyPreloadSelectionValue).join(",")}]`;
+// 显式栈的稳定序列化，替代此前的手写自递归。
+//
+// 手写递归版没有任何深度上限，而且——与 JSON.stringify 不同——遇到环不会抛 TypeError
+// 而是直接栈溢出。当前输入是调度器自建的固定形状对象（见 buildPreloadSelectionFingerprint），
+// 深度小且不可能成环，所以这不是活缺陷；改造是为了遵守「禁递归」这条工程约定。
+//
+// **逐字保留原输出**：这是 fingerprint，输出变一个字节就会造成一次虚假的「已变更」。
+// 因此不改用 JSON.stringify + replacer —— 那条路在两处会给出不同结果：对象里的
+// undefined 被原生省略（手写版输出 `"key":null`），带 toJSON 的对象（Date）被原生
+// 展开成字符串（手写版按普通对象枚举得到 `{}`）。显式栈按构造就是字节等价。
+//
+// 栈是 LIFO，所以子项要反序压入才能保持「先左后右」的输出顺序。
+function stableStringifyPreloadSelectionValue(rootValue) {
+  const parts = [];
+  const stack = [{ value: rootValue, depth: 0 }];
+  const openContainers = new Set();
+  let visitedContainers = 0;
+
+  while (stack.length > 0) {
+    const item = stack.pop();
+
+    if (typeof item.emit === "string") {
+      openContainers.delete(item.closes);
+      parts.push(item.emit);
+      continue;
+    }
+
+    const { value, depth } = item;
+    const isArray = Array.isArray(value);
+    const isObject = Boolean(value) && typeof value === "object" && !isArray;
+
+    if (!isArray && !isObject) {
+      parts.push(JSON.stringify(value) ?? "null");
+      continue;
+    }
+
+    visitedContainers += 1;
+
+    // 环与超限：手写版在这两种情况下会栈溢出，这里退化为 null 并留下记录。
+    if (
+      openContainers.has(value) ||
+      depth >= MAX_PRELOAD_SELECTION_STRINGIFY_DEPTH ||
+      visitedContainers > MAX_PRELOAD_SELECTION_STRINGIFY_CONTAINERS
+    ) {
+      parts.push("null");
+      globalThis.ZeroLatencyDebugEvents?.record?.("preload-selection.fingerprint.truncated", {
+        reason: openContainers.has(value)
+          ? "cycle"
+          : depth >= MAX_PRELOAD_SELECTION_STRINGIFY_DEPTH
+            ? "depth-limit"
+            : "container-budget",
+        depth,
+        visitedContainers,
+      });
+      continue;
+    }
+
+    openContainers.add(value);
+
+    if (isArray) {
+      parts.push("[");
+      stack.push({ emit: "]", closes: value });
+
+      for (let index = value.length - 1; index >= 0; index -= 1) {
+        stack.push({ value: value[index], depth: depth + 1 });
+
+        if (index > 0) {
+          stack.push({ emit: "," });
+        }
+      }
+
+      continue;
+    }
+
+    const keys = Object.keys(value).sort();
+    parts.push("{");
+    stack.push({ emit: "}", closes: value });
+
+    for (let index = keys.length - 1; index >= 0; index -= 1) {
+      stack.push({ value: value[keys[index]], depth: depth + 1 });
+      stack.push({ emit: `${JSON.stringify(keys[index])}:` });
+
+      if (index > 0) {
+        stack.push({ emit: "," });
+      }
+    }
   }
 
-  if (value && typeof value === "object") {
-    return `{${Object.keys(value)
-      .sort()
-      .map(
-        (key) =>
-          `${JSON.stringify(key)}:${stableStringifyPreloadSelectionValue(value[key])}`
-      )
-      .join(",")}}`;
-  }
-
-  return JSON.stringify(value) ?? "null";
+  return parts.join("");
 }
 
 async function queryOpenNormalTabs() {

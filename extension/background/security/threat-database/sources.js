@@ -8,9 +8,32 @@
   } = globalThis.ZeroLatencyThreatDatabaseFingerprint;
   let cachedSources = null;
   let libraryLoadPromise = null;
+  // "pending" | "ready" | "failed"。inspectUrl 是同步的、且调用方不 await bootstrap，
+  // 所以它必须能分辨「库还没到」和「库到了但没命中」——此前两者都返回 blocked: false。
+  let libraryLoadState = "pending";
+  let libraryLoadError = "";
+
+  function getLibraryLoadStatus() {
+    return {
+      state: libraryLoadState,
+      error: libraryLoadError,
+      generatedAt: getLibraryMetadata().generatedAt || "",
+      sourceIds: (getLibraryMetadata().sources || [])
+        .map((source) => String(source?.id || ""))
+        .filter(Boolean),
+    };
+  }
+
+  // 就绪判据是「库对象在不在」，而不是「经由哪条路加载的」—— initializeLibrary 本来就把
+  // 已存在的库直接当作有效（下面的提前返回），测试与其它注入路径也依赖这一点。
+  // libraryLoadState 只用于诊断，区分「还没到」和「加载失败」。
+  function isLibraryReady() {
+    return Boolean(globalThis.ZeroLatencyLocalThreatLibrary);
+  }
 
   async function initializeLibrary(options = {}) {
     if (globalThis.ZeroLatencyLocalThreatLibrary) {
+      libraryLoadState = "ready";
       return globalThis.ZeroLatencyLocalThreatLibrary;
     }
 
@@ -43,9 +66,13 @@
 
       globalThis.ZeroLatencyLocalThreatLibrary = library;
       cachedSources = null;
+      libraryLoadState = "ready";
+      libraryLoadError = "";
       return library;
     })().catch((error) => {
       libraryLoadPromise = null;
+      libraryLoadState = "failed";
+      libraryLoadError = error instanceof Error ? error.message : String(error);
       throw error;
     });
 
@@ -152,6 +179,8 @@
     initializeLibrary,
     findThreatSourceMatch,
     getLibraryMetadata,
+    getLibraryLoadStatus,
+    isLibraryReady,
     containsSortedFingerprint,
   };
 })();

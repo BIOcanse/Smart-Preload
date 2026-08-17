@@ -62,8 +62,13 @@ pub fn build_scoring_breakdown(base_score: f64, multipliers: &[f64]) -> ScoringB
 
     ScoringBreakdown {
         base_score: sanitized_base_score,
-        combined_score,
-        normalized_score,
+        // 输出也要过一遍 sanitize：输入虽然已经过滤过非有限值，但 `sanitize_weight` 没有
+        // 上界，足够大的乘积仍可能溢出成 `inf`。而 `serde_json` 把非有限 f64 序列化成
+        // `null`，JS 侧 `Number(null)` 得到 0（排最差）；纯 JS 回退路径同样的输入却得到
+        // `Infinity`（排最优）——**同一个候选在两条路径下排名完全相反**。
+        // 在这里收口，保证 WASM 侧永远发不出非有限分数。
+        combined_score: sanitize_weight(combined_score, 0.0),
+        normalized_score: sanitize_weight(normalized_score, 0.0),
         effective_multiplier_count,
         multipliers: sanitized_multipliers,
     }

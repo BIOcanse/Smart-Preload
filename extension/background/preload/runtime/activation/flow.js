@@ -44,7 +44,10 @@ async function activatePreloadedPage(message, sender) {
     return { handled: false };
   }
 
-  let preloadState = activationResolution.preloadState;
+  // resolution.js 轮询循环里加载的快照。定点清理（clearStaleActivationEntry、
+  // blockUnsafePreloadedActivationIfNeeded）已改为在 mutation lane 上重读后施加，不再
+  // 使用这份快照；仅 clearSourceTabPreloadsAfterActivation 仍需要它，原因见 cleanup.js。
+  const preloadState = activationResolution.preloadState;
   const sourceRuntimeEntry = activationResolution.sourceRuntimeEntry;
   const entry = activationResolution.entry;
   const preloadedTab = activationResolution.preloadedTab;
@@ -61,9 +64,9 @@ async function activatePreloadedPage(message, sender) {
   }
 
   if (!preloadedTab) {
+    // 不再传 preloadState / sourceRuntimeEntry：它们是本流程早期的快照，被调用方会在
+    // mutation lane 上重读最新状态并重新施加动作。
     await clearStaleActivationEntry({
-      preloadState,
-      sourceRuntimeEntry,
       sourceTab,
       sourceTabId,
       targetUrl,
@@ -73,8 +76,6 @@ async function activatePreloadedPage(message, sender) {
   }
 
   const safetyResponse = await blockUnsafePreloadedActivationIfNeeded({
-    preloadState,
-    sourceRuntimeEntry,
     sourceTab,
     sourceTabId,
     targetUrl,
@@ -141,7 +142,7 @@ async function activatePreloadedPage(message, sender) {
     targetIndex,
   });
 
-  preloadState = await clearSourceTabPreloadsAfterActivation({
+  await clearSourceTabPreloadsAfterActivation({
     preloadState,
     sourceTab,
     sourceTabId,

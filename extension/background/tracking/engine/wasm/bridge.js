@@ -2,76 +2,15 @@ function wrapVisitGraphEngine(exports) {
   const textEncoder = new TextEncoder();
   const textDecoder = new TextDecoder();
 
+  // 这里只包装 WASM 实际导出的函数。
+  //
+  // 曾经还有 applyEvent / queryState / scoreWeights（单个）三个包装，对应
+  // apply_event_json / query_state_json / score_weights_json。前两个的调用方
+  // （applyTrackingEvent、queryTrackingGraph）一直无条件走 JS 实现，第三个的调用方
+  // scorePreloadCandidate 没有任何调用者，因此对应的 Rust 入口连同只服务它们的
+  // db/ events/ query/ model/ 模块已一并删除，二进制从 932 KB 降到 265 KB。
+  // 决策依据见 docs/internal/wasm-engine-decision.md。
   return {
-    applyEvent(state, event) {
-      const stateInput = writeJsonToWasm(exports, textEncoder, state);
-      const eventInput = writeJsonToWasm(exports, textEncoder, event);
-
-      try {
-        const resultPointer = exports.apply_event_json(
-          stateInput.pointer,
-          stateInput.length,
-          eventInput.pointer,
-          eventInput.length
-        );
-        const result = readJsonFromWasm(exports, textDecoder, resultPointer);
-
-        if (!result?.ok) {
-          throw new Error(result?.error || "Wasm engine returned an unknown error.");
-        }
-
-        return result.state;
-      } finally {
-        freeInputBuffer(exports, stateInput);
-        freeInputBuffer(exports, eventInput);
-      }
-    },
-    queryState(state, query) {
-      const stateInput = writeJsonToWasm(exports, textEncoder, state);
-      const queryInput = writeJsonToWasm(exports, textEncoder, query);
-
-      try {
-        const resultPointer = exports.query_state_json(
-          stateInput.pointer,
-          stateInput.length,
-          queryInput.pointer,
-          queryInput.length
-        );
-        const result = readJsonFromWasm(exports, textDecoder, resultPointer);
-
-        if (!result?.ok) {
-          throw new Error(result?.error || "Wasm query returned an unknown error.");
-        }
-
-        return result.result ?? null;
-      } finally {
-        freeInputBuffer(exports, stateInput);
-        freeInputBuffer(exports, queryInput);
-      }
-    },
-    scoreWeights(baseScore, multipliers) {
-      if (typeof exports.score_weights_json !== "function") {
-        return scoreWeightsFallback(baseScore, multipliers);
-      }
-
-      const input = writeJsonToWasm(exports, textEncoder, {
-        baseScore,
-        multipliers: Array.isArray(multipliers) ? multipliers : [],
-      });
-
-      try {
-        const resultPointer = exports.score_weights_json(input.pointer, input.length);
-        const result = readJsonFromWasm(exports, textDecoder, resultPointer);
-
-        if (!result?.ok) {
-          throw new Error(result?.error || "Wasm scoring returned an unknown error.");
-        }
-
-        return result.result ?? null;
-      } finally {
-        freeInputBuffer(exports, input);
-      }
-    },
     scoreWeightsBatch(inputs) {
       if (typeof exports.score_weights_batch_json !== "function") {
         return Array.isArray(inputs)

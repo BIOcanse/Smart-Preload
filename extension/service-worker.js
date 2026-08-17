@@ -185,7 +185,17 @@ function respondWithTask(sendResponse, task) {
     queuedResult = queue(queueTask);
   }
 
-  void queuedResult.then(sendResponse);
+  // 必须带 catch：没有它时，队列本身若拒绝（不是任务体拒绝——那已被
+  // executeMessageTaskResult 的 try/catch 兜住），sendResponse 永远不会被调用，
+  // 发送方那侧的 Promise 会一直挂到端口关闭，同时留下一个未处理的拒绝。
+  // 当前无已知可达的拒绝路径，属潜伏；但代价只是一个回调。
+  void queuedResult.then(sendResponse).catch((error) => {
+    console.error("Queued message task failed before responding.", error);
+    sendResponse({
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  });
 
   return true;
 }

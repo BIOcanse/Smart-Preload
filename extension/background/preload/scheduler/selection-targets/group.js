@@ -98,16 +98,10 @@ function sumSelectionTargetScores(targets) {
     }
 
     const score = Number(target?.score);
+    // buildSchedulerLinkScoreSignal 定义在 preload/prediction/strategy/signals.js。
+    // 这里曾有一份逐字节相同的重复定义，但它在 service-worker 打包后被 signals.js
+    // 的定义覆盖（load #241 vs #283），实际从不执行，已删除。
+    // 重复顶层绑定由 scripts/testing/service-worker-bundle-integrity.mjs 把关。
     return sum + buildSchedulerLinkScoreSignal(score);
   }, 0);
-}
-
-function buildSchedulerLinkScoreSignal(score) {
-  const normalizedScore = Number(score);
-
-  if (!Number.isFinite(normalizedScore) || normalizedScore <= 0) {
-    return 0;
-  }
-
-  return normalizedScore ** 1.5;
 }

@@ -17,6 +17,16 @@
       const existing = this.pendingByKey.get(normalizedKey);
 
       if (existing) {
+        // 合并是本队列的定义行为：同 key 只跑**最新**那个任务，先前排队的那个函数
+        // 直接被丢弃，且两个调用方都拿到同一个 promise（即先来的那个会收到后来者的
+        // 结果）。对候选扫描这类"只关心当前页面状态"的场景这是正确语义。
+        //
+        // 但丢弃此前是完全静默的。这里记一条事件，让"我的那次扫描去哪了"这类问题
+        // 有迹可循——尤其是将来有非累积型的调用方接进来时。
+        globalThis.ZeroLatencyDebugEvents?.record?.("queue.coalesced", {
+          queue: this.label,
+          key: normalizedKey,
+        });
         existing.task = task;
         return existing.promise;
       }

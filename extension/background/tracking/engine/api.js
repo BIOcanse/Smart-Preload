@@ -15,21 +15,9 @@ async function queryTrackingGraphFromGraph(graph, query) {
 
 const SCORE_NORMALIZATION_MULTIPLIER_SCALE = 0.7;
 
-async function scorePreloadCandidate(baseScore, multipliers = []) {
-  const engine = await getVisitGraphEngine();
-
-  if (!engine) {
-    return scoreWeightsFallback(baseScore, multipliers);
-  }
-
-  try {
-    return engine.scoreWeights(baseScore, multipliers);
-  } catch (error) {
-    console.error("Wasm preload scoring failed, falling back to JS.", error);
-    return scoreWeightsFallback(baseScore, multipliers);
-  }
-}
-
+// 曾有一个单条打分的 scorePreloadCandidate，走 WASM 的 score_weights_json。它没有任何
+// 调用方（打分一律走批量版），连同对应的 Rust 入口已删除，见
+// docs/internal/wasm-engine-decision.md。scoreWeightsFallback 仍被批量版使用。
 async function scorePreloadCandidatesBatch(inputs = []) {
   const normalizedInputs = Array.isArray(inputs) ? inputs : [];
   const engine = await getVisitGraphEngine();
@@ -43,6 +31,7 @@ async function scorePreloadCandidatesBatch(inputs = []) {
   try {
     return engine.scoreWeightsBatch(normalizedInputs);
   } catch (error) {
+    markVisitGraphEngineTrapped(error);
     console.error("Wasm preload scoring batch failed, falling back to JS.", error);
     return normalizedInputs.map((input) =>
       scoreWeightsFallback(input?.baseScore, input?.multipliers)
@@ -60,6 +49,7 @@ async function filterPreloadCandidateMetrics(input) {
   try {
     return engine.filterCandidateMetrics(input);
   } catch (error) {
+    markVisitGraphEngineTrapped(error);
     console.error("Wasm preload candidate filter failed, falling back to JS.", error);
     return null;
   }
@@ -75,6 +65,7 @@ async function selectPreloadCandidateGroup(input) {
   try {
     return engine.selectPreloadCandidateGroup(input);
   } catch (error) {
+    markVisitGraphEngineTrapped(error);
     console.error("Wasm preload site selection failed, falling back to JS.", error);
     return null;
   }

@@ -53,6 +53,10 @@
       currentTopTargets: buildCurrentPreloads(preloadState, message?.tabId),
       recentRuntimeEvents: globalThis.ZeroLatencyDebugEvents?.snapshot?.(128) ?? [],
       diagnostics: globalThis.ZeroLatencyDiagnostics?.getStatus?.() ?? null,
+      // 本地威胁库的快照日期与加载状态。此前用户完全看不到这份安全数据有多旧，
+      // 也不知道它是否加载失败了（`grep generatedAt settings/ popup/` 零命中）。
+      // 挂在既有的 debug snapshot 上，不新增消息类型。
+      threatLibrary: globalThis.ZeroLatencyLocalThreatDatabase?.getLibraryLoadStatus?.() ?? null,
       knownPreloadRuntime: globalThis.snapshotKnownPreloadRuntime?.() ?? null,
       featureSupport: globalThis.ZeroLatencySupport?.getBackgroundFeatureSupport?.() ?? {},
       hiddenWindowMonitor,
