@@ -2,9 +2,30 @@ function normalizeTrackingGraph(rawGraph) {
   const graph = isPlainObject(rawGraph) ? rawGraph : createEmptyGraph();
   const storedVersion = clampNonNegativeInt(graph.version, 0);
 
-  if (storedVersion >= 14 && hasUsableTrackingSnapshotIndexes(graph)) {
+  // 最快路径：这份数据就是**本版本、本 schema** 亲手整理并落盘的，整体跳过再校验。
+  //
+  // 下面两条路都是 O(图规模)，实测 2 万节点分别约 393 ms / 470 ms —— 而快路径只比慢路径
+  // 便宜 15-20%，因为它剩下的工作（逐条 normalizeEdgeRecord、normalizeLinkBehaviorStore、
+  // normalizePageKeywordStore…）全是对扩展自己刚写出去的数据做防御性再校验。
+  // 学习图按 invariants 第 7 条无上限增长，这个数字只会往上走，而它在**每次 service
+  // worker 冷启动**上、跑在唯一的线程里。
+  //
+  // 仍然保留 hasUsableTrackingSnapshotIndexes 这道**形状检查**：戳只能证明「谁写的」，
+  // 证明不了「写完之后没被截断/损坏」。形状不对就退回完整归一化，损坏的存储照样能自愈。
+  if (
+    graph.normalizedBy === buildTrackingGraphNormalizationStamp() &&
+    hasUsableTrackingSnapshotIndexes(graph)
+  ) {
+    return graph;
+  }
+
+  if (storedVersion >= TRACKING_GRAPH_SCHEMA_VERSION && hasUsableTrackingSnapshotIndexes(graph)) {
     return normalizeTrackingGraphSnapshot(graph);
   }
+
+  // 走到这里说明戳不匹配（或形状不对）。清掉旧戳，让它只表示「**本版本**的 checkpoint
+  // 归一化之后写出去的」——下一次 checkpoint 会重新盖。留着陈旧的戳没有害处但会误导读者。
+  delete graph.normalizedBy;
 
   const storedEdgeSnapshots = captureStoredEdgeSnapshots(graph.edges);
   const storedTransitionMessageBucketLayer = getStoredTransitionMessageBucketLayer(
@@ -13,7 +34,7 @@ function normalizeTrackingGraph(rawGraph) {
   const storedPageTransitionBuckets = isPlainObject(graph.pageTransitionBuckets)
     ? graph.pageTransitionBuckets
     : null;
-  graph.version = 14;
+  graph.version = TRACKING_GRAPH_SCHEMA_VERSION;
   graph.nodes = isPlainObject(graph.nodes) ? graph.nodes : {};
   graph.edges = isPlainObject(graph.edges) ? graph.edges : {};
   graph.linkBehaviorStore = normalizeLinkBehaviorStore(graph.linkBehaviorStore);
@@ -103,8 +124,10 @@ function hasUsableTrackingSnapshotIndexes(graph) {
 }
 
 function normalizeTrackingGraphSnapshot(graph) {
-  graph.version = 14;
+  graph.version = TRACKING_GRAPH_SCHEMA_VERSION;
   graph.persistenceMode = "incremental-checkpoint-v1";
+  // 同上：这条路也是「真干了活」，旧戳作废，交给下一次 checkpoint 重新盖。
+  delete graph.normalizedBy;
   graph.nodes = isPlainObject(graph.nodes) ? graph.nodes : {};
   graph.edges = isPlainObject(graph.edges) ? graph.edges : {};
 

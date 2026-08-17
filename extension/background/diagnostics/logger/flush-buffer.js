@@ -83,7 +83,18 @@
         flushInProgress = false;
 
         if (buffer.length > 0 && isEnabled()) {
-          scheduleFlush(nextFlushDelayMs);
+          // 还够一整批就立刻continue，不要再等 DEFAULT_FLUSH_DELAY_MS。
+          //
+          // 此前这里无条件用 nextFlushDelayMs（成功 10 秒 / 失败 30 秒），完全不看积压：
+          // 缓冲上限 2000、每批 100，排空要 20 批 × 10 秒 = **200 秒连续存活**，而 MV3 的
+          // service worker 约 30 秒空闲就被回收，且 setTimeout 并不延长它的寿命。
+          // pushEvent 里那条 scheduleFlush(0) 快路径救不了这个场景 —— 它在
+          // flushTimer 已挂或 flushInProgress 时直接返回。
+          //
+          // 失败路径仍然退避到 RETRY_FLUSH_DELAY_MS：那时立刻重试只会连打后端。
+          const shouldContinueImmediately =
+            nextFlushDelayMs === DEFAULT_FLUSH_DELAY_MS && buffer.length >= MAX_BATCH_SIZE;
+          scheduleFlush(shouldContinueImmediately ? 0 : nextFlushDelayMs);
         }
       }
     }

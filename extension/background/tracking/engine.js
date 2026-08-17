@@ -8,7 +8,6 @@
     queryTrackingGraphFallback,
     queryTrackingGraph,
     queryTrackingGraphFromGraph,
-    scorePreloadCandidate,
     scorePreloadCandidatesBatch,
     filterPreloadCandidateMetrics,
     selectPreloadCandidateGroup,

@@ -17,15 +17,16 @@ pub fn filter_candidates(input: FilterCandidatesInput) -> FilterCandidatesResult
     } = input;
     let mut working_indices = (0..candidates.len()).collect::<Vec<usize>>();
 
-    if let Some(rule_card_state) = rule_items.get("googleBookmarkRank") {
-        if is_rule_card_enabled(rule_card_state) {
-            working_indices.retain(|candidate_index| {
-                let candidate = &candidates[*candidate_index];
+    if let Some(rule_card_state) = rule_items
+        .get("googleBookmarkRank")
+        .filter(|rule_card_state| is_rule_card_enabled(rule_card_state))
+    {
+        working_indices.retain(|candidate_index| {
+            let candidate = &candidates[*candidate_index];
 
-                !candidate.google_bookmark_candidate
-                    || evaluate_rule_card_metric(rule_card_state, candidate.bookmark_rank as f64)
-            });
-        }
+            !candidate.google_bookmark_candidate
+                || evaluate_rule_card_metric(rule_card_state, candidate.bookmark_rank as f64)
+        });
     }
 
     let mut ordered_indices = working_indices.clone();

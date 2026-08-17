@@ -466,8 +466,8 @@ fn allocate_selected_site_page_slots(
         let mut current = vec![f64::INFINITY; remaining_slots + 1];
         let max_extra_cap = extra_caps[site_index].min(remaining_slots);
 
-        for partial_sum in 0..=remaining_slots {
-            if !previous[partial_sum].is_finite() {
+        for (partial_sum, previous_cost) in previous.iter().enumerate() {
+            if !previous_cost.is_finite() {
                 continue;
             }
 
@@ -479,7 +479,7 @@ fn allocate_selected_site_page_slots(
                 }
 
                 let delta = extra_count as f64 - targets[site_index];
-                let cost = previous[partial_sum] + delta * delta;
+                let cost = previous_cost + delta * delta;
 
                 if cost < current[next_sum] {
                     current[next_sum] = cost;
@@ -567,4 +567,274 @@ fn compare_f64_desc(left: f64, right: f64) -> Ordering {
     right_value
         .partial_cmp(&left_value)
         .unwrap_or(Ordering::Equal)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::BTreeSet;
+
+    fn candidate(
+        index: usize,
+        is_same_site: bool,
+        node_id: &str,
+        score: f64,
+    ) -> PreloadSelectionCandidateInput {
+        PreloadSelectionCandidateInput {
+            index,
+            node_id: node_id.to_owned(),
+            url: format!("https://{node_id}/page{index}"),
+            target_page_url: format!("https://{node_id}/page{index}"),
+            is_same_site,
+            site_transition_count: 1,
+            site_ai_keyword_multiplier: 1.0,
+            score,
+            visibility_score: 0.0,
+            link_index: index,
+        }
+    }
+
+    fn input(
+        candidates: Vec<PreloadSelectionCandidateInput>,
+        page_slot_limit: usize,
+        site_selection_limit: usize,
+    ) -> SelectPreloadCandidateGroupInput {
+        SelectPreloadCandidateGroupInput {
+            candidates,
+            page_slot_limit,
+            site_selection_limit,
+            selection_group: "test-group".to_owned(),
+        }
+    }
+
+    // --- 入口的空与边界 ---
+
+    #[test]
+    fn returns_empty_for_no_candidates_or_no_slots() {
+        assert!(
+            select_preload_candidate_group(input(Vec::new(), 5, 3))
+                .expect("empty input must not error")
+                .selected_indices
+                .is_empty()
+        );
+        assert!(
+            select_preload_candidate_group(input(vec![candidate(0, true, "a.test", 1.0)], 0, 3))
+                .expect("zero slot limit must not error")
+                .selected_indices
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn same_site_only_takes_top_n_by_priority() {
+        let candidates = vec![
+            candidate(0, true, "a.test", 1.0),
+            candidate(1, true, "a.test", 9.0),
+            candidate(2, true, "a.test", 5.0),
+        ];
+        let result = select_preload_candidate_group(input(candidates, 2, 3))
+            .expect("same-site selection must not error");
+
+        // 没有跨站候选时不做站点聚类，直接按优先级取前 N。
+        assert_eq!(result.selected_indices, vec![1, 2]);
+        assert!(result.site_selections.is_empty());
+    }
+
+    #[test]
+    fn priority_order_is_score_then_visibility_then_link_index() {
+        let mut high_visibility = candidate(7, true, "a.test", 4.0);
+        high_visibility.visibility_score = 0.9;
+        let mut low_visibility = candidate(3, true, "a.test", 4.0);
+        low_visibility.visibility_score = 0.1;
+
+        let result = select_preload_candidate_group(input(
+            vec![
+                low_visibility,
+                high_visibility,
+                candidate(1, true, "a.test", 4.0),
+            ],
+            3,
+            3,
+        ))
+        .expect("tie-breaking must not error");
+
+        // 分数相同 -> 可见度降序；可见度也相同(0.0)的排最后，再按 link_index 升序。
+        assert_eq!(result.selected_indices, vec![7, 3, 1]);
+    }
+
+    // --- 跨站点聚类与整体约束 ---
+
+    #[test]
+    fn cross_site_respects_site_selection_limit() {
+        let candidates = vec![
+            candidate(0, false, "a.test", 9.0),
+            candidate(1, false, "b.test", 8.0),
+            candidate(2, false, "c.test", 7.0),
+            candidate(3, false, "d.test", 6.0),
+        ];
+        let result = select_preload_candidate_group(input(candidates, 4, 2))
+            .expect("cross-site selection must not error");
+
+        let distinct_sites = result
+            .site_selections
+            .iter()
+            .map(|selection| selection.site_node_id.clone())
+            .collect::<BTreeSet<String>>();
+
+        assert!(
+            distinct_sites.len() <= 2,
+            "site_selection_limit=2 被突破: {distinct_sites:?}"
+        );
+    }
+
+    #[test]
+    fn selection_never_exceeds_page_slot_limit() {
+        for page_slot_limit in 1..=6 {
+            let candidates = (0..8)
+                .map(|index| {
+                    candidate(
+                        index,
+                        index % 3 == 0,
+                        &format!("site{}.test", index % 4),
+                        9.0 - index as f64,
+                    )
+                })
+                .collect::<Vec<_>>();
+            let result = select_preload_candidate_group(input(candidates, page_slot_limit, 3))
+                .expect("mixed selection must not error");
+
+            assert!(
+                result.selected_indices.len() <= page_slot_limit,
+                "page_slot_limit={page_slot_limit} 被突破: {:?}",
+                result.selected_indices
+            );
+        }
+    }
+
+    #[test]
+    fn selected_indices_are_unique_and_in_range() {
+        let candidates = (0..10)
+            .map(|index| {
+                candidate(
+                    index,
+                    index % 2 == 0,
+                    &format!("site{}.test", index % 3),
+                    5.0,
+                )
+            })
+            .collect::<Vec<_>>();
+        let candidate_count = candidates.len();
+        let result = select_preload_candidate_group(input(candidates, 6, 3))
+            .expect("selection must succeed");
+
+        let unique = result
+            .selected_indices
+            .iter()
+            .copied()
+            .collect::<BTreeSet<usize>>();
+
+        assert_eq!(unique.len(), result.selected_indices.len(), "出现重复下标");
+        assert!(
+            result
+                .selected_indices
+                .iter()
+                .all(|index| *index < candidate_count),
+            "出现越界下标"
+        );
+    }
+
+    #[test]
+    fn result_is_deterministic_for_identical_input() {
+        let build = || {
+            (0..12)
+                .map(|index| {
+                    candidate(
+                        index,
+                        index % 4 == 0,
+                        &format!("site{}.test", index % 5),
+                        (index % 7) as f64 + 1.0,
+                    )
+                })
+                .collect::<Vec<_>>()
+        };
+        let first = select_preload_candidate_group(input(build(), 5, 3)).expect("first run");
+        let second = select_preload_candidate_group(input(build(), 5, 3)).expect("second run");
+
+        assert_eq!(first.selected_indices, second.selected_indices);
+    }
+
+    // --- 槽位分配器（动态规划）---
+    //
+    // 这是 crate 里唯一的动态规划，此前零覆盖。clippy 对它有一条
+    // needless_range_loop 告警，在补上这些测试之前不要去改那个循环。
+
+    #[test]
+    fn allocator_gives_every_site_at_least_one_slot() {
+        let allocation = allocate_selected_site_page_slots(5, &[4.0, 1.0, 1.0], &[3, 3, 3])
+            .expect("allocation must succeed");
+
+        assert_eq!(allocation.iter().sum::<usize>(), 5);
+        assert!(
+            allocation.iter().all(|slots| *slots >= 1),
+            "有站点分到 0 槽位: {allocation:?}"
+        );
+    }
+
+    #[test]
+    fn allocator_favours_higher_weight_sites() {
+        let allocation = allocate_selected_site_page_slots(6, &[16.0, 1.0, 1.0], &[4, 4, 4])
+            .expect("allocation must succeed");
+
+        assert_eq!(allocation.iter().sum::<usize>(), 6);
+        assert!(
+            allocation[0] > allocation[1] && allocation[0] > allocation[2],
+            "权重最高的站点没有拿到最多槽位: {allocation:?}"
+        );
+    }
+
+    #[test]
+    fn allocator_never_exceeds_per_site_cap() {
+        let allocation = allocate_selected_site_page_slots(5, &[100.0, 1.0], &[2, 3])
+            .expect("allocation must succeed");
+
+        assert_eq!(allocation.iter().sum::<usize>(), 5);
+        assert!(allocation[0] <= 2, "突破了 cap=2: {allocation:?}");
+        assert!(allocation[1] <= 3, "突破了 cap=3: {allocation:?}");
+    }
+
+    #[test]
+    fn allocator_handles_exact_fit_without_extras() {
+        // page_slot_count == selected_count：每站恰好一个，不进入 DP。
+        let allocation = allocate_selected_site_page_slots(3, &[5.0, 3.0, 1.0], &[2, 2, 2])
+            .expect("allocation must succeed");
+
+        assert_eq!(allocation, vec![1, 1, 1]);
+    }
+
+    #[test]
+    fn allocator_rejects_impossible_inputs() {
+        // 槽位少于站点数
+        assert!(allocate_selected_site_page_slots(2, &[1.0, 1.0, 1.0], &[2, 2, 2]).is_err());
+        // 槽位超过总容量
+        assert!(allocate_selected_site_page_slots(7, &[1.0, 1.0], &[3, 3]).is_err());
+        // 非正 / 非有限权重
+        assert!(allocate_selected_site_page_slots(3, &[1.0, 0.0], &[2, 2]).is_err());
+        assert!(allocate_selected_site_page_slots(3, &[1.0, f64::NAN], &[2, 2]).is_err());
+        assert!(allocate_selected_site_page_slots(3, &[1.0, f64::INFINITY], &[2, 2]).is_err());
+        // cap 为 0
+        assert!(allocate_selected_site_page_slots(2, &[1.0, 1.0], &[2, 0]).is_err());
+    }
+
+    #[test]
+    fn allocator_output_length_matches_site_count() {
+        for site_count in 1..=5 {
+            let scores = vec![2.0; site_count];
+            let caps = vec![3; site_count];
+            let allocation = allocate_selected_site_page_slots(site_count * 2, &scores, &caps)
+                .expect("allocation must succeed");
+
+            assert_eq!(allocation.len(), site_count);
+            assert_eq!(allocation.iter().sum::<usize>(), site_count * 2);
+        }
+    }
 }

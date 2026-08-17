@@ -23,7 +23,6 @@
 
   const DEFAULT_SETTINGS = {
     version: SETTINGS_STORAGE_VERSION,
-    automaticDeviceTuning: true,
     appearance: {
       languageMode: "auto",
     },
@@ -36,7 +35,6 @@
     },
     preloading: {
       enabled: true,
-      mode: "balanced",
       nativeMaxPreloadsPerSource: 4,
       maxTabsPerSource: 1,
       siteSelectionLimit: 3,
@@ -92,14 +90,6 @@
       watchdogIntervalSeconds: 30,
       fullscreenPressurePolicy: "sleep",
       forceMinimize: true,
-      systemLevelHiding: {
-        support: {
-          windows: true,
-          mac: false,
-          linux: false,
-        },
-        usable: false,
-      },
     },
     experiments: {
       crossSiteCurrentTabSwap: false,

@@ -1,7 +1,13 @@
 use std::cell::Cell;
 use std::mem;
 
+// clippy 1.94 的 missing_const_for_thread_local 在这里是误报：初始化器**已经**是
+// `const { ... }` 形式，lint 没认出来。代码本身是对的，不为迎合 lint 去改写。
+//
+// allow 必须写在宏**内部**的 static 上：写在 `thread_local!` 调用外面会被忽略
+// （clippy 会另报一条 unused_attributes），因为诊断产生自宏展开后的条目。
 thread_local! {
+    #[allow(clippy::missing_const_for_thread_local)]
     static LAST_RESULT_LEN: Cell<usize> = const { Cell::new(0) };
 }
 

@@ -60,6 +60,13 @@
     // trusting indexes produced by another extension version.
     graphInput.version = 0;
     delete graphInput.persistenceMode;
+
+    // **归一化戳也必须清掉**，否则一份带着匹配戳的备份会直接命中 normalizeTrackingGraph
+    // 的最快路径，整体跳过重建 —— 那正是这里强制 version = 0 想要阻止的事。备份里的
+    // transitionMessageBuckets / pageTransitionMessageBuckets 是调用方提供的任意结构，
+    // 必须由本机重新构造，不能拿戳当信任凭证（戳只能证明「谁写的」，而备份文件里的
+    // 戳来自文件本身，不是本机写的）。
+    delete graphInput.normalizedBy;
     const graph = normalizeTrackingGraph(graphInput);
     globalThis.ZeroLatencyTrackingHistoryDeletion.rebuildDerivedTrackingHistoryIndexes(
       graph,

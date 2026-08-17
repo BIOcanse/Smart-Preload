@@ -59,12 +59,21 @@ function applyUpsertPageKeywordsFallback(state, event) {
     return state;
   }
 
-  state.graph.pageKeywordStore[entry.pageUrl] = entry;
-  state.graph.pageKeywordBuckets = createEmptyPageKeywordBuckets();
+  // 增量更新倒排索引：先撤销被覆盖的旧条目，再索引新条目。
+  //
+  // 此前这里丢弃整个 byKeyword 并把**整个 pageKeywordStore** 重新索引一遍，
+  // 于是写入 n 条的总代价是 O(n²)。而 pageKeywordStore 按设计无上限增长
+  // （docs/internal/invariants.md 第 7 条），平方项会随使用时长持续放大。
+  //
+  // 全量重建仍然保留在两处一次性场景：删除历史后的 rebuild、以及冷启动的 normalize。
+  const previousEntry = state.graph.pageKeywordStore[entry.pageUrl];
 
-  for (const pageKeywordEntry of Object.values(state.graph.pageKeywordStore)) {
-    indexPageKeywordEntry(state.graph, pageKeywordEntry);
+  if (previousEntry) {
+    unindexPageKeywordEntry(state.graph, previousEntry);
   }
+
+  state.graph.pageKeywordStore[entry.pageUrl] = entry;
+  indexPageKeywordEntry(state.graph, entry);
 
   state.graph.updatedAt = event.generatedAt || event.occurredAt || new Date().toISOString();
   return state;
