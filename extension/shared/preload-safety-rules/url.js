@@ -33,14 +33,28 @@
           reasons.push("download-query");
         }
 
-        if (
-          constants.SIDE_EFFECT_QUERY_VALUES.has(normalizedValue) ||
-          (normalizedKey === "action" &&
-            constants.SIDE_EFFECT_QUERY_VALUES.has(normalizedValue)) ||
-          (normalizedKey === "method" &&
-            constants.SIDE_EFFECT_QUERY_VALUES.has(normalizedValue))
-        ) {
+        if (constants.SIDE_EFFECT_QUERY_VALUES.has(normalizedValue)) {
           reasons.push("side-effect-query");
+        }
+
+        // 一次性凭据类 key：此前**只看 value 不看 key**，于是 `?token=…`、`?unsubscribe=1`
+        // 这类会被预加载消耗掉的链接全部放行。
+        if (
+          constants.SIDE_EFFECT_QUERY_KEYS.has(normalizedKey) ||
+          constants.SIDE_EFFECT_QUERY_KEY_SUFFIXES.some((suffix) =>
+            normalizedKey.endsWith(suffix)
+          )
+        ) {
+          reasons.push("side-effect-query-credential");
+        }
+
+        // 动作型 key 用更宽的动词表。此前这里的 action / method 两个子句是上面那个
+        // 「值命中即拦截」子句的严格子集，恒不可达。
+        if (
+          constants.SIDE_EFFECT_ACTION_QUERY_KEYS.has(normalizedKey) &&
+          constants.SIDE_EFFECT_ACTION_VALUES.has(normalizedValue)
+        ) {
+          reasons.push("side-effect-action-query");
         }
 
         if (normalizedValue.includes("attachment")) {
