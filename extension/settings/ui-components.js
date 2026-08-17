@@ -27,7 +27,10 @@
     const helpElement = document.createElement("span");
     helpElement.className = "settings-help";
     helpElement.tabIndex = 0;
-    helpElement.setAttribute("role", "img");
+    // role="button" 而不是 "img"：这个元素是**可聚焦**的（tooltip 由
+    // settings-items.css:99 的 `.settings-help:focus-visible` 触发，键盘用户必须能聚焦），
+    // 而 img 是非交互角色 —— 可聚焦的非交互角色会让读屏用户听到一个无法解释的停留点。
+    helpElement.setAttribute("role", "button");
     helpElement.setAttribute(
       "aria-label",
       `${labelText || translate("commonHelp", [], "Help")}: ${helpText}`

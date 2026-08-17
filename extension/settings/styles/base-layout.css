@@ -12,6 +12,13 @@
   --accent: #4f7d6e;
   --accent-soft: #eaf2ee;
   --accent-strong: #42695d;
+  /*
+    告警/失败两个语气色。色相与既有的 dialogs.css 里 #d6b469（告警描边）、
+    #b45b4f（危险按钮描边）一致，只是压暗到能当正文用：在 --surface 上的对比度
+    分别是 5.3:1 与 6.4:1，都过 WCAG AA。描边色本身当文字用只有 1.9:1，不能直接复用。
+  */
+  --warning-text: #8a6410;
+  --danger-text: #9d4033;
   --shadow: 0 12px 28px rgba(35, 48, 41, 0.07);
 }
 
@@ -75,6 +82,21 @@ body {
 .settings-item-desc {
   margin: 0;
   color: var(--muted);
+}
+
+/*
+  状态类文案的两个语气。threat-library-status.js 会往 #threat-library-status 上加
+  is-warning（快照过期）或 is-error（加载失败，此时全部预加载都被拦下）。
+  颜色不是唯一信号：文案本身已经写明了「已过去 N 天」/「加载失败」。
+*/
+.settings-item-desc.is-warning {
+  color: var(--warning-text);
+  font-weight: 600;
+}
+
+.settings-item-desc.is-error {
+  color: var(--danger-text);
+  font-weight: 600;
 }
 
 .settings-nav-list {

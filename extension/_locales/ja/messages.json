@@ -23,41 +23,14 @@
   "commonUnsaved": {
     "message": "未保存"
   },
-  "commonDownloading": {
-    "message": "ダウンロード中"
-  },
-  "commonDownloaded": {
-    "message": "ダウンロード済み"
-  },
   "commonRemoving": {
     "message": "削除中"
   },
   "commonRemoved": {
     "message": "削除済み"
   },
-  "commonOn": {
-    "message": "オン"
-  },
-  "commonOff": {
-    "message": "オフ"
-  },
   "commonUnknown": {
     "message": "不明"
-  },
-  "commonThisPlatform": {
-    "message": "このプラットフォーム"
-  },
-  "commonModel": {
-    "message": "モデル"
-  },
-  "commonDone": {
-    "message": "完了。"
-  },
-  "commonWorking": {
-    "message": "処理中..."
-  },
-  "commonDismiss": {
-    "message": "閉じる"
   },
   "commonHelp": {
     "message": "ヘルプ"
@@ -161,89 +134,20 @@
   "settingsNavAriaLabel": {
     "message": "設定セクション"
   },
-  "settingsOverview": {
-    "message": "概要"
-  },
   "settingsTracking": {
     "message": "追跡"
   },
   "settingsPreload": {
     "message": "プリロード"
   },
-  "settingsOrdering": {
-    "message": "並び順"
-  },
   "settingsExperiments": {
     "message": "実験"
-  },
-  "settingsOverviewSub": {
-    "message": "実行プロファイルと自動調整"
-  },
-  "settingsOrderingSub": {
-    "message": "簡易ランキングフィルター"
   },
   "settingsStorageFooter": {
     "message": "拡張機能のローカルストレージに保存されます。"
   },
   "settingsLoadingSettings": {
     "message": "設定を読み込み中..."
-  },
-  "settingsHeroKicker": {
-    "message": "スマートプリロード制御"
-  },
-  "settingsHeroTitle": {
-    "message": "より賢く、より積極的なプリロード"
-  },
-  "settingsHeroCopy": {
-    "message": "スマートプリロードはページ信号、最近の注目度、デバイス負荷を使って、複数のアクティブなタブにプリロード枠を配分しつつ、上限は手動で設定できます。"
-  },
-  "settingsDeviceProfile": {
-    "message": "デバイスプロファイル"
-  },
-  "settingsDetectingHardware": {
-    "message": "ハードウェアを検出中..."
-  },
-  "settingsEffectiveGroupCaps": {
-    "message": "有効なグループ上限"
-  },
-  "settingsWaitingForSettings": {
-    "message": "設定を待機中..."
-  },
-  "settingsWatchdog": {
-    "message": "ウォッチドッグ"
-  },
-  "settingsNativeApp": {
-    "message": "ローカルアプリ"
-  },
-  "settingsCheckingConnection": {
-    "message": "接続を確認中..."
-  },
-  "settingsOverviewMeta": {
-    "message": "現在の端末に対して拡張機能がどれだけ積極的に適応するかを左右する上位設定です。"
-  },
-  "settingsAutomaticDeviceTuning": {
-    "message": "自動デバイス調整"
-  },
-  "settingsAutomaticDeviceTuningDesc": {
-    "message": "将来のハードウェア対応スケジューリング用に予約されたスイッチです。現在は保存されますが、まだ実行時の挙動は変えません。"
-  },
-  "settingsPreloadMode": {
-    "message": "プリロードモード"
-  },
-  "settingsPreloadModeDesc": {
-    "message": "将来の戦略段階用に予約された選択肢です。現在は保存されますが、まだ実行時の挙動は変えません。"
-  },
-  "settingsModeConservative": {
-    "message": "控えめ"
-  },
-  "settingsModeBalanced": {
-    "message": "バランス"
-  },
-  "settingsModeAggressive": {
-    "message": "積極的"
-  },
-  "settingsTrackingMeta": {
-    "message": "ナビゲーションノードを正規化して有向グラフに追加する方法を制御します。"
   },
   "settingsSeparateGoogleSearchPages": {
     "message": "Google検索ページを分離"
@@ -274,9 +178,6 @@
   },
   "settingsSkipPrivateNetworkPagesDesc": {
     "message": "10.0.0.0/8、172.16.0.0/12、192.168.0.0/16、169.254.0.0/16、fc00::/7、fe80::/10 などのプライベートネットワークページを追跡またはプリロードしません。"
-  },
-  "settingsPreloadMeta": {
-    "message": "タブのプリロード、ウォッチドッグ修復、プリロードウィンドウの動作を制御します。"
   },
   "settingsEnablePreloading": {
     "message": "プリロードを有効化"
@@ -434,9 +335,6 @@
   "settingsSchedulerHalfLifeTabsDesc": {
     "message": "タブ数がこの数だけ増えるたびに、動的な総上限は最大値へさらに半分近づきます。値が小さいほど、タブ数増加時の上限の伸びが速くなります。"
   },
-  "settingsSchedulerPoolHours": {
-    "message": "プール時間"
-  },
   "settingsSchedulerSegmentSeconds": {
     "message": "セグメント秒数"
   },
@@ -458,12 +356,21 @@
   "settingsAiPredictionAssistantDesc": {
     "message": "キーワードスコアリングに使う外部AIプロバイダーとモデルを選択します。拡張機能はAPIキーを直接使用し、ローカルモデルのダウンロードや管理は行いません。"
   },
+  "settingsAiPredictionPrivacyNotice": {
+    "message": "外部プロバイダーを選択すると、拡張機能はページの URL、タイトル、本文の先頭 2,200 文字までと、同じウィンドウで開いている他のタブのコンテキストをそのプロバイダーに送信します。ページの内容を外部企業に送信したくない場合は、LM Studio などのローカルエンドポイントを使用するか、この設定を無効のままにしてください。"
+  },
   "settingsAiModelSelectionAdvice": {
     "message": "既定では最新の推奨モデルセットを表示します。特定のモデルが必要な場合はすべてのモデルに切り替え、可能な限り高速で低コストのテキストまたはチャットモデルを選択してください。"
   },
-  "settingsAiModelListModeRecommended": { "message": "最新の推奨モデル" },
-  "settingsAiModelListModeAll": { "message": "すべてのモデル" },
-  "settingsAiModelListRecommendedTitle": { "message": "読み込んだ {1} 個のモデルから最新の推奨モデル {0} 個を表示しています。すべての候補を見るには、すべてのモデルに切り替えてください。" },
+  "settingsAiModelListModeRecommended": {
+    "message": "最新の推奨モデル"
+  },
+  "settingsAiModelListModeAll": {
+    "message": "すべてのモデル"
+  },
+  "settingsAiModelListRecommendedTitle": {
+    "message": "読み込んだ {1} 個のモデルから最新の推奨モデル {0} 個を表示しています。すべての候補を見るには、すべてのモデルに切り替えてください。"
+  },
   "settingsAiProviderApiKey": {
     "message": "プロバイダーAPIキー"
   },
@@ -488,25 +395,18 @@
   "settingsWatchdogIntervalDesc": {
     "message": "拡張機能がプリロードウィンドウの存在を確認する頻度です。"
   },
-  "settingsWatchdogIntervalOption1": {
-    "message": "1 秒"
+  "settingsWatchdogIntervalOption30": {
+    "message": "30秒"
   },
-  "settingsWatchdogIntervalOption2": {
-    "message": "2 秒"
+  "settingsWatchdogIntervalOption60": {
+    "message": "1分"
   },
-  "settingsWatchdogIntervalOption3": {
-    "message": "3 秒"
+  "settingsWatchdogIntervalOption120": {
+    "message": "2分"
   },
-  "settingsWatchdogIntervalOption5": {
-    "message": "5 秒"
+  "settingsWatchdogIntervalOption300": {
+    "message": "5分"
   },
-  "settingsWatchdogIntervalOption10": {
-    "message": "10 秒"
-  },
-  "settingsWatchdogIntervalOption30": { "message": "30秒" },
-  "settingsWatchdogIntervalOption60": { "message": "1分" },
-  "settingsWatchdogIntervalOption120": { "message": "2分" },
-  "settingsWatchdogIntervalOption300": { "message": "5分" },
   "settingsFullscreenPressurePolicy": {
     "message": "全画面/ゲーム時のバックグラウンドタブポリシー"
   },
@@ -522,23 +422,11 @@
   "settingsFullscreenPressurePolicyIgnore": {
     "message": "何もしない"
   },
-  "settingsSecond": {
-    "message": "{0} 秒"
-  },
-  "settingsSeconds": {
-    "message": "{0} 秒"
-  },
   "settingsForceMinimize": {
     "message": "プリロードウィンドウを強制最小化"
   },
   "settingsForceMinimizeDesc": {
     "message": "復元またはサイズ変更された場合、プリロードウィンドウをすぐに再度最小化します。"
-  },
-  "settingsOrderingMeta": {
-    "message": "固定のランキングフィルターにより、最初のバージョンの挙動を予測しやすくします。保存済みルールの形を変えずに、後から高度なプログラム可能フィルターチェーンを追加できます。"
-  },
-  "settingsExperimentsMeta": {
-    "message": "リスクの高いライブスイッチはここにあります。プレースホルダースイッチもここに保存されますが、実行時動作に接続されるまでは保存のみです。"
   },
   "settingsCrossSiteCurrentTabSwap": {
     "message": "クロスサイト現在タブのハード置換"
@@ -573,17 +461,11 @@
   "settingsSaveSettings": {
     "message": "設定を保存"
   },
-  "settingsAiModelTask": {
-    "message": "AI モデルタスク"
-  },
   "settingsReadingLocalSettings": {
     "message": "ローカル拡張機能設定を読み込んでいます。"
   },
   "settingsCouldNotLoad": {
     "message": "ストレージから設定を読み込めませんでした。"
-  },
-  "settingsCouldNotLoadAiStatus": {
-    "message": "AI モデルの状態を読み込めませんでした。"
   },
   "settingsDefaultsRestored": {
     "message": "フォームに既定値を復元しました。適用するには保存してください。"
@@ -600,81 +482,6 @@
   "settingsCouldNotSave": {
     "message": "設定を保存できませんでした。"
   },
-  "settingsPreparingRuntime": {
-    "message": "必要に応じてポータブルランタイムを準備しています。"
-  },
-  "settingsRemovingSelectedModel": {
-    "message": "選択したモデルを削除しています。"
-  },
-  "settingsInstallingModel": {
-    "message": "必要に応じてランタイムをインストールし、選択したモデルをダウンロードしています。"
-  },
-  "settingsRemovingModelAndRuntime": {
-    "message": "選択したモデルを削除し、未使用ならポータブルランタイムも整理しています。"
-  },
-  "settingsAiModelActionFailed": {
-    "message": "AI モデル操作に失敗しました。"
-  },
-  "settingsModelStateUpdatedDirty": {
-    "message": "モデル状態を更新しました。他の未保存の変更がまだ残っています。"
-  },
-  "settingsPortableModelUpdated": {
-    "message": "ポータブルランタイムとモデル状態を更新しました。"
-  },
-  "settingsModelDownloaded": {
-    "message": "モデルをダウンロードしました。"
-  },
-  "settingsModelRemoved": {
-    "message": "モデルを削除しました。"
-  },
-  "settingsCouldNotUpdateModel": {
-    "message": "選択したモデルを更新できませんでした。"
-  },
-  "settingsHardwareMeta": {
-    "message": "{0} コア | メモリ目安 {1} GB"
-  },
-  "settingsEffectivePreloadMeta": {
-    "message": "ネイティブ / タブのスロット上限。ルールは {0} を使用します。"
-  },
-  "settingsWatchdogChecksEvery": {
-    "message": "{0} 秒ごとに確認します。"
-  },
-  "settingsWindowRepairDisabled": {
-    "message": "ウィンドウ修復は無効です。"
-  },
-  "settingsSystemHidingUnsupported": {
-    "message": "{0} ではシステムレベルの非表示に対応していません。"
-  },
-  "settingsSystemHidingActive": {
-    "message": "システムレベルのウィンドウ非表示が有効です。"
-  },
-  "settingsNativeAppOffline": {
-    "message": "ローカルアプリを検出できません。最小化フォールバックを使用します。"
-  },
-  "settingsConnected": {
-    "message": "接続済み"
-  },
-  "settingsOffline": {
-    "message": "オフライン"
-  },
-  "settingsInstallingModelLabel": {
-    "message": "{0} をインストール中"
-  },
-  "settingsRemovingModelLabel": {
-    "message": "{0} を削除中"
-  },
-  "settingsModelReady": {
-    "message": "モデル準備完了"
-  },
-  "settingsUninstallFailed": {
-    "message": "アンインストールに失敗しました"
-  },
-  "settingsInstallFailed": {
-    "message": "インストールに失敗しました"
-  },
-  "settingsTaskDidNotFinish": {
-    "message": "タスクが完了しませんでした。"
-  },
   "settingsAiProviderMissingWarning": {
     "message": "{0} にモデル、エンドポイント、APIキーが設定されるまでAIスコアリングは無効です。"
   },
@@ -684,23 +491,14 @@
   "settingsAiLmStudioKeyIgnoredPlaceholder": {
     "message": "LM Studio では無視されます"
   },
-  "settingsAiLmStudioLoadingModel": {
-    "message": "LM Studio モデルを読み込み中: {0}"
-  },
   "settingsAiKeyRequiredPlaceholder": {
     "message": "必須"
   },
   "settingsAiEnterKeyToLoadModels": {
     "message": "モデルを読み込むにはAPIキーを入力してください"
   },
-  "settingsAiLoadingModels": {
-    "message": "モデルを読み込み中..."
-  },
   "settingsAiSelectProviderFirst": {
     "message": "先にプロバイダーを選択してください"
-  },
-  "settingsAiNoSupportedModels": {
-    "message": "モデルが見つかりません"
   },
   "settingsAiLoadingModelsGeneric": {
     "message": "モデルを読み込み中..."
@@ -830,18 +628,6 @@
   },
   "ruleGoogleBookmarkRankDesc": {
     "message": "Google 検索ページでのみ適用されます。有効にすると、Chrome ブックマークはこの順位ルールにより独立した常駐プリロード対象として保持されます。"
-  },
-  "deviceProfileBalanced": {
-    "message": "バランス"
-  },
-  "deviceProfileHighEnd": {
-    "message": "ハイエンド"
-  },
-  "deviceProfileStrong": {
-    "message": "高性能"
-  },
-  "deviceProfileConstrained": {
-    "message": "制約あり"
   },
   "settingsDiagnosticsLogging": {
     "message": "ログモード"
@@ -993,29 +779,115 @@
   "realPreloadRecommendedWarning": {
     "message": "Real Preload は利用でき、この PC では有効化を推奨できます。体感遅延をゼロに近づけられますが、メモリを大量に使うため、過度に強い設定は避けてください。"
   },
-  "commonExporting": { "message": "エクスポート中" },
-  "commonExported": { "message": "エクスポート完了" },
-  "commonImporting": { "message": "インポート中" },
-  "commonImported": { "message": "インポート完了" },
-  "settingsHistoryTransferTitle": { "message": "履歴のインポートとエクスポート" },
-  "settingsHistoryTransferDesc": { "message": "ローカルの訪問グラフ履歴全体を JSON バックアップに書き出すか、互換性のあるバックアップで置き換えます。設定、API キー、現在のタブの実行状態は移行されません。" },
-  "settingsHistoryImportButton": { "message": "履歴をインポート" },
-  "settingsHistoryExportButton": { "message": "履歴をエクスポート" },
-  "settingsHistoryExportWarningTitle": { "message": "エクスポート前にプライバシーをご確認ください" },
-  "settingsHistoryExportWarningMessage": { "message": "バックアップには、訪問先のアドレス、ページタイトル、キーワード、遷移関係、利用統計が含まれる場合があります。" },
-  "settingsHistoryExportWarningDetail": { "message": "安易に共有しないでください。ファイルの共有によって個人情報が漏えいした場合、その責任は利用者が負います。" },
-  "settingsHistoryExportContinue": { "message": "保存先を選択" },
-  "settingsHistoryExportPreparing": { "message": "履歴バックアップを準備しています..." },
-  "settingsHistoryExportSucceeded": { "message": "履歴を {0} にエクスポートしました。" },
-  "settingsHistorySavePickerUnavailable": { "message": "このブラウザーでは、設定ページから保存先を選択できません。" },
-  "settingsHistoryExportFailed": { "message": "履歴をエクスポートできませんでした。" },
-  "settingsHistoryImportValidating": { "message": "履歴バックアップを検証しています..." },
-  "settingsHistoryImportConfirmTitle": { "message": "既存の履歴を置き換えますか？" },
-  "settingsHistoryImportConfirmMessage": { "message": "このファイルをインポートすると、現在の履歴記録がすべて置き換えられます。この操作は元に戻せません。" },
-  "settingsHistoryImportConfirm": { "message": "置き換えてインポート" },
-  "settingsHistoryImportCancelled": { "message": "インポートをキャンセルしました。既存の履歴は変更されていません。" },
-  "settingsHistoryImportSummary": { "message": "バックアップ日時：{0}。遷移 {1} 件、サイト {2} 件、キーワード記録 {3} 件。" },
-  "settingsHistoryImporting": { "message": "履歴記録を置き換えています..." },
-  "settingsHistoryImportSucceeded": { "message": "遷移記録 {0} 件をインポートしました。" },
-  "settingsHistoryImportFailed": { "message": "選択したファイルは有効な Smart Preload 履歴バックアップではないか、インポートできませんでした。" }
+  "commonExporting": {
+    "message": "エクスポート中"
+  },
+  "commonExported": {
+    "message": "エクスポート完了"
+  },
+  "commonImporting": {
+    "message": "インポート中"
+  },
+  "commonImported": {
+    "message": "インポート完了"
+  },
+  "settingsHistoryTransferTitle": {
+    "message": "履歴のインポートとエクスポート"
+  },
+  "settingsHistoryTransferDesc": {
+    "message": "ローカルの訪問グラフ履歴全体を JSON バックアップに書き出すか、互換性のあるバックアップで置き換えます。設定、API キー、現在のタブの実行状態は移行されません。"
+  },
+  "settingsHistoryImportButton": {
+    "message": "履歴をインポート"
+  },
+  "settingsHistoryExportButton": {
+    "message": "履歴をエクスポート"
+  },
+  "settingsHistoryExportWarningTitle": {
+    "message": "エクスポート前にプライバシーをご確認ください"
+  },
+  "settingsHistoryExportWarningMessage": {
+    "message": "バックアップには、訪問先のアドレス、ページタイトル、キーワード、遷移関係、利用統計が含まれる場合があります。"
+  },
+  "settingsHistoryExportWarningDetail": {
+    "message": "安易に共有しないでください。ファイルの共有によって個人情報が漏えいした場合、その責任は利用者が負います。"
+  },
+  "settingsHistoryExportContinue": {
+    "message": "保存先を選択"
+  },
+  "settingsHistoryExportPreparing": {
+    "message": "履歴バックアップを準備しています..."
+  },
+  "settingsHistoryExportSucceeded": {
+    "message": "履歴を {0} にエクスポートしました。"
+  },
+  "settingsHistorySavePickerUnavailable": {
+    "message": "このブラウザーでは、設定ページから保存先を選択できません。"
+  },
+  "settingsHistoryExportFailed": {
+    "message": "履歴をエクスポートできませんでした。"
+  },
+  "settingsHistoryImportValidating": {
+    "message": "履歴バックアップを検証しています..."
+  },
+  "settingsHistoryImportConfirmTitle": {
+    "message": "既存の履歴を置き換えますか？"
+  },
+  "settingsHistoryImportConfirmMessage": {
+    "message": "このファイルをインポートすると、現在の履歴記録がすべて置き換えられます。この操作は元に戻せません。"
+  },
+  "settingsHistoryImportConfirm": {
+    "message": "置き換えてインポート"
+  },
+  "settingsHistoryImportCancelled": {
+    "message": "インポートをキャンセルしました。既存の履歴は変更されていません。"
+  },
+  "settingsHistoryImportSummary": {
+    "message": "バックアップ日時：{0}。遷移 {1} 件、サイト {2} 件、キーワード記録 {3} 件。"
+  },
+  "settingsHistoryImporting": {
+    "message": "履歴記録を置き換えています..."
+  },
+  "settingsHistoryImportSucceeded": {
+    "message": "遷移記録 {0} 件をインポートしました。"
+  },
+  "settingsHistoryImportFailed": {
+    "message": "選択したファイルは有効な Smart Preload 履歴バックアップではないか、インポートできませんでした。"
+  },
+  "settingsNativeAppVersion": {
+    "message": "ネイティブアプリのバージョン"
+  },
+  "settingsProxySkipMode": {
+    "message": "プロキシ除外リストのモード"
+  },
+  "settingsAiModelListMode": {
+    "message": "AI モデル一覧の表示モード"
+  },
+  "settingsAiPredictionModel": {
+    "message": "AI 予測モデル"
+  },
+  "settingsChangedElsewhere": {
+    "message": "設定が他の場所で変更されました。保存するとその変更を上書きします。"
+  },
+  "settingsReloadedFromStorage": {
+    "message": "他の場所で変更された設定を再読み込みしました。"
+  },
+  "settingsThreatLibrary": {
+    "message": "ローカル脅威データベース"
+  },
+  "settingsThreatLibraryDesc": {
+    "message": "拡張機能に同梱された既知の悪意あるサイトのスナップショット。利用できない間はプリロードを停止します。"
+  },
+  "settingsThreatLibraryLoading": {
+    "message": "確認中…"
+  },
+  "settingsThreatLibraryReady": {
+    "message": "スナップショット {0} · {1}"
+  },
+  "settingsThreatLibraryStale": {
+    "message": "{0} 日前"
+  },
+  "settingsThreatLibraryFailed": {
+    "message": "読み込みに失敗しました。読み込まれるまでプリロードは停止されます。"
+  }
 }

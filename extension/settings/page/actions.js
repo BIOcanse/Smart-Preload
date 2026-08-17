@@ -37,6 +37,11 @@
           isRealPreloadEnabled: () => context.formElements.realPreloadEnabled.checked === true,
         });
       }
+      // 威胁库状态与平台无关：库是打包内资源，移动端同样会读它，也同样 fail-closed。
+      globalThis.ZeroLatencySettingsThreatLibraryStatus?.initializeThreatLibraryStatus?.({
+        translate: context.t,
+      });
+      bindExternalSettingsChangeListener(context);
       context.statusBar.setStatus(
         context.t("commonReady", [], "Ready"),
         context.t("settingsNoUnsavedChanges", [], "No unsaved changes.")
@@ -48,6 +53,59 @@
         context.t("settingsCouldNotLoad", [], "Could not load settings from storage.")
       );
     }
+  }
+
+  // 设置页此前**没有** chrome.storage.onChanged 监听（全扩展唯一一个在
+  // service-worker.js:66），而保存是整对象盲写。于是：开着两个设置页、在第二个里改完保存，
+  // 第一个仍显示旧值，它一保存就把第二个的改动整体覆盖掉；service worker 冷启动时
+  // bootstrap 也会写同一个 key（storage/bootstrap.js:84，写的是迁移后的规范化结果）。
+  //
+  // 处理方式按「有没有未保存改动」分两支，不做隐式覆盖：
+  //   - 无未保存改动：直接采用外部的新值并重渲染，页面始终反映真实存储。
+  //   - 有未保存改动：**绝不**动用户的草稿，只在状态栏提示存储已被别处修改，
+  //     由用户决定是继续保存（覆盖）还是放弃。
+  function bindExternalSettingsChangeListener(context) {
+    const settingsKey = context.settingsApi.SETTINGS_STORAGE_KEY;
+
+    if (!settingsKey || typeof chrome?.storage?.onChanged?.addListener !== "function") {
+      return;
+    }
+
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName !== "local" || !changes[settingsKey]) {
+        return;
+      }
+
+      const nextSettings = context.settingsApi.normalizeStoredSettings(
+        changes[settingsKey].newValue
+      );
+
+      // 本页自己刚写的那次也会回调进来，值相同则无事发生。
+      if (
+        JSON.stringify(nextSettings) === JSON.stringify(context.getSavedSettings())
+      ) {
+        return;
+      }
+
+      if (context.statusBar.isDirty()) {
+        context.statusBar.setDirtyStatus(
+          context.t(
+            "settingsChangedElsewhere",
+            [],
+            "Settings were changed elsewhere. Saving will overwrite those changes."
+          )
+        );
+        return;
+      }
+
+      context.setSavedSettings(nextSettings);
+      context.setDraftSettings(context.settingsApi.cloneSettings(nextSettings));
+      renderSettingsPageForm(context, context.getDraftSettings());
+      context.statusBar.setStatus(
+        context.t("commonReady", [], "Ready"),
+        context.t("settingsReloadedFromStorage", [], "Reloaded settings changed elsewhere.")
+      );
+    });
   }
 
   function createSettingsPageActions(context) {

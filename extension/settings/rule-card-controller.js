@@ -30,6 +30,20 @@
       renderRuleCardList(containers?.tracking, trackingCardIds, settings);
     }
 
+    function restoreRuleCardFocus(cardId, fieldKey) {
+      const selector =
+        `[data-card-id="${CSS.escape(cardId)}"][data-field-key="${CSS.escape(fieldKey)}"]`;
+
+      for (const container of [containers?.preload, containers?.tracking]) {
+        const control = container?.querySelector?.(selector);
+
+        if (control && !control.disabled) {
+          control.focus();
+          return;
+        }
+      }
+    }
+
     function renderRuleCardList(container, cardIds, settings) {
       renderer.renderRuleCardList({
         container,
@@ -128,7 +142,16 @@
       }
 
       if (fieldSchema.type === "select") {
+        // 重渲染会销毁刚刚触发 change 的那个 <select>（renderRuleCardList 以
+        // `container.textContent = ""` 开头），焦点因此掉回 <body>。
+        //
+        // 而 Windows 上原生 <select> **每按一次方向键就触发一次 change**，所以键盘用户
+        // 在第一次按键时就被打断，列表里靠后的选项（如 gte）根本够不到。
+        //
+        // 必须重渲染：切换运算符会改变哪些字段可用。所以改为渲染后把焦点还回去 ——
+        // 每个控件都带 data-card-id / data-field-key，可以在新 DOM 里精确定位。
         renderRuleCards(nextSettings);
+        restoreRuleCardFocus(cardId, fieldKey);
       }
 
       if (statusBar.isDirty()) {

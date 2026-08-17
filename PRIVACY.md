@@ -1,6 +1,6 @@
 # Smart Preload Privacy Policy
 
-Last updated: June 23, 2026
+Last updated: July 31, 2026
 
 English | [简体中文](PRIVACY.zh-CN.md) | [繁體中文](PRIVACY.zh-TW.md) | [日本語](PRIVACY.ja.md) | [한국어](PRIVACY.ko.md) | [Deutsch](PRIVACY.de.md) | [Français](PRIVACY.fr.md) | [Español](PRIVACY.es.md) | [Português (Brasil)](PRIVACY.pt-BR.md) | [Русский](PRIVACY.ru.md)
 
@@ -17,6 +17,7 @@ Smart Preload may process and store the following data locally:
 - Tab, window, preload, and prefetch state needed to manage prepared pages.
 - Interaction signals such as link hover, context-menu preload intent, foreground tab activity, recent active time, and media/activity state used by scheduling.
 - Bookmark titles and URLs when bookmark-based preload features are enabled.
+- When AI prediction is enabled, a short text excerpt of pages you view (up to 2,200 characters), stored for up to 180 days and used for keyword and relevance scoring. These excerpts are included in history backups you export from the settings page.
 - Extension settings, preload limits, safety settings, local history statistics, API provider settings, and diagnostic logs when diagnostics are enabled.
 
 This local data is used only to provide Smart Preload features: prediction, ranking, preload scheduling, safety filtering, local history deletion, diagnostics, and optional AI-assisted scoring.
@@ -27,9 +28,13 @@ Smart Preload does not send browsing history or preload history to the developer
 
 Data may leave your device only in these cases:
 
-- If you enable an external AI provider and enter an API key or endpoint, the extension may send the selected page/link context needed for keyword or relevance scoring to that provider. The provider's own privacy policy applies to those requests.
-- If you use a local AI endpoint such as LM Studio, requests are sent to the endpoint you configured.
-- If you check for or download native app updates, the extension or the Windows companion app may contact GitHub release pages or GitHub-hosted files.
+- If you enable an external AI provider and enter an API key or endpoint, the extension sends page context to that provider for keyword and relevance scoring. This context includes:
+  - the full URL, title, and up to the first 2,200 characters of the visible text of the page you are viewing;
+  - for relevance scoring, the URL, title, and text excerpt of other tabs open in the same window (up to 8), and of recently viewed and stored history pages (up to 5 each).
+
+  AI prediction is off by default and only runs after you select a provider and enter an API key. The provider's own privacy policy applies to those requests. **If you do not want page content sent to an external company, use a local AI endpoint (see below) or leave AI prediction disabled.**
+- If you use a local AI endpoint such as LM Studio, the same context is sent only to the endpoint you configured on your own machine, and does not reach a third-party company.
+- If the Windows companion app is running, the extension contacts the GitHub Releases API when you open the extension settings page, in order to show whether a companion app update is available. It also contacts GitHub release pages or GitHub-hosted files when you download an update.
 - When you actually visit a page, or when a preload feature loads a page in the browser, normal browser networking occurs. The destination website may receive ordinary requests, cookies, and session information just as it would during a normal page load.
 
 ## Optional Windows companion app

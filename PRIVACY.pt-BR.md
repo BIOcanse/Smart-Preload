@@ -1,6 +1,6 @@
 # Política de Privacidade do Smart Preload
 
-Última atualização: 23 de junho de 2026
+Última atualização: 31 de julho de 2026
 
 [English](PRIVACY.md) | [简体中文](PRIVACY.zh-CN.md) | [繁體中文](PRIVACY.zh-TW.md) | [日本語](PRIVACY.ja.md) | [한국어](PRIVACY.ko.md) | [Deutsch](PRIVACY.de.md) | [Français](PRIVACY.fr.md) | [Español](PRIVACY.es.md) | Português (Brasil) | [Русский](PRIVACY.ru.md)
 
@@ -17,6 +17,7 @@ O Smart Preload pode processar e armazenar localmente os seguintes dados:
 - Estado de abas, janelas, pré-carregamento e prefetch necessário para gerenciar páginas preparadas.
 - Sinais de interação, como hover em links, intenção de pré-carregamento pelo menu de contexto, atividade da aba em primeiro plano, tempo ativo recente e estado de mídia/atividade usado pelo agendamento.
 - Títulos e URLs de favoritos quando os recursos de pré-carregamento baseados em favoritos estão ativados.
+- Quando a previsão AI está ativada, um breve trecho do texto das páginas que você visita (até 2.200 caracteres). Ele é usado para pontuação por palavras-chave e relevância e é mantido por até 180 dias. Esses trechos também são incluídos nos backups de histórico que você exporta na página de configurações.
 - Configurações da extensão, limites de pré-carregamento, configurações de segurança, estatísticas de histórico local, configurações de provedor AI e logs de diagnóstico quando os diagnósticos estão ativados.
 
 Esses dados locais são usados apenas para fornecer os recursos do Smart Preload: previsão, classificação, agendamento de pré-carregamento, filtragem de segurança, exclusão de histórico local, diagnósticos e pontuação assistida por AI opcional.
@@ -27,9 +28,13 @@ O Smart Preload não envia histórico de navegação nem histórico de pré-carr
 
 Os dados podem sair do seu dispositivo apenas nestes casos:
 
-- Se você ativar um provedor AI externo e inserir uma API key ou endpoint, a extensão poderá enviar a esse provedor o contexto selecionado de página/link necessário para pontuação por palavras-chave ou relevância. A política de privacidade desse provedor se aplica a essas solicitações.
-- Se você usar um endpoint AI local, como LM Studio, as solicitações serão enviadas ao endpoint configurado por você.
-- Se você verificar ou baixar atualizações do aplicativo nativo, a extensão ou o aplicativo complementar para Windows poderá acessar páginas de GitHub releases ou arquivos hospedados pelo GitHub.
+- Se você ativar um provedor AI externo e inserir uma API key ou endpoint, a extensão envia a esse provedor o contexto da página para pontuação por palavras-chave e relevância. Esse contexto inclui:
+  - a URL completa, o título e até os primeiros 2.200 caracteres do texto visível da página que você está vendo;
+  - para pontuação de relevância, a URL, o título e um trecho de texto de outras abas abertas na mesma janela (até 8) e de páginas vistas recentemente e páginas de histórico armazenadas (até 5 de cada).
+
+  A previsão AI vem desativada por padrão e só é executada depois que você seleciona um provedor e insere uma API key. A política de privacidade desse provedor se aplica a essas solicitações. **Se você não quiser que o conteúdo das páginas seja enviado a uma empresa externa, use um endpoint AI local (veja abaixo) ou mantenha a previsão AI desativada.**
+- Se você usar um endpoint AI local, como LM Studio, o mesmo contexto é enviado apenas ao endpoint que você configurou na sua própria máquina e não chega a nenhuma empresa terceira.
+- Se o aplicativo complementar para Windows estiver em execução, a extensão acessa a API de GitHub Releases toda vez que você abre a página de configurações da extensão, para mostrar se há uma atualização do aplicativo complementar disponível. Ela também acessa páginas de GitHub releases ou arquivos hospedados pelo GitHub quando você baixa uma atualização.
 - Quando você realmente visita uma página, ou quando um recurso de pré-carregamento carrega uma página no navegador, ocorre a comunicação normal de rede do navegador. O site de destino pode receber solicitações, cookies e informações de sessão comuns, como em um carregamento normal de página.
 
 ## Aplicativo complementar opcional para Windows

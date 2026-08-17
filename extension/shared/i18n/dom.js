@@ -33,8 +33,21 @@
 
     for (const element of elements) {
       const key = element.getAttribute(attributeName);
+      const explicitFallback = element.getAttribute(`${attributeName}-fallback`);
+      // 首次应用时把**原始**文本冻结进一个属性。
+      //
+      // 此前 fallback 直接取 element.textContent —— 而 applyDocument() 跑过一次之后，
+      // textContent 已经是上一次的译文。于是切换语言时，「fallback」变成了**上一个语言**
+      // 的文本，而不是原始英文。当前潜伏（366 个 key 十种语言齐全，locale-key-alignment
+      // 测试保证），一旦某个 key 只加进 en 就会显现。
+      const frozenFallbackAttribute = `${attributeName}-original`;
+
+      if (explicitFallback === null && !element.hasAttribute(frozenFallbackAttribute)) {
+        element.setAttribute(frozenFallbackAttribute, element.textContent || "");
+      }
+
       const fallback =
-        element.getAttribute(`${attributeName}-fallback`) || element.textContent || "";
+        explicitFallback ?? element.getAttribute(frozenFallbackAttribute) ?? "";
       const value = translate(key, [], fallback);
 
       if (value) {

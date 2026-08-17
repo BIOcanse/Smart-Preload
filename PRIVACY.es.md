@@ -1,6 +1,6 @@
 # Política de privacidad de Smart Preload
 
-Última actualización: 23 de junio de 2026
+Última actualización: 31 de julio de 2026
 
 [English](PRIVACY.md) | [简体中文](PRIVACY.zh-CN.md) | [繁體中文](PRIVACY.zh-TW.md) | [日本語](PRIVACY.ja.md) | [한국어](PRIVACY.ko.md) | [Deutsch](PRIVACY.de.md) | [Français](PRIVACY.fr.md) | Español | [Português (Brasil)](PRIVACY.pt-BR.md) | [Русский](PRIVACY.ru.md)
 
@@ -17,6 +17,7 @@ Smart Preload puede procesar y almacenar localmente los siguientes datos:
 - Estado de pestañas, ventanas, precargas y prefetch necesario para gestionar páginas preparadas.
 - Señales de interacción como hover sobre enlaces, intención de precarga desde el menú contextual, actividad de la pestaña en primer plano, tiempo activo reciente y estado de medios/actividad usado por la planificación.
 - Títulos y URL de marcadores cuando las funciones de precarga basadas en marcadores están habilitadas.
+- Cuando la predicción AI está habilitada, un breve extracto del texto de las páginas que visitas (hasta 2.200 caracteres). Se usa para la puntuación de palabras clave y relevancia y se conserva hasta 180 días. Estos extractos también se incluyen en las copias de seguridad de historial que exportas desde la página de ajustes.
 - Configuración de la extensión, límites de precarga, ajustes de seguridad, estadísticas locales de historial, ajustes del proveedor AI y registros de diagnóstico cuando los diagnósticos están habilitados.
 
 Estos datos locales se usan solo para proporcionar funciones de Smart Preload: predicción, clasificación, planificación de precarga, filtrado de seguridad, eliminación de historial local, diagnóstico y puntuación asistida por AI opcional.
@@ -27,9 +28,13 @@ Smart Preload no envía el historial de navegación ni el historial de precarga 
 
 Los datos pueden salir de tu dispositivo solo en estos casos:
 
-- Si habilitas un proveedor AI externo e introduces una API key o endpoint, la extensión puede enviar a ese proveedor el contexto seleccionado de página/enlace necesario para la puntuación de palabras clave o relevancia. La política de privacidad de ese proveedor se aplica a esas solicitudes.
-- Si usas un endpoint AI local como LM Studio, las solicitudes se envían al endpoint que configuraste.
-- Si compruebas o descargas actualizaciones de la aplicación nativa, la extensión o la aplicación complementaria de Windows puede contactar páginas de GitHub releases o archivos alojados en GitHub.
+- Si habilitas un proveedor AI externo e introduces una API key o endpoint, la extensión envía a ese proveedor contexto de la página para la puntuación de palabras clave y relevancia. Ese contexto incluye:
+  - la URL completa, el título y hasta los primeros 2.200 caracteres del texto visible de la página que estás viendo;
+  - para la puntuación de relevancia, la URL, el título y un extracto de texto de otras pestañas abiertas en la misma ventana (hasta 8) y de páginas vistas recientemente y páginas de historial almacenadas (hasta 5 de cada una).
+
+  La predicción AI está desactivada de forma predeterminada y solo se ejecuta después de que selecciones un proveedor e introduzcas una API key. La política de privacidad de ese proveedor se aplica a esas solicitudes. **Si no quieres que el contenido de las páginas se envíe a una empresa externa, usa un endpoint AI local (ver abajo) o deja la predicción AI desactivada.**
+- Si usas un endpoint AI local como LM Studio, el mismo contexto se envía únicamente al endpoint que configuraste en tu propia máquina y no llega a ninguna empresa externa.
+- Si la aplicación complementaria de Windows está en ejecución, la extensión contacta la API de GitHub Releases cada vez que abres la página de ajustes de la extensión, para mostrar si hay una actualización disponible de la aplicación complementaria. También contacta páginas de GitHub releases o archivos alojados en GitHub cuando descargas una actualización.
 - Cuando visitas realmente una página, o cuando una función de precarga carga una página en el navegador, ocurre la comunicación de red normal del navegador. El sitio de destino puede recibir solicitudes, cookies e información de sesión ordinarias, como en una carga normal de página.
 
 ## Aplicación complementaria opcional para Windows

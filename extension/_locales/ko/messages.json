@@ -23,41 +23,14 @@
   "commonUnsaved": {
     "message": "저장되지 않음"
   },
-  "commonDownloading": {
-    "message": "다운로드 중"
-  },
-  "commonDownloaded": {
-    "message": "다운로드됨"
-  },
   "commonRemoving": {
     "message": "제거 중"
   },
   "commonRemoved": {
     "message": "제거됨"
   },
-  "commonOn": {
-    "message": "켜짐"
-  },
-  "commonOff": {
-    "message": "꺼짐"
-  },
   "commonUnknown": {
     "message": "알 수 없음"
-  },
-  "commonThisPlatform": {
-    "message": "이 플랫폼"
-  },
-  "commonModel": {
-    "message": "모델"
-  },
-  "commonDone": {
-    "message": "완료."
-  },
-  "commonWorking": {
-    "message": "작업 중..."
-  },
-  "commonDismiss": {
-    "message": "닫기"
   },
   "commonHelp": {
     "message": "도움말"
@@ -161,89 +134,20 @@
   "settingsNavAriaLabel": {
     "message": "설정 섹션"
   },
-  "settingsOverview": {
-    "message": "개요"
-  },
   "settingsTracking": {
     "message": "추적"
   },
   "settingsPreload": {
     "message": "프리로드"
   },
-  "settingsOrdering": {
-    "message": "정렬"
-  },
   "settingsExperiments": {
     "message": "실험"
-  },
-  "settingsOverviewSub": {
-    "message": "런타임 프로필 및 자동 조정"
-  },
-  "settingsOrderingSub": {
-    "message": "간단한 순위 필터"
   },
   "settingsStorageFooter": {
     "message": "로컬 확장 프로그램 저장소에 저장됩니다."
   },
   "settingsLoadingSettings": {
     "message": "설정 로드 중..."
-  },
-  "settingsHeroKicker": {
-    "message": "스마트 프리로드 제어"
-  },
-  "settingsHeroTitle": {
-    "message": "더 스마트하고 더 적극적인 프리로드"
-  },
-  "settingsHeroCopy": {
-    "message": "스마트 프리로드는 페이지 신호, 최근 주목도, 장치 부담을 바탕으로 여러 활성 탭에 프리로드 슬롯을 배분하면서도 상한은 직접 설정할 수 있게 합니다."
-  },
-  "settingsDeviceProfile": {
-    "message": "장치 프로필"
-  },
-  "settingsDetectingHardware": {
-    "message": "하드웨어 감지 중..."
-  },
-  "settingsEffectiveGroupCaps": {
-    "message": "적용 중인 그룹 상한"
-  },
-  "settingsWaitingForSettings": {
-    "message": "설정 대기 중..."
-  },
-  "settingsWatchdog": {
-    "message": "워치독"
-  },
-  "settingsNativeApp": {
-    "message": "로컬 앱"
-  },
-  "settingsCheckingConnection": {
-    "message": "연결 확인 중..."
-  },
-  "settingsOverviewMeta": {
-    "message": "확장 프로그램이 현재 장치에 얼마나 적극적으로 적응할지에 영향을 주는 상위 설정입니다."
-  },
-  "settingsAutomaticDeviceTuning": {
-    "message": "자동 장치 조정"
-  },
-  "settingsAutomaticDeviceTuningDesc": {
-    "message": "향후 하드웨어 인식 스케줄링을 위해 예약된 스위치입니다. 현재는 저장만 되며 런타임 동작은 아직 바꾸지 않습니다."
-  },
-  "settingsPreloadMode": {
-    "message": "프리로드 모드"
-  },
-  "settingsPreloadModeDesc": {
-    "message": "향후 전략 단계용으로 예약된 선택 항목입니다. 현재는 저장만 되며 런타임 동작은 아직 바꾸지 않습니다."
-  },
-  "settingsModeConservative": {
-    "message": "보수적"
-  },
-  "settingsModeBalanced": {
-    "message": "균형"
-  },
-  "settingsModeAggressive": {
-    "message": "공격적"
-  },
-  "settingsTrackingMeta": {
-    "message": "탐색 노드를 정규화하고 방향 그래프에 추가하는 방식을 제어합니다."
   },
   "settingsSeparateGoogleSearchPages": {
     "message": "Google 검색 페이지 분리"
@@ -274,9 +178,6 @@
   },
   "settingsSkipPrivateNetworkPagesDesc": {
     "message": "10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, fc00::/7, fe80::/10 같은 개인 네트워크 페이지를 추적하거나 프리로드하지 않습니다."
-  },
-  "settingsPreloadMeta": {
-    "message": "탭 예열, 워치독 복구, 프리로드 창 동작을 제어합니다."
   },
   "settingsEnablePreloading": {
     "message": "프리로드 활성화"
@@ -434,9 +335,6 @@
   "settingsSchedulerHalfLifeTabsDesc": {
     "message": "탭 수가 이 값만큼 늘어날 때마다 동적 총 상한이 최대값에 절반 더 가까워집니다. 값이 작을수록 탭이 많아질 때 상한이 더 빠르게 증가합니다."
   },
-  "settingsSchedulerPoolHours": {
-    "message": "풀 시간"
-  },
   "settingsSchedulerSegmentSeconds": {
     "message": "세그먼트 초"
   },
@@ -458,12 +356,21 @@
   "settingsAiPredictionAssistantDesc": {
     "message": "키워드 점수 계산에 사용할 외부 AI 제공자와 모델을 선택합니다. 확장 프로그램은 API 키를 직접 사용하며 로컬 모델을 다운로드하거나 관리하지 않습니다."
   },
+  "settingsAiPredictionPrivacyNotice": {
+    "message": "외부 제공자를 선택하면 확장 프로그램이 페이지 URL, 제목, 본문의 처음 2,200자까지와 같은 창에 열려 있는 다른 탭의 컨텍스트를 해당 제공자에게 전송합니다. 페이지 내용이 외부 회사로 전송되는 것을 원하지 않으면 LM Studio 같은 로컬 엔드포인트를 사용하거나 이 설정을 꺼 두십시오."
+  },
   "settingsAiModelSelectionAdvice": {
     "message": "기본적으로 최신 추천 모델 세트를 표시합니다. 특정 모델이 필요하면 모든 모델로 전환하고, 가능하면 빠르고 저렴한 텍스트 또는 채팅 모델을 선택하세요."
   },
-  "settingsAiModelListModeRecommended": { "message": "최신 추천 모델" },
-  "settingsAiModelListModeAll": { "message": "모든 모델" },
-  "settingsAiModelListRecommendedTitle": { "message": "불러온 모델 {1}개 중 최신 추천 모델 {0}개를 표시합니다. 모든 옵션을 보려면 모든 모델로 전환하세요." },
+  "settingsAiModelListModeRecommended": {
+    "message": "최신 추천 모델"
+  },
+  "settingsAiModelListModeAll": {
+    "message": "모든 모델"
+  },
+  "settingsAiModelListRecommendedTitle": {
+    "message": "불러온 모델 {1}개 중 최신 추천 모델 {0}개를 표시합니다. 모든 옵션을 보려면 모든 모델로 전환하세요."
+  },
   "settingsAiProviderApiKey": {
     "message": "공급자 API 키"
   },
@@ -488,25 +395,18 @@
   "settingsWatchdogIntervalDesc": {
     "message": "확장 프로그램이 프리로드 창이 아직 존재하는지 확인하는 주기입니다."
   },
-  "settingsWatchdogIntervalOption1": {
-    "message": "1초"
+  "settingsWatchdogIntervalOption30": {
+    "message": "30초"
   },
-  "settingsWatchdogIntervalOption2": {
-    "message": "2초"
+  "settingsWatchdogIntervalOption60": {
+    "message": "1분"
   },
-  "settingsWatchdogIntervalOption3": {
-    "message": "3초"
+  "settingsWatchdogIntervalOption120": {
+    "message": "2분"
   },
-  "settingsWatchdogIntervalOption5": {
-    "message": "5초"
+  "settingsWatchdogIntervalOption300": {
+    "message": "5분"
   },
-  "settingsWatchdogIntervalOption10": {
-    "message": "10초"
-  },
-  "settingsWatchdogIntervalOption30": { "message": "30초" },
-  "settingsWatchdogIntervalOption60": { "message": "1분" },
-  "settingsWatchdogIntervalOption120": { "message": "2분" },
-  "settingsWatchdogIntervalOption300": { "message": "5분" },
   "settingsFullscreenPressurePolicy": {
     "message": "전체 화면/게임 백그라운드 탭 정책"
   },
@@ -522,23 +422,11 @@
   "settingsFullscreenPressurePolicyIgnore": {
     "message": "작업 없음"
   },
-  "settingsSecond": {
-    "message": "{0}초"
-  },
-  "settingsSeconds": {
-    "message": "{0}초"
-  },
   "settingsForceMinimize": {
     "message": "프리로드 창 강제 최소화"
   },
   "settingsForceMinimizeDesc": {
     "message": "프리로드 창이 복원되거나 크기가 변경되면 즉시 다시 최소화합니다."
-  },
-  "settingsOrderingMeta": {
-    "message": "고정 순위 필터는 첫 버전의 동작을 예측 가능하게 유지합니다. 저장된 규칙 형식을 바꾸지 않고 나중에 고급 프로그래밍 필터 체인을 추가할 수 있습니다."
-  },
-  "settingsExperimentsMeta": {
-    "message": "위험한 실시간 스위치는 여기에 둡니다. 자리표시자 스위치도 여기에 남지만 실제 런타임 동작에 연결되기 전까지는 저장만 됩니다."
   },
   "settingsCrossSiteCurrentTabSwap": {
     "message": "현재 탭의 크로스 사이트 강제 교체"
@@ -573,17 +461,11 @@
   "settingsSaveSettings": {
     "message": "설정 저장"
   },
-  "settingsAiModelTask": {
-    "message": "AI 모델 작업"
-  },
   "settingsReadingLocalSettings": {
     "message": "로컬 확장 설정을 읽는 중입니다."
   },
   "settingsCouldNotLoad": {
     "message": "저장소에서 설정을 로드할 수 없습니다."
-  },
-  "settingsCouldNotLoadAiStatus": {
-    "message": "AI 모델 상태를 불러올 수 없습니다."
   },
   "settingsDefaultsRestored": {
     "message": "양식에 기본값을 복원했습니다. 적용하려면 저장하세요."
@@ -600,81 +482,6 @@
   "settingsCouldNotSave": {
     "message": "설정을 저장할 수 없습니다."
   },
-  "settingsPreparingRuntime": {
-    "message": "필요한 경우 포터블 런타임을 준비합니다."
-  },
-  "settingsRemovingSelectedModel": {
-    "message": "선택한 모델을 제거하는 중입니다."
-  },
-  "settingsInstallingModel": {
-    "message": "필요한 경우 런타임을 설치한 뒤 선택한 모델을 다운로드합니다."
-  },
-  "settingsRemovingModelAndRuntime": {
-    "message": "선택한 모델을 제거하고 사용하지 않는 포터블 런타임을 정리합니다."
-  },
-  "settingsAiModelActionFailed": {
-    "message": "AI 모델 작업에 실패했습니다."
-  },
-  "settingsModelStateUpdatedDirty": {
-    "message": "모델 상태가 업데이트되었습니다. 다른 저장되지 않은 변경 사항이 아직 남아 있습니다."
-  },
-  "settingsPortableModelUpdated": {
-    "message": "포터블 런타임과 모델 상태가 업데이트되었습니다."
-  },
-  "settingsModelDownloaded": {
-    "message": "모델을 다운로드했습니다."
-  },
-  "settingsModelRemoved": {
-    "message": "모델을 제거했습니다."
-  },
-  "settingsCouldNotUpdateModel": {
-    "message": "선택한 모델을 업데이트할 수 없습니다."
-  },
-  "settingsHardwareMeta": {
-    "message": "{0}코어 | 메모리 힌트 {1}GB"
-  },
-  "settingsEffectivePreloadMeta": {
-    "message": "네이티브 / 탭 슬롯 상한. 규칙은 {0}을 사용합니다."
-  },
-  "settingsWatchdogChecksEvery": {
-    "message": "{0}초마다 확인합니다."
-  },
-  "settingsWindowRepairDisabled": {
-    "message": "창 복구가 비활성화되어 있습니다."
-  },
-  "settingsSystemHidingUnsupported": {
-    "message": "{0}에서는 시스템 수준 숨김이 지원되지 않습니다."
-  },
-  "settingsSystemHidingActive": {
-    "message": "시스템 수준 창 숨김이 활성화되어 있습니다."
-  },
-  "settingsNativeAppOffline": {
-    "message": "로컬 앱이 감지되지 않았습니다. 최소화 대체 방식을 사용합니다."
-  },
-  "settingsConnected": {
-    "message": "연결됨"
-  },
-  "settingsOffline": {
-    "message": "오프라인"
-  },
-  "settingsInstallingModelLabel": {
-    "message": "{0} 설치 중"
-  },
-  "settingsRemovingModelLabel": {
-    "message": "{0} 제거 중"
-  },
-  "settingsModelReady": {
-    "message": "모델 준비됨"
-  },
-  "settingsUninstallFailed": {
-    "message": "제거 실패"
-  },
-  "settingsInstallFailed": {
-    "message": "설치 실패"
-  },
-  "settingsTaskDidNotFinish": {
-    "message": "작업이 완료되지 않았습니다."
-  },
   "settingsAiProviderMissingWarning": {
     "message": "{0}에 모델, 엔드포인트, API 키가 모두 있어야 AI 점수 계산이 활성화됩니다."
   },
@@ -684,23 +491,14 @@
   "settingsAiLmStudioKeyIgnoredPlaceholder": {
     "message": "LM Studio에서는 무시됨"
   },
-  "settingsAiLmStudioLoadingModel": {
-    "message": "LM Studio 모델 로드 중: {0}"
-  },
   "settingsAiKeyRequiredPlaceholder": {
     "message": "필수"
   },
   "settingsAiEnterKeyToLoadModels": {
     "message": "모델을 로드하려면 API 키를 입력하세요"
   },
-  "settingsAiLoadingModels": {
-    "message": "모델을 불러오는 중..."
-  },
   "settingsAiSelectProviderFirst": {
     "message": "먼저 공급자를 선택하세요"
-  },
-  "settingsAiNoSupportedModels": {
-    "message": "모델을 찾을 수 없음"
   },
   "settingsAiLoadingModelsGeneric": {
     "message": "모델을 불러오는 중..."
@@ -830,18 +628,6 @@
   },
   "ruleGoogleBookmarkRankDesc": {
     "message": "Google 검색 페이지에서만 적용됩니다. 활성화하면 Chrome 북마크가 이 순위 규칙에 따라 독립적인 상시 프리로드 대상으로 유지됩니다."
-  },
-  "deviceProfileBalanced": {
-    "message": "균형"
-  },
-  "deviceProfileHighEnd": {
-    "message": "고급"
-  },
-  "deviceProfileStrong": {
-    "message": "강력"
-  },
-  "deviceProfileConstrained": {
-    "message": "제한됨"
   },
   "settingsDiagnosticsLogging": {
     "message": "로그 모드"
@@ -993,29 +779,115 @@
   "realPreloadRecommendedWarning": {
     "message": "Real Preload를 사용할 수 있으며 이 컴퓨터에서는 켜는 것을 권장할 수 있습니다. 체감 지연을 0에 가깝게 줄일 수 있지만 메모리를 많이 쓰므로 지나치게 공격적인 제한은 피하세요."
   },
-  "commonExporting": { "message": "내보내는 중" },
-  "commonExported": { "message": "내보냄 완료" },
-  "commonImporting": { "message": "가져오는 중" },
-  "commonImported": { "message": "가져옴 완료" },
-  "settingsHistoryTransferTitle": { "message": "기록 가져오기 및 내보내기" },
-  "settingsHistoryTransferDesc": { "message": "전체 로컬 방문 그래프 기록을 JSON 백업으로 내보내거나 호환되는 백업 파일로 교체합니다. 설정, API 키 및 현재 탭 실행 상태는 이전되지 않습니다." },
-  "settingsHistoryImportButton": { "message": "기록 가져오기" },
-  "settingsHistoryExportButton": { "message": "기록 내보내기" },
-  "settingsHistoryExportWarningTitle": { "message": "내보내기 전에 개인정보 위험을 확인하세요" },
-  "settingsHistoryExportWarningMessage": { "message": "백업에는 방문 주소, 페이지 제목, 키워드, 이동 관계 및 사용 통계가 포함될 수 있습니다." },
-  "settingsHistoryExportWarningDetail": { "message": "함부로 공유하지 마세요. 파일 공유로 인해 개인정보가 노출되는 경우 그 책임은 사용자에게 있습니다." },
-  "settingsHistoryExportContinue": { "message": "저장 위치 선택" },
-  "settingsHistoryExportPreparing": { "message": "기록 백업을 준비하는 중..." },
-  "settingsHistoryExportSucceeded": { "message": "기록을 {0}(으)로 내보냈습니다." },
-  "settingsHistorySavePickerUnavailable": { "message": "이 브라우저에서는 설정 페이지에서 저장 위치를 선택할 수 없습니다." },
-  "settingsHistoryExportFailed": { "message": "기록을 내보낼 수 없습니다." },
-  "settingsHistoryImportValidating": { "message": "기록 백업을 검증하는 중..." },
-  "settingsHistoryImportConfirmTitle": { "message": "기존 기록을 교체할까요?" },
-  "settingsHistoryImportConfirmMessage": { "message": "이 파일을 가져오면 현재 기록 전체가 교체됩니다. 이 작업은 되돌릴 수 없습니다." },
-  "settingsHistoryImportConfirm": { "message": "교체하고 가져오기" },
-  "settingsHistoryImportCancelled": { "message": "가져오기를 취소했습니다. 기존 기록은 변경되지 않았습니다." },
-  "settingsHistoryImportSummary": { "message": "백업 시간: {0}. 이동 {1}개, 사이트 {2}개, 키워드 기록 {3}개." },
-  "settingsHistoryImporting": { "message": "기록을 교체하는 중..." },
-  "settingsHistoryImportSucceeded": { "message": "이동 기록 {0}개를 가져왔습니다." },
-  "settingsHistoryImportFailed": { "message": "선택한 파일이 유효한 Smart Preload 기록 백업이 아니거나 가져올 수 없습니다." }
+  "commonExporting": {
+    "message": "내보내는 중"
+  },
+  "commonExported": {
+    "message": "내보냄 완료"
+  },
+  "commonImporting": {
+    "message": "가져오는 중"
+  },
+  "commonImported": {
+    "message": "가져옴 완료"
+  },
+  "settingsHistoryTransferTitle": {
+    "message": "기록 가져오기 및 내보내기"
+  },
+  "settingsHistoryTransferDesc": {
+    "message": "전체 로컬 방문 그래프 기록을 JSON 백업으로 내보내거나 호환되는 백업 파일로 교체합니다. 설정, API 키 및 현재 탭 실행 상태는 이전되지 않습니다."
+  },
+  "settingsHistoryImportButton": {
+    "message": "기록 가져오기"
+  },
+  "settingsHistoryExportButton": {
+    "message": "기록 내보내기"
+  },
+  "settingsHistoryExportWarningTitle": {
+    "message": "내보내기 전에 개인정보 위험을 확인하세요"
+  },
+  "settingsHistoryExportWarningMessage": {
+    "message": "백업에는 방문 주소, 페이지 제목, 키워드, 이동 관계 및 사용 통계가 포함될 수 있습니다."
+  },
+  "settingsHistoryExportWarningDetail": {
+    "message": "함부로 공유하지 마세요. 파일 공유로 인해 개인정보가 노출되는 경우 그 책임은 사용자에게 있습니다."
+  },
+  "settingsHistoryExportContinue": {
+    "message": "저장 위치 선택"
+  },
+  "settingsHistoryExportPreparing": {
+    "message": "기록 백업을 준비하는 중..."
+  },
+  "settingsHistoryExportSucceeded": {
+    "message": "기록을 {0}(으)로 내보냈습니다."
+  },
+  "settingsHistorySavePickerUnavailable": {
+    "message": "이 브라우저에서는 설정 페이지에서 저장 위치를 선택할 수 없습니다."
+  },
+  "settingsHistoryExportFailed": {
+    "message": "기록을 내보낼 수 없습니다."
+  },
+  "settingsHistoryImportValidating": {
+    "message": "기록 백업을 검증하는 중..."
+  },
+  "settingsHistoryImportConfirmTitle": {
+    "message": "기존 기록을 교체할까요?"
+  },
+  "settingsHistoryImportConfirmMessage": {
+    "message": "이 파일을 가져오면 현재 기록 전체가 교체됩니다. 이 작업은 되돌릴 수 없습니다."
+  },
+  "settingsHistoryImportConfirm": {
+    "message": "교체하고 가져오기"
+  },
+  "settingsHistoryImportCancelled": {
+    "message": "가져오기를 취소했습니다. 기존 기록은 변경되지 않았습니다."
+  },
+  "settingsHistoryImportSummary": {
+    "message": "백업 시간: {0}. 이동 {1}개, 사이트 {2}개, 키워드 기록 {3}개."
+  },
+  "settingsHistoryImporting": {
+    "message": "기록을 교체하는 중..."
+  },
+  "settingsHistoryImportSucceeded": {
+    "message": "이동 기록 {0}개를 가져왔습니다."
+  },
+  "settingsHistoryImportFailed": {
+    "message": "선택한 파일이 유효한 Smart Preload 기록 백업이 아니거나 가져올 수 없습니다."
+  },
+  "settingsNativeAppVersion": {
+    "message": "네이티브 앱 버전"
+  },
+  "settingsProxySkipMode": {
+    "message": "프록시 건너뛰기 목록 모드"
+  },
+  "settingsAiModelListMode": {
+    "message": "AI 모델 목록 모드"
+  },
+  "settingsAiPredictionModel": {
+    "message": "AI 예측 모델"
+  },
+  "settingsChangedElsewhere": {
+    "message": "다른 곳에서 설정이 변경되었습니다. 저장하면 해당 변경 사항을 덮어씁니다."
+  },
+  "settingsReloadedFromStorage": {
+    "message": "다른 곳에서 변경된 설정을 다시 불러왔습니다."
+  },
+  "settingsThreatLibrary": {
+    "message": "로컬 위협 데이터베이스"
+  },
+  "settingsThreatLibraryDesc": {
+    "message": "확장 프로그램에 포함된 악성 사이트 스냅샷입니다. 사용할 수 없는 동안에는 프리로드가 차단됩니다."
+  },
+  "settingsThreatLibraryLoading": {
+    "message": "확인 중..."
+  },
+  "settingsThreatLibraryReady": {
+    "message": "스냅샷 {0} · {1}"
+  },
+  "settingsThreatLibraryStale": {
+    "message": "{0}일 경과"
+  },
+  "settingsThreatLibraryFailed": {
+    "message": "불러오지 못했습니다. 불러올 때까지 프리로드가 차단됩니다."
+  }
 }

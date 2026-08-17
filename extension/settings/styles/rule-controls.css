@@ -143,6 +143,21 @@
   transition: transform 0.18s ease;
 }
 
+/*
+ * 键盘焦点指示。
+ *
+ * 真正的 checkbox 用 opacity: 0 藏在装饰性 .switch-track 后面，所以浏览器画在它上面的
+ * 默认焦点环完全不可见 —— 而开关是这个页面的主要控件类型（22 个）。此前 settings/styles/
+ * 下没有任何针对开关的 :focus-visible 规则，键盘用户无从知道焦点在哪（WCAG 2.4.7）。
+ * .settings-link-button / .danger-button 早就有 focus-visible 样式，模式存在只是没铺过来。
+ *
+ * 用 :focus-visible 而非 :focus：鼠标点击不该出现焦点环。
+ */
+.switch input:focus-visible + .switch-track {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .switch input:checked + .switch-track {
   background: var(--accent);
 }

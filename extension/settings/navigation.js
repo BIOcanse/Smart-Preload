@@ -30,7 +30,13 @@
       });
     }
 
-    window.addEventListener("scroll", syncForScrollPosition, {
+    // scroll 必须走 queueSync（rAF 节流），不能直接绑 syncForScrollPosition。
+    //
+    // syncForScrollPosition → buildScrollTargets → getMaxPageScrollTop（读
+    // documentElement.scrollHeight）+ getSectionWeights（逐段读高度），每次都强制布局。
+    // scroll 事件在滚动期间每帧甚至更密地触发，而 resize 一直用的是 queueSync ——
+    // 节流器就在下面，只是 scroll 漏接了。
+    window.addEventListener("scroll", queueSync, {
       passive: true,
     });
     window.addEventListener("resize", queueSync);
