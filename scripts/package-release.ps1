@@ -13,13 +13,37 @@ $DistRoot = Join-Path $RepoRoot "dist"
 $LicensePath = Join-Path $RepoRoot "LICENSE"
 $NoticePath = Join-Path $RepoRoot "NOTICE"
 
+$manifestVersion = [string](Get-Content -LiteralPath (Join-Path $ExtensionRoot "manifest.json") -Raw | ConvertFrom-Json).version
+
 if ([string]::IsNullOrWhiteSpace($Version)) {
-  $manifest = Get-Content -LiteralPath (Join-Path $ExtensionRoot "manifest.json") -Raw | ConvertFrom-Json
-  $Version = [string]$manifest.version
+  $Version = $manifestVersion
 }
 
 if ([string]::IsNullOrWhiteSpace($Version)) {
   throw "Version was not provided and could not be read from extension\manifest.json."
+}
+
+# 版本号有两个来源（manifest.json 与 Cargo.toml），此前没有任何东西保证它们一致。
+# 漂移的后果是「永远消不掉的更新提示」：扩展报一个版本、本地 App 报另一个，
+# 更新检查永远认为有新版可装。
+$cargoVersion = ""
+foreach ($line in Get-Content -LiteralPath (Join-Path $AppRoot "Cargo.toml")) {
+  if ($line -match '^\s*version\s*=\s*"([^"]+)"') { $cargoVersion = $Matches[1]; break }
+}
+
+if ($cargoVersion -ne $manifestVersion) {
+  throw "版本号不一致：extension\manifest.json = $manifestVersion，app\Cargo.toml = $cargoVersion。两处必须相同。"
+}
+
+if ($Version -ne $manifestVersion) {
+  throw "传入的 -Version ($Version) 与 extension\manifest.json ($manifestVersion) 不一致。请先改 manifest，不要靠参数覆盖。"
+}
+
+# 复用一个已发布过的版本号，Chrome 商店会直接拒收，而且已装用户永远收不到更新。
+# 标签是本仓库唯一的已发布记录，拿它当护栏。
+$existingTag = & git -C $RepoRoot tag --list "v$Version" 2>$null
+if ($existingTag) {
+  throw "v$Version 已经打过标签（即已发布）。请先在 extension\manifest.json 与 app\Cargo.toml 里升版本号。"
 }
 
 $DistFull = [System.IO.Path]::GetFullPath($DistRoot).TrimEnd('\') + '\'
