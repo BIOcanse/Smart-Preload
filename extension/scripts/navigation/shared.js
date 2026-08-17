@@ -12,12 +12,18 @@
     CANDIDATE_IDLE_TIMEOUT_MS: 250,
     CANDIDATE_MUTATION_NODE_BATCH_SIZE: 80,
     CANDIDATE_DIRTY_ANCHOR_BATCH_SIZE: 32,
+    // 上面两个限的是**每批**工作量，不是积压。可编辑元素获得焦点期间消费者会直接返回
+    // （scheduler.js 的 hasActiveEditableFocus 分支），而生产者 enqueueCandidateMutations
+    // 无条件执行 —— 在 Gmail 写信、Google Docs 编辑的整个会话里积压单调增长，且队列里是
+    // **强 DOM 引用**（含 mutation.removedNodes 捕获的已分离节点）。下面两个是积压上限，
+    // 触顶时丢弃积压并改走一次全量重建，见 dropCandidateMutationBacklog。
+    MAX_CANDIDATE_MUTATION_QUEUE: 5_000,
+    MAX_CANDIDATE_DIRTY_ANCHORS: 2_000,
     BLANK_CLICK_RESOLUTION_TIMEOUT_MS: 500,
     CURRENT_TAB_CLICK_RESOLUTION_TIMEOUT_MS: 2500,
     HOVER_PRELOAD_DELAY_MS: 80,
     WATERFALL_BASELINE_MAX_UNLOCKED_MS: 2500,
     RESCAN_DELAY_MS: 700,
-    PAGE_DIGEST_DELAY_MS: 1500,
     ATTENTION_ACTIVITY_INTERVAL_MS: 15_000,
     ATTENTION_ACTIVITY_MIN_REPORT_INTERVAL_MS: 1_000,
     SPECULATION_RULES_ELEMENT_ID: "zero-latency-speculation-rules",
@@ -26,7 +32,6 @@
   const state = {
     currentPageUrl: location.href,
     pageGeneration: 1,
-    documentContentRevision: 0,
     cachedPageContentSnapshot: null,
     candidateScanTimerId: null,
     candidateScanDueAt: 0,
@@ -44,6 +49,7 @@
     candidateQueuedTraversalItems: new WeakMap(),
     candidateDirtyAnchors: new Map(),
     candidateAnchorEntries: new Map(),
+    candidateFullReindexPending: false,
     candidateVisibilityCache: new WeakMap(),
     candidateVisibilityObserver: null,
     observerStarted: false,
@@ -97,7 +103,6 @@
 
     state.pageGeneration += 1;
     state.currentPageUrl = normalizedPageUrl;
-    state.documentContentRevision += 1;
     state.cachedPageContentSnapshot = null;
     state.lastSentCandidateSignature = null;
     state.lastReportedPageDigestFingerprint = null;
@@ -106,17 +111,14 @@
     return true;
   }
 
-  function markDocumentContentChanged() {
-    state.documentContentRevision += 1;
-    state.cachedPageContentSnapshot = null;
-  }
-
+  // markDocumentContentChanged() 已删除：它的全部作用是在每一批 DOM 变更上作废
+  // cachedPageContentSnapshot，而页面摘要现在按生命周期事件构建（见 page-digest.js）。
+  // documentContentRevision 一并删除 —— 它没有第二个消费方。
   Object.assign(namespace, {
     constants,
     state,
     capturePageGenerationToken,
     isPageGenerationTokenCurrent,
     advancePageGeneration,
-    markDocumentContentChanged,
   });
 })();

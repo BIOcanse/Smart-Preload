@@ -29,6 +29,16 @@
     }
   }
 
+  // 与后台 isSameOriginUrl(background/tracking/url/model.js:28) 保持同一判定。
+  // 后台的 sourcePageUrl 就是内容脚本发上去的 location.href，targetUrl 已是绝对地址。
+  function isSameOriginNavigationUrl(targetUrl) {
+    try {
+      return new URL(location.href).origin === new URL(targetUrl, location.href).origin;
+    } catch (_error) {
+      return false;
+    }
+  }
+
   function getAnchorNavigationTarget(anchor) {
     const normalizedTarget = (anchor.target || "_self").toLowerCase();
 
@@ -102,6 +112,7 @@
 
   Object.assign(namespace, {
     normalizeNavigableHref,
+    isSameOriginNavigationUrl,
     getAnchorNavigationTarget,
     resolveManagedNavigationTarget,
     isGoogleSearchResultsPageUrl,

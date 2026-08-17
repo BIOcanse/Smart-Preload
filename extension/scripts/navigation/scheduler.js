@@ -47,13 +47,6 @@
     state.candidateScanTimerId = window.setTimeout(beginCandidateScanWork, delayMs);
   }
 
-  function schedulePageDigestReport() {
-    scheduleCandidateScan({
-      delayMs: constants.PAGE_DIGEST_DELAY_MS,
-      includePageDigest: true,
-    });
-  }
-
   function beginCandidateScanWork() {
     clearCandidateScanTimers();
 
@@ -199,7 +192,6 @@
 
   Object.assign(namespace, {
     scheduleCandidateScan,
-    schedulePageDigestReport,
     cancelScheduledNavigationScan,
   });
 })();
