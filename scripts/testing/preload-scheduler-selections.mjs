@@ -113,11 +113,15 @@ assert.equal(
   context.ZeroLatencySettings.normalizeStoredSettings({}).experiments.crossSiteCurrentTabSwap,
   false
 );
+// normalize 只规范化类型，不与 realPreloadEnabled 联动 —— 用户存 true 就读回 true。
+// 是否真的启用由 preload/prediction/strategy/flags.js 在使用点判定。
+// 此前这里断言 false（因为默认 realPreloadEnabled 为假时 normalize 会强制清零），
+// 那个耦合会让「关一次 Real Preload」把实验设置永久销毁。
 assert.equal(
   context.ZeroLatencySettings.normalizeStoredSettings({
     experiments: { crossSiteCurrentTabSwap: true },
   }).experiments.crossSiteCurrentTabSwap,
-  false
+  true
 );
 assert.equal(
   context.ZeroLatencySettings.normalizeStoredSettings({
@@ -126,12 +130,16 @@ assert.equal(
   }).experiments.crossSiteCurrentTabSwap,
   true
 );
+// 关掉 Real Preload 也保留用户的实验选择。此前断言 false —— 那个耦合意味着
+// 「关一次 Real Preload」就把设置永久写死成 false，再打开也回不来。
+// 实际生效与否由 preload/prediction/strategy/flags.js 在使用点判定，
+// preload-native-only-mode.mjs 的 determinePreloadStrategy 断言证明了那条门仍然有效。
 assert.equal(
   context.ZeroLatencySettings.normalizeStoredSettings({
     preloading: { realPreloadEnabled: false },
     experiments: { crossSiteCurrentTabSwap: true },
   }).experiments.crossSiteCurrentTabSwap,
-  false
+  true
 );
 assert.equal(
   context.ZeroLatencySettings.normalizeStoredSettings({}).preloading.scheduler

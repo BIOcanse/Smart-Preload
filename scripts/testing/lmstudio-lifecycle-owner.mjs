@@ -113,16 +113,32 @@ assert.ok(unloadCalls.every((call) => call.options.timeoutMs < 25_000));
 
 console.log("LM Studio background lifecycle owner tests passed");
 
-async function readJavaScriptSources(directory) {
-  const entries = await readdir(directory, { withFileTypes: true });
+// 显式队列的广度优先遍历，替代此前的自递归目录walk。
+// 项目契约的禁递归规则明确覆盖自动化脚本；符号链接可以构造出环，所以带去重集合。
+async function readJavaScriptSources(rootDirectory) {
+  const queue = [rootDirectory];
+  const visitedDirectories = new Set();
   const sources = [];
 
-  for (const entry of entries) {
-    const entryPath = path.join(directory, entry.name);
-    if (entry.isDirectory()) {
-      sources.push(await readJavaScriptSources(entryPath));
-    } else if (entry.isFile() && entry.name.endsWith(".js")) {
-      sources.push(await readFile(entryPath, "utf8"));
+  while (queue.length > 0) {
+    const directory = queue.shift();
+    const resolvedDirectory = path.resolve(directory);
+
+    if (visitedDirectories.has(resolvedDirectory)) {
+      continue;
+    }
+
+    visitedDirectories.add(resolvedDirectory);
+    const entries = await readdir(directory, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const entryPath = path.join(directory, entry.name);
+
+      if (entry.isDirectory()) {
+        queue.push(entryPath);
+      } else if (entry.isFile() && entry.name.endsWith(".js")) {
+        sources.push(await readFile(entryPath, "utf8"));
+      }
     }
   }
 

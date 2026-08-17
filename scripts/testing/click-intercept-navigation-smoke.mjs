@@ -28,6 +28,7 @@ import {
   dispatchMouseMove,
   waitForLinkPoint,
 } from "./lib/cdp-input-helpers.mjs";
+import { configureRealPreloadTestState } from "./lib/preload-extension-helpers.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,12 +44,39 @@ const extensionUnderTestDir = path.join(runRoot, "extension");
 
 const chromiumPath = findFirstExistingExecutable(getSharedPlaywrightChromiumPathCandidates());
 
-const SCENARIOS = Array.from({ length: 10 }, (_, index) => ({
-  id: index + 1,
-  sourceHost: `click-source-${index + 1}.test`,
-  targetHost: `click-target-${index + 1}.test`,
-  targetHint: "_self",
-}));
+const CROSS_ORIGIN_SCENARIO_COUNT = 10;
+const SAME_ORIGIN_SCENARIO_COUNT = 3;
+
+// 跨源：扩展会 preventDefault 并接管，真实预加载激活走这条路。
+const CROSS_ORIGIN_SCENARIOS = Array.from(
+  { length: CROSS_ORIGIN_SCENARIO_COUNT },
+  (_, index) => ({
+    id: index + 1,
+    sourceHost: `click-source-${index + 1}.test`,
+    targetHost: `click-target-${index + 1}.test`,
+    targetHint: "_self",
+    sameOrigin: false,
+  })
+);
+
+// 同源：后台的 tryActivateClickPreload 被 `!isSameOriginNavigation` 挡住，接管不可能
+// 发生，所以扩展不应拦截，必须让浏览器原生导航。这是 SPA 内部链接的形状。
+const SAME_ORIGIN_SCENARIOS = Array.from(
+  { length: SAME_ORIGIN_SCENARIO_COUNT },
+  (_, index) => {
+    const id = CROSS_ORIGIN_SCENARIO_COUNT + index + 1;
+    const host = `click-same-origin-${index + 1}.test`;
+    return {
+      id,
+      sourceHost: host,
+      targetHost: host,
+      targetHint: "_self",
+      sameOrigin: true,
+    };
+  }
+);
+
+const SCENARIOS = [...CROSS_ORIGIN_SCENARIOS, ...SAME_ORIGIN_SCENARIOS];
 
 async function main() {
   console.error(`[click-smoke] run root: ${runRoot}`);
@@ -87,17 +115,47 @@ async function main() {
 
     for (const scenario of scenarios) {
       console.error(`[click-smoke] scenario ${scenario.id}/${scenarios.length}: start`);
-      results.push(await runClickScenario({ debugPort, serviceWorker, scenario, clients }));
+      results.push(
+        await runClickScenario({
+          debugPort,
+          serviceWorker,
+          scenario,
+          clients,
+          pageClickObservations: server.pageClickObservations,
+        })
+      );
       console.error(`[click-smoke] scenario ${scenario.id}/${scenarios.length}: done`);
     }
 
     const failed = results.filter((result) => !result.ok);
+    // 空跑保护：如果一次运行里**一个预加载都没就绪**，那么关于激活接管的部分什么都没
+    // 验证——`ok` 却仍会是 true，因为逐场景断言只看导航是否到达、点击有没有被吞、页面
+    // 处理器有没有跑。这类"绿"具有误导性，实测出现率不低（见
+    // docs/internal/review-2026-07-31.md 的 flaky 记录），所以显式判为不通过。
+    //
+    // 注意这不是回归，而是**运行无效**：可能是环境竞态，也可能是真实退化，两者都需要
+    // 人看一眼，不能当成通过。
+    // 用「跨源场景是否产生过激活尝试」作为判据，比看预加载数更直接：它正是激活路径被
+    // 走到的标志。同源场景本来就不该有激活尝试（那是本轮改动的目的），必须排除在外。
+    const crossOriginResults = results.filter((result) => !result.sameOrigin);
+    const exercisedActivation = crossOriginResults.filter(
+      (result) => result.activationAttempt
+    ).length;
+    const vacuous = crossOriginResults.length > 0 && exercisedActivation === 0;
     const summary = {
-      ok: failed.length === 0,
+      ok: failed.length === 0 && !vacuous,
+      vacuous,
+      vacuousReason: vacuous
+        ? `${crossOriginResults.length} 个跨源场景无一产生激活尝试，激活路径未被验证；` +
+          "重跑，若持续出现则排查环境或退化"
+        : null,
+      exercisedActivation,
       total: results.length,
       passed: results.length - failed.length,
       failed: failed.length,
       swallowedClicks: results.filter((result) => result.swallowed).length,
+      pageClickHandlerMissed: results.filter((result) => !result.pageClickHandlerRan).length,
+      unexpectedInterceptions: results.filter((result) => result.unexpectedInterception).length,
       preloadedBeforeClick: results.filter((result) => result.preloadedBeforeClick).length,
       activationAttempts: results.filter((result) => result.activationAttempt).length,
       activationHits: results.filter((result) => result.activationHit).length,
@@ -127,7 +185,13 @@ function buildScenarioUrls(port) {
   }));
 }
 
-async function runClickScenario({ debugPort, serviceWorker, scenario, clients }) {
+async function runClickScenario({
+  debugPort,
+  serviceWorker,
+  scenario,
+  clients,
+  pageClickObservations,
+}) {
   console.error(`[click-smoke] ${scenario.id}: create source tab`);
   const source = await swEval(serviceWorker, async ({ sourceUrl }) => {
     const createdTab = await chrome.tabs.create({ url: sourceUrl, active: true });
@@ -200,21 +264,34 @@ async function runClickScenario({ debugPort, serviceWorker, scenario, clients })
     sameUrl(tab.url, scenario.targetUrl) && tab.active === true
   );
   const swallowed = activationAttempt && !finalReachedTarget;
-  const ok = finalReachedTarget && !swallowed;
+  // 页面自己注册在 anchor 上的监听器是否跑过。扩展在 document 捕获阶段
+  // stopPropagation() 会让它收不到点击 —— 那正是打断 SPA 路由和点击统计的破坏，
+  // 而单看“导航是否发生”是测不出来的。
+  const pageClickHandlerRan = pageClickObservations.has(scenario.id);
+  // 同源导航后台不可能激活预加载，扩展不该拦截。出现激活尝试即为回归。
+  const unexpectedInterception = scenario.sameOrigin === true && activationAttempt === true;
+  const ok =
+    finalReachedTarget && !swallowed && pageClickHandlerRan && !unexpectedInterception;
 
   await cleanupScenarioTabs(serviceWorker, {
     sourceTabId: source.tabId,
     targetUrl: scenario.targetUrl,
   });
-  console.error(`[click-smoke] ${scenario.id}: ok=${ok} swallowed=${swallowed}`);
+  console.error(
+    `[click-smoke] ${scenario.id}: ok=${ok} swallowed=${swallowed} ` +
+      `pageHandler=${pageClickHandlerRan} sameOrigin=${scenario.sameOrigin === true}`
+  );
 
   return {
     id: scenario.id,
     targetHint: scenario.targetHint,
+    sameOrigin: scenario.sameOrigin === true,
     sourceUrl: scenario.sourceUrl,
     targetUrl: scenario.targetUrl,
     ok,
     swallowed,
+    pageClickHandlerRan,
+    unexpectedInterception,
     preloadedBeforeClick: preloadBeforeClick.ready,
     preloadedStatus: preloadBeforeClick.status,
     activationAttempt,
@@ -226,35 +303,29 @@ async function runClickScenario({ debugPort, serviceWorker, scenario, clients })
   };
 }
 
+// 改用公共的 configureRealPreloadTestState，而不是自己写一遍设置写入。
+//
+// 原来这里是一次性 saveSettings + applyRuntimeSettingsAction，**不验证也不重试**。
+// 问题在于它可能与 service worker 的 bootstrap 并发：bootstrap 会用它更早读到的
+// cachedUserSettings 整体写回 SETTINGS_STORAGE_KEY（bootstrap.js:66-75），把测试刚写入的
+// realPreloadEnabled=true 覆盖回默认的 false —— 于是整场 smoke 一个预加载都不会发生。
+//
+// 公共 helper 把写入包在 queueMutation 里，并最多重试 5 次直到读回来确认设置生效。
+// context-menu-routing-smoke 和 preload-browser-isolation-smoke 一直用的就是它。
+//
+// 生产里的同一个竞态见审查报告 H18：设置页保存撞上 service worker 冷启动会被静默回退。
 async function setupExtensionState(serviceWorker) {
+  await configureRealPreloadTestState(serviceWorker, {
+    diagnosticsEnabled: true,
+    preloadWindowWatchdogEnabled: true,
+    // 原 setupExtensionState 只设 tab 侧的 3 个槽位，这里保持一致。
+    nativeTotalSlots: 3,
+    tabTotalSlots: 3,
+    nativePerPageSlots: 3,
+    tabPerPageSlots: 3,
+  });
+
   await swEval(serviceWorker, async () => {
-    const settings = globalThis.ZeroLatencySettings.cloneSettings(
-      globalThis.ZeroLatencySettings.DEFAULT_SETTINGS
-    );
-    settings.tracking.excludeHttpPages = false;
-    settings.tracking.excludeLocalPages = false;
-    settings.tracking.excludePrivateNetworkPages = false;
-    settings.preloading.enabled = true;
-    settings.preloading.realPreloadEnabled = true;
-    settings.preloading.aiPrediction.enabled = false;
-    settings.preloadWindow.watchdogEnabled = true;
-    settings.experiments.crossSiteCurrentTabSwap = true;
-    settings.diagnostics.enabled = true;
-    settings.layout.ruleCards.items.perPagePreloadLimit.valueC = 3;
-    settings.layout.ruleCards.items.highWeightRankTab.valueC = 3;
-
-    const storedSettings = await globalThis.ZeroLatencySettings.saveSettings(
-      chrome.storage.local,
-      settings
-    );
-    globalThis.backgroundState.setCachedSettings(storedSettings);
-
-    const serviceState = await loadServiceState();
-    serviceState.paused = false;
-    serviceState.updatedAt = new Date().toISOString();
-    await saveServiceState(serviceState);
-
-    await globalThis.ZeroLatencyRuntimeActions.applyRuntimeSettingsAction();
     await globalThis.ZeroLatencyNativeAppHeartbeat?.ensureAlarm?.(false);
     await chrome.alarms.clear(globalThis.ZeroLatencyNativeAppHeartbeat?.wakeAlarmName);
     return true;

@@ -6,6 +6,8 @@ const sources = await Promise.all(
   [
     "../../extension/background/preload/runtime/source-tabs/channels.js",
     "../../extension/background/preload/runtime/activation/target.js",
+    // safety.js 的写入经 applySourceTabPreloadMutation，定义在这里。
+    "../../extension/background/preload/runtime/activation/state-mutation.js",
     "../../extension/background/preload/runtime/activation/safety.js",
     "../../extension/background/preload/runtime/activation/incognito.js",
   ].map((path) => readFile(new URL(path, import.meta.url), "utf8"))
@@ -13,6 +15,7 @@ const sources = await Promise.all(
 const debugEvents = [];
 const closedTabs = [];
 let savedPreloadState = null;
+let storedPreloadState = null;
 let prunedRuntime = null;
 let updatedRuntime = null;
 
@@ -36,7 +39,16 @@ const contextObject = {
   },
   savePreloadState: async (preloadState) => {
     savedPreloadState = preloadState;
+    storedPreloadState = preloadState;
   },
+  // 激活路径的写入现在经 applySourceTabPreloadMutation：进 mutation lane、重读最新
+  // 状态、重新定位 source tab runtime、施加语义动作后再保存。所以这里要提供
+  // queueMutation / loadPreloadState / getSourceTabRuntimeForWindow 三个桩。
+  // 见 docs/internal/invariants.md 第 1 条。
+  queueMutation: (task) => task(),
+  loadPreloadState: async () => storedPreloadState,
+  getSourceTabRuntimeForWindow: (preloadState, normalWindowId, sourceTabId) =>
+    preloadState?.normalWindowsById?.[normalWindowId]?.sourceTabs?.[sourceTabId] ?? null,
   getWindowMaybe: async (windowId) => ({
     id: windowId,
     incognito: windowId === 9,
@@ -97,17 +109,26 @@ assert.equal(
   "https://tab.example/"
 );
 
-const preloadState = { updatedAt: "" };
-const sourceRuntimeEntry = {
-  sourceTabRuntime: {
-    hiddenTabEntriesByUrl: {
-      "https://download.example/file.zip": { tabId: 42 },
+// blockUnsafePreloadedActivationIfNeeded 不再保存调用方手上的快照，而是在 mutation lane
+// 上重读最新状态、重新定位 source tab runtime、再施加删除动作。因此这里断言的是
+// **存储里的最新状态**被正确修改，而不是某个传入对象的同一性。
+storedPreloadState = {
+  updatedAt: "",
+  normalWindowsById: {
+    4: {
+      sourceTabs: {
+        3: {
+          sourceTabRuntime: {
+            hiddenTabEntriesByUrl: {
+              "https://download.example/file.zip": { tabId: 42 },
+            },
+          },
+        },
+      },
     },
   },
 };
 const safetyResponse = await context.blockUnsafePreloadedActivationIfNeeded({
-  preloadState,
-  sourceRuntimeEntry,
   sourceTab: { id: 3, windowId: 4 },
   sourceTabId: "3",
   targetUrl: "https://download.example/file.zip",
@@ -118,13 +139,20 @@ assert.equal(safetyResponse.handled, false);
 assert.equal(safetyResponse.reason, "real-preload-safety-guard");
 assert.deepEqual(closedTabs, [42]);
 assert.equal(
-  sourceRuntimeEntry.sourceTabRuntime.hiddenTabEntriesByUrl["https://download.example/file.zip"],
-  undefined
+  storedPreloadState.normalWindowsById[4].sourceTabs[3].sourceTabRuntime.hiddenTabEntriesByUrl[
+    "https://download.example/file.zip"
+  ],
+  undefined,
+  "危险条目没有从最新状态里删除"
 );
-assert.equal(savedPreloadState, preloadState);
+assert.equal(savedPreloadState, storedPreloadState, "保存的应当是重读得到的最新状态");
 assert.equal(prunedRuntime.windowId, 4);
 assert.equal(prunedRuntime.sourceTabId, "3");
-assert.equal(updatedRuntime.sourceRuntimeEntry, sourceRuntimeEntry);
+assert.equal(
+  updatedRuntime.sourceRuntimeEntry,
+  storedPreloadState.normalWindowsById[4].sourceTabs[3],
+  "markSourceRuntimeUpdated 收到的应当是重读后定位的 runtime，而不是陈旧快照"
+);
 assert.equal(debugEvents.at(-1).eventName, "preload-activation.safety-blocked");
 
 const incognitoResponse = await context.validatePreloadedActivationIncognitoContext({

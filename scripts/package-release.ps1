@@ -143,10 +143,19 @@ function Assert-NoForbiddenRuntimeFiles {
 }
 
 if (-not $SkipBuild) {
+  # $ErrorActionPreference = "Stop" 不会捕获原生命令的非零退出码。没有这些显式检查时，
+  # 构建失败会被静默忽略，随后 Copy-File $AppExe 会把上一次构建残留的旧 exe 打进发布包。
   & (Join-Path $ExtensionRoot "scripts\build-wasm.ps1")
+  if ($LASTEXITCODE -ne 0) {
+    throw "WASM build failed with exit code $LASTEXITCODE."
+  }
+
   Push-Location $AppRoot
   try {
     cargo build --release
+    if ($LASTEXITCODE -ne 0) {
+      throw "cargo build --release failed with exit code $LASTEXITCODE."
+    }
   } finally {
     Pop-Location
   }
@@ -181,6 +190,19 @@ if ($LASTEXITCODE -ne 0) {
 $manifestCheck = Get-Content -LiteralPath (Join-Path $ExtensionStage "manifest.json") -Raw | ConvertFrom-Json
 if ($manifestCheck.version -ne $Version) {
   throw "Extension manifest version $($manifestCheck.version) does not match requested version $Version."
+}
+
+# app/Cargo.toml 是第二个版本号来源，此前从不校验。签名脚本只按*文件名*匹配版本，
+# 不看 exe 本身，所以漏改 Cargo.toml 会打出一个自报旧版本的 native app：设置页把它
+# 和 GitHub tag 比对后，会显示一个永远消不掉的“有可用更新”。
+$cargoVersionLine = Select-String -LiteralPath (Join-Path $AppRoot "Cargo.toml") `
+  -Pattern '^\s*version\s*=\s*"([^"]+)"' | Select-Object -First 1
+if (-not $cargoVersionLine -or $cargoVersionLine.Matches.Count -eq 0) {
+  throw "Could not read a version from app/Cargo.toml."
+}
+$cargoVersion = $cargoVersionLine.Matches[0].Groups[1].Value
+if ($cargoVersion -ne $Version) {
+  throw "app/Cargo.toml version $cargoVersion does not match requested version $Version. Update it before packaging."
 }
 
 New-CleanDirectory $AppStage

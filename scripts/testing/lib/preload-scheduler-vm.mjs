@@ -92,7 +92,6 @@ const PRELOAD_SCHEDULER_SCRIPT_SEGMENTS = [
   ["extension", "background", "preload", "scheduler", "selection-targets", "build.js"],
   ["extension", "background", "preload", "scheduler", "selection-targets", "group.js"],
   ["extension", "background", "preload", "scheduler", "selection-targets", "bookmarks.js"],
-  ["extension", "background", "preload", "scheduler", "selection-targets.js"],
   ["extension", "background", "preload", "scheduler", "snapshots.js"],
   ["extension", "background", "preload", "scheduler", "group-allocation.js"],
   ["extension", "background", "preload", "scheduler", "schedule", "fallback.js"],

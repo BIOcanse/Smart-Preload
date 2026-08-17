@@ -140,8 +140,60 @@ async function main() {
   }
 }
 
+// 设置写入必须包在 queueMutation 内并验证生效，否则可能与 service worker 的 bootstrap
+// 并发：bootstrap 会用它更早读到的 cachedUserSettings 整体写回 SETTINGS_STORAGE_KEY
+// （bootstrap.js:66-75），把这里刚写的 realPreloadEnabled=true 覆盖回默认 false，
+// 整场 smoke 就一个真实预加载都不会发生。这与 click-intercept-navigation-smoke 曾经的
+// 空跑是同一个根因，也是 lib/preload-extension-helpers.mjs 的
+// configureRealPreloadTestState 一直重试到确认生效的原因。
+//
+// 这里没有直接复用那个 helper，因为本 smoke 还要种 bookmark buckets 和书签专属规则卡，
+// 不在它的参数范围内；改为套用同一套做法。
+// 验证必须同时覆盖**设置**和**种进 graph 的 bookmark buckets**：bootstrap 的整体写回
+// 里既有 SETTINGS_STORAGE_KEY 也有 GRAPH_KEY（bootstrap.js:67-68），只验证设置的话，
+// 种子被 bootstrap 用陈旧 graph 覆盖掉仍然发现不了 —— 表现就是排名断言
+// expectedTopHost 失败，因为排名依据的桶数据没了。
 async function setupExtensionState(serviceWorker, urls) {
-  await swEval(serviceWorker, async ({ urls }) => {
+  let lastApplied = null;
+
+  for (let attempt = 1; attempt <= 5; attempt += 1) {
+    const result = await writeBookmarkSmokeState(serviceWorker, urls);
+    lastApplied = await swEval(
+      serviceWorker,
+      async ({ urls }) => {
+        const effective = getEffectiveExtensionSettings();
+        const trackingState = await loadTrackingState();
+        const startupBucket =
+          trackingState?.graph?.bookmarkPreloadBuckets?.startupGoogleSearch || {};
+        const newTabBucket =
+          trackingState?.graph?.bookmarkPreloadBuckets?.newGoogleSearchTab || {};
+        return {
+          preloadingEnabled: effective?.preloading?.enabled === true,
+          realPreloadEnabled: effective?.preloading?.realPreloadEnabled === true,
+          startupHighCount: startupBucket[normalizePageUrlForIndex(urls.bookmarkHigh)] ?? null,
+          newTabMidCount: newTabBucket[normalizePageUrlForIndex(urls.bookmarkMid)] ?? null,
+        };
+      },
+      { urls }
+    );
+
+    if (
+      lastApplied.preloadingEnabled &&
+      lastApplied.realPreloadEnabled &&
+      lastApplied.startupHighCount === 12 &&
+      lastApplied.newTabMidCount === 15
+    ) {
+      return result;
+    }
+  }
+
+  throw new Error(
+    `Failed to apply bookmark smoke state after 5 attempts: ${JSON.stringify(lastApplied)}`
+  );
+}
+
+async function writeBookmarkSmokeState(serviceWorker, urls) {
+  return swEval(serviceWorker, async ({ urls }) => {
     if (!chrome.bookmarks?.create || !chrome.bookmarks?.getTree) {
       throw new Error(JSON.stringify({
         reason: "bookmarks-api-unavailable",
@@ -154,7 +206,9 @@ async function setupExtensionState(serviceWorker, urls) {
     await chrome.bookmarks.create({ title: "Smoke Bookmark Mid", url: urls.bookmarkMid });
     await chrome.bookmarks.create({ title: "Smoke Bookmark Low", url: urls.bookmarkLow });
 
-    const settings = globalThis.ZeroLatencySettings.cloneSettings(
+    // 从这里到 saveTrackingState 整段进 mutation lane，避免与 bootstrap 的整体写回交错。
+    const appliedSettings = await queueMutation(async () => {
+      const settings = globalThis.ZeroLatencySettings.cloneSettings(
       globalThis.ZeroLatencySettings.DEFAULT_SETTINGS
     );
     settings.preloading.enabled = true;
@@ -193,10 +247,12 @@ async function setupExtensionState(serviceWorker, urls) {
     };
     trackingState.graph.updatedAt = new Date().toISOString();
     await saveTrackingState(trackingState);
+      return settings;
+    });
 
     return {
       bookmarkCount: (await chrome.bookmarks.search({})).length,
-      settings,
+      settings: appliedSettings,
     };
   }, { urls });
 }
@@ -248,6 +304,11 @@ async function inspectSettingsPage({ debugPort, serviceWorker, extensionId, clie
   await page.send("Page.enable");
   await waitForPageReady(page);
 
+  // waitForPageReady 只保证文档就绪，规则卡是设置页读完存储后**异步渲染**的。
+  // 之前直接在这里取快照，渲染慢一点就会拿到 preloadCards: []，断言随即失败——
+  // 这正是本 smoke 间歇性失败的原因，与书签排名无关（排名场景一直是通过的）。
+  await waitForSettingsRuleCards(page);
+
   const dom = await pageEval(page, () => {
     const cardIds = (selector) =>
       Array.from(document.querySelector(selector)?.children || [])
@@ -293,6 +354,40 @@ async function inspectSettingsPage({ debugPort, serviceWorker, extensionId, clie
     screenshotPath,
     dom,
   };
+}
+
+// 等设置页把预加载规则卡渲染出来。断言的是卡片顺序，所以必须等到列表非空且稳定，
+// 否则拿到的是渲染中途的空列表。
+async function waitForSettingsRuleCards(page, timeoutMs = 10000) {
+  const startedAt = Date.now();
+  let lastCount = -1;
+  let stableRounds = 0;
+
+  while (Date.now() - startedAt < timeoutMs) {
+    const count = await pageEval(page, () =>
+      Array.from(document.querySelector("#preload-rule-cards-list")?.children || []).filter(
+        (element) => element.matches?.("[data-card-id]")
+      ).length
+    );
+
+    if (count > 0 && count === lastCount) {
+      stableRounds += 1;
+
+      // 连续两轮数量不变才认为渲染完成，避免抓到中途状态。
+      if (stableRounds >= 2) {
+        return count;
+      }
+    } else {
+      stableRounds = 0;
+    }
+
+    lastCount = count;
+    await sleep(150);
+  }
+
+  throw new Error(
+    `Timed out waiting for settings rule cards to render (last count: ${lastCount}).`
+  );
 }
 
 async function runGoogleBookmarkScenario({

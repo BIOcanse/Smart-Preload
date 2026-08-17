@@ -79,7 +79,9 @@ const anchors = [
     text: "Online banking",
     top: 140,
   }),
-  makeAnchor("https://school.example/courses/intro/quizzes/final", {
+  // v2 只按主机名后缀判定，所以敏感夹具必须用真实的考试平台主机名，
+  // 而不是靠路径里的 `quizzes`（那套路径启发式已因误判率过高删除）。
+  makeAnchor("https://exam.pearsonvue.com/schedule", {
     text: "Final quiz",
     top: 160,
   }),
@@ -197,7 +199,7 @@ console.log(
         "content candidate scan drops unsafe MIME links",
         "content candidate scan drops download query links",
         "content candidate scan drops sensitive banking links",
-        "content candidate scan drops sensitive exam links",
+        "content candidate scan drops sensitive exam links (by host suffix)",
       ],
     },
     null,

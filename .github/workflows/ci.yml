@@ -1,0 +1,108 @@
+name: CI
+
+# 只跑不需要真实浏览器的检查。7 个浏览器 smoke 需要启动 Chromium/Edge、部分还需要先
+# 打包出 native app，且已知存在间歇性失败（见 docs/internal/review-2026-07-31.md），
+# 放进 CI 只会制造噪音。它们仍然由维护者本地跑：
+#   node scripts/testing/run-all.mjs --all
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  extension:
+    name: Extension (unit)
+    # 与维护者的开发环境一致。单元测试是纯 node:vm，理论上跨平台，但没有在 Linux 上
+    # 验证过；要加 ubuntu 请先本地确认再进矩阵。
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # 本仓库没有 package.json，也没有任何 JS 依赖 —— 无需 install。
+      - name: Syntax check every shipped script
+        shell: bash
+        run: |
+          set -e
+          fail=0
+          for file in $(git ls-files 'extension/**/*.js' 'extension/*.js' 'scripts/**/*.mjs'); do
+            node --check "$file" || { echo "syntax error: $file"; fail=1; }
+          done
+          exit $fail
+
+      # run-all.mjs 默认只跑 unit，退出码：全通过 0 / 任一失败 1。
+      # 分类见 node scripts/testing/run-all.mjs --list
+      - name: Unit tests
+        run: node scripts/testing/run-all.mjs
+
+  app:
+    name: Companion app (Rust)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Tests
+        run: cargo test
+
+  wasm:
+    name: Visit-graph engine (Rust)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extension/wasm/visit-graph-engine
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+          # Check 步骤按真实产物目标编译，需要显式安装该 target。
+          targets: wasm32-unknown-unknown
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: extension/wasm/visit-graph-engine
+
+      - name: Format
+        run: cargo fmt --check
+
+      # 与 app crate 同口径。此前这里只有 `cargo check`，于是三条 clippy 警告
+      # （filter.rs 的可折叠 if、selection.rs 的 needless_range_loop、ffi.rs 的
+      # missing_const_for_thread_local 误报）长期挂着无人管。现已全部处理，
+      # 收紧成 -D warnings 以免再次积累。
+      - name: Lint
+        run: cargo clippy --all-targets -- -D warnings
+
+      # 只做编译，不重新产出 .wasm —— 发布产物由 package-release.ps1 生成。
+      - name: Check
+        run: cargo check --target wasm32-unknown-unknown
+
+      # 16 个测试：scoring 3 个，selection 13 个（含槽位分配 DP 及其错误路径）。
+      # 只服务死入口的 db/ events/ query/ model/ 已删除，见
+      # docs/internal/wasm-engine-decision.md。
+      - name: Tests
+        run: cargo test
