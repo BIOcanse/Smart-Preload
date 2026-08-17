@@ -21,18 +21,18 @@
 
     document.addEventListener("prerenderingchange", () => {
       if (namespace.isPassivePrerenderContext()) {
-        void namespace.reportAttentionActivity({ force: true });
+        void namespace.reportAttentionActivity();
         return;
       }
 
-      void namespace.reportAttentionActivity({ force: true });
+      void namespace.reportAttentionActivity();
       namespace.scheduleCandidateScan({
         includePageDigest: true,
       });
     });
 
     document.addEventListener("visibilitychange", () => {
-      void namespace.reportAttentionActivity({ force: true });
+      void namespace.reportAttentionActivity();
     });
 
     bindNavigationMediaActivityEvents();
@@ -44,7 +44,7 @@
       document.addEventListener(
         eventName,
         () => {
-          void namespace.reportAttentionActivity({ force: true });
+          void namespace.reportAttentionActivity();
         },
         true
       );

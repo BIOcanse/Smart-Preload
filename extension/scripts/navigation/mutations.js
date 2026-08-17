@@ -11,7 +11,6 @@
     initializeCandidateAnchorIndex,
     resetCandidateAnchorIndex,
     advancePageGeneration,
-    markDocumentContentChanged,
     applySpeculationRules,
   } = namespace;
 
@@ -25,8 +24,9 @@
         return;
       }
 
+      // 这里不再作废页面摘要缓存：DOM 变更不是摘要的重建信号（见 page-digest.js）。
+      // 变更仍然驱动候选链接的增量重扫，那条路是按 anchor 精确标脏的，与摘要无关。
       const pageChanged = synchronizeCurrentPageGeneration();
-      markDocumentContentChanged();
 
       if (!pageChanged) {
         enqueueCandidateMutations(relevantMutations);

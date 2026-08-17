@@ -3,7 +3,9 @@
     globalThis.ZeroLatencyNavigationContent || {});
   const {
     constants,
+    findNavigableAnchorFromEvent,
     getTrackedAnchorNavigation,
+    normalizeNavigableHref,
     isPassivePrerenderContext,
     requestInteractionPreloadStatus,
     requestInteractionPreload,
@@ -17,22 +19,37 @@
       return;
     }
 
-    const navigation = getTrackedAnchorNavigation(event);
+    const anchor = findNavigableAnchorFromEvent(event);
 
-    if (!navigation || event.defaultPrevented) {
+    if (!anchor || event.defaultPrevented) {
+      return;
+    }
+
+    // pointerover 会冒泡：鼠标在同一个链接内部从 <img> 移到 <span> 会再触发一次，
+    // 卡片式链接（图 + 标题 + 摘要包在一个 <a> 里）扫过一次就是三四遍。
+    //
+    // 这个去重此前写在 getTrackedAnchorNavigation() 之后，等于每次都先付掉安全判定里的
+    // 两次强制布局，才发现结果要丢弃。提到前面来 —— 该分支本来就不使用 navigation。
+    // href 变化由 targetUrl 比对兜住（只解析 URL，不碰布局）。
+    const existingIntent = namespace.state.hoverPreloadIntent;
+
+    if (
+      existingIntent &&
+      existingIntent.cancelled !== true &&
+      existingIntent.anchor === anchor &&
+      existingIntent.targetUrl === normalizeNavigableHref(anchor.href)
+    ) {
+      namespace.recordLinkInteractionForAttention?.();
+      return;
+    }
+
+    const navigation = getTrackedAnchorNavigation(event, { anchor });
+
+    if (!navigation) {
       return;
     }
 
     namespace.recordLinkInteractionForAttention?.();
-    const existingIntent = namespace.state.hoverPreloadIntent;
-    if (
-      existingIntent &&
-      existingIntent.cancelled !== true &&
-      existingIntent.anchor === navigation.anchor &&
-      existingIntent.targetUrl === navigation.targetUrl
-    ) {
-      return;
-    }
 
     const nextIntentId = (namespace.state.hoverPreloadSequence || 0) + 1;
     namespace.state.hoverPreloadSequence = nextIntentId;
