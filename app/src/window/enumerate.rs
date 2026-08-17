@@ -8,6 +8,19 @@ use crate::telemetry::{
 };
 
 const WINDOW_BOUNDS_TOLERANCE_PX: i32 = 10;
+/// 预加载窗口的哨兵标记，来自扩展侧 `core/state/config.js` 的
+/// `PRELOAD_WINDOW_SENTINEL_URL = "about:blank#zero-latency-preload-window"`。
+///
+/// 隐藏接口**只允许作用于预加载窗口**。此前 `request_has_strong_evidence` 只要求
+/// 「有标题子串 或 有完整边界」，完全不要求目标是预加载窗口 —— 于是一个已授权的调用方
+/// 发 `{"titleContains":"Gmail"}` 就能隐藏用户真正的 Gmail 窗口，而隐藏后 HWND 会被跟踪，
+/// 心跳租约过期时走 `close_tracked_hidden_windows_by_hwnds` 发 WM_CLOSE（`api/state.rs`），
+/// 用户未保存的内容随之丢失。
+///
+/// 扩展自己的两个调用点（`window-manager/hiding.js:41`、
+/// `window-manager/system-hide/operations.js:91`）本来就传这个哨兵作为 `titleContains`，
+/// 所以按窗口标题强制校验它不改变产品自身的行为。
+const PRELOAD_WINDOW_TITLE_SENTINEL: &str = "zero-latency-preload-window";
 
 struct EnumContext {
     windows: Vec<ChromeWindowInfo>,
@@ -108,6 +121,12 @@ fn validate_window_request_evidence(
     }
 
     if !request_browser_family_matches(window, request) {
+        return Err(WindowMatchError::EvidenceMismatch);
+    }
+
+    // 目标窗口必须**本身**就是预加载窗口，与请求里写了什么无关。
+    // 这条是硬门：没有它，「强证据」可以只是一个任意标题子串。
+    if !window.title.contains(PRELOAD_WINDOW_TITLE_SENTINEL) {
         return Err(WindowMatchError::EvidenceMismatch);
     }
 
@@ -419,5 +438,55 @@ mod tests {
             validate_window_request_evidence(&window, &verified_request()),
             Err(WindowMatchError::EvidenceMismatch)
         );
+    }
+
+    /// 隐藏接口只能作用于预加载窗口。
+    ///
+    /// 此前「强证据」只要求「有标题子串 或 有完整边界」，完全不要求目标是预加载窗口：
+    /// 一个已授权的调用方发 `{"titleContains":"Gmail"}` 就能隐藏用户真正的 Gmail 窗口，
+    /// 而隐藏后 HWND 会被跟踪，心跳租约过期时发 WM_CLOSE（`api/state.rs` 的
+    /// `close_tracked_hidden_windows_by_hwnds`），未保存内容随之丢失。
+    #[test]
+    fn real_user_window_cannot_be_hidden_even_with_matching_title_and_bounds() {
+        let mut window = test_window();
+        window.title = "Inbox (12) - user@example.com - Gmail - Google Chrome".to_string();
+        // 位置也搬到正常屏幕坐标，模拟用户真实使用中的窗口。
+        window.left = 120;
+        window.top = 80;
+
+        let request = HideWindowRequest {
+            left: Some(120),
+            top: Some(80),
+            width: Some(800),
+            height: Some(600),
+            title_contains: Some("Gmail".to_string()),
+            browser_family: Some("chromium".to_string()),
+            hwnd: Some(42),
+        };
+
+        assert_eq!(
+            validate_window_request_evidence(&window, &request),
+            Err(WindowMatchError::EvidenceMismatch),
+            "标题与边界都对得上，但目标不是预加载窗口，必须拒绝"
+        );
+    }
+
+    /// 产品自身的调用路径不受影响：扩展的两个隐藏调用点
+    /// （`window-manager/hiding.js:41`、`window-manager/system-hide/operations.js:91`）
+    /// 传的都是哨兵标题，而预加载窗口的标题里本来就含它。
+    #[test]
+    fn preload_window_is_still_hidable_by_bounds_only() {
+        let window = test_window();
+        let request = HideWindowRequest {
+            left: Some(-20_000),
+            top: Some(-20_000),
+            width: Some(800),
+            height: Some(600),
+            title_contains: None,
+            browser_family: Some("chromium".to_string()),
+            hwnd: Some(42),
+        };
+
+        assert_eq!(validate_window_request_evidence(&window, &request), Ok(()));
     }
 }

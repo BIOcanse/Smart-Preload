@@ -135,8 +135,12 @@
   }
 
   function isNativeAppHeartbeatPreloadSentinelWindow(windowInfo) {
-    const sentinelUrl =
-      globalThis.PRELOAD_WINDOW_SENTINEL_URL || "about:blank#zero-latency-preload-window";
+    // 必须用裸标识符：PRELOAD_WINDOW_SENTINEL_URL 是 service-worker.js:25 的顶层 const，
+    // 而顶层 const 进的是全局**词法**环境，不会成为 globalThis 的属性。此前这里写的是
+    // globalThis.PRELOAD_WINDOW_SENTINEL_URL —— 恒为 undefined，永远退到后面那个字面量，
+    // 只因它恰好等于 core/state/config.js:23 的值才没出错；改配置就会静默失配。
+    // 另外 11 个使用点都用裸标识符（如 window-manager/native-detect.js:139）。
+    const sentinelUrl = PRELOAD_WINDOW_SENTINEL_URL;
 
     return (
       Array.isArray(windowInfo?.tabs) &&

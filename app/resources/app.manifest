@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity
+    type="win32"
+    name="ZeroLatencyWeb.LocalApp"
+    version="1.0.0.0"
+    processorArchitecture="*"
+  />
+
+  <!--
+    这份清单**只**为一件事存在：TaskDialogIndirect 需要 ComCtl32 v6 的激活上下文，
+    没有它调用会直接失败（见 api/pairing/mod.rs）。
+
+    刻意不写的东西：
+      - 没有 <dpiAware> / <dpiAwareness>：winit 在启动时自己调
+        SetProcessDpiAwarenessContext，清单里再声明会与之冲突（清单优先，winit 的调用会失败）。
+      - 没有 <compatibility><supportedOS>：声明它会改变 GetVersionEx 的返回值。
+        当前代码不读系统版本，但这属于「顺手改了没人要求的行为」，不加。
+  -->
+  <dependency>
+    <dependentAssembly>
+      <assemblyIdentity
+        type="win32"
+        name="Microsoft.Windows.Common-Controls"
+        version="6.0.0.0"
+        processorArchitecture="*"
+        publicKeyToken="6595b64144ccf1df"
+        language="*"
+      />
+    </dependentAssembly>
+  </dependency>
+
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+      <requestedPrivileges>
+        <!-- 与不带清单时的默认一致：绝不请求提权。 -->
+        <requestedExecutionLevel level="asInvoker" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+</assembly>

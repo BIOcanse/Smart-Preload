@@ -42,8 +42,18 @@ for (const script of scripts) {
 const modules = context.ZeroLatencyNativeAppRequestModules;
 const first = modules.ensureNativeAppRegistration();
 const joined = modules.ensureNativeAppRegistration();
-await Promise.resolve();
-assert.equal(fetchCount, 1);
+
+// 「合并」直接用 promise 同一性来断言，不靠数微任务。
+//
+// 原先这里是 `await Promise.resolve(); assert.equal(fetchCount, 1)` —— 用「一个 tick 之后
+// 已经发了一次请求」当合并的代理指标。配对退避检查引入了一次 session 存储读取之后，
+// fetch 会晚几个微任务才开始，这条断言就开始因为时序而失败，而合并本身是好的。
+// 同一性断言更强也更稳：它同时排除了「第二次调用覆盖了第一次的 promise」这种真回归。
+assert.equal(first, joined, "并发调用必须共用同一次注册，否则会向 app 发两次注册请求");
+
+// 排空微任务队列，让退避检查走完、fetch 真正发出。
+await new Promise((resolve) => setTimeout(resolve, 0));
+assert.equal(fetchCount, 1, "两个并发调用各发了一次请求 —— 用户可能因此被弹两次确认框");
 
 rejectFetch(new Error("offline"));
 await assert.rejects(first, /offline/);
