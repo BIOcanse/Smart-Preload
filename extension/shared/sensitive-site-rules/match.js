@@ -2,6 +2,13 @@
   const constants = globalThis.ZeroLatencySensitiveSiteRuleConstants;
   const urlApi = globalThis.ZeroLatencySensitiveSiteRuleUrl;
 
+  // 只按主机名后缀判定。v1 还有主机名 label 精确/子串、路径段、以及对
+  // anchorText + nearbyText 的文本提示三套判据，全部因误判率过高被删除
+  // （理由与实测数据见 constants.js 顶部）。
+  //
+  // `options` 现在只用 `baseUrl`；`anchorText` / `nearbyText` / `titleAttr` /
+  // `ariaLabel` 已不再被读取。调用方**不需要**再为此读取 innerText ——
+  // 那正是内容脚本 hover 路径上强制布局的来源，现已从根上消除。
   function inspectSensitiveSiteUrl(rawUrl, options = {}) {
     const parsedUrl = urlApi.normalizeSensitiveSiteUrl(rawUrl, options?.baseUrl || "");
 
@@ -9,14 +16,7 @@
       return buildSensitiveSiteDecision([]);
     }
 
-    const matches = [
-      ...inspectHostSuffixes(parsedUrl.hostname),
-      ...inspectHostLabels(parsedUrl.hostname),
-      ...inspectPathTokens(parsedUrl.pathname),
-      ...inspectTextHints(options),
-    ];
-
-    return buildSensitiveSiteDecision(matches);
+    return buildSensitiveSiteDecision(inspectHostSuffixes(parsedUrl.hostname));
   }
 
   function inspectHostSuffixes(hostname) {
@@ -35,100 +35,6 @@
           });
           break;
         }
-      }
-    }
-
-    return matches;
-  }
-
-  function inspectHostLabels(hostname) {
-    const labels = urlApi.splitSensitiveHostLabels(hostname);
-    const matches = [];
-
-    for (const [category, tokens] of Object.entries(
-      constants.HOST_LABEL_TOKENS_BY_CATEGORY
-    )) {
-      const tokenSet = new Set(tokens);
-
-      if (labels.some((label) => tokenSet.has(label))) {
-        matches.push({
-          category,
-          reason: `sensitive-site-${category}`,
-          field: "host-label",
-          value: "",
-        });
-      }
-    }
-
-    for (const [category, substrings] of Object.entries(
-      constants.HOST_LABEL_SUBSTRINGS_BY_CATEGORY
-    )) {
-      if (matches.some((match) => match.category === category)) {
-        continue;
-      }
-
-      const matchedSubstring = labels.find((label) =>
-        substrings.some((substring) => label.includes(substring))
-      );
-
-      if (matchedSubstring) {
-        matches.push({
-          category,
-          reason: `sensitive-site-${category}`,
-          field: "host-label-substring",
-          value: matchedSubstring,
-        });
-      }
-    }
-
-    return matches;
-  }
-
-  function inspectPathTokens(pathname) {
-    const pathTokens = new Set(urlApi.splitSensitivePathTokens(pathname));
-    const matches = [];
-
-    for (const [category, tokens] of Object.entries(constants.PATH_TOKENS_BY_CATEGORY)) {
-      const matchedToken = tokens.find((token) => pathTokens.has(token));
-
-      if (matchedToken) {
-        matches.push({
-          category,
-          reason: `sensitive-site-${category}`,
-          field: "path-token",
-          value: matchedToken,
-        });
-      }
-    }
-
-    return matches;
-  }
-
-  function inspectTextHints(options) {
-    const text = urlApi.normalizeSensitiveText(
-      [options?.anchorText, options?.nearbyText, options?.titleAttr, options?.ariaLabel]
-        .filter(Boolean)
-        .join(" ")
-    );
-
-    if (!text) {
-      return [];
-    }
-
-    const matches = [];
-
-    for (const [category, hints] of Object.entries(constants.TEXT_HINTS_BY_CATEGORY)) {
-      const matchedHint = hints.find((hint) =>
-        text.includes(String(hint || "").toLowerCase())
-      );
-
-      if (matchedHint) {
-        matches.push({
-          category,
-          reason: `sensitive-site-${category}`,
-          field: "text-hint",
-          value: matchedHint,
-        });
       }
     }
 
