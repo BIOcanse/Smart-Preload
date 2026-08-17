@@ -4,8 +4,9 @@ use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 
 use crate::api::auth::is_authorized_debug_request;
-use crate::api::origin::{normalize_debug_origin, normalize_extension_origin};
+use crate::api::origin::{is_local_api_host, normalize_debug_origin, normalize_extension_origin};
 use crate::api::ApiState;
+use crate::runtime_debug::record_app_runtime_event;
 
 pub(super) async fn apply_extension_cors(
     State(state): State<ApiState>,
@@ -14,6 +15,14 @@ pub(super) async fn apply_extension_cors(
 ) -> Response {
     let request_method = request.method().clone();
     let request_path = request.uri().path().to_string();
+
+    // Outermost gate, so it also covers /extension/register and OPTIONS
+    // preflight. See is_local_api_host for why Host is the check that works.
+    if !is_local_api_host(request.headers()) {
+        record_app_runtime_event("api", "request-denied-host-mismatch", Some(request_path));
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
     let request_origin = request
         .headers()
         .get(header::ORIGIN)
@@ -69,10 +78,12 @@ fn build_preflight_cors_response(allowed_origin: Option<&str>, debug_authorized:
     );
     response.headers_mut().insert(
         header::ACCESS_CONTROL_ALLOW_HEADERS,
+        // x-zlw-extension-locale 只影响配对弹窗的文案语言，不参与安全判定；
+        // 不列进来的话预检会挡掉整个注册请求。
         HeaderValue::from_static(if debug_authorized {
-            "content-type, x-zlw-debug-token, x-zlw-extension-origin"
+            "content-type, x-zlw-debug-token, x-zlw-extension-locale, x-zlw-extension-origin"
         } else {
-            "content-type, x-zlw-extension-origin"
+            "content-type, x-zlw-extension-locale, x-zlw-extension-origin"
         }),
     );
     response.headers_mut().insert(

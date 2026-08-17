@@ -72,14 +72,15 @@ fn run_host() -> Result<()> {
     record_app_runtime_event("host", "host-mode-entered", None);
     let debug_force_host = lifecycle::debug_force_host_enabled();
     let native_wake_host = lifecycle::consume_recent_native_wake_marker();
-    let _host_guard = match lifecycle::acquire_host_guard()? {
-        Some(guard) => guard,
-        None => {
-            record_app_runtime_event("host", "host-duplicate-instance-exit", None);
-            info!("tray host instance already running; exiting duplicate host");
-            return Ok(());
-        }
-    };
+    let _host_guard =
+        match record_startup_failure("acquire-host-guard", lifecycle::acquire_host_guard())? {
+            Some(guard) => guard,
+            None => {
+                record_app_runtime_event("host", "host-duplicate-instance-exit", None);
+                info!("tray host instance already running; exiting duplicate host");
+                return Ok(());
+            }
+        };
 
     let target_extension_installed = lifecycle::target_extension_is_installed();
 
@@ -99,7 +100,7 @@ fn run_host() -> Result<()> {
     }
 
     let (shutdown_tx, shutdown_rx) = watch::channel(false);
-    let snapshotter = SystemSnapshotter::new()?;
+    let snapshotter = record_startup_failure("system-snapshotter", SystemSnapshotter::new())?;
     let process_sampler = snapshotter.process_sampler();
     let state = ApiState::new(snapshotter, shutdown_tx.clone());
     let server_handle = api::spawn_server(state.clone(), shutdown_rx, shutdown_tx.clone());
@@ -127,7 +128,7 @@ fn run_host() -> Result<()> {
 
     record_app_runtime_event("host", "host-ready", None);
     info!("Zero-Latency Web local hardware API is running in the tray.");
-    let tray_result = tray::run_tray(shutdown_tx.clone(), tray_shutdown_rx);
+    let tray_result = tray::run_tray(state.clone(), shutdown_tx.clone(), tray_shutdown_rx);
     let _ = shutdown_tx.send(true);
     window::shutdown_hidden_window_runtime();
     let closed_hidden_window_count = window::close_tracked_hidden_windows("host-shutdown");
@@ -151,6 +152,24 @@ fn run_host() -> Result<()> {
         tray_result.as_ref().err().map(|error| error.to_string()),
     );
     tray_result
+}
+
+/// 把启动期的失败记进运行日志再往外抛。
+///
+/// `host-mode-entered` 与 `server-listening` 之间原本全是裸 `?`：任何一步出错，
+/// 进程就静默退出——`windows_subsystem = "windows"` 连 stderr 都没地方去，
+/// 运行日志里只剩一条 `host-mode-entered` 然后戛然而止。
+/// 用户看到的是「本地 App 一直连不上」，而没有任何线索指向原因（实测 2026-08-11 踩到过）。
+fn record_startup_failure<T>(step: &str, result: Result<T>) -> Result<T> {
+    if let Err(error) = &result {
+        record_app_runtime_event(
+            "host",
+            "host-startup-failed",
+            Some(format!("{step}: {error:#}")),
+        );
+    }
+
+    result
 }
 
 fn spawn_extension_heartbeat_shutdown_monitor(

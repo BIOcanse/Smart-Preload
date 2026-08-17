@@ -1,0 +1,4 @@
+/* CREATEPROCESS_MANIFEST_RESOURCE_ID (1) 与 RT_MANIFEST (24)。
+   GNU 工具链靠这个资源脚本把清单嵌进可执行文件；MSVC 走链接器的
+   /MANIFESTDEPENDENCY，不用这个文件。两条路都在 build.rs 里。 */
+1 24 "app.manifest"

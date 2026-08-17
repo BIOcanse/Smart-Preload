@@ -11,6 +11,8 @@
         return;
       case "handle-installed":
         await initializeExtensionState();
+        // 刚装好就是用户在主动要这个功能，清掉可能残留的配对退避。
+        await clearNativeAppPairingBackoffForUserAction("installed");
         await applyRuntimeSettingsAction();
         console.log("Smart Preload extension installed.");
         return;
@@ -22,10 +24,29 @@
         backgroundState.setCachedSettings(
           envelope.raw?.changes?.[SETTINGS_STORAGE_KEY]?.newValue
         );
+        // 用户刚在设置页保存过 —— 这是明确的用户动作，清掉配对退避，
+        // 让「我就是要连本地 App」能立刻生效，而不用等十分钟。
+        await clearNativeAppPairingBackoffForUserAction("settings-saved");
         await applyRuntimeSettingsAction();
         return;
       default:
         return;
+    }
+  }
+
+  // 只在**用户动作**上调用。自动恢复路径用的是 `resetNativeAppRegistration()`，
+  // 那条绝不能碰退避（见 native-app/request/registration.js 顶部）。
+  async function clearNativeAppPairingBackoffForUserAction(reason) {
+    try {
+      await globalThis.ZeroLatencyNativeAppRequestModules?.clearNativeAppPairingBackoff?.();
+      globalThis.ZeroLatencyDebugEvents?.record?.("native-app.pairing-backoff.cleared", {
+        reason,
+      });
+    } catch (error) {
+      globalThis.ZeroLatencyDebugEvents?.record?.("native-app.pairing-backoff.clear-error", {
+        reason,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 

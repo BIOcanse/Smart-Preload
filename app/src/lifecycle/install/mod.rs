@@ -56,11 +56,22 @@ pub(crate) fn uninstall_portable_app() -> Result<PortableInstallStatus> {
     Ok(status)
 }
 
+/// 安装/更新时要写进 allowed-origins 与 native messaging manifest 的扩展 ID。
+///
+/// **已确认的配对优先于全新扫描**（2026-08-02 调换顺序）。`persist_allowed_extension_origins`
+/// 是整体覆盖写，而 `target_extension_ids()` 是「扫 Chrome 配置目录里所有 manifest 形状匹配
+/// 的扩展」——形状指纹是公开可复制的。原来的顺序意味着：用户装了个照抄形状的扩展之后，
+/// 只要本地 app 走一次安装/更新流程，那个扩展就会被**自动**写进授权集合与 native messaging
+/// manifest，绕过 `/extension/register` 的配对弹窗。
+///
+/// 调换后：
+///   - 首次安装（还没有任何确认过的配对）：回落到扫描，行为与之前一致，用户此刻正在跑安装程序。
+///   - 之后的每次更新：只沿用**用户确认过**的那批，新出现的形状匹配扩展必须走弹窗。
 fn install_extension_ids() -> Vec<String> {
-    let mut extension_ids = target_extension_ids();
+    let mut extension_ids = registered_extension_ids();
 
     if extension_ids.is_empty() {
-        extension_ids = registered_extension_ids();
+        extension_ids = target_extension_ids();
     }
 
     if extension_ids.is_empty() {

@@ -1,6 +1,7 @@
+use std::fs;
 use std::fs::OpenOptions;
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use axum::http::StatusCode;
 use axum::Json;
@@ -11,6 +12,13 @@ use crate::runtime_debug::record_app_runtime_event;
 
 const MAX_DIAGNOSTIC_EVENTS_PER_REQUEST: usize = 256;
 const MAX_SESSION_ID_LEN: usize = 80;
+/// 单个会话日志的大小上限，超过就轮转到 `.1` 备份并从头开始。
+///
+/// 此前这条路径**没有任何大小上限、轮转或文件数上限** —— 只是
+/// `OpenOptions::append(true)` 一直往下写。而同一个进程里的 `runtime_debug.rs`
+/// 早就有 1024 行 / 2 MiB 的轮转（`MAX_APP_RUNTIME_EVENT_LOG_BYTES`），两条日志路径
+/// 策略不一致。诊断开着的时候正是磁盘增长最快的时候。
+const MAX_DIAGNOSTIC_LOG_BYTES: u64 = 4 * 1024 * 1024;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -42,6 +50,9 @@ pub(crate) async fn append_diagnostics_log(
         std::fs::create_dir_all(parent_dir)
             .map_err(|error| (StatusCode::INTERNAL_SERVER_ERROR, error.to_string()))?;
     }
+
+    rotate_diagnostics_log_if_oversized(&log_path)
+        .map_err(|error| (StatusCode::INTERNAL_SERVER_ERROR, error.to_string()))?;
 
     let mut log_file = OpenOptions::new()
         .create(true)
@@ -81,6 +92,26 @@ pub(crate) async fn append_diagnostics_log(
         path: log_path.to_string_lossy().to_string(),
         written,
     }))
+}
+
+/// 单备份轮转，与 `runtime_debug.rs` 的做法一致：超过上限就把当前文件改名为 `.1`，
+/// 覆盖掉上一份备份。因此每个会话最多占用 2 × `MAX_DIAGNOSTIC_LOG_BYTES`。
+fn rotate_diagnostics_log_if_oversized(log_path: &Path) -> std::io::Result<()> {
+    let Ok(metadata) = fs::metadata(log_path) else {
+        return Ok(());
+    };
+
+    if metadata.len() < MAX_DIAGNOSTIC_LOG_BYTES {
+        return Ok(());
+    }
+
+    let backup_path = log_path.with_extension("1.jsonl");
+
+    if backup_path.exists() {
+        fs::remove_file(&backup_path)?;
+    }
+
+    fs::rename(log_path, &backup_path)
 }
 
 fn diagnostics_log_path(session_id: &str) -> std::io::Result<PathBuf> {
