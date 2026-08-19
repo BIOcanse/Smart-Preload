@@ -1,9 +1,19 @@
 param(
   [string]$Version = "",
-  [switch]$SkipBuild
+  [switch]$SkipBuild,
+  # 已发布记录只存在于 GitHub 上，本地标签随时可能是过期的（见下方 Assert-VersionNotReleased）。
+  # 默认自动认出指向发布仓库的 remote；仓库有多个 remote 或叫别的名字时用这个参数指定。
+  [string]$ReleaseRemote = "",
+  # 明确放弃远端校验（离线打包时用）。这会把护栏降级成「只看本地标签」——
+  # 本地标签缺失时就拦不住重复版本号，所以要显式写出来，不做静默降级。
+  [switch]$SkipRemoteTagCheck
 )
 
 $ErrorActionPreference = "Stop"
+
+# 更新检查、资产下载 URL 都硬编码指向这个仓库（app/src/update/*.rs、
+# extension/settings/app-updates/constants.js）。已发布记录也以它为准。
+$ReleaseRepoSlug = "BIOcanse/Smart-Preload"
 
 $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = [System.IO.Path]::GetFullPath((Join-Path $ScriptRoot ".."))
@@ -41,10 +51,76 @@ if ($Version -ne $manifestVersion) {
 
 # 复用一个已发布过的版本号，Chrome 商店会直接拒收，而且已装用户永远收不到更新。
 # 标签是本仓库唯一的已发布记录，拿它当护栏。
-$existingTag = & git -C $RepoRoot tag --list "v$Version" 2>$null
-if ($existingTag) {
-  throw "v$Version 已经打过标签（即已发布）。请先在 extension\manifest.json 与 app\Cargo.toml 里升版本号。"
+#
+# 只查本地标签是不够的：`git tag --list` 读的是 .git/refs/tags，只有 fetch 过才有。
+# 实测 2026-08-19——v1.0.17 早在 2026-07-16 就发布了、远端标签存在，本机却一条都没有，
+# 这条护栏对它完全不响。护栏拦不住它本该拦的那一个版本，比没有护栏更糟：它给的是错的信心。
+# 所以真正的判据在远端；查不动远端时报错而不是放行（「不知道」不等于「没有」）。
+function Assert-VersionNotReleased {
+  param(
+    [Parameter(Mandatory = $true)][string]$Version,
+    [Parameter(Mandatory = $true)][string]$RepoRoot,
+    [Parameter(Mandatory = $true)][string]$RepoSlug,
+    [string]$Remote = "",
+    [switch]$SkipRemote
+  )
+
+  $tagRef = "v$Version"
+
+  if (& git -C $RepoRoot tag --list $tagRef 2>$null) {
+    throw "$tagRef 已经打过标签（即已发布）。请先在 extension\manifest.json 与 app\Cargo.toml 里升版本号。"
+  }
+
+  if ($SkipRemote) {
+    Write-Host "[打包] 已按 -SkipRemoteTagCheck 跳过远端标签校验，只查了本地标签。" -ForegroundColor Yellow
+    return
+  }
+
+  if ([string]::IsNullOrWhiteSpace($Remote)) {
+    $matched = @()
+    foreach ($name in (& git -C $RepoRoot remote 2>$null)) {
+      if ([string]::IsNullOrWhiteSpace($name)) { continue }
+      $url = (& git -C $RepoRoot remote get-url $name 2>$null | Select-Object -First 1)
+      if ($url -and $url -match [regex]::Escape($RepoSlug)) { $matched += $name }
+    }
+
+    if ($matched.Count -eq 0) {
+      throw "找不到指向 $RepoSlug 的 remote，无法确认 $tagRef 是否已发布。用 -ReleaseRemote <名字> 指定，或用 -SkipRemoteTagCheck 明确放弃这项校验。"
+    }
+    if ($matched.Count -gt 1) {
+      throw "有多个 remote 指向 $RepoSlug（$($matched -join '、')），不猜。用 -ReleaseRemote <名字> 指定。"
+    }
+    $Remote = $matched[0]
+  }
+
+  # Windows PowerShell 5.1 下，对原生命令做 2>&1 会把每行 stderr 包成 ErrorRecord；
+  # 脚本顶上的 $ErrorActionPreference = "Stop" 会让它当场变成终止错误，下面这段
+  # 自己的判定与提示根本轮不到执行 —— 结果是拦是拦住了，但抛出来的是 git 的原文，
+  # 维护者看不到 -SkipRemoteTagCheck 这个正确出口。所以这一段显式降回 Continue。
+  $previousPreference = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    $remoteTags = & git -C $RepoRoot ls-remote --tags $Remote "refs/tags/$tagRef" 2>&1
+    $remoteExitCode = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previousPreference
+  }
+
+  if ($remoteExitCode -ne 0) {
+    throw "查询 remote「$Remote」的标签失败，无法确认 $tagRef 是否已发布：$($remoteTags -join ' ')`n（离线打包请显式加 -SkipRemoteTagCheck。）"
+  }
+  # 2>&1 把 stderr 也并进来了（git 可能打无关警告），所以只认真正的标签行，
+  # 否则一条警告就会被误读成「这个版本已发布」。
+  $matchedRefs = @($remoteTags | Where-Object { "$_" -match "\srefs/tags/$([regex]::Escape($tagRef))(\^\{\})?$" })
+  if ($matchedRefs.Count -gt 0) {
+    throw "$tagRef 在 remote「$Remote」上已经存在（即已发布，本地只是没 fetch）。请先在 extension\manifest.json 与 app\Cargo.toml 里升版本号。"
+  }
+
+  Write-Host "[打包] $tagRef 在本地与 remote「$Remote」上都不存在，版本号可用。" -ForegroundColor DarkGray
 }
+
+Assert-VersionNotReleased -Version $Version -RepoRoot $RepoRoot -RepoSlug $ReleaseRepoSlug `
+  -Remote $ReleaseRemote -SkipRemote:$SkipRemoteTagCheck
 
 $DistFull = [System.IO.Path]::GetFullPath($DistRoot).TrimEnd('\') + '\'
 $StagingRoot = Join-Path $DistRoot "staging\release-v$Version"
