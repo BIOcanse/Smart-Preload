@@ -3,10 +3,17 @@ setlocal EnableExtensions
 
 cd /d "%~dp0"
 
-rem 用绝对路径调 PowerShell，不依赖 PATH。
-rem PATH 过长时（本机实测 20361 字符 / 220 个条目），派生出去的 cmd.exe 拿到的 PATH
-rem 会被截断到基本不可用，裸写 `powershell` 会以 9009 "not recognized" 失败，
-rem 用户看到的就是安装脚本莫名其妙跑不起来。%SystemRoot% 永远存在。
+rem Keep this file pure ASCII. A .cmd carries no encoding declaration: cmd.exe reads it
+rem with the console OEM code page, so non-ASCII text is garbled on any machine whose
+rem code page differs from the author's -- and a UTF-8 BOM is worse, cmd.exe tries to
+rem execute it. There is no BOM fix here the way there is for .ps1, so the rule is ASCII
+rem only. Enforced by scripts/testing/windows-script-encoding.mjs.
+rem
+rem Call PowerShell by absolute path, never through PATH. When PATH is long (measured on
+rem the maintainer's machine: 20361 chars / 220 entries) the PATH a spawned cmd.exe
+rem receives is truncated to the point of being unusable, and a bare "powershell" fails
+rem with 9009 "not recognized" -- what the user sees is the installer mysteriously
+rem refusing to start. %SystemRoot% is always present.
 set "PS=%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe"
 
 set "UNATTENDED=0"

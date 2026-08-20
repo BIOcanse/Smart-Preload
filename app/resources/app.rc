@@ -1,4 +1,10 @@
-/* CREATEPROCESS_MANIFEST_RESOURCE_ID (1) 与 RT_MANIFEST (24)。
-   GNU 工具链靠这个资源脚本把清单嵌进可执行文件；MSVC 走链接器的
-   /MANIFESTDEPENDENCY，不用这个文件。两条路都在 build.rs 里。 */
+/* CREATEPROCESS_MANIFEST_RESOURCE_ID (1) and RT_MANIFEST (24).
+   The GNU toolchain embeds the manifest through this resource script; MSVC uses the
+   linker's /MANIFESTDEPENDENCY instead and never reads this file. Both paths live in
+   build.rs, which is where the full rationale is written.
+
+   Keep this file pure ASCII: windres hands it to the C preprocessor, whose input
+   charset depends on the build environment, and a failure here fails the release build
+   outright (build.rs panics rather than ship a binary without the manifest).
+   Enforced by scripts/testing/windows-script-encoding.mjs. */
 1 24 "app.manifest"
