@@ -1,4 +1,4 @@
-# 从 scripts/package-release.ps1 里**原地取出** Assert-VersionNotReleased 再调用它。
+﻿# 从 scripts/package-release.ps1 里**原地取出** Assert-VersionNotReleased 再调用它。
 #
 # 不复制一份函数体过来：复制出来的副本会和真身各自演化，测试照样绿，护栏照样坏
 # —— 这正是这条护栏第一次失效的模式（它查的是本地标签，而已发布记录在远端）。

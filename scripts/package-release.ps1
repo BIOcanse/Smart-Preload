@@ -1,4 +1,4 @@
-param(
+﻿param(
   [string]$Version = "",
   [switch]$SkipBuild,
   # 已发布记录只存在于 GitHub 上，本地标签随时可能是过期的（见下方 Assert-VersionNotReleased）。

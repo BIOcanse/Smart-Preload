@@ -7,6 +7,7 @@
 //
 // 整个测试自带一个真 git 仓库（bare 仓库当 remote），不联网、不依赖本机 fetch 状态。
 import assert from "node:assert/strict";
+import { WINDOWS_POWERSHELL } from "./lib/windows-powershell.mjs";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync, readFileSync, writeFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
@@ -18,13 +19,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..", "..");
 const packageScript = path.join(repoRoot, "scripts", "package-release.ps1");
 const probeScript = path.join(__dirname, "lib", "release-version-guard-probe.ps1");
-const POWERSHELL = path.join(
-  process.env.SystemRoot ?? "C:\Windows",
-  "System32",
-  "WindowsPowerShell",
-  "v1.0",
-  "powershell.exe",
-);
+const POWERSHELL = WINDOWS_POWERSHELL;
 const REPO_SLUG = "BIOcanse/Smart-Preload";
 
 function git(cwd, ...args) {
@@ -44,7 +39,7 @@ function runGuard({ repoRoot: target, version, remote = "", skipRemote = false }
   ];
   if (remote) args.push("-Remote", remote);
   if (skipRemote) args.push("-SkipRemote");
-  const output = execFileSync(POWERSHELL, args, { encoding: "utf8" });
+  const output = execFileSync(WINDOWS_POWERSHELL, args, { encoding: "utf8" });
   // 护栏放行时会用 Write-Host 打一行说明，捕获时也落在 stdout 里。裁掉判定行之前的
   // 内容，但保留判定行之后的所有行 —— 拒绝理由本身可能是多行的。
   const lines = output.split(/\r?\n/);
