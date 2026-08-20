@@ -1,3 +1,14 @@
+// TEST-REQUIRES: local-secrets
+//
+// 这个测试要真的签一份更新清单，再用 app 内嵌的**生产公钥**
+// （app/src/update/signing-public.json）验签。也就是说它需要对应的生产私钥
+// %USERPROFILE%\.smart-preload-release\app-update-signing-private.json ——
+// 那把钥匙只在维护者本机，也**不应该**出现在 CI 上。
+//
+// 所以它不是「CI 上恰好跑不了」，是「CI 上不该跑」。run-all.mjs 按上面这行标记把它
+// 归到 local-secrets；CI 用 --no-local-secrets 显式排除，见 .github/workflows/ci.yml。
+// 换成临时生成的密钥就失去意义了：真正要验的正是「发布用的那把私钥签出来的东西，
+// 装机的 app 能验过」。
 import assert from "node:assert/strict";
 import { createHash, createPublicKey, verify } from "node:crypto";
 import {
@@ -12,6 +23,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { WINDOWS_POWERSHELL } from "./lib/windows-powershell.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -65,7 +77,7 @@ try {
   assert.equal(propagatedExit.status, 23, "batch wrapper must preserve installer exit status");
 
   const hiddenHandoffExit = spawnSync(
-    "powershell.exe",
+    WINDOWS_POWERSHELL,
     [
       "-NoLogo",
       "-NoProfile",
@@ -103,7 +115,7 @@ try {
     "write-app-update-manifest.ps1"
   );
   const manifestResult = spawnSync(
-    "powershell.exe",
+    WINDOWS_POWERSHELL,
     [
       "-NoLogo",
       "-NoProfile",
@@ -136,7 +148,7 @@ try {
   const replacementContents = Buffer.from("replacement fixture", "utf8");
   writeFileSync(appZip, replacementContents);
   const replacementManifest = spawnSync(
-    "powershell.exe",
+    WINDOWS_POWERSHELL,
     [
       "-NoLogo",
       "-NoProfile",
@@ -177,7 +189,7 @@ try {
   );
 
   const wrongVersion = spawnSync(
-    "powershell.exe",
+    WINDOWS_POWERSHELL,
     [
       "-NoLogo",
       "-NoProfile",

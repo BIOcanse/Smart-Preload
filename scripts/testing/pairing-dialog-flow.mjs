@@ -43,12 +43,8 @@ const dialogScript = path.join(repoRoot, "scripts/testing/lib/win32-dialog.ps1")
 // 本机也没有可用的虚拟机（Hyper-V 未启用、无 Sandbox、无 VirtualBox/VMware）。
 // 所以跑这个测试时请让出屏幕一分钟。
 
-// 用绝对路径调 PowerShell。本机 PATH 长两万多字符，派生进程的查找已经被证明不可靠
-// （install-register.cmd 就栽在这上面）。%SystemRoot% 永远可用。
-const powershellPath = path.join(
-  process.env.SystemRoot || "C:/Windows",
-  "System32/WindowsPowerShell/v1.0/powershell.exe"
-);
+// 绝对路径的理由见 lib/windows-powershell.mjs。
+const powershellPath = WINDOWS_POWERSHELL;
 
 // app 的 target-dir 由 app/.cargo/config.toml 指定，不在仓库里。
 const appTargetDir = readCargoTargetDir();

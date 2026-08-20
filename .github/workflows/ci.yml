@@ -39,8 +39,14 @@ jobs:
 
       # run-all.mjs 默认只跑 unit，退出码：全通过 0 / 任一失败 1。
       # 分类见 node scripts/testing/run-all.mjs --list
+      #
+      # --no-local-secrets 排除掉需要「发布签名私钥」的测试。那把私钥只在维护者本机
+      # (%USERPROFILE%/.smart-preload-release/)，也不应该出现在 CI 上 —— 不是
+      # 「CI 上恰好跑不了」，是「CI 上不该跑」。哪些测试属于这一类由测试文件自己
+      # 声明（文件头 TEST-REQUIRES: local-secrets），不在这里维护名单。
+      # 维护者本机默认仍然跑它们：node scripts/testing/run-all.mjs
       - name: Unit tests
-        run: node scripts/testing/run-all.mjs
+        run: node scripts/testing/run-all.mjs --no-local-secrets
 
   app:
     name: Companion app (Rust)
