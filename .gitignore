@@ -1,4 +1,18 @@
-vs_BuildTools.exe
+# 归档与二进制产物：源码仓库里不放这些。
+# .gitignore 只在文件还没被跟踪时起作用，`git add -f` 能绕过它 —— 真正的护栏是
+# scripts/testing/repository-contents.mjs，它的判据是 git ls-files（库里实际有什么）。
+*.zip
+*.7z
+*.tar
+*.tar.gz
+*.rar
+*.exe
+*.dll
+*.pdb
+*.log
+*.tmp
+*.bak
+*.orig
 
 # Rust build output
 app/.cargo/
