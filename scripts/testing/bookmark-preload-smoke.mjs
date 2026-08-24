@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -37,7 +37,52 @@ const extensionUnderTestDir = path.join(os.tmpdir(), `zlw-ext-smoke-${process.pi
 
 const chromiumPathCandidates = getPlaywrightChromiumPathCandidates();
 
+// 每次运行会在 runDir 里留一个完整的 Chromium profile（约 14 MB），而这个目录以前
+// 从不回收。实测 2026-08-23：累积了 59 次运行、799 MB，最新的一次还是两周前的 ——
+// 也就是说这 799 MB 里没有一个字节还有人看。
+//
+// profile 只在失败时有用（要拿它复现），成功时留着纯属占地方；旧的运行目录同理。
+// 两个开关都可以显式覆盖，默认值写在这里，不做隐藏行为。
+const KEEP_RUNS = Number(process.env.ZLW_SMOKE_KEEP_RUNS ?? 5);
+const KEEP_PROFILE_ALWAYS = process.env.ZLW_SMOKE_KEEP_PROFILE === "1";
+
+/** 只保留最近 KEEP_RUNS 次运行目录。显式栈/循环，不递归（仓库禁递归约定）。 */
+async function pruneOldRuns() {
+  if (!Number.isFinite(KEEP_RUNS) || KEEP_RUNS < 0) {
+    throw new Error(`ZLW_SMOKE_KEEP_RUNS 必须是非负数，当前是 ${process.env.ZLW_SMOKE_KEEP_RUNS}`);
+  }
+
+  let entries;
+  try {
+    entries = await readdir(outputRoot, { withFileTypes: true });
+  } catch {
+    return; // 首次运行，目录还不存在
+  }
+
+  // 目录名里的 runId 是 ISO 时间戳，字典序即时间序。
+  const runs = entries
+    .filter((entry) => entry.isDirectory() && entry.name.startsWith("bookmark-preload-smoke-"))
+    .map((entry) => entry.name)
+    .sort();
+
+  const doomed = runs.slice(0, Math.max(0, runs.length - KEEP_RUNS));
+  for (const name of doomed) {
+    await rm(path.join(outputRoot, name), { recursive: true, force: true });
+  }
+
+  if (doomed.length > 0) {
+    console.log(
+      `[bookmark-smoke] 清掉 ${doomed.length} 个旧运行目录，保留最近 ${KEEP_RUNS} 个` +
+        `（改 ZLW_SMOKE_KEEP_RUNS 可调整）`
+    );
+  }
+}
+
 async function main() {
+  // 成功才删 profile；失败时留着它复现，所以状态要能被 finally 看到。
+  let runSucceeded = false;
+
+  await pruneOldRuns();
   await mkdir(runDir, { recursive: true });
   await rm(profileDir, { recursive: true, force: true });
   await mkdir(profileDir, { recursive: true });
@@ -130,6 +175,7 @@ async function main() {
     if (!result.ok) {
       process.exitCode = 1;
     }
+    runSucceeded = result.ok;
   } finally {
     for (const client of clients.reverse()) {
       client.close();
@@ -137,6 +183,15 @@ async function main() {
     chrome.kill();
     server.close();
     await rm(extensionUnderTestDir, { recursive: true, force: true });
+
+    // 成功就把 profile 删掉：它有 14 MB，而留着它的唯一理由是失败后要复现。
+    // result.json 与截图都留在 runDir 里，那才是事后要看的东西。
+    if (runSucceeded && !KEEP_PROFILE_ALWAYS) {
+      await rm(profileDir, { recursive: true, force: true });
+      console.log(
+        "[bookmark-smoke] 运行通过，已删除 chromium-profile（ZLW_SMOKE_KEEP_PROFILE=1 可保留）"
+      );
+    }
   }
 }
 
