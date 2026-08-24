@@ -23,7 +23,7 @@ import {
   waitForTabComplete,
 } from "./lib/bookmark-preload-smoke-probes.mjs";
 import { getPlaywrightChromiumPathCandidates } from "./lib/browser-paths.mjs";
-import { getFreePort, sleep } from "./lib/test-utils.mjs";
+import { getFreePort, rmWithRetry, sleep } from "./lib/test-utils.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,7 +46,15 @@ const chromiumPathCandidates = getPlaywrightChromiumPathCandidates();
 const KEEP_RUNS = Number(process.env.ZLW_SMOKE_KEEP_RUNS ?? 5);
 const KEEP_PROFILE_ALWAYS = process.env.ZLW_SMOKE_KEEP_PROFILE === "1";
 
-/** 只保留最近 KEEP_RUNS 次运行目录。显式栈/循环，不递归（仓库禁递归约定）。 */
+/**
+ * 只保留最近 KEEP_RUNS 次运行目录，**含本次**。
+ *
+ * 必须在本次的 runDir 建好之后调用：在那之前调用的话，留下 KEEP_RUNS 个旧的再加上
+ * 新建的这个，稳态是 KEEP_RUNS+1，和「保留最近 KEEP_RUNS 个」这句话对不上。
+ * 本次的目录永远不删 —— KEEP_RUNS=0 表示「只保留本次」，而不是把自己也删掉。
+ *
+ * 显式循环，不递归（仓库禁递归约定）。
+ */
 async function pruneOldRuns() {
   if (!Number.isFinite(KEEP_RUNS) || KEEP_RUNS < 0) {
     throw new Error(`ZLW_SMOKE_KEEP_RUNS 必须是非负数，当前是 ${process.env.ZLW_SMOKE_KEEP_RUNS}`);
@@ -59,22 +67,38 @@ async function pruneOldRuns() {
     return; // 首次运行，目录还不存在
   }
 
+  const currentRun = path.basename(runDir);
   // 目录名里的 runId 是 ISO 时间戳，字典序即时间序。
-  const runs = entries
+  const prunable = entries
     .filter((entry) => entry.isDirectory() && entry.name.startsWith("bookmark-preload-smoke-"))
     .map((entry) => entry.name)
+    .filter((name) => name !== currentRun)
     .sort();
 
-  const doomed = runs.slice(0, Math.max(0, runs.length - KEEP_RUNS));
+  const keepOld = Math.max(0, KEEP_RUNS - 1); // 本次已经占掉一个名额
+  const doomed = prunable.slice(0, Math.max(0, prunable.length - keepOld));
+
+  let removed = 0;
+  const stubborn = [];
   for (const name of doomed) {
-    await rm(path.join(outputRoot, name), { recursive: true, force: true });
+    // 旧目录里可能还有上次崩溃时没退干净的 Chromium 握着文件句柄。删不掉一个不该
+    // 影响其余，更不该让测试失败 —— 它只是清理。
+    try {
+      await rmWithRetry(path.join(outputRoot, name));
+      removed += 1;
+    } catch (error) {
+      stubborn.push(`${name}（${error?.code ?? error}）`);
+    }
   }
 
-  if (doomed.length > 0) {
+  if (removed > 0) {
     console.log(
-      `[bookmark-smoke] 清掉 ${doomed.length} 个旧运行目录，保留最近 ${KEEP_RUNS} 个` +
+      `[bookmark-smoke] 清掉 ${removed} 个旧运行目录，保留最近 ${KEEP_RUNS} 个（含本次）` +
         `（改 ZLW_SMOKE_KEEP_RUNS 可调整）`
     );
+  }
+  if (stubborn.length > 0) {
+    console.warn(`[bookmark-smoke] 这些旧目录删不掉，留到下次再试：${stubborn.join("、")}`);
   }
 }
 
@@ -82,8 +106,8 @@ async function main() {
   // 成功才删 profile；失败时留着它复现，所以状态要能被 finally 看到。
   let runSucceeded = false;
 
-  await pruneOldRuns();
   await mkdir(runDir, { recursive: true });
+  await pruneOldRuns();
   await rm(profileDir, { recursive: true, force: true });
   await mkdir(profileDir, { recursive: true });
   await prepareExtensionUnderTest();
@@ -187,10 +211,20 @@ async function main() {
     // 成功就把 profile 删掉：它有 14 MB，而留着它的唯一理由是失败后要复现。
     // result.json 与截图都留在 runDir 里，那才是事后要看的东西。
     if (runSucceeded && !KEEP_PROFILE_ALWAYS) {
-      await rm(profileDir, { recursive: true, force: true });
-      console.log(
-        "[bookmark-smoke] 运行通过，已删除 chromium-profile（ZLW_SMOKE_KEEP_PROFILE=1 可保留）"
-      );
+      // chrome.kill() 只是发信号，Chromium 未必已经放开文件句柄：实测直接 rm 会在
+      // first_party_sets.db 上拿到 EBUSY。而这一步纯属清理，绝不能把一次通过的运行
+      // 变成失败 —— 删不掉就留着，下次启动时的裁剪会收拾它。
+      try {
+        await rmWithRetry(profileDir);
+        console.log(
+          "[bookmark-smoke] 运行通过，已删除 chromium-profile（ZLW_SMOKE_KEEP_PROFILE=1 可保留）"
+        );
+      } catch (error) {
+        console.warn(
+          `[bookmark-smoke] 运行通过，但 chromium-profile 删不掉（${error?.code ?? error}），` +
+            "留给下次裁剪"
+        );
+      }
     }
   }
 }
