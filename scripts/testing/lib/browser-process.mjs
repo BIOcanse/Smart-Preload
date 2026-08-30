@@ -1,5 +1,8 @@
 import { spawn } from "node:child_process";
-import { WINDOWS_POWERSHELL } from "./windows-powershell.mjs";
+import {
+  createWindowsPowerShellEnv,
+  WINDOWS_POWERSHELL,
+} from "./windows-powershell.mjs";
 import { CdpClient } from "./cdp-client.mjs";
 import { fetchJson, sleep } from "./test-utils.mjs";
 
@@ -109,6 +112,7 @@ export async function killBrowserProcessesForProfile(commandLineNeedle) {
 
   await new Promise((resolve) => {
     const killer = spawn(WINDOWS_POWERSHELL, ["-NoProfile", "-Command", command], {
+      env: createWindowsPowerShellEnv(),
       stdio: "ignore",
       windowsHide: true,
     });

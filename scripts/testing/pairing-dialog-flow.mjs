@@ -30,6 +30,10 @@ import {
 import { prepareExtensionUnderTest } from "./lib/extension-fixture.mjs";
 import { CdpClient } from "./lib/cdp-client.mjs";
 import { fetchJson, getFreePort, sleep } from "./lib/test-utils.mjs";
+import {
+  createWindowsPowerShellEnv,
+  WINDOWS_POWERSHELL,
+} from "./lib/windows-powershell.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const dialogScript = path.join(repoRoot, "scripts/testing/lib/win32-dialog.ps1");
@@ -45,6 +49,7 @@ const dialogScript = path.join(repoRoot, "scripts/testing/lib/win32-dialog.ps1")
 
 // 绝对路径的理由见 lib/windows-powershell.mjs。
 const powershellPath = WINDOWS_POWERSHELL;
+const windowsPowerShellEnv = createWindowsPowerShellEnv();
 
 // app 的 target-dir 由 app/.cargo/config.toml 指定，不在仓库里。
 const appTargetDir = readCargoTargetDir();
@@ -92,7 +97,7 @@ function runPowerShell(args) {
     const child = spawn(
       powershellPath,
       ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", dialogScript, ...args],
-      { windowsHide: true }
+      { env: windowsPowerShellEnv, windowsHide: true }
     );
 
     let stdout = "";

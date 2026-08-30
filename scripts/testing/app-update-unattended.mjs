@@ -23,12 +23,16 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { WINDOWS_POWERSHELL } from "./lib/windows-powershell.mjs";
+import {
+  createWindowsPowerShellEnv,
+  WINDOWS_POWERSHELL,
+} from "./lib/windows-powershell.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const temporaryRoot = mkdtempSync(path.join(tmpdir(), "smart-preload-updater-test-"));
+const windowsPowerShellEnv = createWindowsPowerShellEnv();
 
 try {
   const installerDirectory = path.join(temporaryRoot, "installer");
@@ -49,6 +53,7 @@ try {
     {
       cwd: installerDirectory,
       encoding: "utf8",
+      env: windowsPowerShellEnv,
       timeout: 5_000,
       windowsHide: true,
     }
@@ -70,6 +75,7 @@ try {
     {
       cwd: installerDirectory,
       encoding: "utf8",
+      env: windowsPowerShellEnv,
       timeout: 5_000,
       windowsHide: true,
     }
@@ -87,11 +93,11 @@ try {
     ],
     {
       encoding: "utf8",
-      env: {
+      env: createWindowsPowerShellEnv({
         ...process.env,
         ZLW_TEST_INSTALLER: path.join(installerDirectory, "install-register.cmd"),
         ZLW_TEST_INSTALLER_DIR: installerDirectory,
-      },
+      }),
       timeout: 5_000,
       windowsHide: true,
     }
@@ -131,6 +137,7 @@ try {
     ],
     {
       encoding: "utf8",
+      env: windowsPowerShellEnv,
       timeout: 5_000,
       windowsHide: true,
     }
@@ -164,6 +171,7 @@ try {
     ],
     {
       encoding: "utf8",
+      env: windowsPowerShellEnv,
       timeout: 5_000,
       windowsHide: true,
     }
@@ -205,6 +213,7 @@ try {
     ],
     {
       encoding: "utf8",
+      env: windowsPowerShellEnv,
       timeout: 5_000,
       windowsHide: true,
     }
