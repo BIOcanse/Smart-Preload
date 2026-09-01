@@ -10,6 +10,8 @@ Smart Preload はインテリジェントなプリロードアルゴリズムを
 
 検索結果を順に開く、商品や資料を比較する、関連ページを何度も行き来する、といった使い方に向いています。
 
+このプロジェクトは作者が保守します。外部からの貢献や Pull Request は受け付けていません。
+
 ## 主なダウンロード先
 
 **通常のユーザーは、まず [Chrome ウェブストア](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu) から Smart Preload をインストールしてください。** これが推奨される主なダウンロード先です。

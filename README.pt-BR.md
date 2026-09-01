@@ -10,6 +10,8 @@ O Smart Preload usa algoritmos inteligentes de pré-carregamento para reduzir o 
 
 Ele e mais util quando voce percorre resultados de busca, compara paginas ou alterna com frequencia entre sites relacionados.
 
+Este projeto é mantido pelo autor. Contribuições externas e Pull Requests não são aceitas.
+
 ## Download Principal
 
 **Usuarios comuns devem instalar o Smart Preload pela [Chrome Web Store](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu).** Esse e o canal principal recomendado.

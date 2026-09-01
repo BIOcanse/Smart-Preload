@@ -10,6 +10,8 @@ Smart Preload nutzt intelligente Vorladealgorithmen, um wahrgenommene Wartezeite
 
 Es hilft besonders, wenn Sie Suchergebnisse durchgehen, Seiten vergleichen oder oft zwischen verwandten Websites wechseln.
 
+Dieses Projekt wird vom Autor gepflegt. Externe Beiträge und Pull Requests werden nicht angenommen.
+
 ## Haupt-Download
 
 **Installieren Sie Smart Preload als normaler Nutzer bevorzugt aus dem [Chrome Web Store](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu).** Das ist der empfohlene Hauptkanal.

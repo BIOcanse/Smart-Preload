@@ -10,6 +10,8 @@
 
 它最适合多标签办公、查资料、看搜索结果、比价、查文档，以及经常在相关页面之间来回跳转的场景。
 
+本项目由作者维护，不接受外部贡献或 Pull Request。
+
 ## 主要下载渠道
 
 **普通用户请优先从 [Chrome 网上应用店](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu) 安装 Smart Preload。** 这是推荐的主要下载渠道。
