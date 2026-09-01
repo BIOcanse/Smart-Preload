@@ -10,6 +10,8 @@ Smart Preload uses intelligent preloading algorithms to reduce perceived loading
 
 It is most useful when you keep many tabs open, move through search results, compare pages, or repeatedly jump between related sites.
 
+This project is maintained by the author. External contributions and pull requests are not accepted.
+
 ## Main Download
 
 **Install Smart Preload from the [Chrome Web Store](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu).** This is the recommended download channel for most users.

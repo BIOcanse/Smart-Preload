@@ -1,7 +1,7 @@
 name: CI
 
 # 只跑不需要真实浏览器的检查。7 个浏览器 smoke 需要启动 Chromium/Edge、部分还需要先
-# 打包出 native app，且已知存在间歇性失败（见 docs/internal/review-2026-07-31.md），
+# 打包出 native app，且已知存在间歇性失败，
 # 放进 CI 只会制造噪音。它们仍然由维护者本地跑：
 #   node scripts/testing/run-all.mjs --all
 on:
@@ -108,7 +108,6 @@ jobs:
         run: cargo check --target wasm32-unknown-unknown
 
       # 16 个测试：scoring 3 个，selection 13 个（含槽位分配 DP 及其错误路径）。
-      # 只服务死入口的 db/ events/ query/ model/ 已删除，见
-      # docs/internal/wasm-engine-decision.md。
+      # 只服务死入口的 db/ events/ query/ model/ 已删除。
       - name: Tests
         run: cargo test

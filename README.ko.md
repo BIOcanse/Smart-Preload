@@ -10,6 +10,8 @@ Smart Preload는 지능형 프리로드 알고리즘을 사용해 체감 로딩 
 
 검색 결과를 계속 열어 보거나, 상품과 자료를 비교하거나, 관련 페이지 사이를 자주 오가는 상황에 적합합니다.
 
+이 프로젝트는 작성자가 유지 관리하며 외부 기여와 Pull Request를 받지 않습니다.
+
 ## 기본 다운로드 채널
 
 **일반 사용자는 먼저 [Chrome 웹 스토어](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu)에서 Smart Preload를 설치하세요.** 권장되는 기본 다운로드 채널입니다.

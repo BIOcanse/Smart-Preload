@@ -10,6 +10,8 @@
 
 它最適合多分頁工作、查資料、看搜尋結果、比價、查文件，以及經常在相關頁面之間切換的場景。
 
+本專案由作者維護，不接受外部貢獻或 Pull Request。
+
 ## 主要下載管道
 
 **一般使用者請優先從 [Chrome 線上應用程式商店](https://chromewebstore.google.com/detail/smart-preload/poikolgeopfpaoainnakkbjlbmloploc?utm_source=ext_app_menu) 安裝 Smart Preload。** 這是建議的主要下載管道。
